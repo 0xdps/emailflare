@@ -1,0 +1,80 @@
+services/backend/src/scripts/backfill-cf.ts
+  d4d68faf1df89320 123-125,133
+  h_d60f3499e5a1c3 1-122,126-132,134-198
+services/backend/src/middleware/apiKey.ts
+  h_d60f3499e5a1c3 10,30
+justfile
+  h_d60f3499e5a1c3 46-55
+services/backend/package.json
+  d4d68faf1df89320 10-11
+services/admin/src/pages/Playground.tsx
+  h_d60f3499e5a1c3 117-118,304-312
+services/backend/src/services/cloudflare.ts
+  d4d68faf1df89320 39-65
+services/admin/src/pages/Logs.tsx
+  h_d60f3499e5a1c3 23,290-291,293-297,360
+.github/workflows/docker-publish.yml
+  h_d60f3499e5a1c3 1-64
+services/backend/src/routes/send.ts
+  h_d60f3499e5a1c3 7,33,97-98,119,140
+compose.dev.yaml
+  h_d60f3499e5a1c3 14-15,22-32
+services/admin/src/pages/Keys.tsx
+  h_d60f3499e5a1c3 22,48,65,122-123,161,163-164,170-171,176-191,215-218
+services/backend/src/env.ts
+  h_d60f3499e5a1c3 36-39
+  4ea9ce75abff6f88 33
+services/backend/src/db.ts
+  4ea9ce75abff6f88 4,8-10
+  h_d60f3499e5a1c3 48,74,135,145,168,174
+Dockerfile
+  4ea9ce75abff6f88 1-11,41,44-47
+  h_d60f3499e5a1c3 36,48-56
+services/backend/src/services/smtp.ts
+  h_d60f3499e5a1c3 1-34
+services/backend/src/routes/keys.ts
+  h_d60f3499e5a1c3 19,26,28-30,32,40
+start.sh
+  h_d60f3499e5a1c3 8-10,77-83,85-97,102,145-148,164
+  4ea9ce75abff6f88 16-76,84,98,116
+infra/Caddyfile.dev
+  h_d60f3499e5a1c3 12-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "9fc63ca8a5de606483eb3e0b87bd59e15f24009d",
+  "prompts": {
+    "4ea9ce75abff6f88": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "45949a0c-77ab-4722-a9b9-291fc06c2a97",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 92,
+      "total_deletions": 20,
+      "accepted_lines": 86,
+      "overriden_lines": 0
+    },
+    "d4d68faf1df89320": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "4e2b1e62-679d-4b2c-a015-8ad31c7af2cf",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 33,
+      "total_deletions": 5,
+      "accepted_lines": 33,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
