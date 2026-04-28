@@ -1,0 +1,67 @@
+compose.yaml
+  c5dd2b1f3370d4fb 11,14-18,27-28
+justfile
+  c5dd2b1f3370d4fb 1,3,10,13,15,17,19,21-23,25-28,30-32,34-36,39,42,44,46,48,50,52-53,55-57,59,61,64,67-68,70-74,76,80-84,92-93,95-99
+start.sh
+  c5dd2b1f3370d4fb 67,80
+services/backend/src/services/cloudflare.ts
+  c5dd2b1f3370d4fb 11-24,38-44,165-245
+services/admin/src/index.css
+  c5dd2b1f3370d4fb 132-135
+infra/Dockerfile.mesahub
+  h_d60f3499e5a1c3 1-27
+compose.dev.yaml
+  c5dd2b1f3370d4fb 2-24,33,36-40,43-47,82,85-90,95-96
+  h_d60f3499e5a1c3 59
+infra/start-mesahub.sh
+  h_d60f3499e5a1c3 1-23
+services/admin/src/pages/Templates.tsx
+  c5dd2b1f3370d4fb 356
+services/backend/src/lib/mesahub-url.ts
+  c5dd2b1f3370d4fb 35-37
+services/backend/src/routes/cloudflare.ts
+  h_d60f3499e5a1c3 1-12
+services/backend/src/db.ts
+  c5dd2b1f3370d4fb 1,9
+services/backend/src/routes/domains.ts
+  c5dd2b1f3370d4fb 6,48-64
+services/backend/src/index.ts
+  c5dd2b1f3370d4fb 21,102,119
+.github/workflows/docker-publish.yml
+  c5dd2b1f3370d4fb 64
+  h_d60f3499e5a1c3 63
+.env.example
+  c5dd2b1f3370d4fb 12-16,23-24,28
+services/backend/package.json
+  c5dd2b1f3370d4fb 18
+services/admin/src/pages/Dashboard.tsx
+  c5dd2b1f3370d4fb 41-52,253,260,263,267,324-364,552
+Dockerfile
+  c5dd2b1f3370d4fb 8-10
+  h_d60f3499e5a1c3 2-5,7,11-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "2a878eb27866aab382d4dd7dcce4fca666aa74f1",
+  "prompts": {
+    "c5dd2b1f3370d4fb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0b36c5de-cc8d-4137-b8f3-631a5291609d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 350,
+      "total_deletions": 439,
+      "accepted_lines": 314,
+      "overriden_lines": 2
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
