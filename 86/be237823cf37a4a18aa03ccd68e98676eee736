@@ -1,0 +1,28 @@
+.github/workflows/docker-publish.yml
+  2c28f61470843240 80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "86be237823cf37a4a18aa03ccd68e98676eee736",
+  "prompts": {
+    "2c28f61470843240": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6358ca2c-5099-41a1-93a4-0031073faab5",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 6,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
