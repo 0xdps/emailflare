@@ -47,33 +47,47 @@ app.post('/', zValidator('json', createSchema), async (c) => {
 
   // Check CF first — reuse existing subdomain if found, otherwise create it.
   let cfResult;
+  let manualFallback = false;
   try {
     const allSubdomains = await listSendingSubdomains(zoneId);
     cfResult = allSubdomains.find(s => s.name === name) ?? await createSendingSubdomain(zoneId, name);
   } catch (error) {
     if (error instanceof CloudflareApiError) {
-      if (error.code === 10000 || error.code === 9109 || error.status === 401 || error.status === 403) {
-        return c.json({
-          error: 'Cloudflare token is missing permission for Email Sending Subdomains. Required: Account: Email Security Edit; Zone: Email Routing Rules Edit; Zone: Zone Read; Zone: DNS Read/Write.',
-          cfCode: error.code,
-          cfPath: error.path,
-        }, 422);
+      // Workaround mode: if the Email Sending subdomain API path itself fails,
+      // allow manual domain registration so already-enabled UI subdomains can be used.
+      if (error.path.includes('/email/sending/subdomains')) {
+        manualFallback = true;
+      } else {
+        return c.json({ error: error.message, cfCode: error.code, cfPath: error.path }, 502);
       }
-      return c.json({ error: error.message, cfCode: error.code, cfPath: error.path }, 502);
+    } else {
+      throw error;
     }
-    throw error;
   }
+
+  const cfTag = manualFallback ? null : (cfResult?.tag ?? null);
+  const dkimSelector = manualFallback ? null : (cfResult?.dkim_selector ?? null);
+  const returnPathDomain = manualFallback ? null : (cfResult?.return_path_domain ?? null);
+  const verified = manualFallback ? 1 : (cfResult?.enabled ? 1 : 0);
 
   const row = await domains.insert({
     id: nanoid(),
     name,
     cf_zone_id: zoneId,
-    cf_subdomain_id: cfResult.tag,
-    dkim_selector: cfResult.dkim_selector ?? null,
-    return_path_domain: cfResult.return_path_domain ?? null,
-    verified: cfResult.enabled ? 1 : 0,
+    cf_subdomain_id: cfTag,
+    dkim_selector: dkimSelector,
+    return_path_domain: returnPathDomain,
+    verified,
     created_at: new Date().toISOString(),
   });
+
+  if (manualFallback) {
+    return c.json({
+      ...row,
+      warning: 'Cloudflare Email Sending subdomain API is unavailable for this zone/account. Domain registered in manual mode.',
+      manual_mode: true,
+    }, 201);
+  }
 
   return c.json(row, 201);
 });

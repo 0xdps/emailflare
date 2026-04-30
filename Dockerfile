@@ -46,7 +46,6 @@ WORKDIR /app
 # mesahub-server (for embedded mode — skipped if MESAHUB_URL points to external)
 COPY --from=build-core /go/bin/mesahub-server /usr/local/bin/mesahub-server
 RUN mkdir -p /data
-VOLUME ["/data"]
 
 # Install Mailpit binary
 ARG TARGETARCH
