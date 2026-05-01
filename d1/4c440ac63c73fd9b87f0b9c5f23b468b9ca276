@@ -1,0 +1,14 @@
+services/admin/src/pages/Dashboard.tsx
+  h_d60f3499e5a1c3 462,489,510,518,536
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "d14c440ac63c73fd9b87f0b9c5f23b468b9ca276",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
