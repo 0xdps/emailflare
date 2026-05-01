@@ -1,0 +1,176 @@
+services/backend/src/emails/layouts/SubscriptionConfirmation.tsx
+  3375b5c1d37b5825 1-66
+services/backend/src/emails/layouts/OTP.tsx
+  3375b5c1d37b5825 6,22-25,28,32,36
+services/backend/src/emails/layouts/FeatureAccessGranted.tsx
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+  3375b5c1d37b5825 3,25-31
+services/backend/src/emails/layouts/TeamInvite.tsx
+  3375b5c1d37b5825 6,30-33,36,40,47,52-53
+services/backend/src/emails/layouts/ApiKeyRevoked.tsx
+  h_d60f3499e5a1c3 1-13,15-33,38-39,41-43,46-54
+  3375b5c1d37b5825 14,34-37,40,44-45
+services/backend/src/emails/layouts/Plain.tsx
+  3375b5c1d37b5825 6,30-33,37,41,48,54-55
+services/backend/src/emails/layouts/PlanUpgraded.tsx
+  3375b5c1d37b5825 14,38-41,44,47,52-53
+  h_d60f3499e5a1c3 1-13,15-37,42-43,45-46,48-51,54-62
+services/backend/src/routes/templates.ts
+  3375b5c1d37b5825 8,36-45,147,153
+services/backend/src/emails/layouts/BillingReceipt.tsx
+  3375b5c1d37b5825 3,27-33
+  h_d60f3499e5a1c3 1-2,4-26,34-40
+services/admin/src/pages/Playground.tsx
+  3375b5c1d37b5825 24-53,147,200,206,218,266,297
+  h_d60f3499e5a1c3 133,237-253,298-302,310,312-313,318,320-321,326-327
+services/backend/src/routes/send.ts
+  3375b5c1d37b5825 26,63
+services/backend/src/emails/layouts/SupportTicketReply.tsx
+  3375b5c1d37b5825 3,25-31
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+services/backend/src/emails/layouts/EmailChangeRequested.tsx
+  3375b5c1d37b5825 3,25-32
+  h_d60f3499e5a1c3 1-2,4-24,33-39
+services/backend/src/emails/layouts/ExportReady.tsx
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+  3375b5c1d37b5825 3,25-31
+services/backend/src/emails/layouts/MagicLink.tsx
+  3375b5c1d37b5825 6,22-25,28,34,39
+services/backend/src/emails/layouts/Notification.tsx
+  3375b5c1d37b5825 6,26-29,32,35,38,43
+services/backend/src/emails/layouts/BackupReady.tsx
+  3375b5c1d37b5825 3,25-31
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+services/backend/src/emails/layouts/MaintenanceScheduled.tsx
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+  3375b5c1d37b5825 3,25-31
+services/backend/src/emails/layouts/DatabaseDeleted.tsx
+  h_d60f3499e5a1c3 1-13,15-33,38-39,41-42,44-46,49-57
+  3375b5c1d37b5825 14,34-37,40,43,47-48
+services/backend/src/emails/layouts/PasswordChanged.tsx
+  3375b5c1d37b5825 6,24-26,32,35,39,51-52
+services/backend/src/emails/layouts/PhoneVerify.tsx
+  h_d60f3499e5a1c3 1-2,4-20,28-34
+  3375b5c1d37b5825 3,21-27
+services/backend/src/emails/ThemeContext.ts
+  h_d60f3499e5a1c3 1-22
+services/backend/src/emails/layouts/ImportCompleted.tsx
+  3375b5c1d37b5825 3,25-31
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+services/backend/src/emails/layouts/AccountDeleted.tsx
+  3375b5c1d37b5825 6,24-27,30,34-35,40,47,52-53
+services/backend/src/db.ts
+  3375b5c1d37b5825 198-212
+  h_d60f3499e5a1c3 213-227
+services/backend/src/emails/layouts/Alert.tsx
+  3375b5c1d37b5825 6,46-48,62,65,68,75,81-82
+services/landing/index.html
+  3375b5c1d37b5825 8,19,29,39,1120,1275,1350,1398,1400,1424-1453
+services/backend/src/emails/layouts/SubscriptionResumed.tsx
+  3375b5c1d37b5825 14,36-39,42,45,50-51
+  h_d60f3499e5a1c3 1-13,15-35,40-41,43-44,46-49,52-60
+services/backend/src/emails/layouts/EmailVerify.tsx
+  3375b5c1d37b5825 6,24-27,30,38,43-44
+services/backend/src/emails/layouts/Digest.tsx
+  3375b5c1d37b5825 6,30-33,36,39,42,44,48,53,58,62,67
+services/backend/src/emails/layouts/EmailChangeConfirmed.tsx
+  3375b5c1d37b5825 3,25-31
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+services/backend/src/emails/layouts/Welcome.tsx
+  3375b5c1d37b5825 6,22-25,28,35,40
+services/backend/src/emails/layouts/AccountLocked.tsx
+  h_d60f3499e5a1c3 1-2,4-24,28,33-39
+  3375b5c1d37b5825 3,25-27,29-32
+services/backend/src/emails/layouts/DatabaseCreated.tsx
+  3375b5c1d37b5825 14,36-39,42,45-48,51-52
+  h_d60f3499e5a1c3 1-13,15-35,40-41,43-44,49-50,53-61
+services/backend/src/emails/layouts/PlanDowngraded.tsx
+  3375b5c1d37b5825 14,38-41,44,47,52-53
+  h_d60f3499e5a1c3 1-13,15-37,42-43,45-46,48-51,54-62
+services/backend/src/emails/layouts/NewLogin.tsx
+  3375b5c1d37b5825 6,28-30,36,39,42-43,46,49,52,56,68-69
+services/backend/src/emails/layouts/PaymentFailed.tsx
+  3375b5c1d37b5825 14,40-42,46,50-52,55-56,60-61
+  h_d60f3499e5a1c3 1-13,15-39,43-45,47-49,53-54,57-59,62-70
+services/backend/src/emails/layouts/AccountUnlocked.tsx
+  h_d60f3499e5a1c3 1-2,4-20,27-33
+  3375b5c1d37b5825 3,21-26
+services/backend/src/emails/layouts/VerificationSuccess.tsx
+  3375b5c1d37b5825 14,32-35,38,44,46,49
+  h_d60f3499e5a1c3 1-13,15-31,36-37,39-43,45,47-48,50-58
+services/backend/src/emails/layouts/OAuthLinked.tsx
+  h_d60f3499e5a1c3 1-13,15-35,40-41,43-45,49-50,53-61
+  3375b5c1d37b5825 14,36-39,42,46-48,51-52
+services/admin/src/pages/Templates.tsx
+  3375b5c1d37b5825 36-64,140,151,174,181,190,192,197-202,250-267,407-413,420-427,439-441,444,467-469,471,473-482,486,538-550
+services/backend/src/emails/layouts/OrderConfirm.tsx
+  3375b5c1d37b5825 6,28-30,34,37,40-42,45,48,51,54-55,62,67-68
+services/backend/src/emails/layouts/PlanLimitReached.tsx
+  3375b5c1d37b5825 14,36-39,42,46,49-50
+  h_d60f3499e5a1c3 1-13,15-35,40-41,43-45,47-48,51-59
+services/backend/src/emails/layouts/PaymentMethodExpiring.tsx
+  3375b5c1d37b5825 3,27-33
+  h_d60f3499e5a1c3 1-2,4-26,34-40
+services/backend/src/emails/layouts/SubscriptionCancelled.tsx
+  3375b5c1d37b5825 6,26-29,32,36-37,43,49,54-55
+services/backend/src/emails/layouts/ApiKeyCreated.tsx
+  h_d60f3499e5a1c3 1-13,15-35,40-41,43-44,49-50,53-61
+  3375b5c1d37b5825 14,36-39,42,45-48,51-52
+services/backend/src/emails/layouts/UsageThreshold.tsx
+  h_d60f3499e5a1c3 1-13,15-37,42-43,45-47,50-51,54-62
+  3375b5c1d37b5825 14,38-41,44,48-49,52-53
+services/backend/src/emails/layouts/FeatureAccessRevoked.tsx
+  3375b5c1d37b5825 3,25-31
+  h_d60f3499e5a1c3 1-2,4-24,32-38
+services/backend/src/emails/layouts/Feedback.tsx
+  3375b5c1d37b5825 6,26-29,32,37-38,43,49,54-55
+services/backend/src/emails/layouts/RefundApproved.tsx
+  3375b5c1d37b5825 14,36-39,42,46-48,51-52
+  h_d60f3499e5a1c3 1-13,15-35,40-41,43-45,49-50,53-61
+services/backend/src/emails/layouts/Invoice.tsx
+  3375b5c1d37b5825 6,32-35,38,41,43,67,81,86-87
+services/backend/src/emails/layouts/SubscriptionStarted.tsx
+  3375b5c1d37b5825 6,30-32,36,39,42-43,46,49,56,61-62
+services/backend/src/emails/layouts/RenewalUpcoming.tsx
+  3375b5c1d37b5825 14,36-39,42,45,49-50
+  h_d60f3499e5a1c3 1-13,15-35,40-41,43-44,46-48,51-59
+services/backend/src/emails/layouts/Announcement.tsx
+  3375b5c1d37b5825 6,30-32,36,42,45,48,54,59-60
+services/backend/src/emails/layouts/TrialEnding.tsx
+  3375b5c1d37b5825 6,26-28,34,37,41,47,52-53
+services/backend/src/emails/render.ts
+  3375b5c1d37b5825 2-3,125-127,184
+  h_d60f3499e5a1c3 24-53,62-70,93-122,149-178
+services/backend/src/emails/themes.ts
+  h_d60f3499e5a1c3 1-103
+services/backend/src/emails/layouts/IncidentUpdate.tsx
+  3375b5c1d37b5825 3,27-34
+  h_d60f3499e5a1c3 1-2,4-26,35-41
+services/backend/src/emails/layouts/PasswordReset.tsx
+  3375b5c1d37b5825 6,24-27,30,38,43-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "1e8329ecabfb3e9bad3a7b373943e289eb2835b7",
+  "prompts": {
+    "3375b5c1d37b5825": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "9a6f1186-3f4d-41c9-8b9a-106b6f898c4a",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 773,
+      "total_deletions": 479,
+      "accepted_lines": 761,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
