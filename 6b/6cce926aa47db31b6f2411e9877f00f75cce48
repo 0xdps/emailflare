@@ -1,0 +1,92 @@
+.gitignore
+  h_d60f3499e5a1c3 12-13
+  4700c922e2c7acca 11
+services/worker/src/routes/cloudflare.ts
+  h_d60f3499e5a1c3 1-13
+services/worker/package.json
+  h_d60f3499e5a1c3 1-10,20-34,36-41
+  4700c922e2c7acca 11-19,35
+services/worker/src/index.ts
+  4700c922e2c7acca 20,22,126
+  h_d60f3499e5a1c3 1-19,21,23-125,127-134
+services/worker/src/seed.ts
+  h_d60f3499e5a1c3 1-86
+scripts/config.example.toml
+  h_d60f3499e5a1c3 1-42
+services/worker/src/routes/auth.ts
+  h_d60f3499e5a1c3 1-17,19-21,23-66
+  4700c922e2c7acca 18,22
+services/worker/migrations/0002_seed.sql
+  h_d60f3499e5a1c3 1-55
+services/worker/src/services/cloudflare.ts
+  h_d60f3499e5a1c3 1-291
+services/worker/src/middleware/loginRateLimit.ts
+  h_d60f3499e5a1c3 1-21
+scripts/package.json
+  h_d60f3499e5a1c3 1-9
+services/worker/src/routes/keys.ts
+  h_d60f3499e5a1c3 1-76
+services/worker/src/middleware/apiKey.ts
+  h_d60f3499e5a1c3 1-42
+services/worker/src/routes/templates.ts
+  4700c922e2c7acca 6,8-9,19
+  h_d60f3499e5a1c3 1-5,7,10-18,20-167
+services/worker/src/middleware/auth.ts
+  h_d60f3499e5a1c3 1-60
+services/worker/src/emails.ts
+  h_d60f3499e5a1c3 1-12
+services/worker/src/routes/send.ts
+  h_d60f3499e5a1c3 1-181
+services/worker/README.md
+  h_d60f3499e5a1c3 1-106
+services/worker/src/env.ts
+  h_d60f3499e5a1c3 1-38
+services/worker/src/db.ts
+  h_d60f3499e5a1c3 1-233
+services/worker/src/routes/domains.ts
+  h_d60f3499e5a1c3 1-135
+services/worker/src/routes/stats.ts
+  h_d60f3499e5a1c3 1-91
+services/worker/wrangler.jsonc
+  h_d60f3499e5a1c3 1-3,19,21-26,28-33,37-42,55-59,61-68,70-88
+  4700c922e2c7acca 4-18,20,27,34-36,43-54,60,69
+services/worker/migrations/0001_schema.sql
+  h_d60f3499e5a1c3 1-69
+scripts/setup.mjs
+  4700c922e2c7acca 367
+  h_d60f3499e5a1c3 1-366,368-372
+services/worker/src/middleware/rateLimit.ts
+  h_d60f3499e5a1c3 1-26
+services/worker/src/routes/logs.ts
+  h_d60f3499e5a1c3 1-70
+justfile
+  4700c922e2c7acca 101-134
+services/worker/tsconfig.json
+  h_d60f3499e5a1c3 1-6,8-16
+  4700c922e2c7acca 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "6b6cce926aa47db31b6f2411e9877f00f75cce48",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 286,
+      "total_deletions": 133,
+      "accepted_lines": 90,
+      "overriden_lines": 1
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
