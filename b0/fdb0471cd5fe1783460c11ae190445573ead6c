@@ -1,0 +1,34 @@
+.gitignore
+  4700c922e2c7acca 14
+services/backend/tsconfig.json
+  4700c922e2c7acca 15-18,20
+services/emails/tsconfig.json
+  4700c922e2c7acca 15-16
+services/backend/package.json
+  4700c922e2c7acca 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "b0fdb0471cd5fe1783460c11ae190445573ead6c",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 9,
+      "total_deletions": 4,
+      "accepted_lines": 3115,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
