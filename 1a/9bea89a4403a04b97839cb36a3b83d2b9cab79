@@ -1,0 +1,42 @@
+services/email-worker/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/email-server/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/email-worker/wrangler.jsonc
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 50
+  s_48bbe8a7322c0b::t_9ff098fb1dd976 48
+services/email-ui/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/inbox-ui/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/email-server/src/lib/bounce-parser.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+services/email-worker/README.md
+  s_48bbe8a7322c0b::t_3e8aa551021bfc 80-106
+services/inbox-worker/wrangler.jsonc
+  s_48bbe8a7322c0b::t_9ff098fb1dd976 32
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 34
+services/inbox-worker/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "1a9bea89a4403a04b97839cb36a3b83d2b9cab79",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
