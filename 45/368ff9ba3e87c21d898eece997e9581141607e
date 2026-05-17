@@ -1,0 +1,96 @@
+services/admin/src/pages/Suppressions.tsx
+  s_f038fb58e29cb4::t_84ea4ddb10c460 1-218,220-309
+  s_f038fb58e29cb4::t_7c8ab00261c12d 219
+services/admin/src/vite-env.d.ts
+  s_f038fb58e29cb4::t_e6120eb5aef561 1-11
+services/backend/package.json
+  s_f038fb58e29cb4::t_b178436f176acf 15,24
+services/admin/src/components/Layout.tsx
+  s_f038fb58e29cb4::t_91bd156402b1be 5,62-63
+  s_f038fb58e29cb4::t_cce30fe77b9d3e 41-42,64-66
+  s_f038fb58e29cb4::t_7e371efcc7221a 47-49
+services/backend/src/index.ts
+  s_f038fb58e29cb4::t_60774e9f43c983 15-24,113-119,123-125
+services/worker/src/index.ts
+  s_f038fb58e29cb4::t_fe9651480e2f1f 24-33,107-113,137-144
+services/worker/src/routes/cloudflare.ts
+  s_f038fb58e29cb4::t_19954c334a2532 2-5,16-59
+services/worker/migrations/0003_bounce_suppression.sql
+  s_f038fb58e29cb4::t_8859071422e3f4 1-20
+services/dashboard/src/pages/Dashboard.tsx
+  s_f038fb58e29cb4::t_712095326b97f4 501,504,509-514,520,522,524-525,527,529
+  s_f038fb58e29cb4::t_98ed65bada030e 521,523,526,528
+  s_f038fb58e29cb4::t_8a471623632d98 20-21,70-82
+services/backend/src/routes/suppressions.ts
+  s_f038fb58e29cb4::t_02529cd734a76c 37,43
+  s_f038fb58e29cb4::t_13cf4588437bc7 1-36,38-42,44-86
+services/worker/src/db.ts
+  s_f038fb58e29cb4::t_e8152f91291739 60,72-79,239
+  s_f038fb58e29cb4::t_1dfb6ec607872a 69
+services/backend/src/routes/domains.ts
+  s_f038fb58e29cb4::t_d059c241c21c31 9-10,80-90
+services/backend/src/routes/cloudflare.ts
+  s_f038fb58e29cb4::t_4ccea9ec554db5 2-3,6-15,18,28-114,161
+  s_f038fb58e29cb4::t_b43db347671c6b 4-5,16-17
+  s_f038fb58e29cb4::t_3da1928a93b4e9 115-159
+services/worker/src/routes/suppressions.ts
+  s_f038fb58e29cb4::t_131c82c334991c 1-95
+services/worker/src/routes/send.ts
+  s_f038fb58e29cb4::t_164a3e7b7451cf 114-123
+services/backend/src/lib/bounce-parser.ts
+  s_f038fb58e29cb4::t_79eb632cf4be70 1-6,8-72,74,81-82,90-119
+  s_f038fb58e29cb4::t_38eea5852faebd 7,73,75-80,83-89
+services/backend/src/routes/send.ts
+  s_f038fb58e29cb4::t_02529cd734a76c 101,106
+  s_f038fb58e29cb4::t_b27e8a18879bbf 100,102-105,107-109
+services/backend/src/env.ts
+  s_f038fb58e29cb4::t_6762040e79a5bf 47-51
+  s_f038fb58e29cb4::t_3129f4e6011edc 43-46
+  s_f038fb58e29cb4::t_bbcbc9552f66a6 40-42
+services/worker/package.json
+  s_f038fb58e29cb4::t_1f54017ab41d37 25
+services/worker/src/email-handler.ts
+  s_f038fb58e29cb4::t_9c13940aaa64d7 1-76,79-80,87-91,100-166,170-191,194-197,199-204,237,239-273
+  s_f038fb58e29cb4::t_dfadf235dbe39d 77-78,81-86,92-99,167-169,192-193,198,205-236,238
+services/landing/src/pages/cloudflare-token.astro
+  s_f038fb58e29cb4::t_655f8deda8f5ef 297-300,331-338
+services/admin/src/pages/Logs.tsx
+  s_f038fb58e29cb4::t_b57dc64769226d 2,39-43,46-71,75-76,83-85,126-137,141,143-147,171-174,184,330
+  s_f038fb58e29cb4::t_0656ae12528b9c 175
+  s_f038fb58e29cb4::t_8a80645aa311de 13-14,20,27
+services/backend/src/services/cloudflare.ts
+  s_f038fb58e29cb4::t_7cb1249c1fc6e0 255-409
+services/admin/src/routes/suppressions.tsx
+  s_f038fb58e29cb4::t_347d89cc1f86e6 1-7
+services/backend/src/routes/webhooks.ts
+  s_f038fb58e29cb4::t_0066cd3527975e 43-45
+  s_f038fb58e29cb4::t_a216355a7fa582 137-139,142,147-158,162-181,183,186
+  s_f038fb58e29cb4::t_02529cd734a76c 87,98,109,129
+  s_f038fb58e29cb4::t_fa9fe2627ee2c8 1-42,46-86,88-97,99-108,110-128,130-136,140-141,143-146,159-161,182,184-185,187-190
+services/admin/src/pages/Settings.tsx
+  s_f038fb58e29cb4::t_cce30fe77b9d3e 119-121
+  s_f038fb58e29cb4::t_19954c334a2532 4,118,140-144,161,186-200,222-223,409-472
+  s_f038fb58e29cb4::t_279ae29d3b76bf 1-3,5-117,122-139,145-160,162-185,201-221,224-408,473-477
+services/admin/src/routes/settings.tsx
+  s_f038fb58e29cb4::t_db0c93e0a762cf 1-11
+services/backend/src/routes/stats.ts
+  s_f038fb58e29cb4::t_6762040e79a5bf 47-49,52,55,81,86-87
+services/backend/src/db.ts
+  s_f038fb58e29cb4::t_70c404144ded5b 68,77,80-92,94-95,184-199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "45368ff9ba3e87c21d898eece997e9581141607e",
+  "prompts": {},
+  "sessions": {
+    "s_f038fb58e29cb4": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6941be60-d66a-45d5-8dcf-912c0f9cbb39",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
