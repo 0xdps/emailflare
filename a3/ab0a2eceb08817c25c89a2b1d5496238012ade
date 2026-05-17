@@ -1,0 +1,45 @@
+services/landing/public/_redirects
+  s_48bbe8a7322c0b::t_f85c775898b5a4 4
+services/dashboard/src/pages/Setup.tsx
+  s_48bbe8a7322c0b::t_d7961052e73743 6,36-37,51-57,60-69,73-83,86-88,91-155,157-158,160,162-164,168-172,174-185
+services/landing/src/pages/inbox.astro
+  s_48bbe8a7322c0b::t_745cf39fd97002 1359,1375,1391,1397,1413
+  s_48bbe8a7322c0b::t_2565f9bba02dfb 1-17,698-1358,1360-1374,1376-1390,1392-1396,1398-1412,1414-1502
+  s_48bbe8a7322c0b::t_b0ee010d4f4a00 18-697
+services/dashboard/src/pages/Login.tsx
+  s_48bbe8a7322c0b::t_8a6d7c8497bb4c 6,47-49,51-52,56-59,61,63,73-74,81,84,87,90-91,95-96,100,102-103,112-114,119,121,129-131,136,146-148,151-158,160
+services/dashboard/src/pages/inbox/People.tsx
+  s_48bbe8a7322c0b::t_06544ef6082abc 2,4,28,30,35,40-43,46-53,57-58,60-64,67-69,72,74-81,89,91-95,100-104,107-160,181,191,202,204-208,210-218,221-228,233-243,246-249,254-269,276-286,321-323,336,340-348,351-354,357-372,375-376,378-379,381-382,385-390,396,398-400,402-407,409,412
+scripts/deploy-inbox.mjs
+  s_48bbe8a7322c0b::t_b9b7c9f29da48e 8,11
+  s_48bbe8a7322c0b::t_8995f5c9ca1f70 237-256
+services/inbox/wrangler.jsonc
+  s_48bbe8a7322c0b::t_185c06ab401096 75-82
+services/inbox/package.json
+  s_48bbe8a7322c0b::t_d5653c2d53130b 10-11,13
+services/dashboard/src/index.css
+  s_48bbe8a7322c0b::t_088cc7ae8a3ee7 68-75,78-84,86-87,89,96-98
+  s_48bbe8a7322c0b::t_40bc7757f4b612 101,103
+  s_48bbe8a7322c0b::t_fdbbc6919fdae8 118,120
+services/landing/src/layouts/Base.astro
+  s_48bbe8a7322c0b::t_f85c775898b5a4 128
+  s_48bbe8a7322c0b::t_c082aa53784651 83
+services/dashboard/src/components/Layout.tsx
+  s_48bbe8a7322c0b::t_62d62d7a151fea 5,8-11,28-38,40-54,58-62,77-81,83-173,175-181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "a3ab0a2eceb08817c25c89a2b1d5496238012ade",
+  "prompts": {},
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
