@@ -1,0 +1,131 @@
+stacklane.yaml
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 8,17
+services/inbox-server/src/middleware/rateLimit.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+services/email-worker/README.md
+  s_48bbe8a7322c0b::t_3e8aa551021bfc 80,92,106
+services/email-ui/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/landing/src/styles/global.css
+  s_48bbe8a7322c0b::t_84477879ef4c1c 359-401
+services/email-worker/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/inbox-server/src/middleware/auth.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+scripts/setup.mjs
+  s_48bbe8a7322c0b::t_603fffbcef94ea 29-30,333,341,345,347,370
+services/inbox-server/src/lib/mesahub-url.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 3
+packages/email-core/src/index.ts
+  h_7a2f4c8f0473b8 1-18
+CONTRIBUTING.md
+  s_48bbe8a7322c0b::t_3f26c8594a730a 25-26
+services/landing/src/layouts/Base.astro
+  s_48bbe8a7322c0b::t_5c45c3663d0bd3 81,83
+packages/inbox-core/package.json
+  s_48bbe8a7322c0b::t_b78f90d2375a17 1-14
+services/email-server/src/lib/bounce-parser.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+services/inbox-server/src/middleware/apiKey.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+packages/email-core/package.json
+  s_48bbe8a7322c0b::t_0bcf94301a8de9 1-14
+services/inbox-server/src/email-handler.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+services/email-worker/wrangler.jsonc
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 50
+  s_48bbe8a7322c0b::t_9ff098fb1dd976 48
+.github/workflows/docker-publish.yml
+  s_48bbe8a7322c0b::t_603fffbcef94ea 22,24
+services/inbox-server/src/lib/password.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 3
+docs/CLOUDFLARE.md
+  s_48bbe8a7322c0b::t_3f26c8594a730a 120,151,167
+scripts/deploy-inbox.mjs
+  s_48bbe8a7322c0b::t_3c7fec88fa1d52 12,15
+  s_48bbe8a7322c0b::t_ce2b8038d64c55 34-35
+  s_48bbe8a7322c0b::t_603fffbcef94ea 259,325,333,364-365,368
+services/landing/src/pages/index.astro
+  s_48bbe8a7322c0b::t_b9886a8f54b6f3 10,1449-1450
+  s_48bbe8a7322c0b::t_faa243f813eb72 795-1008
+  s_48bbe8a7322c0b::t_c9148f43ea24e5 1050-1051,1053-1072
+  h_7a2f4c8f0473b8 1099,1101
+  s_48bbe8a7322c0b::t_a26fc6fbd3f1ec 1218-1219,1222-1224,1226-1232,1234-1247,1250-1255,1257-1270,1277-1278,1282-1283,1295,1299,1301-1308,1313-1315,1318-1319,1321-1326,1328-1332
+  s_48bbe8a7322c0b::t_a7427ec2c7989a 1009-1049,1052
+  s_48bbe8a7322c0b::t_9b6c69d549fceb 20-22,1088-1089,1093-1095,1100
+services/inbox-server/src/seed.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+justfile
+  s_48bbe8a7322c0b::t_7998ba680c1e57 133,172-174,180,187,194,217,219,222,226,230-232,234-236,243
+  s_48bbe8a7322c0b::t_fd6073254536f0 1-9,11-13,15,20-41,44,48,56,61,65,69,77,82,86,90,93,96,98-100,102,118,124,128,131,135,140-167,176,179,182,186,189,193,196,202,205-206,208,212-213,218,224,228,246,249-251,254-256,259,266,277,279-281,322,328,333,338,343,349,351,359,365,369,376-382
+  s_48bbe8a7322c0b::t_9746c18a4afc3a 323
+scripts/deploy-inbox-standalone.mjs
+  s_48bbe8a7322c0b::t_603fffbcef94ea 11,231
+  s_48bbe8a7322c0b::t_ce2b8038d64c55 32
+.gitignore
+  s_48bbe8a7322c0b::t_603fffbcef94ea 11,13-14
+services/inbox-worker/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/inbox-server/src/env.ts
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 73
+services/inbox-server/src/services/cloudflare.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+.env.inbox.example
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 49
+Dockerfile.inbox
+  s_48bbe8a7322c0b::t_d279a6b7bab874 34-36,38,41,66,68-69
+services/inbox-server/src/scheduler.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 3
+Dockerfile
+  s_48bbe8a7322c0b::t_92eb847bfe01c9 28-29,33,36-38,42,46
+  s_48bbe8a7322c0b::t_c28deb31625362 78,80-81
+services/email-server/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+README.md
+  s_48bbe8a7322c0b::t_3f26c8594a730a 18-21
+services/inbox-server/src/middleware/loginRateLimit.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 2
+services/inbox-server/src/db.ts
+  s_48bbe8a7322c0b::t_4bfcdd66e0a216 3
+services/inbox-server/src/migrate.ts
+  s_48bbe8a7322c0b::t_50ca7cfab9d1ae 48
+infra/Caddyfile.inbox
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 20
+compose.dev.yaml
+  s_48bbe8a7322c0b::t_047ba878b02399 29,54-55,71,76-79
+packages/inbox-core/src/index.ts
+  h_7a2f4c8f0473b8 1-18
+services/inbox-ui/package.json
+  s_48bbe8a7322c0b::t_cbe7cff1d38b9f 2
+services/inbox-worker/wrangler.jsonc
+  s_48bbe8a7322c0b::t_d4c2a2fe1fcc9f 34
+  s_48bbe8a7322c0b::t_9ff098fb1dd976 32
+services/landing/src/pages/inbox.astro
+  s_48bbe8a7322c0b::t_292e0e4df1eec8 1440-1460
+  s_48bbe8a7322c0b::t_750811e8225209 651-661,665
+  s_48bbe8a7322c0b::t_816134b86e3813 982,1227,1387-1388,1401
+  s_48bbe8a7322c0b::t_10ccaf59526285 362-364,366-386,899-900,905-919,922-930,933-940,943-950,954-956,959
+services/landing/src/pages/email-api.astro
+  h_7a2f4c8f0473b8 1-742
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "9b765663accd8076716a768935a90aae2fc93280",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
