@@ -1,0 +1,24 @@
+infra/Caddyfile.inbox
+  s_48bbe8a7322c0b::t_c4df491e07b381 2-6,8-16,18-23,25-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "3bf0d79a4ef2bade13a83d83ad39761648b716f4",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
