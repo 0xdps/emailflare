@@ -1,0 +1,24 @@
+.github/CODEOWNERS
+  s_3406d08e259cbe::t_3c4127f332f5de 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "24454d546469a4a1aed5d5faaf01cf392cb0b0c9",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3406d08e259cbe": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "34cf521f-a687-4ac8-8f05-9edadbc42087",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
