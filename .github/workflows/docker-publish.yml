@@ -92,3 +92,5 @@ jobs:
             MESAHUB_CORE_VERSION=trunk
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secrets: |
+            "gh_token=${{ secrets.GH_PAT }}"
