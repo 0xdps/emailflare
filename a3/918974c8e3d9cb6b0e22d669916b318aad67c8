@@ -1,0 +1,33 @@
+justfile
+  4700c922e2c7acca 128-162,171,177
+  h_d60f3499e5a1c3 172-176
+services/worker/wrangler.jsonc
+  4700c922e2c7acca 73-82
+docs/CLOUDFLARE.md
+  4700c922e2c7acca 145-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "a3918974c8e3d9cb6b0e22d669916b318aad67c8",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 13643,
+      "total_deletions": 16,
+      "accepted_lines": 3183,
+      "overriden_lines": 2
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+services/landing/src/pages/index.astro
+  h_7a2f4c8f0473b8 827,1543,1604
+services/landing/src/layouts/Base.astro
+  h_7a2f4c8f0473b8 66-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "8ed9dbe68313e465074a3ef7b7b6a38a46fd086d",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    },
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

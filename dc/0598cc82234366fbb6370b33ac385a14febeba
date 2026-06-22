@@ -1,0 +1,48 @@
+services/landing/src/pages/cloudflare.astro
+  h_d60f3499e5a1c3 3,125-133,342,347,352,357,362,367,444,469,484,508
+  4700c922e2c7acca 13-14
+services/landing/src/pages/mesahub.astro
+  4700c922e2c7acca 3,13-14,146-154,362,367,372,377,382,387,459,501
+services/landing/src/layouts/Base.astro
+  4700c922e2c7acca 12,23,78,99,117,122-124
+start.sh
+  4700c922e2c7acca 76-102,130-139,161
+.env.example
+  4700c922e2c7acca 33-47,62-67
+services/landing/src/pages/index.astro
+  h_d60f3499e5a1c3 956,962-963,969-970,973-984,1002,1007,1015,1104-1105,1134,1138-1140,1321,1330,1333-1335,1362,1390-1391,1393-1394,1396-1397,1426,1433-1437,1442,1450
+  4700c922e2c7acca 1216-1217,1315,1322-1323,1331,1350,1355-1356,1501
+services/landing/src/pages/docs.astro
+  4700c922e2c7acca 76,103,423,690-691,715-740
+docs/SELF_HOSTING.md
+  4700c922e2c7acca 34-38,69
+services/landing/src/pages/cloudflare-token.astro
+  4700c922e2c7acca 12-13,19,21,26-28,41,47,52-55
+services/landing/src/styles/global.css
+  h_d60f3499e5a1c3 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "dc0598cc82234366fbb6370b33ac385a14febeba",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 157,
+      "total_deletions": 81,
+      "accepted_lines": 3257,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

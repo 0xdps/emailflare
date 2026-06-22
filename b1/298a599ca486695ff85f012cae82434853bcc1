@@ -1,0 +1,14 @@
+start.sh
+  h_d60f3499e5a1c3 40-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "b1298a599ca486695ff85f012cae82434853bcc1",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+Dockerfile
+  h_d60f3499e5a1c3 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "ed5af892f4a8e0acfcca3d7a40657e49fafe3725",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

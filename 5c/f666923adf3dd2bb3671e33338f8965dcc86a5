@@ -1,0 +1,31 @@
+services/landing/src/layouts/Base.astro
+  h_d60f3499e5a1c3 64
+  4700c922e2c7acca 4
+services/landing/astro.config.mjs
+  4700c922e2c7acca 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "5cf666923adf3dd2bb3671e33338f8965dcc86a5",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 3,
+      "total_deletions": 1,
+      "accepted_lines": 3108,
+      "overriden_lines": 1
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

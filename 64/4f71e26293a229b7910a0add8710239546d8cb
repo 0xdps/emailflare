@@ -1,0 +1,44 @@
+services/landing/cloudflare-token/index.html
+  h_d60f3499e5a1c3 294
+services/landing/vite.config.js
+  4700c922e2c7acca 13
+services/landing/mesahub/index.html
+  4700c922e2c7acca 536
+services/landing/index.html
+  h_d60f3499e5a1c3 1030-1058,1116,1699
+  4700c922e2c7acca 1076,1106,1111,1605-1609
+services/landing/cloudflare.html
+  4700c922e2c7acca 492
+services/landing/cloudflare-token.html
+  h_d60f3499e5a1c3 270
+services/landing/cloudflare/index.html
+  h_d60f3499e5a1c3 1-491,493-925
+  4700c922e2c7acca 492
+services/landing/mesahub.html
+  4700c922e2c7acca 6,8-31,536,665
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "644f71e26293a229b7910a0add8710239546d8cb",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 44,
+      "total_deletions": 2,
+      "accepted_lines": 42,
+      "overriden_lines": 2
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

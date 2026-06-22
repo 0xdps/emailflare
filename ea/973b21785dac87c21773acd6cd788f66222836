@@ -1,0 +1,62 @@
+services/inbox-worker/package.json
+  s_48bbe8a7322c0b::t_d45c752fa10c24 12-13
+services/inbox-ui/Dockerfile
+  s_48bbe8a7322c0b::t_36e34d5df162f7 1-22,26-31
+  s_48bbe8a7322c0b::t_8b7d3acc4cb136 23-25
+services/inbox-server/src/migrate.ts
+  s_48bbe8a7322c0b::t_ec63066124cff5 10,13-14,17-21,84,98
+  s_48bbe8a7322c0b::t_1bbbf9ccbeae44 11-12,15-16,23,38-44,49-50,55-56,58,62,65-66,68-82,85,87-97,99-100,102-112,114-117
+  s_48bbe8a7322c0b::t_69648a707e54e7 101
+services/inbox-ui/src/routes/__root.tsx
+  s_48bbe8a7322c0b::t_d7dab85d91e748 27-30,32-35
+services/inbox-ui/.dockerignore
+  s_48bbe8a7322c0b::t_dfb569014954eb 1-2
+compose.inbox.deps.yaml
+  s_48bbe8a7322c0b::t_3f1bbd7678e9dc 1-51
+services/inbox-server/src/routes/setup.ts
+  s_48bbe8a7322c0b::t_d7dab85d91e748 17-23
+compose.inbox.dev.yaml
+  s_48bbe8a7322c0b::t_be601e592246b3 1,3-4,7-12,50-61,66,69-70,74-83,85-111,114-116
+  s_48bbe8a7322c0b::t_60f3b403c59702 84
+  s_48bbe8a7322c0b::t_e254cbd0b37bc3 62-65,67-68,71-73
+services/email-worker/package.json
+  s_48bbe8a7322c0b::t_d45c752fa10c24 14-16
+.gitignore
+  h_7a2f4c8f0473b8 22-24
+services/inbox-server/.dockerignore
+  s_48bbe8a7322c0b::t_dfb569014954eb 1-2
+compose.dev.yaml
+  s_48bbe8a7322c0b::t_37aa41dc8db59f 8,34
+services/inbox-server/Dockerfile
+  s_48bbe8a7322c0b::t_50b18c3a5b2e5c 1-37
+justfile
+  s_48bbe8a7322c0b::t_013187e0957e93 52,56,236,239,243,247,251,255
+  s_48bbe8a7322c0b::t_8aec6f7ddc4ed4 45,49,53,57,61
+  s_48bbe8a7322c0b::t_d45c752fa10c24 11
+  s_48bbe8a7322c0b::t_ef4bc17d0d3161 73-76
+  s_48bbe8a7322c0b::t_b1a7c526d770e0 121-123,125-136
+  s_48bbe8a7322c0b::t_aa8cf6bb618238 240-241,244-245
+infra/Caddyfile.inbox.dev
+  s_48bbe8a7322c0b::t_8d02e9d0f8874b 1-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "ea973b21785dac87c21773acd6cd788f66222836",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

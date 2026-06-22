@@ -1,0 +1,30 @@
+services/backend/src/routes/send.ts
+  c2eea610861b3f74 154
+services/admin/src/pages/Playground.tsx
+  c2eea610861b3f74 218,223,266,588
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "8dafbab9a89d1428e681929afb2815af5c701191",
+  "prompts": {
+    "c2eea610861b3f74": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c68d3bd1-76bd-4349-997a-34ee7b1d8be9",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 7,
+      "total_deletions": 6,
+      "accepted_lines": 7,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

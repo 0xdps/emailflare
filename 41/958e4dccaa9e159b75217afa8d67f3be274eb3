@@ -1,0 +1,124 @@
+justfile
+  h_d60f3499e5a1c3 1-351
+services/backend/src/middleware/auth.ts
+  h_d60f3499e5a1c3 1-22
+services/admin/src/pages/Domains.tsx
+  h_d60f3499e5a1c3 1-178
+services/admin/Dockerfile
+  h_d60f3499e5a1c3 1-30
+services/admin/src/components/Layout.tsx
+  h_d60f3499e5a1c3 1-70
+.env.example
+  h_d60f3499e5a1c3 1-18
+services/backend/src/emails/layouts/OTP.tsx
+  h_d60f3499e5a1c3 1-44
+services/backend/src/emails/render.ts
+  h_d60f3499e5a1c3 1-29
+services/admin/src/pages/Logs.tsx
+  h_d60f3499e5a1c3 1-121
+compose.dev.yaml
+  h_d60f3499e5a1c3 1-39
+services/admin/src/api.ts
+  h_d60f3499e5a1c3 1-38
+compose.yaml
+  h_d60f3499e5a1c3 1-43
+services/admin/src/routes/keys.tsx
+  h_d60f3499e5a1c3 1-11
+services/backend/src/routes/domains.ts
+  h_d60f3499e5a1c3 1-88
+services/admin/src/pages/Templates.tsx
+  h_d60f3499e5a1c3 1-152
+services/admin/tailwind.config.js
+  h_d60f3499e5a1c3 1-27
+services/admin/src/main.tsx
+  h_d60f3499e5a1c3 1-20
+services/admin/postcss.config.js
+  h_d60f3499e5a1c3 1-6
+services/backend/src/emails/layouts/Welcome.tsx
+  h_d60f3499e5a1c3 1-48
+services/backend/src/routes/auth.ts
+  h_d60f3499e5a1c3 1-37
+services/admin/tsconfig.json
+  h_d60f3499e5a1c3 1-20
+services/backend/.dockerignore
+  h_d60f3499e5a1c3 1-2
+services/backend/src/routes/logs.ts
+  h_d60f3499e5a1c3 1-31
+services/backend/src/db.ts
+  h_d60f3499e5a1c3 1-140
+services/backend/src/services/cloudflare.ts
+  h_d60f3499e5a1c3 1-92
+services/admin/src/index.css
+  h_d60f3499e5a1c3 1-15
+services/backend/src/emails/layouts/MagicLink.tsx
+  h_d60f3499e5a1c3 1-47
+services/admin/src/routes/__root.tsx
+  h_d60f3499e5a1c3 1-15
+services/admin/vite.config.ts
+  h_d60f3499e5a1c3 1-19
+services/admin/nginx.conf
+  h_d60f3499e5a1c3 1-13
+services/admin/src/routes/domains.tsx
+  h_d60f3499e5a1c3 1-11
+services/backend/src/emails/layouts/Notification.tsx
+  h_d60f3499e5a1c3 1-54
+services/admin/src/routes/templates.tsx
+  h_d60f3499e5a1c3 1-11
+services/admin/src/lib/utils.ts
+  h_d60f3499e5a1c3 1-6
+services/backend/src/routes/stats.ts
+  h_d60f3499e5a1c3 1-40
+services/backend/src/middleware/apiKey.ts
+  h_d60f3499e5a1c3 1-31
+.gitignore
+  h_d60f3499e5a1c3 1-8
+services/backend/tsconfig.json
+  h_d60f3499e5a1c3 1-18
+services/admin/src/routes/index.tsx
+  h_d60f3499e5a1c3 1-11
+services/backend/package.json
+  h_d60f3499e5a1c3 1-32
+services/backend/src/index.ts
+  h_d60f3499e5a1c3 1-71
+services/backend/src/routes/templates.ts
+  h_d60f3499e5a1c3 1-87
+services/admin/index.html
+  h_d60f3499e5a1c3 1-16
+services/backend/src/env.ts
+  h_d60f3499e5a1c3 1-16
+services/admin/src/pages/Login.tsx
+  h_d60f3499e5a1c3 1-63
+services/backend/src/routes/send.ts
+  h_d60f3499e5a1c3 1-127
+services/backend/Dockerfile
+  h_d60f3499e5a1c3 1-37
+services/admin/src/routes/logs.tsx
+  h_d60f3499e5a1c3 1-11
+services/admin/public/favicon.svg
+  h_d60f3499e5a1c3 1-13
+services/admin/src/pages/Keys.tsx
+  h_d60f3499e5a1c3 1-135
+services/backend/src/routes/keys.ts
+  h_d60f3499e5a1c3 1-63
+services/admin/src/routes/login.tsx
+  h_d60f3499e5a1c3 1-10
+services/admin/src/pages/Dashboard.tsx
+  h_d60f3499e5a1c3 1-68
+PLAN.md
+  h_d60f3499e5a1c3 1-282
+services/admin/package.json
+  h_d60f3499e5a1c3 1-32
+services/backend/src/seed.ts
+  h_d60f3499e5a1c3 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "41958e4dccaa9e159b75217afa8d67f3be274eb3",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

@@ -1,0 +1,161 @@
+services/emails/src/layouts/DatabaseDeleted.tsx
+  4700c922e2c7acca 1-57
+services/emails/src/themes.ts
+  4700c922e2c7acca 1-103
+services/emails/src/layouts/SupportTicketReply.tsx
+  4700c922e2c7acca 1-38
+services/emails/src/layouts/EmailChangeConfirmed.tsx
+  4700c922e2c7acca 1-38
+services/worker/package.json
+  4700c922e2c7acca 23
+services/emails/src/layouts/TeamInvite.tsx
+  4700c922e2c7acca 1-63
+services/emails/src/layouts/AccountUnlocked.tsx
+  4700c922e2c7acca 1-33
+services/emails/src/layouts/ApiKeyCreated.tsx
+  4700c922e2c7acca 1-61
+services/emails/src/layouts/AccountLocked.tsx
+  4700c922e2c7acca 1-39
+services/backend/src/index.ts
+  4700c922e2c7acca 23-24
+services/emails/src/render.ts
+  4700c922e2c7acca 1-185
+services/emails/tsconfig.json
+  h_d60f3499e5a1c3 1-19
+services/emails/src/layouts/FeatureAccessGranted.tsx
+  4700c922e2c7acca 1-38
+services/emails/src/layouts/OTP.tsx
+  4700c922e2c7acca 1-45
+services/emails/src/layouts/TrialEnding.tsx
+  4700c922e2c7acca 1-63
+services/emails/src/layouts/OrderConfirm.tsx
+  4700c922e2c7acca 1-77
+services/emails/src/layouts/Announcement.tsx
+  4700c922e2c7acca 1-70
+services/emails/src/layouts/Feedback.tsx
+  4700c922e2c7acca 1-65
+services/emails/src/layouts/PasswordReset.tsx
+  4700c922e2c7acca 1-54
+services/emails/src/layouts/PlanDowngraded.tsx
+  4700c922e2c7acca 1-62
+services/worker/src/emails.ts
+  4700c922e2c7acca 1-2,8-10,12
+services/emails/src/layouts/MaintenanceScheduled.tsx
+  4700c922e2c7acca 1-38
+services/emails/src/layouts/ImportCompleted.tsx
+  4700c922e2c7acca 1-38
+services/emails/src/layouts/OAuthLinked.tsx
+  4700c922e2c7acca 1-61
+services/emails/src/layouts/RefundApproved.tsx
+  4700c922e2c7acca 1-61
+services/emails/src/layouts/SubscriptionStarted.tsx
+  4700c922e2c7acca 1-72
+justfile
+  4700c922e2c7acca 109,112-113,118-120
+services/emails/src/layouts/BackupReady.tsx
+  4700c922e2c7acca 1-38
+services/emails/src/layouts/IncidentUpdate.tsx
+  4700c922e2c7acca 1-41
+services/emails/src/layouts/PaymentFailed.tsx
+  4700c922e2c7acca 1-70
+services/backend/src/db.ts
+  4700c922e2c7acca 6-7
+services/emails/src/layouts/SubscriptionCancelled.tsx
+  4700c922e2c7acca 1-65
+services/emails/src/layouts/SubscriptionResumed.tsx
+  4700c922e2c7acca 1-60
+services/emails/src/layouts/Welcome.tsx
+  4700c922e2c7acca 1-49
+services/emails/src/layouts/SubscriptionConfirmation.tsx
+  4700c922e2c7acca 1-66
+.gitignore
+  4700c922e2c7acca 14-19
+services/emails/src/layouts/EmailChangeRequested.tsx
+  4700c922e2c7acca 1-39
+services/emails/src/layouts/AccountDeleted.tsx
+  4700c922e2c7acca 1-62
+services/emails/src/layouts/ExportReady.tsx
+  4700c922e2c7acca 1-38
+services/backend/src/routes/send.ts
+  4700c922e2c7acca 9-10
+services/emails/src/layouts/Invoice.tsx
+  4700c922e2c7acca 1-96
+services/emails/src/layouts/BillingReceipt.tsx
+  4700c922e2c7acca 1-40
+services/emails/src/layouts/RenewalUpcoming.tsx
+  4700c922e2c7acca 1-59
+services/emails/src/layouts/Digest.tsx
+  4700c922e2c7acca 1-77
+services/emails/src/layouts/VerificationSuccess.tsx
+  4700c922e2c7acca 1-58
+services/emails/package.json
+  4700c922e2c7acca 8
+  h_d60f3499e5a1c3 1-7,9-27
+services/emails/src/layouts/DatabaseCreated.tsx
+  4700c922e2c7acca 1-61
+services/emails/src/layouts/Alert.tsx
+  4700c922e2c7acca 1-93
+services/emails/src/layouts/Notification.tsx
+  4700c922e2c7acca 1-55
+services/emails/src/layouts/EmailVerify.tsx
+  4700c922e2c7acca 1-54
+services/emails/src/ThemeContext.ts
+  4700c922e2c7acca 1-22
+services/emails/src/layouts/Plain.tsx
+  4700c922e2c7acca 1-64
+Dockerfile
+  4700c922e2c7acca 16,20-29,31-32,70-72
+services/emails/src/layouts/PlanUpgraded.tsx
+  4700c922e2c7acca 1-62
+services/emails/src/layouts/NewLogin.tsx
+  4700c922e2c7acca 1-79
+services/backend/package.json
+  4700c922e2c7acca 16
+services/emails/src/layouts/PlanLimitReached.tsx
+  4700c922e2c7acca 1-59
+services/emails/src/layouts/UsageThreshold.tsx
+  4700c922e2c7acca 1-62
+services/worker/tsconfig.json
+  4700c922e2c7acca 13-16,18
+services/backend/src/routes/templates.ts
+  4700c922e2c7acca 7,9
+services/emails/src/layouts/FeatureAccessRevoked.tsx
+  4700c922e2c7acca 1-38
+services/emails/src/layouts/PhoneVerify.tsx
+  4700c922e2c7acca 1-34
+services/emails/src/index.ts
+  h_d60f3499e5a1c3 1-4
+services/emails/src/layouts/MagicLink.tsx
+  4700c922e2c7acca 1-48
+services/emails/src/layouts/PasswordChanged.tsx
+  4700c922e2c7acca 1-62
+services/emails/src/layouts/ApiKeyRevoked.tsx
+  4700c922e2c7acca 1-54
+services/emails/src/layouts/PaymentMethodExpiring.tsx
+  4700c922e2c7acca 1-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "9769bc1c824dea72c6de5d6b059e1c2e88bd042c",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 7514,
+      "total_deletions": 38,
+      "accepted_lines": 3157,
+      "overriden_lines": 1
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

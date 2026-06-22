@@ -1,0 +1,30 @@
+services/landing/src/styles/global.css
+  4700c922e2c7acca 33-35,41-42,44-45,135-137,147-148,171-173,183-184,188,190,200
+services/landing/src/layouts/Base.astro
+  4700c922e2c7acca 3,77-81,91,103-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "a614cf275d5692295e59122770020cb4e497351d",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 31,
+      "total_deletions": 18,
+      "accepted_lines": 3137,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

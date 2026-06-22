@@ -1,0 +1,14 @@
+services/backend/src/index.ts
+  h_d60f3499e5a1c3 54,56-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "d2e29f9a8b7e1c3915cb3ddfac7384e634ab844d",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
