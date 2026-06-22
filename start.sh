@@ -93,7 +93,7 @@ if [ "${ENABLE_TEST_MODE:-false}" = "true" ]; then
   echo "[2/5] Waiting for Mailpit to be ready..."
   max_attempts=15
   attempt=0
-  until curl -sf "http://localhost:${MAILPIT_UI_PORT}/mailpit/api/v1/info" > /dev/null 2>&1; do
+  until curl -sf -u "${_MP_USER}:${_MP_PASS}" "http://localhost:${MAILPIT_UI_PORT}/mailpit/api/v1/info" > /dev/null 2>&1; do
     attempt=$((attempt + 1))
     if [ $attempt -eq $max_attempts ]; then
       echo "✗ Mailpit failed to start after ${max_attempts}s"
