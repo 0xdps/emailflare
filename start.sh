@@ -77,11 +77,17 @@ if [ "${ENABLE_TEST_MODE:-false}" = "true" ]; then
   _MP_USER="${MAILPIT_USER:-root}"
   _MP_PASS="${MAILPIT_PASS:-${ADMIN_TOKEN}}"
   echo "[1/5] Starting Mailpit (SMTP :$MAILPIT_SMTP_PORT, UI :$MAILPIT_UI_PORT, user: $_MP_USER)..."
+  
+  # Create auth file for mailpit
+  mkdir -p /tmp/mailpit
+  echo "${_MP_USER}:${_MP_PASS}" > /tmp/mailpit/auth.txt
+  chmod 600 /tmp/mailpit/auth.txt
+  
   mailpit \
     --smtp "0.0.0.0:${MAILPIT_SMTP_PORT}" \
     --listen "0.0.0.0:${MAILPIT_UI_PORT}" \
     --webroot /mailpit \
-    --ui-auth "$_MP_USER:$_MP_PASS" &
+    --ui-auth-file /tmp/mailpit/auth.txt &
   MAILPIT_PID=$!
 
   echo "[2/5] Waiting for Mailpit to be ready..."
