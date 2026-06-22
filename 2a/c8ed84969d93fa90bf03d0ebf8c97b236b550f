@@ -1,0 +1,19 @@
+start.sh
+  s_9820df23aa6254::t_74835f97c2bd38 96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "2ac8ed84969d93fa90bf03d0ebf8c97b236b550f",
+  "prompts": {},
+  "sessions": {
+    "s_9820df23aa6254": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "f2ae23c0-49ac-4c64-a799-435352ca64d4",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
