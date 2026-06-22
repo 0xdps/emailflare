@@ -60,7 +60,8 @@ services:
     image: axllent/mailpit:latest
     environment:
       - MP_WEBROOT=/mailpit
-      - MP_UI_AUTH=${MAILPIT_USER:-root}:${MAILPIT_PASS:-${ADMIN_TOKEN}}
+      - MAILDEV_INCOMING_USER=${MAILPIT_USER:-root}
+      - MAILDEV_INCOMING_PASS=${MAILPIT_PASS:-${ADMIN_TOKEN}}
     ports:
       - "2025:1025"
       - "8026:8025"
