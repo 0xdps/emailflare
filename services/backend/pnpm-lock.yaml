@@ -32,9 +32,6 @@ importers:
       nanoid:
         specifier: ^5.1.5
         version: 5.1.9
-      nodemailer:
-        specifier: ^8.0.5
-        version: 8.0.5
       zod:
         specifier: ^3.24.3
         version: 3.25.76
@@ -42,9 +39,6 @@ importers:
       '@types/node':
         specifier: ^22.15.3
         version: 22.19.17
-      '@types/nodemailer':
-        specifier: ^8.0.0
-        version: 8.0.0
       tsx:
         specifier: ^4.19.3
         version: 4.21.0
@@ -429,9 +423,6 @@ packages:
   '@types/node@22.19.17':
     resolution: {integrity: sha512-wGdMcf+vPYM6jikpS/qhg6WiqSV/OhG+jeeHT/KlVqxYfD40iYJf9/AE1uQxVWFvU7MipKRkRv8NSHiCGgPr8Q==}
 
-  '@types/nodemailer@8.0.0':
-    resolution: {integrity: sha512-fyf8jWULsCo0d0BuoQ75i6IeoHs47qcqxWc7yUdUcV0pOZGjUTTOvwdG1PRXUDqN/8A64yQdQdnA2pZgcdi+cA==}
-
   cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
@@ -502,10 +493,6 @@ packages:
     resolution: {integrity: sha512-ZUvP7KeBLe3OZ1ypw6dI/TzYJuvHP77IM4Ry73waSQTLn8/g8rpdjfyVAh7t1/+FjBtG4lCP42MEbDxOsRpBMw==}
     engines: {node: ^18 || >=20}
     hasBin: true
-
-  nodemailer@8.0.5:
-    resolution: {integrity: sha512-0PF8Yb1yZuQfQbq+5/pZJrtF6WQcjTd5/S4JOHs9PGFxuTqoB/icwuB44pOdURHJbRKX1PPoJZtY7R4VUoCC8w==}
-    engines: {node: '>=6.0.0'}
 
   parseley@0.12.1:
     resolution: {integrity: sha512-e6qHKe3a9HWr0oMRVDTRhKce+bRO8VGQR3NyVwcjwrbhMmFCX9KszEV35+rn4AdilFAq9VPxP/Fe1wC9Qjd2lw==}
@@ -813,10 +800,6 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/nodemailer@8.0.0':
-    dependencies:
-      '@types/node': 22.19.17
-
   cookie@0.7.2: {}
 
   deepmerge@4.3.1: {}
@@ -909,8 +892,6 @@ snapshots:
   marked@15.0.12: {}
 
   nanoid@5.1.9: {}
-
-  nodemailer@8.0.5: {}
 
   parseley@0.12.1:
     dependencies:
