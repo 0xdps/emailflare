@@ -65,6 +65,8 @@ export interface EmailLogRow {
   idempotency_key: string | null;
   error: string | null;
   is_test: number; // 0 | 1
+  html_body: string | null;
+  text_body: string | null;
   sent_at: string;
 }
 

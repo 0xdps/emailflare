@@ -138,6 +138,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         idempotency_key: idempotencyKey,
         error: null,
         is_test: apiKey.isTest ? 1 : 0,
+        html_body: html ?? null,
+        text_body: text ?? null,
         sent_at: now,
       });
 
@@ -159,6 +161,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         idempotency_key: null,
         error: message,
         is_test: apiKey.isTest ? 1 : 0,
+        html_body: html ?? null,
+        text_body: text ?? null,
         sent_at: now,
       });
 
