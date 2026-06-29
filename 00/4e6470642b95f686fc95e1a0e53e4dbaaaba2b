@@ -1,0 +1,66 @@
+docs/SELF_HOSTING.md
+  s_01785c4c26e5e9::t_ea3b2fbebfa3b8 93,104
+  s_01785c4c26e5e9::t_15cba634d0baa1 110,115,117,119-120,122
+  s_01785c4c26e5e9::t_dcb56d7338bf61 64
+services/backend/src/routes/testEmails.ts
+  s_01785c4c26e5e9::t_f25c0c1c3e1585 1-68
+services/backend/src/index.ts
+  s_01785c4c26e5e9::t_3fea67b1550ade 116
+  s_01785c4c26e5e9::t_da2852721fe871 20
+.env.example
+  s_01785c4c26e5e9::t_78126c447725f1 26
+  s_01785c4c26e5e9::t_762d32aaedc64b 33-36
+services/admin/src/pages/TestMailbox.tsx
+  s_01785c4c26e5e9::t_db4512e8134e6e 1-329
+services/backend/src/services/testEmail.ts
+  s_01785c4c26e5e9::t_c03eebe40d32b3 1-13
+services/backend/src/routes/send.ts
+  s_01785c4c26e5e9::t_f701fb20613293 8
+  s_01785c4c26e5e9::t_af657f9b98bca0 101,124-125,147-148
+services/admin/src/pages/Logs.tsx
+  s_01785c4c26e5e9::t_b55a0e81c9be94 107-109
+  s_01785c4c26e5e9::t_6394fcdf6fc19b 24-25
+services/landing/src/pages/index.astro
+  s_01785c4c26e5e9::t_4a57435f40dc36 1329,1338
+  s_01785c4c26e5e9::t_13d25e565e9f3b 1315
+  s_01785c4c26e5e9::t_94603246f657db 1446-1447,1449-1450
+  s_01785c4c26e5e9::t_55ca8a06baf4d7 1348
+  s_01785c4c26e5e9::t_bfb994c871407e 1216-1217
+  s_01785c4c26e5e9::t_7a31bd2ba5260d 1497-1498,1505
+  s_01785c4c26e5e9::t_64788915ea550e 956
+services/admin/src/components/Layout.tsx
+  s_01785c4c26e5e9::t_2e49c1f9e38a43 45-47,53-54
+  s_01785c4c26e5e9::t_7f33fb12a62ed2 5
+Dockerfile
+  s_01785c4c26e5e9::t_dd53fc9d41de03 51
+justfile
+  s_01785c4c26e5e9::t_8ea638b62256f0 13
+services/landing/src/pages/docs.astro
+  s_01785c4c26e5e9::t_f17409d16930f2 423
+  s_01785c4c26e5e9::t_0cd1044d7ceb1c 690-691
+services/admin/src/routes/test-emails.tsx
+  s_01785c4c26e5e9::t_b6503d81271243 1-7
+services/backend/src/db.ts
+  s_01785c4c26e5e9::t_cec88b14c2139e 76-77
+  s_01785c4c26e5e9::t_9dd8967b2dd73a 163-164
+services/landing/src/pages/cloudflare.astro
+  s_01785c4c26e5e9::t_c0a22b0462ae0a 394
+start.sh
+  s_01785c4c26e5e9::t_ca4b3b1296a8bd 38,70,73,91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "004e6470642b95f686fc95e1a0e53e4dbaaaba2b",
+  "prompts": {},
+  "sessions": {
+    "s_01785c4c26e5e9": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "919f5753-e20e-4c00-8293-9e96adf0601c",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
