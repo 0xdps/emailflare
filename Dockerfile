@@ -48,7 +48,7 @@ RUN --mount=type=cache,id=pnpm-store-admin,target=/root/.local/share/pnpm/store 
 COPY services/admin/ ./
 RUN pnpm exec vite build
 
-# ── Stage: prod (Caddy + Node + Mailpit) ─────────────────────────────────────
+# ── Stage: prod (Caddy + Node) ─────────────────────────────────────────────
 FROM caddy:2-alpine AS caddy-bin
 
 FROM node:22-alpine AS prod
@@ -60,15 +60,6 @@ WORKDIR /app
 COPY --from=build-core /go/bin/mesahub-server /usr/local/bin/mesahub-server
 RUN mkdir -p /data
 VOLUME ["/data"]
-
-# Install Mailpit binary
-ARG TARGETARCH
-RUN set -e; \
-  MAILPIT_VERSION="v1.21.5"; \
-  if [ "$TARGETARCH" = "arm64" ]; then ARCH="arm64"; else ARCH="amd64"; fi; \
-  curl -fsSL "https://github.com/axllent/mailpit/releases/download/${MAILPIT_VERSION}/mailpit-linux-${ARCH}.tar.gz" \
-    | tar -xz -C /usr/local/bin mailpit; \
-  chmod +x /usr/local/bin/mailpit
 
 RUN mkdir -p /usr/share/caddy
 

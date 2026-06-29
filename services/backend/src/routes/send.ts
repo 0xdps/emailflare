@@ -5,7 +5,7 @@ import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 21);
 import { db, emailLogs, templates } from '../db.js';
 import { sendEmail } from '../services/cloudflare.js';
-import { sendEmailViaSmtp } from '../services/smtp.js';
+import { storeTestEmail } from '../services/testEmail.js';
 import { renderLayout } from '@emailflare/emails';
 import type { LayoutName } from '@emailflare/emails';
 import type { ApiKeyContext } from '../middleware/apiKey.js';
@@ -98,7 +98,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
 
   for (const recipient of toList) {
     try {
-      const sendFn = isTest ? sendEmailViaSmtp : sendEmail;
+      const sendFn = isTest ? storeTestEmail : sendEmail;
       const cfResult = await sendFn({
         from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
         to: recipient,
@@ -121,6 +121,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         idempotency_key: idempotencyKey,
         error: null,
         is_test: isTest ? 1 : 0,
+        html_body: isTest ? (html ?? null) : null,
+        text_body: isTest ? (text ?? null) : null,
         sent_at: now,
       });
 
@@ -142,6 +144,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         idempotency_key: null,
         error: message,
         is_test: isTest ? 1 : 0,
+        html_body: isTest ? (html ?? null) : null,
+        text_body: isTest ? (text ?? null) : null,
         sent_at: now,
       });
 

@@ -17,6 +17,7 @@ import domainsRoutes   from './routes/domains.js';
 import templatesRoutes from './routes/templates.js';
 import keysRoutes      from './routes/keys.js';
 import logsRoutes      from './routes/logs.js';
+import testEmailsRoutes from './routes/testEmails.js';
 import statsRoutes     from './routes/stats.js';
 import cloudflareRoutes from './routes/cloudflare.js';
 import sendRoutes      from './routes/send.js';
@@ -112,6 +113,7 @@ admin.route('/domains',   domainsRoutes);
 admin.route('/templates', templatesRoutes);
 admin.route('/keys',      keysRoutes);
 admin.route('/logs',      logsRoutes);
+admin.route('/test-emails', testEmailsRoutes);
 admin.route('/stats',     statsRoutes);
 admin.route('/cloudflare', cloudflareRoutes);
 

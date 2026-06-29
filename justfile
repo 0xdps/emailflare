@@ -10,7 +10,7 @@ default:
 # DEVELOPMENT  (compose.dev.yaml — embedded mesahub, hot reload)
 # ============================================================================
 
-# Start full dev stack (mesahub + backend + admin + mailpit + edge)
+# Start full dev stack (mesahub + backend + admin + edge)
 dev:
     env -i PATH="$PATH" docker compose --env-file {{ENV_FILE}} -f compose.dev.yaml up --build
 

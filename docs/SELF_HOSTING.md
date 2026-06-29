@@ -31,11 +31,6 @@ SESSION_SECRET=<openssl rand -hex 32>
 MESAHUB_URL=mh://local/emailflare
 CF_API_TOKEN=<cloudflare token>
 CF_ACCOUNT_ID=<cloudflare account id>
-
-# Optional — enable the built-in Mailpit SMTP catcher:
-# ENABLE_TEST_MODE=true
-# MAILPIT_USER=root          # defaults to root
-# MAILPIT_PASS=<secret>      # defaults to ADMIN_TOKEN
 ```
 
 Notes:
@@ -66,7 +61,7 @@ Then open:
 
 - app: `http://localhost:8090`
 
-> **Note:** Mailpit is bundled in the production image but only starts when `ENABLE_TEST_MODE=true`. When enabled it is accessible at `/mailpit/` on the same port as the admin UI, protected by HTTP Basic Auth (defaults to `root` / `ADMIN_TOKEN`). Do not enable it on a public deployment without setting a strong `MAILPIT_PASS`.
+> **Note:** Test API keys (`eftest_` prefix) store emails in the built-in Test Mailbox instead of sending them. You can view captured test emails in the admin UI at `/test-emails`. No Cloudflare credentials are required for test keys.
 
 ## 4. Persist data
 
@@ -95,7 +90,7 @@ The minimum-infra recommendation remains the embedded local setup until you have
 
 ## Local development
 
-For local development, use `compose.dev.yaml` instead of `compose.yaml`. It runs the same stack but adds a [Mailpit](https://mailpit.axllent.org) container as the SMTP backend so emails are never delivered to real inboxes.
+For local development, use `compose.dev.yaml` instead of `compose.yaml`. It runs the same stack with hot-reload for the backend and admin UI.
 
 ```bash
 docker compose --env-file .env.local -f compose.dev.yaml up
@@ -106,30 +101,22 @@ just dev
 Once running:
 
 - app: `http://localhost:8090`
-- Mailpit UI: `http://localhost:8090/mailpit/`
+- Test Mailbox: available in the admin UI at `/test-emails`
 
 You do not need `CF_API_TOKEN` or `CF_ACCOUNT_ID` set when using the dev stack with test API keys.
 
 ---
 
-## Test API keys and SMTP routing
+## Test API keys
 
 EmailFlare has built-in test mode that works on any deployment (local, Railway, Docker, etc.):
 
 - **Live API keys** send through the Cloudflare Email Sending API
-- **Test API keys** route sends through SMTP — no Cloudflare credentials required
+- **Test API keys** (`eftest_` prefix) store emails in the built-in Test Mailbox — no Cloudflare credentials required
 
-To use test mode on any deployment:
+To use test mode:
 
-1. Set `SMTP_HOST` and `SMTP_PORT` to any SMTP catcher ([Mailpit](https://mailpit.axllent.org), [Mailtrap](https://mailtrap.io), etc.)
-2. Create a **test** API key from the admin UI (Keys page)
-3. Send using that key — emails go to your SMTP catcher, never to real recipients
+1. Create a **test** API key from the admin UI (Keys page)
+2. Send using that key — emails are captured in the Test Mailbox at `/test-emails`, never delivered to real recipients
 
-Optional auth env vars:
-
-```text
-SMTP_USER=<username>
-SMTP_PASS=<password>
-```
-
-Leave them unset for unauthenticated SMTP (e.g. local Mailpit).
+Test emails include the full rendered HTML and text body, so you can preview exactly what would have been sent.

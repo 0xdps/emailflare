@@ -5,9 +5,6 @@ set -e
 export BACKEND_PORT=${BACKEND_PORT:-3001}
 # Caddy listens on this public port — Railway injects PORT automatically
 export PORT=${PORT:-80}
-# Mailpit ports
-export MAILPIT_SMTP_PORT=${MAILPIT_SMTP_PORT:-1025}
-export MAILPIT_UI_PORT=${MAILPIT_UI_PORT:-8025}
 
 echo "=========================================="
 echo "  EmailFlare — Starting Services"
@@ -38,7 +35,7 @@ if [ "$_HOST" = "local" ]; then
   export MESAHUB_CORE_PORT="${MESAHUB_CORE_PORT:-3002}"
   _ADMIN_TOKEN="${MESAHUB_ADMIN_TOKEN:-$(openssl rand -hex 32)}"
 
-  echo "[0/5] Starting bundled mesahub-server on :$MESAHUB_CORE_PORT (db: $_DBNAME)..."
+  echo "[0/3] Starting bundled mesahub-server on :$MESAHUB_CORE_PORT (db: $_DBNAME)..."
   DATA_PATH="${DATA_PATH:-/data}" \
   ADMIN_TOKEN="$_ADMIN_TOKEN" \
   SESSION_SECRET="$(openssl rand -hex 32)" \
@@ -70,44 +67,10 @@ if [ "$_HOST" = "local" ]; then
   # Rewrite MESAHUB_URL with the resolved token so the Node process can parse it
   export MESAHUB_URL="mh://${_ADMIN_TOKEN}@localhost:${MESAHUB_CORE_PORT}/${_DBNAME}"
 else
-  echo "[0/5] External mesahub at $_HOST (db: $_DBNAME) — skipping bundled server"
+  echo "[0/3] External mesahub at $_HOST (db: $_DBNAME) — skipping bundled server"
 fi
 
-if [ "${ENABLE_TEST_MODE:-false}" = "true" ]; then
-  _MP_USER="${MAILPIT_USER:-root}"
-  _MP_PASS="${MAILPIT_PASS:-${ADMIN_TOKEN}}"
-  echo "[1/5] Starting Mailpit (SMTP :$MAILPIT_SMTP_PORT, UI :$MAILPIT_UI_PORT, user: $_MP_USER)..."
-  
-  # Create auth file for mailpit
-  mkdir -p /tmp/mailpit
-  echo "${_MP_USER}:${_MP_PASS}" > /tmp/mailpit/auth.txt
-  chmod 600 /tmp/mailpit/auth.txt
-  
-  mailpit \
-    --smtp "0.0.0.0:${MAILPIT_SMTP_PORT}" \
-    --listen "0.0.0.0:${MAILPIT_UI_PORT}" \
-    --webroot /mailpit \
-    --ui-auth-file /tmp/mailpit/auth.txt &
-  MAILPIT_PID=$!
-
-  echo "[2/5] Waiting for Mailpit to be ready..."
-  max_attempts=15
-  attempt=0
-  until curl -sf -u "${_MP_USER}:${_MP_PASS}" "http://localhost:${MAILPIT_UI_PORT}/mailpit/api/v1/info" > /dev/null 2>&1; do
-    attempt=$((attempt + 1))
-    if [ $attempt -eq $max_attempts ]; then
-      echo "✗ Mailpit failed to start after ${max_attempts}s"
-      kill $MAILPIT_PID 2>/dev/null || true
-      exit 1
-    fi
-    sleep 1
-  done
-  echo "✓ Mailpit ready on http://localhost:${PORT}/mailpit/"
-else
-  echo "[1/5] Mailpit skipped (set ENABLE_TEST_MODE=true to enable)"
-fi
-
-echo "[3/5] Starting backend on port $BACKEND_PORT..."
+echo "[1/3] Starting backend on port $BACKEND_PORT..."
 PORT=$BACKEND_PORT node /app/backend/dist/index.js &
 BACKEND_PID=$!
 
@@ -125,23 +88,13 @@ until curl -sf http://localhost:$BACKEND_PORT/health > /dev/null 2>&1; do
 done
 echo "✓ Backend ready on port $BACKEND_PORT"
 
-echo "[4/5] Starting Caddy on port $PORT..."
+echo "[2/3] Starting Caddy on port $PORT..."
 
 echo "--- Static files in /usr/share/caddy ---"
 ls /usr/share/caddy/
 echo "--- Assets ---"
 ls /usr/share/caddy/assets/ 2>/dev/null || echo "NO ASSETS DIR FOUND"
 echo "----------------------------------------"
-
-if [ "${ENABLE_TEST_MODE:-false}" = "true" ]; then
-  MAILPIT_CADDY_BLOCK="
-  handle /mailpit* {
-    reverse_proxy localhost:${MAILPIT_UI_PORT}
-  }
-"
-else
-  MAILPIT_CADDY_BLOCK=""
-fi
 
 cat > /tmp/Caddyfile <<EOF
 {
@@ -164,7 +117,6 @@ cat > /tmp/Caddyfile <<EOF
     reverse_proxy localhost:${BACKEND_PORT}
   }
 
-${MAILPIT_CADDY_BLOCK}
   handle {
     root * /usr/share/caddy
     try_files {path} /index.html

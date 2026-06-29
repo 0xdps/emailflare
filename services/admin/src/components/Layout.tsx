@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useRouter } from '@tanstack/react-router';
 import {
   LayoutDashboard, Globe, FileText, Key, ScrollText, LogOut, FlaskConical,
-  MonitorDot, BookOpen, Github, ExternalLink,
+  MonitorDot, BookOpen, Github, ExternalLink, Mailbox,
 } from 'lucide-react';
 import api from '../api';
 import {
@@ -42,15 +42,16 @@ const navSections = [
   {
     label: 'Monitor',
     items: [
-      { to: '/',     label: 'Dashboard', icon: LayoutDashboard },
-      { to: '/logs', label: 'Logs',      icon: ScrollText },
+      { to: '/',           label: 'Dashboard',   icon: LayoutDashboard },
+      { to: '/logs',       label: 'Logs',        icon: ScrollText },
+      { to: '/test-emails', label: 'Test Mailbox', icon: Mailbox },
     ],
   },
   {
     label: 'Send',
     items: [
-      { to: '/templates',  label: 'Templates',  icon: FileText },
-      { to: '/playground', label: 'Playground', icon: FlaskConical },
+      { to: '/templates',  label: 'Templates',   icon: FileText },
+      { to: '/playground', label: 'Playground',  icon: FlaskConical },
     ],
   },
   {

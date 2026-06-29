@@ -953,7 +953,7 @@ const structuredData = {
               <span class="check">✓</span>
               <div class="line">
                 <strong>Bearer token auth</strong>
-                Scoped API keys — not your master Cloudflare token. Prefix <code>eflive_</code> for live sends, <code>eftest_</code> to route through SMTP instead.
+                Scoped API keys — not your master Cloudflare token. Prefix <code>eflive_</code> for live sends, <code>eftest_</code> for test sends stored in the dashboard.
               </div>
             </li>
             <li>
@@ -1213,8 +1213,8 @@ const structuredData = {
         </div>
         <div class="feature-card">
           <span class="card-icon"><Icon name="lucide:microscope" /></span>
-          <h3>Test Keys &amp; Built-in Mailpit</h3>
-          <p>Create a <strong>test API key</strong> (<code>eftest_</code>) and all sends route through SMTP — no Cloudflare credentials required. Set <code>ENABLE_TEST_MODE=true</code> to start the bundled <a href="https://mailpit.axllent.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Mailpit</a> catcher and access it at <code>/mailpit/</code>, secured with HTTP Basic Auth (defaults to <code>root</code> / <code>ADMIN_TOKEN</code>).</p>
+          <h3>Test Keys &amp; In-House Mailbox</h3>
+          <p>Create a <strong>test API key</strong> (<code>eftest_</code>) and all sends are stored in the admin dashboard — no Cloudflare credentials required. Browse, preview HTML, and manage test emails from the built-in Test Mailbox page without any external SMTP service.</p>
           <span class="feature-tag">Local Dev</span>
         </div>
       </div>
@@ -1312,15 +1312,13 @@ const structuredData = {
               <div class="do-step-num">1</div>
               <div>
                 <div class="do-step-label">Configure environment</div>
-                <p class="do-step-desc">Copy the example file and fill in credentials. Add <code>ENABLE_TEST_MODE=true</code> to also start the built-in Mailpit catcher.</p>
+                <p class="do-step-desc">Copy the example file and fill in credentials. Test keys work out of the box — no extra configuration needed.</p>
                 <div class="code-block">
                   <span><span class="cb-cmd">cp .env.example .env.local</span></span>
                   <span><span class="cb-kw">CF_API_TOKEN</span>=<span class="cb-val">your_cf_token</span></span>
                   <span><span class="cb-kw">CF_ACCOUNT_ID</span>=<span class="cb-val">your_account_id</span></span>
                   <span><span class="cb-kw">ADMIN_TOKEN</span>=<span class="cb-val">$(openssl rand -hex 32)</span></span>
                   <span><span class="cb-kw">SESSION_SECRET</span>=<span class="cb-val">$(openssl rand -hex 32)</span></span>
-                  <span><span class="cb-cmt"># optional: enable Mailpit</span></span>
-                  <span><span class="cb-kw">ENABLE_TEST_MODE</span>=<span class="cb-val">true</span></span>
                 </div>
               </div>
             </div>
@@ -1328,7 +1326,7 @@ const structuredData = {
               <div class="do-step-num">2</div>
               <div>
                 <div class="do-step-label">Pull &amp; start</div>
-                <p class="do-step-desc">Uses the published GHCR image — no local build needed. Mailpit starts automatically when <code>ENABLE_TEST_MODE=true</code>.</p>
+                <p class="do-step-desc">Uses the published GHCR image — no local build needed. Test keys store emails in the dashboard automatically.</p>
                 <div class="code-block">
                   <span><span class="cb-cmt"># pull the published image</span></span>
                   <span><span class="cb-cmd">docker pull ghcr.io/0xdps/emailflare:latest</span></span>
@@ -1337,7 +1335,7 @@ const structuredData = {
                   <span><span class="cb-cmd">docker compose --env-file .env.local \</span></span>
                   <span><span class="cb-cmd">&nbsp;&nbsp;-f compose.yaml up -d</span></span>
                   <span>&nbsp;</span>
-                  <span><span class="cb-cmt"># local dev + mailpit</span></span>
+                  <span><span class="cb-cmt"># local dev</span></span>
                   <span><span class="cb-cmd">docker compose --env-file .env.local \</span></span>
                   <span><span class="cb-cmd">&nbsp;&nbsp;-f compose.dev.yaml up</span></span>
                 </div>
@@ -1347,13 +1345,12 @@ const structuredData = {
               <div class="do-step-num">3</div>
               <div>
                 <div class="do-step-label">Open the dashboard</div>
-                <p class="do-step-desc">Admin UI on port 8090. Mailpit at <code>/mailpit/</code> when test mode is enabled — auth: <code>root</code> / <code>ADMIN_TOKEN</code>.</p>
+                <p class="do-step-desc">Admin UI on port 8090. Test emails are stored in the dashboard automatically — no external service needed.</p>
                 <div class="code-block">
                   <span><span class="cb-cmt"># health check</span></span>
                   <span><span class="cb-cmd">curl http://localhost:8090/health</span></span>
                   <span>&nbsp;</span>
                   <span><span class="cb-url">http://localhost:8090</span><span class="cb-cmt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# admin UI</span></span>
-                  <span><span class="cb-url">http://localhost:8090/mailpit/</span><span class="cb-cmt">&nbsp;# if ENABLE_TEST_MODE=true</span></span>
                 </div>
               </div>
             </div>
@@ -1446,11 +1443,11 @@ const structuredData = {
           </div>
           <span class="de-arrow">→</span>
         </a>
-        <a href="https://mailpit.axllent.org" target="_blank" rel="noopener" class="deploy-extra">
-          <span class="de-icon"><Icon name="lucide:mail" /></span>
+        <a href="/docs" class="deploy-extra">
+          <span class="de-icon"><Icon name="lucide:flask-conical" /></span>
           <div>
-            <div class="de-title">Local email testing with Mailpit</div>
-            <div class="de-sub">Included in dev stack — no real emails sent.</div>
+            <div class="de-title">In-house test mailbox</div>
+            <div class="de-sub">Test keys store emails in the dashboard — no external service.</div>
           </div>
           <span class="de-arrow">→</span>
         </a>
@@ -1497,15 +1494,15 @@ const structuredData = {
           <li>
             <span class="ab-check">✓</span>
             <div class="ab-text">
-              <strong>Three services, one image</strong>
-              <span>The production Docker image bundles the Hono API backend, React admin UI, Mailpit, and embedded mesahub storage. Mailpit only starts when <code>ENABLE_TEST_MODE=true</code> — zero overhead in a standard production deploy.</span>
+              <strong>Two services, one image</strong>
+              <span>The production Docker image bundles the Hono API backend, React admin UI, and embedded mesahub storage. No extra containers or services needed.</span>
             </div>
           </li>
           <li>
             <span class="ab-check">✓</span>
             <div class="ab-text">
               <strong>Cloudflare Email Sending for production</strong>
-              <span>Production API keys send exclusively through Cloudflare's infrastructure. Test API keys route through SMTP for safe testing without CF credentials.</span>
+              <span>Production API keys send exclusively through Cloudflare's infrastructure. Test API keys store emails in the dashboard for safe testing without CF credentials.</span>
             </div>
           </li>
           <li>
