@@ -1,0 +1,33 @@
+infra/Caddyfile.dev
+  4700c922e2c7acca 12
+compose.dev.yaml
+  h_d60f3499e5a1c3 16
+  4700c922e2c7acca 32,52-53,63,98
+services/admin/src/components/Layout.tsx
+  4700c922e2c7acca 5,114-143,164-171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "c84be73d72896171e2f15b0a33eb252fa92969d6",
+  "prompts": {
+    "4700c922e2c7acca": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d1484a29-5a33-41a3-842a-70ee9ec050ec",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 57,
+      "total_deletions": 5,
+      "accepted_lines": 3151,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

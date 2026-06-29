@@ -1,0 +1,26 @@
+infra/start-inbox.sh
+  s_48bbe8a7322c0b::t_f415ea3f92429f 79
+compose.inbox.yaml
+  s_48bbe8a7322c0b::t_f415ea3f92429f 39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "81a1f49e7b18662cf44302a14581cbafe369b514",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

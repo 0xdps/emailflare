@@ -1,0 +1,14 @@
+services/landing/src/pages/index.astro
+  h_d60f3499e5a1c3 1578,1603
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "cacbed36f6a42f2c782f900000bd3be6d22cf5a4",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

@@ -1,0 +1,138 @@
+services/admin/src/pages/Keys.tsx
+  h_d60f3499e5a1c3 11-12,20-27,35,56-62,74-88,161-166,176
+services/admin/src/routes/login.tsx
+  h_d60f3499e5a1c3 1
+infra/Dockerfile
+  h_d60f3499e5a1c3 1-2
+services/backend/src/emails/layouts/Digest.tsx
+  h_d60f3499e5a1c3 1-76
+services/backend/src/emails/layouts/OTP.tsx
+  h_d60f3499e5a1c3 31
+services/admin/src/pages/Templates.tsx
+  h_d60f3499e5a1c3 2,34-77,80-105,118,145,318-328,330-335,338-377,379-387,390-410,415,417-422,424-427,429-435,437-440,443,445-449,451-465,467-498,503-507,510-511
+services/backend/src/index.ts
+  h_d60f3499e5a1c3 2,13,15-16,25-29,35-37,39,43-48,54,56-66,69-70,72,105,110,113-123
+services/backend/src/emails/layouts/Welcome.tsx
+  h_d60f3499e5a1c3 34
+services/backend/src/emails/layouts/OrderConfirm.tsx
+  h_d60f3499e5a1c3 1-76
+infra/railway.toml
+  h_d60f3499e5a1c3 1-9
+services/admin/src/pages/Logs.tsx
+  h_d60f3499e5a1c3 2,32-172,177-181,188-190,194,198-201,204,207-232,235-256,258-267,271-288,290-314,316-317,321-339,342-349,351-352
+services/admin/src/index.css
+  h_d60f3499e5a1c3 1-2,17,19-30
+services/backend/src/routes/send.ts
+  h_d60f3499e5a1c3 5,33-41,48,68,80,86-87,89,91,114,120,134,143-153
+services/backend/src/routes/domains.ts
+  h_d60f3499e5a1c3 5,99
+services/admin/src/routes/playground.tsx
+  h_d60f3499e5a1c3 1
+services/admin/src/pages/Domains.tsx
+  h_d60f3499e5a1c3 2,33,71-74,85-99,187-191,212,223
+services/backend/package.json
+  h_d60f3499e5a1c3 19
+services/backend/src/routes/keys.ts
+  h_d60f3499e5a1c3 39-40
+services/backend/src/middleware/rateLimit.ts
+  h_d60f3499e5a1c3 1-40
+services/admin/src/components/Layout.tsx
+  h_d60f3499e5a1c3 6-7,11-24,30,32,40-41,46,48-51,53-56,60-61,67-69,73,79-88,91,93,100
+services/admin/Dockerfile
+  h_d60f3499e5a1c3 23,27-29
+services/backend/src/routes/stats.ts
+  h_d60f3499e5a1c3 8-18,20-22,33,45-47,49-64,69,78,80-85
+services/backend/src/middleware/auth.ts
+  h_d60f3499e5a1c3 1-2,5,8-10,12-13,15-18,20-28,30-37,39,41-43,45-47
+services/backend/src/emails/layouts/TeamInvite.tsx
+  h_d60f3499e5a1c3 1-62
+services/backend/src/emails/layouts/Announcement.tsx
+  h_d60f3499e5a1c3 1-69
+.env.example
+  h_d60f3499e5a1c3 1-2,4-6,23-37
+services/backend/src/emails/layouts/Plain.tsx
+  h_d60f3499e5a1c3 1-63
+services/admin/src/routes/templates.tsx
+  h_d60f3499e5a1c3 1
+services/backend/src/emails/layouts/Feedback.tsx
+  h_d60f3499e5a1c3 1-64
+services/backend/src/emails/layouts/NewLogin.tsx
+  h_d60f3499e5a1c3 1-78
+services/backend/src/emails/layouts/Notification.tsx
+  h_d60f3499e5a1c3 42
+services/backend/src/emails/layouts/Alert.tsx
+  h_d60f3499e5a1c3 1-92
+services/admin/src/api.ts
+  h_d60f3499e5a1c3 3-5,11
+services/admin/src/routes/__root.tsx
+  h_d60f3499e5a1c3 2-3,8-20
+services/backend/src/emails/layouts/MagicLink.tsx
+  h_d60f3499e5a1c3 33
+services/admin/nginx.conf.template
+  h_d60f3499e5a1c3 1-39
+services/backend/src/emails/layouts/PasswordReset.tsx
+  h_d60f3499e5a1c3 1-53
+services/backend/src/emails/layouts/PasswordChanged.tsx
+  h_d60f3499e5a1c3 1-61
+services/backend/src/db.ts
+  h_d60f3499e5a1c3 48-49,68,79-84,131-132,136-138,159,164-172,184-199
+services/backend/src/emails/layouts/SubscriptionCancelled.tsx
+  h_d60f3499e5a1c3 1-64
+compose.yaml
+  h_d60f3499e5a1c3 1,29-31
+services/admin/src/routes/keys.tsx
+  h_d60f3499e5a1c3 1
+services/admin/src/pages/Login.tsx
+  h_d60f3499e5a1c3 3,11,18,21,28-68,71-92,95,97-98,100-101,105-106,108-119,121,123-126,128,131-132,134-135,138-141
+services/admin/tailwind.config.js
+  h_d60f3499e5a1c3 12-21
+infra/Caddyfile
+  h_d60f3499e5a1c3 1,4,9,13
+compose.dev.yaml
+  h_d60f3499e5a1c3 8,16
+services/backend/src/emails/layouts/TrialEnding.tsx
+  h_d60f3499e5a1c3 1-62
+services/backend/src/emails/layouts/SubscriptionStarted.tsx
+  h_d60f3499e5a1c3 1-71
+services/backend/src/emails/render.ts
+  h_d60f3499e5a1c3 6-21,25-29,36-51,60-75
+services/backend/railway.toml
+  h_d60f3499e5a1c3 1-10
+services/admin/public/favicon.svg
+  h_d60f3499e5a1c3 2-11
+services/backend/src/env.ts
+  h_d60f3499e5a1c3 7-27,31-32
+services/backend/src/routes/logs.ts
+  h_d60f3499e5a1c3 2,6,13-35,37-40,42,45-54,56-60
+services/backend/src/routes/auth.ts
+  h_d60f3499e5a1c3 1,5-6,11,14,16,18-22,24,26-27,30-33,36,38-39
+services/admin/src/pages/Dashboard.tsx
+  h_d60f3499e5a1c3 1,3-4,8-9,12,17-18,33,46-47,49-55,58,66-68,70-77,79-80,82-90,92-101,103-264,270,276,278,280,282-283,287,289,292,294,296-298,302-303,306-309,311-314,316-330,332-338,343-382,384,389-396,399-401,404-405,407-408,410-412,414-417,419-421,424-427,429-441,443-459,461,463-471,476,478-483,488-494,496-500,502-509,511-522,524-526
+services/backend/src/seed.ts
+  h_d60f3499e5a1c3 1-2,4
+services/backend/src/emails/layouts/AccountDeleted.tsx
+  h_d60f3499e5a1c3 1-61
+services/backend/src/emails/layouts/EmailVerify.tsx
+  h_d60f3499e5a1c3 1-53
+services/admin/src/routes/logs.tsx
+  h_d60f3499e5a1c3 1
+services/admin/src/routes/domains.tsx
+  h_d60f3499e5a1c3 1
+services/admin/index.html
+  h_d60f3499e5a1c3 6
+services/admin/railway.toml
+  h_d60f3499e5a1c3 1-9
+services/backend/src/emails/layouts/Invoice.tsx
+  h_d60f3499e5a1c3 1-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "b484f65f978879ddb3dcd8eba496e382e6c523e3",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

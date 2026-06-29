@@ -1,0 +1,48 @@
+services/inbox-ui/public/favicon.svg
+  h_7a2f4c8f0473b8 1-12
+services/inbox-ui/src/pages/AcceptInvite.tsx
+  s_48bbe8a7322c0b::t_f5b6b036b1daf7 61
+README.md
+  s_48bbe8a7322c0b::t_1073425aab681e 7,9-10,12,14,16,18,20,22-24,26,29-30,32,37,39-43,46,48-50,52,54,56,58,60-75,81,84,86,88,90-115,117,119,121-127,131,133-139,141,143-150,152,154,156-158
+  s_48bbe8a7322c0b::t_aeca2f681e22b4 1-4
+.github/workflows/docker-publish.yml
+  s_48bbe8a7322c0b::t_11971f44013f86 13-15,21,23,27,32,42,46-48,50-92,98,100,102,116,119-120,133-183
+services/inbox-ui/src/pages/Login.tsx
+  s_48bbe8a7322c0b::t_f5b6b036b1daf7 37
+services/inbox-ui/src/pages/Setup.tsx
+  s_48bbe8a7322c0b::t_f5b6b036b1daf7 41
+services/inbox-ui/src/api.ts
+  s_48bbe8a7322c0b::t_7ed79559ab162b 89-102
+services/inbox-ui/src/pages/inbox/InboxSettings.tsx
+  s_48bbe8a7322c0b::t_e463169a33c602 277
+  s_48bbe8a7322c0b::t_7fbe6ce225eee0 143,149-158,162-179
+  s_48bbe8a7322c0b::t_11875a44a66366 230-238,240-250
+  s_48bbe8a7322c0b::t_ea7dad13bc43da 2-3,7-8,30,34-35,51-54,59-60,80
+  s_48bbe8a7322c0b::t_3888a43465b655 239
+  s_48bbe8a7322c0b::t_41e7607a69e070 287
+services/inbox-ui/src/components/Layout.tsx
+  s_48bbe8a7322c0b::t_7d22410d262582 128-135
+.github/workflows/docker-check.yml
+  s_48bbe8a7322c0b::t_1720517e9fd6b6 1-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "af93708e1e98eee0cbf96ac76b488b7515c598da",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

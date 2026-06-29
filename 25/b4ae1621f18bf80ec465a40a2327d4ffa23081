@@ -1,0 +1,75 @@
+services/landing/public/favicon.svg
+  8f82bbf6d6cf7bdb 1-12
+services/landing/public/_redirects
+  h_d60f3499e5a1c3 1-2
+justfile
+  c5dd2b1f3370d4fb 87,89
+services/landing/vite.config.js
+  h_d60f3499e5a1c3 1-14
+services/landing/package.json
+  h_d60f3499e5a1c3 1-13
+docs/SELF_HOSTING.md
+  h_d60f3499e5a1c3 1-86
+CONTRIBUTING.md
+  h_d60f3499e5a1c3 1-39
+SECURITY.md
+  h_d60f3499e5a1c3 1-12
+docs/RAILWAY.md
+  h_d60f3499e5a1c3 1-68
+services/landing/mesahub.html
+  h_d60f3499e5a1c3 1-878,880-911
+  8f82bbf6d6cf7bdb 879
+services/landing/index.html
+  8f82bbf6d6cf7bdb 155-163,175-194,278-288,1457-1459,1461-1467,1469-1476
+  h_d60f3499e5a1c3 1-154,164-174,195-277,289-1456,1460,1468,1477-1604
+.gitignore
+  c5dd2b1f3370d4fb 3
+README.md
+  h_d60f3499e5a1c3 1-4,9-51,53-88,93
+  c5dd2b1f3370d4fb 5-8,52,89-92,94
+LICENSE
+  h_d60f3499e5a1c3 1-21
+services/landing/cloudflare-token.html
+  8f82bbf6d6cf7bdb 857
+  h_d60f3499e5a1c3 1-856,858-888
+.github/workflows/docker-publish.yml
+  c5dd2b1f3370d4fb 1,4,17-18,20-56,72,99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "25b4ae1621f18bf80ec465a40a2327d4ffa23081",
+  "prompts": {
+    "8f82bbf6d6cf7bdb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c9d98482-7067-4d5b-a5d7-925e77dab31e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 76,
+      "total_deletions": 4,
+      "accepted_lines": 72,
+      "overriden_lines": 4
+    },
+    "c5dd2b1f3370d4fb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0b36c5de-cc8d-4137-b8f3-631a5291609d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 1056,
+      "total_deletions": 984,
+      "accepted_lines": 57,
+      "overriden_lines": 2
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

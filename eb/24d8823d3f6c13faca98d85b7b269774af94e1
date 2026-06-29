@@ -1,0 +1,133 @@
+.env.inbox.example
+  s_48bbe8a7322c0b::t_0cb636641a98a0 1-49
+services/inbox-server/src/websocket.ts
+  s_48bbe8a7322c0b::t_943684ca1e8b61 1-69
+services/inbox-server/src/routes/cloudflare.ts
+  s_48bbe8a7322c0b::t_32dbbf859197c7 1-13
+services/inbox-server/package.json
+  s_48bbe8a7322c0b::t_0c5185308b9b0d 1-36
+services/inbox-server/src/middleware/apiKey.ts
+  s_48bbe8a7322c0b::t_ce74ee6c31180a 1-41
+services/inbox-server/src/routes/domains.ts
+  s_48bbe8a7322c0b::t_9eba38971857f8 1-126
+services/inbox-server/src/storage.ts
+  s_48bbe8a7322c0b::t_9c642684b5eb0a 1-46
+services/inbox-server/src/middleware/auth.ts
+  s_48bbe8a7322c0b::t_cc84bf81143c09 1-74
+services/inbox-server/src/routes/inbox/people.ts
+  s_48bbe8a7322c0b::t_34f0ad20812557 1-98
+services/inbox-server/src/routes/setup.ts
+  s_48bbe8a7322c0b::t_7bfd197ec95b66 1-45
+services/inbox-server/src/routes/webhook.ts
+  s_48bbe8a7322c0b::t_ebc64b475a137e 51-52
+  s_48bbe8a7322c0b::t_24fe93a54661a3 1-50,53
+services/inbox-server/src/routes/stats.ts
+  s_48bbe8a7322c0b::t_56f778ad23accd 1-68
+services/inbox-server/src/routes/inbox/compose.ts
+  s_48bbe8a7322c0b::t_c16c1f7bc43f4e 1-64
+scripts/config.example.toml
+  s_48bbe8a7322c0b::t_182baba73e2cc0 43-72
+services/inbox-bridge/src/index.ts
+  s_48bbe8a7322c0b::t_1f501fd352a715 1-64
+compose.inbox.yaml
+  h_7a2f4c8f0473b8 1-58
+services/inbox-bridge/tsconfig.json
+  h_7a2f4c8f0473b8 1-12
+services/inbox-server/src/services/cloudflare.ts
+  h_7a2f4c8f0473b8 1-187
+services/inbox-server/src/routes/inbox/inbox-templates.ts
+  s_48bbe8a7322c0b::t_866a8127b13208 1-61
+justfile
+  s_48bbe8a7322c0b::t_37f3d4f0f9a2f8 248,252-253,258-275,281,329,342-343,345,348,350-352,354,356,358,360,362,364,366-376,378
+  s_48bbe8a7322c0b::t_1071145f4af16e 249-251,254-255,276-277,280,282-287,294-297,301-303,321-322,328,330,332-337,339-341
+  s_48bbe8a7322c0b::t_cc650b293f9c4d 246-247,256-257,344,346-347,349,353,355,357,359,361,363,365,377,379-384
+  s_48bbe8a7322c0b::t_a3ac8bf2943482 278-279,288-293,298-300,304-320,323-327,331,338
+services/inbox-server/src/middleware/loginRateLimit.ts
+  s_48bbe8a7322c0b::t_ebc64b475a137e 5
+  s_48bbe8a7322c0b::t_fe889178fce93c 1-4,6-35
+services/inbox-server/tsconfig.json
+  s_48bbe8a7322c0b::t_19f9742708d470 1-17
+compose.inbox.dev.yaml
+  s_48bbe8a7322c0b::t_49c5a0cfbbe39b 1-48
+services/inbox-server/src/lib/mesahub-url.ts
+  s_48bbe8a7322c0b::t_c6d870cf282313 1-45
+services/inbox-server/src/scheduler.ts
+  s_48bbe8a7322c0b::t_ba1e63db0b2fda 1-9,11-136
+  s_48bbe8a7322c0b::t_ebc64b475a137e 10
+services/inbox-server/src/routes/keys.ts
+  s_48bbe8a7322c0b::t_b24322048f3984 1-71
+services/inbox-server/src/routes/invites.ts
+  s_48bbe8a7322c0b::t_f100e91b3be946 1-89
+services/inbox-server/src/routes/templates.ts
+  s_48bbe8a7322c0b::t_93a64ef7324a50 1-156
+services/inbox-server/src/db.ts
+  s_48bbe8a7322c0b::t_ebc64b475a137e 121,140,189,202,213,219
+  s_48bbe8a7322c0b::t_2c7300a9be6536 1-120,122-139,141-188,190-201,203-212,214-218,220-249
+services/inbox-bridge/wrangler.jsonc
+  s_48bbe8a7322c0b::t_125ec205a2ca0f 1-12
+services/inbox-server/src/routes/admin/users.ts
+  s_48bbe8a7322c0b::t_d1459169dd5893 1-32
+services/inbox-server/src/middleware/rateLimit.ts
+  s_48bbe8a7322c0b::t_41dd4ba9506249 1-4,6-36
+  s_48bbe8a7322c0b::t_ebc64b475a137e 5
+services/inbox-server/src/routes/inbox/inboxes.ts
+  s_48bbe8a7322c0b::t_a9feff58f52c97 1-96
+services/inbox-server/src/env.ts
+  s_48bbe8a7322c0b::t_cc6318702d8c73 1-9,23-60,68-99
+  s_48bbe8a7322c0b::t_e22b00fab013da 10-22,61-67
+services/inbox-server/src/routes/send.ts
+  s_48bbe8a7322c0b::t_30c08f6403f0cb 1-143
+infra/start-inbox.sh
+  s_48bbe8a7322c0b::t_787dea00e44e14 1-116
+services/inbox-server/src/seed.ts
+  s_48bbe8a7322c0b::t_dcc1accd80dff9 1-86
+scripts/deploy-inbox-standalone.mjs
+  h_7a2f4c8f0473b8 1-281
+infra/Caddyfile.inbox
+  s_48bbe8a7322c0b::t_5b744f00408977 1-30
+.gitignore
+  s_48bbe8a7322c0b::t_989981804ab827 6
+services/inbox-server/src/routes/logs.ts
+  s_48bbe8a7322c0b::t_4ab38bb1f1e15c 1-57
+services/inbox-server/src/migrate.ts
+  s_48bbe8a7322c0b::t_ebc64b475a137e 21,25
+  s_48bbe8a7322c0b::t_8c3097cb736d5a 1-20,22-24,26-74
+Dockerfile.inbox
+  s_48bbe8a7322c0b::t_a5b28b322219ff 1-79
+services/dashboard/vite.config.ts
+  s_48bbe8a7322c0b::t_e22b00fab013da 22-23
+services/inbox-server/src/lib/password.ts
+  s_48bbe8a7322c0b::t_2ea389c8e97679 1-24,26-27,29-43,45-54
+  s_48bbe8a7322c0b::t_366fdf4ce509f8 25,28,44
+services/inbox-bridge/package.json
+  h_7a2f4c8f0473b8 1-18
+services/inbox-server/src/email-handler.ts
+  s_48bbe8a7322c0b::t_9511b5bf570ecd 1-136
+services/inbox-server/src/routes/auth.ts
+  s_48bbe8a7322c0b::t_5807ff85ba4fd4 1-64
+services/inbox-server/src/routes/inbox/sequences.ts
+  s_48bbe8a7322c0b::t_b9bba8440e0fa5 1-96
+services/inbox-server/src/index.ts
+  h_7a2f4c8f0473b8 1-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "eb24d8823d3f6c13faca98d85b7b269774af94e1",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

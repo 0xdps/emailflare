@@ -1,0 +1,28 @@
+services/admin/package.json
+  8f82bbf6d6cf7bdb 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "9bc88baef888c8931d35385adedd2608efe6aae6",
+  "prompts": {
+    "8f82bbf6d6cf7bdb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c9d98482-7067-4d5b-a5d7-925e77dab31e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

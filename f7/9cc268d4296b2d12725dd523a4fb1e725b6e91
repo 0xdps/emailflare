@@ -1,0 +1,21 @@
+infra/Dockerfile.mesahub
+  h_7a2f4c8f0473b8 10
+Dockerfile
+  h_7a2f4c8f0473b8 10
+README.md
+  h_7a2f4c8f0473b8 7,113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "f79cc268d4296b2d12725dd523a4fb1e725b6e91",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    },
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

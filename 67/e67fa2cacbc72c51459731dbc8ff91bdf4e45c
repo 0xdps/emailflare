@@ -1,0 +1,35 @@
+services/email-bridge/src/index.ts
+  h_7a2f4c8f0473b8 1-36
+justfile
+  s_48bbe8a7322c0b::t_82801b3d2c36ce 272-303
+  s_48bbe8a7322c0b::t_57bbbb2795d8a3 35
+services/email-bridge/tsconfig.json
+  s_48bbe8a7322c0b::t_2cd6a8757ba3e7 1-12
+scripts/setup-cf-workers.mjs
+  s_48bbe8a7322c0b::t_563da38493ae7d 1-340
+services/email-bridge/wrangler.jsonc
+  s_48bbe8a7322c0b::t_3194827c12d1e7 1-16
+services/email-bridge/package.json
+  s_48bbe8a7322c0b::t_9b701b068de2cf 1-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.9",
+  "base_commit_sha": "67e67fa2cacbc72c51459731dbc8ff91bdf4e45c",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

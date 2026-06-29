@@ -1,0 +1,236 @@
+services/dashboard/src/components/ui/sidebar.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-721
+services/dashboard/src/components/ui/tabs.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-80
+services/dashboard/package.json
+  s_a7fe1ee5ebe72e::t_9b41d59fb00471 1-7,9-37
+  s_a7fe1ee5ebe72e::t_41dc45c0b1226c 8
+services/inbox/wrangler.jsonc
+  h_7a2f4c8f0473b8 1-120
+services/dashboard/src/components/ui/tooltip.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-66
+services/dashboard/src/routes/index.tsx
+  h_7a2f4c8f0473b8 1-7
+services/dashboard/src/routes/templates.tsx
+  h_7a2f4c8f0473b8 1-7
+services/dashboard/src/routes/playground.tsx
+  h_7a2f4c8f0473b8 1-7
+justfile
+  s_a7fe1ee5ebe72e::t_a41639ecbd532e 194-203,207,215,220-237
+  h_7a2f4c8f0473b8 109,117-118,204-206,208-214,216-219
+services/dashboard/src/components/ui/separator.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-25
+services/dashboard/src/routes/domains.tsx
+  h_7a2f4c8f0473b8 1-7
+services/inbox/src/services/cloudflare.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-291
+services/dashboard/src/routes/inbox/index.tsx
+  h_7a2f4c8f0473b8 1-7
+services/dashboard/src/components/ui/input.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-20
+services/dashboard/src/routes/keys.tsx
+  h_7a2f4c8f0473b8 1-7
+services/inbox/migrations/0002_inbox.sql
+  h_7a2f4c8f0473b8 1-157
+services/inbox/src/emails.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-12
+services/dashboard/src/components/ui/card.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-103
+services/dashboard/src/components/ui/scroll-area.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-53
+services/dashboard/pnpm-workspace.yaml
+  s_a7fe1ee5ebe72e::t_ff07c04a273074 1-3
+services/dashboard/tsconfig.json
+  s_a7fe1ee5ebe72e::t_ff07c04a273074 1-18
+services/inbox/src/routes/inbox/inboxes.ts
+  h_7a2f4c8f0473b8 1-105
+services/dashboard/src/pages/inbox/Sequences.tsx
+  h_7a2f4c8f0473b8 1-311
+services/dashboard/src/components/ui/textarea.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-18
+services/dashboard/src/routes/settings/users.tsx
+  h_7a2f4c8f0473b8 1-7
+services/dashboard/src/components/ui/sheet.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-136
+services/dashboard/src/routes/__root.tsx
+  h_7a2f4c8f0473b8 1-35
+services/dashboard/src/pages/Setup.tsx
+  h_7a2f4c8f0473b8 1-161
+services/inbox/src/routes/inbox/sequences.ts
+  h_7a2f4c8f0473b8 1-105
+services/dashboard/src/main.tsx
+  s_a7fe1ee5ebe72e::t_f4131eb816c1fe 1-23
+services/dashboard/src/components/ui/collapsible.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-19
+services/dashboard/components.json
+  s_a7fe1ee5ebe72e::t_1b40983d2bdda0 1-25
+services/inbox/src/routes/inbox/people.ts
+  h_7a2f4c8f0473b8 1-111
+services/inbox/src/routes/setup.ts
+  h_7a2f4c8f0473b8 1-45
+services/inbox/src/routes/admin/users.ts
+  h_7a2f4c8f0473b8 1-38
+services/dashboard/vite.config.ts
+  s_a7fe1ee5ebe72e::t_ff07c04a273074 1-26
+services/dashboard/src/components/ui/table.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-116
+services/inbox/src/seed.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-86
+services/dashboard/src/pages/Playground.tsx
+  s_a7fe1ee5ebe72e::t_b94813c123c62a 1-610
+services/dashboard/src/components/ui/select.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-199
+services/inbox/package.json
+  h_7a2f4c8f0473b8 1-30
+services/inbox/src/routes/inbox/compose.ts
+  s_a7fe1ee5ebe72e::t_a49ca1dc5bc52b 9,41-44,46
+  h_7a2f4c8f0473b8 1-8,10-40,45,47-60
+services/inbox/src/routes/cloudflare.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-13
+services/dashboard/src/components/ui/skeleton.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-13
+services/dashboard/src/components/ui/avatar.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-109
+services/dashboard/src/index.css
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-142
+scripts/deploy-inbox.mjs
+  h_7a2f4c8f0473b8 1-50,52-63,66-277,283-349
+  s_a7fe1ee5ebe72e::t_67ba51af245904 51,64-65,278-282
+services/dashboard/src/routeTree.gen.ts
+  h_7a2f4c8f0473b8 1-12
+services/dashboard/src/routes/login.tsx
+  h_7a2f4c8f0473b8 1-6
+services/inbox/src/middleware/loginRateLimit.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-21
+services/inbox/src/routes/domains.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-135
+services/inbox/src/routes/logs.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-70
+services/inbox/pnpm-workspace.yaml
+  h_7a2f4c8f0473b8 1-4
+services/dashboard/src/components/ui/dialog.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-160
+services/inbox/src/middleware/auth.ts
+  h_7a2f4c8f0473b8 1-72
+services/inbox/src/routes/send.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-181
+services/dashboard/src/hooks/use-mobile.ts
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-19
+services/dashboard/src/routes/inbox/sequences.tsx
+  h_7a2f4c8f0473b8 1-7
+services/dashboard/src/pages/settings/Users.tsx
+  h_7a2f4c8f0473b8 1-214
+services/dashboard/src/components/ui/checkbox.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-29
+services/dashboard/src/pages/Domains.tsx
+  s_a7fe1ee5ebe72e::t_b94813c123c62a 1-284
+services/dashboard/index.html
+  s_a7fe1ee5ebe72e::t_1b40983d2bdda0 1-16
+services/dashboard/src/routes/inbox/settings.tsx
+  h_7a2f4c8f0473b8 1-7
+services/inbox/src/db.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-238
+services/inbox/src/routes/templates.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-167
+services/inbox/src/routes/stats.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-91
+services/dashboard/src/components/ui/progress.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-81
+services/inbox/migrations/0001_schema.sql
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-69
+services/inbox/src/env.ts
+  h_7a2f4c8f0473b8 1-3,10-56
+  s_a7fe1ee5ebe72e::t_a49ca1dc5bc52b 4-9
+services/dashboard/src/routes/logs.tsx
+  h_7a2f4c8f0473b8 1-7
+services/inbox/src/email-handler.ts
+  h_7a2f4c8f0473b8 1-91,102-112,114-138
+  s_a7fe1ee5ebe72e::t_a49ca1dc5bc52b 92-101,113
+services/inbox/src/sequence-processor.ts
+  h_7a2f4c8f0473b8 1-124
+services/dashboard/src/routes/invite.$token.tsx
+  h_7a2f4c8f0473b8 1-6
+services/inbox/src/routes/keys.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-76
+services/dashboard/src/components/ui/badge.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-52
+services/dashboard/src/pages/Templates.tsx
+  s_a7fe1ee5ebe72e::t_b94813c123c62a 1-615
+services/dashboard/src/pages/Logs.tsx
+  s_a7fe1ee5ebe72e::t_b94813c123c62a 1-370
+services/dashboard/src/components/ui/button.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-58
+services/inbox/src/index.ts
+  s_a7fe1ee5ebe72e::t_b0e6dce4363320 155,158
+  h_7a2f4c8f0473b8 1-149,151-154,156-157,159-165
+  s_a7fe1ee5ebe72e::t_a49ca1dc5bc52b 150
+services/inbox/src/routes/invites.ts
+  h_7a2f4c8f0473b8 1-94
+services/inbox/src/routes/inbox/inbox-templates.ts
+  h_7a2f4c8f0473b8 1-69
+services/dashboard/src/pages/inbox/People.tsx
+  h_7a2f4c8f0473b8 1-311
+services/dashboard/src/pages/inbox/InboxSettings.tsx
+  h_7a2f4c8f0473b8 1-283,285-325
+  s_a7fe1ee5ebe72e::t_7cb2ed6ac152a4 284
+services/dashboard/src/components/Layout.tsx
+  h_7a2f4c8f0473b8 1-229
+services/dashboard/src/pages/Keys.tsx
+  s_a7fe1ee5ebe72e::t_b94813c123c62a 1-242
+services/inbox/tsconfig.json
+  s_a7fe1ee5ebe72e::t_b0e6dce4363320 8
+  h_7a2f4c8f0473b8 1-7,9-19
+services/dashboard/src/components/ui/alert.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-76
+services/inbox/src/middleware/rateLimit.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-26
+services/dashboard/src/lib/utils.ts
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-6
+services/inbox/src/routes/auth.ts
+  h_7a2f4c8f0473b8 1-67
+services/inbox/src/middleware/apiKey.ts
+  s_a7fe1ee5ebe72e::t_60e633b8a7ba3a 1-42
+services/dashboard/src/pages/Dashboard.tsx
+  s_a7fe1ee5ebe72e::t_b94813c123c62a 1-579
+services/inbox/src/do/NotificationsHub.ts
+  h_7a2f4c8f0473b8 1-55
+services/dashboard/src/routes/setup.tsx
+  h_7a2f4c8f0473b8 1-6
+services/dashboard/src/pages/Login.tsx
+  h_7a2f4c8f0473b8 1-154
+services/inbox/src/lib/password.ts
+  h_7a2f4c8f0473b8 1-56
+scripts/config.example.toml
+  s_a7fe1ee5ebe72e::t_b2273d6bf47356 32-34,37-42
+  h_7a2f4c8f0473b8 35-36
+services/dashboard/src/components/ui/chart.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-373
+services/dashboard/src/pages/AcceptInvite.tsx
+  h_7a2f4c8f0473b8 1-179
+services/dashboard/src/components/ui/label.tsx
+  s_a7fe1ee5ebe72e::t_f4a1e8fa61cf0e 1-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "2cb98d7f73608cabfe51f98a1777f2e1c696f0e5",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    },
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  },
+  "sessions": {
+    "s_a7fe1ee5ebe72e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "fd6b3561-8e06-4716-8eb7-628561d56ef9",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

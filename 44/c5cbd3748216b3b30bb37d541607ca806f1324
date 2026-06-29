@@ -1,0 +1,48 @@
+compose.inbox.dev.yaml
+  s_48bbe8a7322c0b::t_99160d4221de8d 16,39
+justfile
+  s_48bbe8a7322c0b::t_944eaedc8a62c2 106,110,115,119,124-125,136,141-143,147-148,155,159
+docs/CLOUDFLARE.md
+  s_48bbe8a7322c0b::t_1a27d46a6f32ca 81
+services/email-bridge/src/index.ts
+  s_48bbe8a7322c0b::t_364a1b42717e38 1
+services/email-bridge/wrangler.jsonc
+  s_48bbe8a7322c0b::t_364a1b42717e38 2
+services/email-worker/README.md
+  s_48bbe8a7322c0b::t_364a1b42717e38 1
+services/email-worker/src/index.ts
+  s_48bbe8a7322c0b::t_364a1b42717e38 79
+services/email-server/src/env.ts
+  s_48bbe8a7322c0b::t_364a1b42717e38 44
+scripts/setup.mjs
+  s_48bbe8a7322c0b::t_1a27d46a6f32ca 8,54
+RECIPES.md
+  s_48bbe8a7322c0b::t_944eaedc8a62c2 91,95,99,102,109,112,116,119,123,129,132,136,139,143-144,147,151-152,155,159,162,166,349-350,366-367,372
+compose.inbox.deps.yaml
+  s_48bbe8a7322c0b::t_99160d4221de8d 16,39
+compose.dev.yaml
+  s_48bbe8a7322c0b::t_e07679f7f2a933 3,27,59,69,85
+services/email-worker/wrangler.jsonc
+  s_48bbe8a7322c0b::t_1a27d46a6f32ca 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "44c5cbd3748216b3b30bb37d541607ca806f1324",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_48bbe8a7322c0b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "91f0ea8e-bd97-4be7-b166-0ee0dc1ef998",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

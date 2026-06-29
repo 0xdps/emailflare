@@ -1,0 +1,210 @@
+infra/Caddyfile.email-api.dev
+  s_e66793bb61c845::t_247806852ad862 4,9,18
+packages/email-core/package.json
+  s_e66793bb61c845::t_5afd446f6e85b9 24
+  h_7a2f4c8f0473b8 8-11,17,19-23,26-28
+  s_e66793bb61c845::t_80ee6c40ee4c8b 12-16
+Dockerfile.email-inbox
+  s_e66793bb61c845::t_247806852ad862 13,21-40,46-49,51,53-54,80-89
+  s_e66793bb61c845::t_f0e627ffb96392 98,102-103,106
+services/inbox-server/src/routes/domains.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,76
+services/email-server/src/routes/auth.ts
+  s_e66793bb61c845::t_97642c97209d98 7
+  s_e66793bb61c845::t_4f7fa4caaf7333 12
+services/email-server/src/routes/cloudflare.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,140
+services/inbox-server/src/routes/inbox/compose.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 5,29,52
+compose.email-api.dev.yaml
+  s_e66793bb61c845::t_fed720f47d95dd 98
+  s_e66793bb61c845::t_247806852ad862 26,29-30,32-40,45,60-66,78,84,102-103,108
+infra/start-email-inbox.sh
+  s_e66793bb61c845::t_247806852ad862 87
+services/inbox-worker/src/routes/inbox/inboxes.ts
+  s_e66793bb61c845::t_5aebe77b4f7083 15
+  s_e66793bb61c845::t_9a3a83073fa64d 12,31
+services/inbox-worker/src/routes/inbox/inbox-templates.ts
+  s_e66793bb61c845::t_5aebe77b4f7083 11
+  s_e66793bb61c845::t_9a3a83073fa64d 9,27
+  s_e66793bb61c845::t_85cbe18680d964 22,37
+services/inbox-worker/src/routes/domains.ts
+  s_e66793bb61c845::t_fe41bb51a7ffb1 34
+  s_e66793bb61c845::t_9a3a83073fa64d 13,73
+services/email-server/src/routes/keys.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 5,27
+  s_e66793bb61c845::t_da265738f59805 17
+services/inbox-worker/src/seed.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,71
+services/email-server/package.json
+  s_e66793bb61c845::t_0528b8cf96cc67 8,15
+services/inbox-worker/src/routes/send.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 15,107,128
+stacklane.yaml
+  s_e66793bb61c845::t_5d5e3c5229dfc0 2
+services/inbox-server/src/seed.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,71
+services/email-worker/src/routes/send.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 15,117,138
+services/inbox-worker/package.json
+  s_e66793bb61c845::t_d5df76015533b6 12,14,17-18
+start-email-api.sh
+  s_e66793bb61c845::t_247806852ad862 105
+services/inbox-server/src/routes/inbox/inboxes.ts
+  s_e66793bb61c845::t_71e047c59f9c43 8
+  s_e66793bb61c845::t_9a3a83073fa64d 4,22
+services/inbox-worker/src/routes/inbox/compose.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 7,17,39
+  s_e66793bb61c845::t_9b64802e547165 23
+  s_e66793bb61c845::t_57ae97deaf1c17 10
+services/email-server/Dockerfile
+  s_e66793bb61c845::t_b1dc2cc368c1c0 2-5,8,12-13,16-18,20,27-28
+docs/SELF_HOSTING.md
+  s_e66793bb61c845::t_5d72de5a25d700 50,83
+  s_e66793bb61c845::t_cea12a5db85ee2 98,101
+packages/inbox-core/package.json
+  s_e66793bb61c845::t_b4a09f6b3b1fba 8-12,14-18,20-22
+services/inbox-server/src/routes/inbox/inbox-templates.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,21
+  s_e66793bb61c845::t_39994df0e6c763 30
+  s_e66793bb61c845::t_71e047c59f9c43 7,16
+services/inbox-worker/src/db.ts
+  s_e66793bb61c845::t_61771601f660c2 5-20
+services/email-server/src/routes/domains.ts
+  s_e66793bb61c845::t_da265738f59805 26
+  s_e66793bb61c845::t_9a3a83073fa64d 8,63
+Dockerfile.email-api
+  s_e66793bb61c845::t_247806852ad862 20-22,24,26-27,29-30,32,34-43,82-89
+  s_e66793bb61c845::t_f0e627ffb96392 94-95,98
+services/email-worker/src/email-handler.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 5,201,213,233,269
+services/email-worker/src/routes/auth.ts
+  s_e66793bb61c845::t_fbef995cf1dddb 6
+  s_e66793bb61c845::t_d26170f98e95f3 31
+packages/email-core/src/index.ts
+  s_e66793bb61c845::t_1127324b9864d6 11-13,15-160,171-188,190-194,196-204
+  s_e66793bb61c845::t_540d8f7c5b9eb1 14,162-163,165-168
+  s_e66793bb61c845::t_5afd446f6e85b9 161,164,169-170
+packages/inbox-core/tsconfig.json
+  s_e66793bb61c845::t_1a05cc6f8baef2 1-16
+packages/inbox-core/src/index.ts
+  s_e66793bb61c845::t_85cd238d2b2719 11-228,230-246,248-261
+railway.json
+  s_e66793bb61c845::t_c016aa0b03121d 5
+services/inbox-worker/src/routes/inbox/sequences.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 11,26,74
+  s_e66793bb61c845::t_5aebe77b4f7083 13
+services/email-worker/package.json
+  s_e66793bb61c845::t_0528b8cf96cc67 14,16-17,21
+services/inbox-server/src/email-handler.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 9,41,67,73,96,111
+compose.email-api.yaml
+  s_e66793bb61c845::t_fed720f47d95dd 7
+services/inbox-server/Dockerfile
+  s_e66793bb61c845::t_b1dc2cc368c1c0 2-5,8,12-13,16-18,20,27-28
+services/inbox-worker/src/email-handler.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 8,28,53,61,90,107
+services/inbox-worker/src/routes/keys.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 6,34
+  s_e66793bb61c845::t_fe41bb51a7ffb1 24
+services/inbox-worker/src/routes/templates.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 8,58
+  s_e66793bb61c845::t_18ecd203927095 24
+  s_e66793bb61c845::t_5b7001d9e59470 44,71,108
+services/inbox-worker/src/services/cloudflare.ts
+  s_e66793bb61c845::t_80ee6c40ee4c8b 1
+  s_e66793bb61c845::t_c9dbd312cf2eff 2
+services/email-worker/src/routes/suppressions.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 9,74
+services/inbox-server/src/routes/invites.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 9,40,42,85
+services/inbox-worker/src/routes/setup.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 7,33
+services/email-worker/src/routes/cloudflare.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 2,42
+services/inbox-server/src/routes/inbox/sequences.ts
+  s_e66793bb61c845::t_71e047c59f9c43 7
+  s_e66793bb61c845::t_9a3a83073fa64d 4,18,64
+packages/email-core/tsconfig.json
+  s_e66793bb61c845::t_ebd17173335f8d 1-16
+services/email-server/src/routes/send.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 8,104,125
+services/email-server/src/db.ts
+  s_e66793bb61c845::t_a11530c29f1c4c 1
+  s_e66793bb61c845::t_9a3a83073fa64d 206
+  s_e66793bb61c845::t_2a3fce844d5d6e 7-22
+services/inbox-server/src/routes/keys.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,39
+justfile
+  s_e66793bb61c845::t_b2d338f4809148 25-26
+  s_e66793bb61c845::t_b70dc46e3f6275 89,93,97,101,105,244,248,252,256,260
+  s_e66793bb61c845::t_c016aa0b03121d 47,50,53,56
+services/inbox-server/package.json
+  s_e66793bb61c845::t_d5df76015533b6 9,15-16
+services/inbox-worker/src/routes/invites.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 9,36,38,86
+infra/Dockerfile
+  s_e66793bb61c845::t_f0e627ffb96392 2
+services/inbox-server/src/db.ts
+  s_e66793bb61c845::t_830a3db100cdce 17-32
+services/inbox-server/src/routes/templates.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,74
+services/email-server/src/routes/templates.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 7,51
+  s_e66793bb61c845::t_ed866e534d3865 18,37,64,101,138
+  s_e66793bb61c845::t_97642c97209d98 6
+compose.email-inbox.yaml
+  s_e66793bb61c845::t_fed720f47d95dd 29
+services/email-server/src/routes/suppressions.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 9,68
+services/email-worker/src/seed.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,71
+packages/email-core/src/cloudflare.ts
+  s_e66793bb61c845::t_cbd77d41b15980 1-292
+services/email-worker/src/routes/keys.ts
+  s_e66793bb61c845::t_847482a06cff5f 24
+  s_e66793bb61c845::t_9a3a83073fa64d 6,34
+services/email-worker/src/routes/domains.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 13,73
+  s_e66793bb61c845::t_847482a06cff5f 34
+services/inbox-server/src/routes/auth.ts
+  s_e66793bb61c845::t_71e047c59f9c43 9,13
+services/inbox-server/src/routes/send.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 4,109,121
+services/inbox-server/src/routes/setup.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 7,37
+compose.email-inbox.dev.yaml
+  s_e66793bb61c845::t_247806852ad862 53-54,56-65,88-96,105,127-128
+  s_e66793bb61c845::t_fed720f47d95dd 118
+services/email-worker/src/services/cloudflare.ts
+  s_e66793bb61c845::t_80ee6c40ee4c8b 1
+  s_e66793bb61c845::t_c9dbd312cf2eff 2
+services/inbox-worker/src/routes/auth.ts
+  s_e66793bb61c845::t_5aebe77b4f7083 10,15
+services/email-worker/src/routes/templates.ts
+  s_e66793bb61c845::t_9a3a83073fa64d 8,58
+  s_e66793bb61c845::t_c55b9c42b75c4d 24,44,71,108
+services/email-worker/src/db.ts
+  s_e66793bb61c845::t_b85506797b6723 5-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "b3e21bb313e1b425c7305047ac1e013dedbf753b",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_e66793bb61c845": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "22a881fa-1c51-4e8e-8ecf-330740f039e5",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
