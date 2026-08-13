@@ -1,0 +1,92 @@
+Dockerfile.email-api
+  s_3d0722258bf66d::t_d118b8f4d867e6 9-11
+  s_3d0722258bf66d::t_0f3548589a8782 60
+services/email-ui/src/routes/test-emails.tsx
+  s_3d0722258bf66d::t_ab7f4c975dbc22 1-7
+services/email-worker/README.md
+  s_3d0722258bf66d::t_4d554ecef69be6 12,86,88-90,92
+services/email-server/src/routes/templates.ts
+  s_3d0722258bf66d::t_cf1d3f903e4eff 10-11
+  s_3d0722258bf66d::t_1dfe8276af4b5a 3
+Dockerfile.email-inbox
+  s_3d0722258bf66d::t_d118b8f4d867e6 6-8
+.env.api.example
+  s_3d0722258bf66d::t_60e93aa34a4798 35-37
+services/email-worker/src/index.ts
+  s_3d0722258bf66d::t_4d554ecef69be6 8
+services/email-server/src/services/testEmail.ts
+  s_3d0722258bf66d::t_e060084fdc0b59 1-14
+services/email-server/src/routes/testEmails.ts
+  s_3d0722258bf66d::t_56565682a9e30c 1-68
+RECIPES.md
+  s_3d0722258bf66d::t_a58edc1cd76add 46,52
+services/landing/src/pages/cloudflare.astro
+  s_3d0722258bf66d::t_e1f1831a9f4675 394
+packages/email-core/src/index.ts
+  s_3d0722258bf66d::t_3020e03382c858 80-81
+.github/workflows/docker-check.yml
+  s_3d0722258bf66d::t_d500c640a1c2b4 33-34,59-60
+services/email-ui/src/pages/Logs.tsx
+  s_3d0722258bf66d::t_b69efa567a2cd0 151-153
+services/email-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_202a42fd0f339d 4
+  s_3d0722258bf66d::t_5ff95b7569994f 129-130,152-153
+services/email-server/src/routes/stats.ts
+  s_3d0722258bf66d::t_ddced72ce9db9c 65
+services/email-ui/src/components/Layout.tsx
+  s_3d0722258bf66d::t_44e08c52a06d60 49
+services/email-worker/src/routes/stats.ts
+  s_3d0722258bf66d::t_e661d9e602d4d6 65
+services/inbox-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_4d554ecef69be6 4
+justfile
+  s_3d0722258bf66d::t_fd07570efcbc73 84,87
+services/email-worker/src/routes/templates.ts
+  s_3d0722258bf66d::t_6aba0bd4eecc55 11
+services/email-server/src/routes/send.ts
+  s_3d0722258bf66d::t_c911db36fa71be 116-117,139-140
+services/email-ui/src/pages/TestMailbox.tsx
+  s_3d0722258bf66d::t_2444457bf1b1c4 1-329
+.github/workflows/docker-publish.yml
+  s_3d0722258bf66d::t_f0d66ba39d287c 149-150,212-213
+services/landing/src/pages/index.astro
+  s_3d0722258bf66d::t_175aa6afb61426 1176,1378,1385
+services/landing/src/pages/email-api.astro
+  s_3d0722258bf66d::t_4fe9a681088863 709
+  s_3d0722258bf66d::t_175aa6afb61426 242,494-495,592,712-713
+services/email-server/src/index.ts
+  s_3d0722258bf66d::t_977c36b13e6770 118
+services/email-worker/migrations/0004_add_email_body_columns.sql
+  s_3d0722258bf66d::t_cc1c41d7c78d4d 1-3
+services/landing/src/pages/docs.astro
+  s_3d0722258bf66d::t_e1f1831a9f4675 423,690-691
+docs/SELF_HOSTING.md
+  s_3d0722258bf66d::t_1d3e0c5649bdbb 96,107,113,118,122-124
+services/email-server/src/db.ts
+  s_3d0722258bf66d::t_5e93aed1b58c63 129-132
+services/email-server/pnpm-lock.yaml
+  s_3d0722258bf66d::t_a043d55b0f6aa6 11-13,57-59,570-574
+services/email-worker/pnpm-lock.yaml
+  s_3d0722258bf66d::t_26bdd16329adb1 11-13,101-103,864-868
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c464b3889c9dc2bc2d07ae55a2608bd29976257b",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
