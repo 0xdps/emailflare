@@ -58,3 +58,64 @@ jobs:
           cache-to: type=gha,mode=max,scope=check-inbox
           secrets: |
             "gh_token=${{ secrets.GH_PAT }}"
+
+  # ── Check: Cloudflare Workers + bridges + landing (compile gate) ────────────
+  # These are NOT built by the Docker jobs above (Workers deploy via wrangler),
+  # so we typecheck/build them here to catch broken code before merge.
+  verify-workers:
+    name: Verify ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: email-worker
+            path: services/email-worker
+            check: pnpm exec tsc --noEmit
+            build_shared: "true"
+          - name: inbox-worker
+            path: services/inbox-worker
+            check: pnpm exec tsc --noEmit
+            build_shared: "true"
+          - name: email-bridge
+            path: services/email-bridge
+            check: pnpm exec tsc --noEmit
+            build_shared: "false"
+          - name: inbox-bridge
+            path: services/inbox-bridge
+            check: pnpm exec tsc --noEmit
+            build_shared: "false"
+          - name: landing
+            path: services/landing
+            check: pnpm run build
+            build_shared: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.path }}/pnpm-lock.yaml
+
+      # Workers import @emailflare/email-core, @emailflare/inbox-core and
+      # @emailflare/emails via file: deps — build them first so type resolution
+      # and React types are available.
+      - name: Build shared packages
+        if: matrix.build_shared == 'true'
+        run: |
+          pnpm install --frozen-lockfile --dir packages/email-core && pnpm --dir packages/email-core run build
+          pnpm install --frozen-lockfile --dir packages/inbox-core && pnpm --dir packages/inbox-core run build
+          pnpm install --frozen-lockfile --dir services/emails && pnpm --dir services/emails run build
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.path }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Check (${{ matrix.check }})
+        working-directory: ${{ matrix.path }}
+        run: ${{ matrix.check }}
