@@ -1,0 +1,23 @@
+.github/workflows/deploy-workers.yml
+  s_3d0722258bf66d::t_e14a4032e56fc0 1-152
+docs/CLOUDFLARE.md
+  s_3d0722258bf66d::t_fae2e1163cb65f 129-167
+services/landing/src/pages/cloudflare.astro
+  s_3d0722258bf66d::t_a24b67d0d36aac 514-527
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b47147172385be10e3f4ca171754a6bf5a9e7dc8",
+  "prompts": {},
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
