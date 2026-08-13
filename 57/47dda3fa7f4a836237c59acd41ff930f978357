@@ -1,0 +1,38 @@
+CONTRIBUTING.md
+  s_3d0722258bf66d::t_eb1a0386dd7282 6-7,22-23
+docs/SELF_HOSTING.md
+  s_3d0722258bf66d::t_eb1a0386dd7282 23,56,101,103
+.gitignore
+  s_3d0722258bf66d::t_87e44a8083d465 5,12,14-15
+.github/workflows/docker-check.yml
+  s_3d0722258bf66d::t_bb4bc644b12361 26,50
+docs/CLOUDFLARE.md
+  s_3d0722258bf66d::t_1feab93cfb702b 32,74,101,109
+  s_3d0722258bf66d::t_0dc297929be240 132,140,148,158,164
+services/inbox-worker/wrangler.jsonc
+  s_3d0722258bf66d::t_b1c052fd574bba 100-102
+README.md
+  s_3d0722258bf66d::t_8452ae9801294d 104-106
+.github/workflows/docker-publish.yml
+  s_3d0722258bf66d::t_bb4bc644b12361 140,201
+RECIPES.md
+  s_3d0722258bf66d::t_eb1a0386dd7282 43
+compose.email-inbox.yaml
+  s_3d0722258bf66d::t_f28e5503ef05a2 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5747dda3fa7f4a836237c59acd41ff930f978357",
+  "prompts": {},
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
