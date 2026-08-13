@@ -1,0 +1,38 @@
+services/inbox-worker/src/routes/inbox/inboxes.ts
+  s_3d0722258bf66d::t_b99e89e50a825b 12
+services/inbox-server/src/routes/inbox/sequences.ts
+  s_3d0722258bf66d::t_ccdc22b0447b60 4
+services/inbox-server/package.json
+  s_3d0722258bf66d::t_065446b7682eb9 15-16
+services/inbox-worker/src/routes/templates.ts
+  s_3d0722258bf66d::t_4119c577e2ee12 3,11
+services/inbox-worker/src/routes/inbox/sequences.ts
+  s_3d0722258bf66d::t_f20d30ac2a981e 11
+services/inbox-server/src/routes/inbox/inboxes.ts
+  s_3d0722258bf66d::t_d972be6a4310d3 4
+services/inbox-server/src/routes/templates.ts
+  s_3d0722258bf66d::t_525cbdff75e047 4,12
+  s_3d0722258bf66d::t_498a0ab60ff807 13
+packages/inbox-core/pnpm-lock.yaml
+  s_3d0722258bf66d::t_5b8756cf9071f7 1-33
+services/inbox-server/pnpm-lock.yaml
+  s_3d0722258bf66d::t_3670b9b68a2f35 17-19,23-25,204-206,210-212,1174-1178,1186-1189
+services/inbox-worker/pnpm-lock.yaml
+  s_3d0722258bf66d::t_d11cfcb74b9cd9 11-13,17-19,104-106,110-112,870-874,882-885
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b50bbc31680d9085866d3d88dbe10eedf545ae69",
+  "prompts": {},
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
