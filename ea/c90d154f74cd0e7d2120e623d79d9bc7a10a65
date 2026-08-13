@@ -1,0 +1,22 @@
+services/inbox-bridge/pnpm-workspace.yaml
+  s_3d0722258bf66d::t_aa81e591a04fc0 1-4
+services/email-bridge/pnpm-workspace.yaml
+  s_3d0722258bf66d::t_c4f819d4d2de27 2-5
+  s_3d0722258bf66d::t_e91f044d6dfa5e 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "eac90d154f74cd0e7d2120e623d79d9bc7a10a65",
+  "prompts": {},
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
