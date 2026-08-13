@@ -1,7 +1,7 @@
 // POST /v1/send
 //
 // Workers version differences vs. Node.js backend:
-//   - SMTP test mode is not supported (nodemailer is Node.js-only).
+//   - Test-mode capture (in-house test mailbox) is not supported here.
 //     Both test and live keys go through the Cloudflare Email Sending REST API.
 //     The is_test flag is still stored in email_logs for audit purposes.
 

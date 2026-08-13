@@ -47,13 +47,9 @@ services:
       # Embedded mesahub running in the mesahub service above.
       # Override MESAHUB_URL to point to an external instance if needed.
       - MESAHUB_URL=mh://${ADMIN_TOKEN}@mesahub:3002/emailflare
-      - SMTP_HOST=mailpit
-      - SMTP_PORT=1025
     depends_on:
       mesahub:
         condition: service_healthy
-      mailpit:
-        condition: service_started
     extra_hosts:
       - host.docker.internal:host-gateway
     volumes:
@@ -64,16 +60,6 @@ services:
       - ./services/email-server/src:/app/services/email-server/src
       - ./services/email-server/package.json:/app/services/email-server/package.json
       - backend-node-modules:/app/services/email-server/node_modules
-
-  mailpit:
-    container_name: emailflare-api-mailpit
-    image: axllent/mailpit:latest
-    environment:
-      - MP_WEBROOT=/mailpit
-      - MP_UI_AUTH=${MAILPIT_USER:-root}:${MAILPIT_PASS:-${ADMIN_TOKEN}}
-    ports:
-      - "2025:1025"
-      - "8026:8025"
 
   email-ui:
     container_name: emailflare-api-admin
@@ -101,7 +87,6 @@ services:
     depends_on:
       - email-server
       - email-ui
-      - mailpit
 
 volumes:
   backend-node-modules:

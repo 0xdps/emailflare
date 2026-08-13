@@ -9,7 +9,7 @@ Cloudflare-native parallel deployment of the emailflare backend.
 | Sessions | `iron-session` (Node.js crypto) | `jose` SignJWT (Web Crypto) |
 | API rate limiting | In-memory sliding window | **Workers Rate Limiting** binding |
 | Login rate limiting | In-memory | **Workers KV** |
-| Email sending | CF REST API + nodemailer (SMTP) | CF REST API only (no SMTP) |
+| Email sending | CF REST API + in-house test mailbox | CF REST API only (no test mailbox capture) |
 | Secrets | `.env` file / Docker env vars | `wrangler secret put` |
 
 Both deployments share the same API surface (`/v1/send`, `/api/*`) and the same admin UI.
@@ -83,13 +83,13 @@ The email UI (`services/email-ui`) can be pointed at `http://localhost:8787` for
 
 ## Architecture Notes
 
-### Why no SMTP in the Worker?
+### Why no test mailbox in the Worker?
 
-`nodemailer` depends on Node.js TCP sockets which are not available in the Workers runtime.
-The Worker sends all emails (both `test` and `live` API keys) through the Cloudflare Email
-Sending REST API. The `is_test` flag is still recorded in `email_logs` for audit purposes.
+Test API keys on the Node.js backend (`services/email-server`) capture email content into an in-house
+Test Mailbox instead of sending. The Worker sends all emails (both `test` and `live` API keys) through
+the Cloudflare Email Sending REST API. The `is_test` flag is still recorded in `email_logs` for audit purposes.
 
-If you need SMTP test delivery locally, use the Node.js backend (`services/email-server`) instead.
+If you need test-mailbox capture locally, use the Node.js backend (`services/email-server`) instead.
 
 ### Rate Limiting
 

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@emailflare/email-core':
+        specifier: file:../../packages/email-core
+        version: file:../../packages/email-core
       '@emailflare/emails':
         specifier: file:../emails
         version: file:../emails
@@ -32,9 +35,6 @@ importers:
       nanoid:
         specifier: ^5.1.5
         version: 5.1.9
-      nodemailer:
-        specifier: ^8.0.5
-        version: 8.0.5
       postal-mime:
         specifier: ^2.7.4
         version: 2.7.4
@@ -45,9 +45,6 @@ importers:
       '@types/node':
         specifier: ^22.15.3
         version: 22.19.17
-      '@types/nodemailer':
-        specifier: ^8.0.0
-        version: 8.0.0
       tsx:
         specifier: ^4.19.3
         version: 4.21.0
@@ -56,6 +53,9 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@emailflare/email-core@file:../../packages/email-core':
+    resolution: {directory: ../../packages/email-core, type: directory}
 
   '@emailflare/emails@file:../emails':
     resolution: {directory: ../emails, type: directory}
@@ -432,9 +432,6 @@ packages:
   '@types/node@22.19.17':
     resolution: {integrity: sha512-wGdMcf+vPYM6jikpS/qhg6WiqSV/OhG+jeeHT/KlVqxYfD40iYJf9/AE1uQxVWFvU7MipKRkRv8NSHiCGgPr8Q==}
 
-  '@types/nodemailer@8.0.0':
-    resolution: {integrity: sha512-fyf8jWULsCo0d0BuoQ75i6IeoHs47qcqxWc7yUdUcV0pOZGjUTTOvwdG1PRXUDqN/8A64yQdQdnA2pZgcdi+cA==}
-
   cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
@@ -506,10 +503,6 @@ packages:
     engines: {node: ^18 || >=20}
     hasBin: true
 
-  nodemailer@8.0.5:
-    resolution: {integrity: sha512-0PF8Yb1yZuQfQbq+5/pZJrtF6WQcjTd5/S4JOHs9PGFxuTqoB/icwuB44pOdURHJbRKX1PPoJZtY7R4VUoCC8w==}
-    engines: {node: '>=6.0.0'}
-
   parseley@0.12.1:
     resolution: {integrity: sha512-e6qHKe3a9HWr0oMRVDTRhKce+bRO8VGQR3NyVwcjwrbhMmFCX9KszEV35+rn4AdilFAq9VPxP/Fe1wC9Qjd2lw==}
 
@@ -573,6 +566,11 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
+
+  '@emailflare/email-core@file:../../packages/email-core':
+    dependencies:
+      nanoid: 5.1.9
+      zod: 3.25.76
 
   '@emailflare/emails@file:../emails':
     dependencies:
@@ -819,10 +817,6 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/nodemailer@8.0.0':
-    dependencies:
-      '@types/node': 22.19.17
-
   cookie@0.7.2: {}
 
   deepmerge@4.3.1: {}
@@ -915,8 +909,6 @@ snapshots:
   marked@15.0.12: {}
 
   nanoid@5.1.9: {}
-
-  nodemailer@8.0.5: {}
 
   parseley@0.12.1:
     dependencies:

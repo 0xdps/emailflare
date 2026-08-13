@@ -62,6 +62,7 @@ app.get('/', async (c) => {
          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
        FROM email_logs
        WHERE sent_at >= ?
+       AND is_test = 0
        GROUP BY strftime('%Y-%m-%d', sent_at)
        ORDER BY date ASC`,
       [fromIso],

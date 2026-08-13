@@ -239,7 +239,7 @@ import { Icon } from 'astro-icon/components';
               <span class="check">✓</span>
               <div class="line">
                 <strong>Bearer token auth</strong>
-                Scoped API keys — not your master Cloudflare token. Prefix <code>eflive_</code> for live sends, <code>eftest_</code> to route through SMTP instead.
+                Scoped API keys — not your master Cloudflare token. Prefix <code>eflive_</code> for live sends, <code>eftest_</code> to capture into the test mailbox instead.
               </div>
             </li>
             <li>
@@ -491,8 +491,8 @@ import { Icon } from 'astro-icon/components';
         </div>
         <div class="feature-card">
           <span class="card-icon"><Icon name="lucide:microscope" /></span>
-          <h3>Test Keys &amp; Built-in Mailpit</h3>
-          <p>Create a <strong>test API key</strong> (<code>eftest_</code>) and all sends route through SMTP — no Cloudflare credentials required. Set <code>ENABLE_TEST_MODE=true</code> to start the bundled <a href="https://mailpit.axllent.org" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Mailpit</a> catcher at <code>/mailpit/</code>.</p>
+          <h3>Test Keys &amp; Built-in Test Mailbox</h3>
+          <p>Create a <strong>test API key</strong> (<code>eftest_</code>) and all sends are captured in the in-house Test Mailbox — no Cloudflare credentials required. Browse, preview HTML, and manage test emails from the admin dashboard.</p>
           <span class="feature-tag">Local Dev</span>
         </div>
       </div>
@@ -589,7 +589,7 @@ import { Icon } from 'astro-icon/components';
               <div class="do-step-num">1</div>
               <div>
                 <div class="do-step-label">Configure environment</div>
-                <p class="do-step-desc">Copy the example file and fill in credentials. Add <code>ENABLE_TEST_MODE=true</code> to also start the built-in Mailpit catcher.</p>
+                <p class="do-step-desc">Copy the example file and fill in credentials. Test API keys capture email into the in-house Test Mailbox — no extra services needed.</p>
                 <div class="code-block">
                   <span><span class="cb-cmd">cp .env.example .env.local</span></span>
                   <span><span class="cb-kw">CF_API_TOKEN</span>=<span class="cb-val">your_cf_token</span></span>
@@ -706,11 +706,11 @@ import { Icon } from 'astro-icon/components';
           </div>
           <span class="de-arrow">→</span>
         </a>
-        <a href="https://mailpit.axllent.org" target="_blank" rel="noopener" class="deploy-extra">
+        <a href="/email-api#features" class="deploy-extra">
           <span class="de-icon"><Icon name="lucide:mail" /></span>
           <div>
-            <div class="de-title">Local testing with Mailpit</div>
-            <div class="de-sub">Included in dev stack — no real emails sent.</div>
+            <div class="de-title">Built-in Test Mailbox</div>
+            <div class="de-sub">Capture &amp; preview test emails — no real emails sent.</div>
           </div>
           <span class="de-arrow">→</span>
         </a>

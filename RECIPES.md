@@ -43,13 +43,13 @@ just emailflare-doctor
 Env file: `.env.api.local` (copy from `.env.api.example`).
 
 ### `just emailflare-api-dev`
-Start the dev stack with hot reload. Runs MesaHub, email-server, email-ui (Vite), and Mailpit.
+Start the dev stack with hot reload. Runs MesaHub, email-server, and email-ui (Vite).
 
 ```sh
 just emailflare-api-dev
 ```
 
-Open `http://localhost:8090` for the dashboard, `http://localhost:8025` for Mailpit.
+Open `http://localhost:8090` for the dashboard. Test emails appear under *Monitor → Test Mailbox*.
 
 ### `just emailflare-api-dev-down`
 Stop the dev stack.

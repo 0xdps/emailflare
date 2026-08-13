@@ -146,6 +146,8 @@ jobs:
             MESAHUB_CORE_VERSION=trunk
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
+          secrets: |
+            "gh_token=${{ secrets.GH_PAT }}"
 
   # ── Docker: emailflare-inbox ─────────────────────────────────────────────────
   docker-inbox:
@@ -207,4 +209,6 @@ jobs:
             MESAHUB_CORE_VERSION=trunk
           cache-from: type=gha,scope=inbox
           cache-to: type=gha,mode=max,scope=inbox
+          secrets: |
+            "gh_token=${{ secrets.GH_PAT }}"
 

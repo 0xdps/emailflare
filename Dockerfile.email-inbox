@@ -3,7 +3,9 @@
 FROM golang:1.24-alpine AS build-core
 RUN apk add --no-cache gcc musl-dev sqlite-dev git
 ARG MESAHUB_CORE_VERSION=trunk
-RUN git clone --depth 1 --branch ${MESAHUB_CORE_VERSION} \
+RUN --mount=type=secret,id=gh_token \
+    git config --global url."https://$(cat /run/secrets/gh_token)@github.com/".insteadOf "https://github.com/" && \
+    git clone --depth 1 --branch ${MESAHUB_CORE_VERSION} \
     https://github.com/mesahub-db/mesahub-core.git /mesahub-core
 WORKDIR /mesahub-core/server
 RUN CGO_ENABLED=1 GOOS=linux go build -o /go/bin/mesahub-server ./cmd/server

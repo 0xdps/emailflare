@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@emailflare/email-core':
+        specifier: file:../../packages/email-core
+        version: file:../../packages/email-core
       '@emailflare/emails':
         specifier: file:../emails
         version: file:../emails
@@ -94,6 +97,9 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
+
+  '@emailflare/email-core@file:../../packages/email-core':
+    resolution: {directory: ../../packages/email-core, type: directory}
 
   '@emailflare/emails@file:../emails':
     resolution: {directory: ../emails, type: directory}
@@ -854,6 +860,11 @@ snapshots:
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
+
+  '@emailflare/email-core@file:../../packages/email-core':
+    dependencies:
+      nanoid: 5.1.11
+      zod: 3.25.76
 
   '@emailflare/emails@file:../emails':
     dependencies:

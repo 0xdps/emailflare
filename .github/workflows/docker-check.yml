@@ -30,6 +30,8 @@ jobs:
             MESAHUB_CORE_VERSION=trunk
           cache-from: type=gha,scope=check-api
           cache-to: type=gha,mode=max,scope=check-api
+          secrets: |
+            "gh_token=${{ secrets.GH_PAT }}"
 
   # ── Check: emailflare-inbox image ────────────────────────────────────────────
   check-inbox:
@@ -54,3 +56,5 @@ jobs:
             MESAHUB_CORE_VERSION=trunk
           cache-from: type=gha,scope=check-inbox
           cache-to: type=gha,mode=max,scope=check-inbox
+          secrets: |
+            "gh_token=${{ secrets.GH_PAT }}"

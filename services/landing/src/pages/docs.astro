@@ -420,7 +420,7 @@ import Base from '../layouts/Base.astro';
             <div class="key-types">
               <div class="key-type-card">
                 <div class="key-badge key-badge-test">⚗ test key</div>
-                <p>Prefix: <code>eftest_</code>. Sends go through SMTP — no Cloudflare credentials required. Set <code>ENABLE_TEST_MODE=true</code> to start the built-in Mailpit catcher at <code>/mailpit/</code> (auth: <code>root</code> / <code>ADMIN_TOKEN</code> by default, override with <code>MAILPIT_USER</code> / <code>MAILPIT_PASS</code>).</p>
+                <p>Prefix: <code>eftest_</code>. Sends are stored in the admin dashboard — no Cloudflare credentials required. Browse, preview HTML, and manage test emails from the built-in Test Mailbox page.</p>
               </div>
               <div class="key-type-card">
                 <div class="key-badge key-badge-live">✓ live key</div>
@@ -687,8 +687,8 @@ import Base from '../layouts/Base.astro';
             <p><code>themeId</code> only works with layout-based (built-in) templates. For custom HTML templates the field is ignored — you control the styles directly in the HTML body.</p>
 
             <h3>Sends succeed in test mode but fail in live mode</h3>
-            <p>Test keys (<code>eftest_</code>) use SMTP and don't require Cloudflare credentials. Live keys use Cloudflare Email Sending — ensure <code>CF_API_TOKEN</code> has the correct permissions and the sender domain is verified. See the <a href="/cloudflare-token" style="color:var(--orange);text-decoration:none;">Cloudflare token guide →</a></p>
-            <p style="margin-top:8px;">To test with the built-in Mailpit catcher, set <code>ENABLE_TEST_MODE=true</code> — Mailpit will be available at <code>/mailpit/</code> on the same port as the admin UI.</p>
+            <p>Test keys (<code>eftest_</code>) store emails in the dashboard and don't require Cloudflare credentials. Live keys use Cloudflare Email Sending — ensure <code>CF_API_TOKEN</code> has the correct permissions and the sender domain is verified. See the <a href="/cloudflare-token" style="color:var(--orange);text-decoration:none;">Cloudflare token guide →</a></p>
+            <p style="margin-top:8px;">Test emails are stored in the built-in Test Mailbox page in the admin UI — no external service needed.</p>
 
             <h3>Database errors in logs</h3>
             <p>If you see <em>"This SQL statement is not allowed on /query endpoint"</em>, upgrade to the latest EmailFlare image — this was a bug fixed in the backend send route.</p>

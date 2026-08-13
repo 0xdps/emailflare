@@ -33,10 +33,6 @@ export const env = {
   MESAHUB_URL: required('MESAHUB_URL'),
   CF_API_TOKEN: process.env.CF_API_TOKEN ?? '',
   CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID ?? '',
-  SMTP_HOST: process.env.SMTP_HOST ?? 'localhost',
-  SMTP_PORT: parseInt(process.env.SMTP_PORT ?? '1025', 10),
-  SMTP_USER: process.env.SMTP_USER ?? '',
-  SMTP_PASS: process.env.SMTP_PASS ?? '',
   // Secret that must appear as Bearer token on POST /api/webhooks/bounce.
   // Leave unset to disable the webhook endpoint entirely.
   WEBHOOK_SECRET: process.env.WEBHOOK_SECRET ?? '',

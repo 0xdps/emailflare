@@ -1,10 +1,13 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
+import { customAlphabet } from 'nanoid';
 import { db, templates } from '../db.js';
 import { LAYOUTS, renderLayout, THEMES } from '@emailflare/emails';
 import type { LayoutName } from '@emailflare/emails';
 import type { TemplateRow } from '../db.js';
 import { templateSchema, toSlug, enrich, generateId } from '@emailflare/email-core';
+
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 21);
 
 const app = new Hono();
 

@@ -9,10 +9,6 @@
     reverse_proxy email-server:3000
   }
 
-  handle /mailpit* {
-    reverse_proxy mailpit:8025
-  }
-
   handle {
     # Vite dev server in dev compose
     reverse_proxy email-ui:5173

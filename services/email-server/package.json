@@ -21,13 +21,11 @@
     "iron-session": "^8.0.3",
     "jose": "^5.10.0",
     "nanoid": "^5.1.5",
-    "nodemailer": "^8.0.5",
     "postal-mime": "^2.7.4",
     "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
-    "@types/nodemailer": "^8.0.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   }

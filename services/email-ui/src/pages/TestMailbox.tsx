@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, Search, X, Mail, Hash, Clock, AlertTriangle, Server, MailX, MessageSquareWarning } from 'lucide-react';
+import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, Search, X, Mail, Hash, Clock, Trash2, FlaskConical } from 'lucide-react';
 import api from '../api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,14 +10,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
-type LogStatus = 'sent' | 'failed' | 'bounced' | 'complained' | 'pending';
-
-interface LogRow {
+interface TestEmailRow {
   id: string;
   to_address: string;
   from_address: string;
   subject: string;
-  status: LogStatus;
+  status: 'sent' | 'failed';
   cf_message_id: string | null;
   domain_id: string | null;
   template_id: string | null;
@@ -26,79 +24,54 @@ interface LogRow {
   html_body: string | null;
   text_body: string | null;
   sent_at: string;
-  bounced_at: string | null;
 }
 
-interface PagedLogs {
-  data: LogRow[];
+interface PagedTestEmails {
+  data: TestEmailRow[];
   total: number;
   page: number;
   limit: number;
   pages: number;
 }
 
-const STATUS_OPTS = [
-  { label: 'All',       value: '' },
-  { label: 'Sent',      value: 'sent' },
-  { label: 'Failed',    value: 'failed' },
-  { label: 'Bounced',   value: 'bounced' },
-  { label: 'Complaint', value: 'complained' },
-];
-
-function StatusIcon({ status }: { status: LogStatus }) {
-  switch (status) {
-    case 'sent':      return <CheckCircle2 size={13} className="text-emerald-500 flex-shrink-0" />;
-    case 'failed':    return <XCircle size={13} className="text-destructive flex-shrink-0" />;
-    case 'bounced':   return <MailX size={13} className="text-amber-500 flex-shrink-0" />;
-    case 'complained':return <MessageSquareWarning size={13} className="text-orange-500 flex-shrink-0" />;
-    default:          return <Clock size={13} className="text-muted-foreground flex-shrink-0" />;
-  }
-}
-
-const STATUS_COLOR: Record<LogStatus, string> = {
-  sent:       'text-emerald-600',
-  failed:     'text-destructive',
-  bounced:    'text-amber-600',
-  complained: 'text-orange-600',
-  pending:    'text-muted-foreground',
-};
-
-const STATUS_LABEL: Record<LogStatus, string> = {
-  sent:       'Delivered',
-  failed:     'Failed',
-  bounced:    'Bounced',
-  complained: 'Complaint',
-  pending:    'Pending',
-};
-
 // ─── Right panel ────────────────────────────────────────────────────────────
 
-function DetailPanel({ log }: { log: LogRow }) {
-  const sentAt    = new Date(log.sent_at);
-  const bouncedAt = log.bounced_at ? new Date(log.bounced_at) : null;
+function DetailPanel({ log, onDelete }: { log: TestEmailRow; onDelete: () => void }) {
+  const sentAt = new Date(log.sent_at);
+  const isSent = log.status === 'sent';
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-border flex-shrink-0">
-        <div className="flex items-center gap-2 mb-1">
-          <StatusIcon status={log.status} />
-          <span className={`text-xs font-semibold ${STATUS_COLOR[log.status]}`}>
-            {STATUS_LABEL[log.status]}
-          </span>
-          <span className="text-muted-foreground/30 text-xs">·</span>
-          <span className="text-xs text-muted-foreground">{sentAt.toLocaleString()}</span>
+      <div className="px-6 py-4 border-b border-border flex-shrink-0 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            {isSent
+              ? <CheckCircle2 size={13} className="text-emerald-500 flex-shrink-0" />
+              : <XCircle size={13} className="text-destructive flex-shrink-0" />}
+            <span className={`text-xs font-semibold ${isSent ? 'text-emerald-600' : 'text-destructive'}`}>
+              {isSent ? 'Captured' : 'Failed'}
+            </span>
+            <span className="text-muted-foreground/30 text-xs">·</span>
+            <span className="text-xs text-muted-foreground">{sentAt.toLocaleString()}</span>
+          </div>
+          <h2 className="text-[15px] font-semibold leading-snug line-clamp-2">
+            {log.subject || <span className="text-muted-foreground italic font-normal">No subject</span>}
+          </h2>
         </div>
-        <h2 className="text-[15px] font-semibold leading-snug line-clamp-2">
-          {log.subject || <span className="text-muted-foreground italic font-normal">No subject</span>}
-        </h2>
+        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive" onClick={onDelete}>
+          <Trash2 size={14} />
+        </Button>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="email" className="flex flex-col flex-1 overflow-hidden">
+      <Tabs defaultValue="preview" className="flex flex-col flex-1 overflow-hidden">
         <TabsList className="w-full justify-start rounded-none border-b border-border h-auto px-0 bg-transparent gap-0">
-          <TabsTrigger value="email" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-5 py-2.5 text-xs">
-            Email
+          <TabsTrigger value="preview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-5 py-2.5 text-xs">
+            Preview
+          </TabsTrigger>
+          <TabsTrigger value="source" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-5 py-2.5 text-xs">
+            Source
           </TabsTrigger>
           <TabsTrigger value="metadata" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-5 py-2.5 text-xs">
             Metadata
@@ -106,77 +79,45 @@ function DetailPanel({ log }: { log: LogRow }) {
         </TabsList>
 
         <ScrollArea className="flex-1">
-          <TabsContent value="email" className="p-6 mt-0">
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              {/* Envelope header */}
-              <div className="px-5 py-4 border-b border-border flex flex-col gap-2.5">
-                {[
-                  { label: 'From', value: log.from_address },
-                  { label: 'To', value: log.to_address },
-                  { label: 'Subject', value: log.subject || '—' },
-                  { label: 'Date', value: sentAt.toLocaleString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex items-start gap-3">
-                    <span className="text-[11px] text-muted-foreground w-12 flex-shrink-0 pt-0.5">{label}</span>
-                    <span className="text-sm font-mono break-all">{value}</span>
-                  </div>
-                ))}
+          <TabsContent value="preview" className="p-0 mt-0 h-full">
+            {log.html_body ? (
+              <iframe
+                srcDoc={log.html_body}
+                className="w-full h-full min-h-[400px] border-0"
+                title="Email preview"
+                sandbox="allow-same-origin"
+              />
+            ) : log.text_body ? (
+              <pre className="p-6 text-sm font-mono whitespace-pre-wrap text-foreground">{log.text_body}</pre>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 gap-2 text-muted-foreground">
+                <Mail size={20} className="opacity-40" />
+                <p className="text-xs">No body content stored</p>
               </div>
+            )}
+          </TabsContent>
 
-              {/* Body area */}
-              <div className="px-5 py-5 flex flex-col items-center gap-3 text-center min-h-[140px] justify-center">
-                <div className={`size-10 rounded-full flex items-center justify-center ${
-                  log.status === 'sent'      ? 'bg-emerald-500/10' :
-                  log.status === 'bounced'   ? 'bg-amber-500/10' :
-                  log.status === 'complained'? 'bg-orange-500/10' :
-                  'bg-destructive/10'
-                }`}>
-                  {log.status === 'bounced'
-                    ? <MailX size={18} className="text-amber-500" />
-                    : log.status === 'complained'
-                    ? <MessageSquareWarning size={18} className="text-orange-500" />
-                    : <Mail size={18} className={log.status === 'sent' ? 'text-emerald-400' : 'text-destructive'} />
-                  }
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    {STATUS_LABEL[log.status]}
-                  </p>
-                  {bouncedAt && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Notification received {bouncedAt.toLocaleString()}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {log.is_test === 1
-                      ? 'Test email body is available in the Test Mailbox page.'
-                      : 'Message body is not stored — emails are sent directly via Cloudflare Email API.'}
-                  </p>
-                </div>
+          <TabsContent value="source" className="p-0 mt-0">
+            {log.html_body ? (
+              <pre className="p-6 text-xs font-mono whitespace-pre-wrap text-foreground overflow-auto">{log.html_body}</pre>
+            ) : log.text_body ? (
+              <pre className="p-6 text-xs font-mono whitespace-pre-wrap text-foreground overflow-auto">{log.text_body}</pre>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 gap-2 text-muted-foreground">
+                <Mail size={20} className="opacity-40" />
+                <p className="text-xs">No body content stored</p>
               </div>
-
-              {/* Error block */}
-              {log.error && (
-                <div className="px-5 py-4 border-t border-destructive/10 bg-destructive/5 flex items-start gap-2.5">
-                  <AlertTriangle size={13} className="text-destructive flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-semibold text-destructive mb-1">Delivery error</p>
-                    <p className="text-xs text-destructive/80 font-mono break-all leading-relaxed">{log.error}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </TabsContent>
 
           <TabsContent value="metadata" className="p-6 mt-0 flex flex-col gap-2">
             {[
               { label: 'Log ID', value: log.id, icon: Hash },
-              { label: 'CF Message ID', value: log.cf_message_id ?? '—', icon: Server },
-              { label: 'Domain ID',    value: log.domain_id ?? '—',    icon: Server },
-              { label: 'Template ID',  value: log.template_id ?? '—',  icon: Server },
-              { label: 'Sent at',      value: sentAt.toISOString(),     icon: Clock },
-              ...(bouncedAt ? [{ label: 'Bounced at', value: bouncedAt.toISOString(), icon: Clock }] : []),
-              { label: 'Status',       value: STATUS_LABEL[log.status] ?? log.status, icon: Clock },
+              { label: 'CF Message ID', value: log.cf_message_id ?? '—', icon: Hash },
+              { label: 'Domain ID', value: log.domain_id ?? '—', icon: Hash },
+              { label: 'Template ID', value: log.template_id ?? '—', icon: Hash },
+              { label: 'Sent at', value: sentAt.toISOString(), icon: Clock },
+              { label: 'Status', value: log.status, icon: isSent ? CheckCircle2 : XCircle },
             ].map(({ label, value, icon: Icon }) => (
               <div key={label} className="bg-card border border-border rounded-lg px-4 py-3">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -185,14 +126,14 @@ function DetailPanel({ log }: { log: LogRow }) {
                 </div>
                 <span className={cn(
                   'text-xs font-mono break-all',
-                  label === 'Status' ? STATUS_COLOR[log.status as LogStatus] ?? 'text-foreground' : 'text-foreground'
+                  label === 'Status' ? (isSent ? 'text-emerald-600' : 'text-destructive') : 'text-foreground'
                 )}>{value}</span>
               </div>
             ))}
             {log.error && (
               <div className="bg-destructive/8 border border-destructive/15 rounded-lg px-4 py-3">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <AlertTriangle size={11} className="text-destructive" />
+                  <XCircle size={11} className="text-destructive" />
                   <span className="text-[11px] text-destructive uppercase tracking-wide font-medium">Error</span>
                 </div>
                 <span className="text-xs font-mono text-destructive/80 break-all">{log.error}</span>
@@ -205,34 +146,39 @@ function DetailPanel({ log }: { log: LogRow }) {
   );
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+// ─── Main ──────────────────────────────────────────────────────────────────
 
-export default function LogsPage() {
-  const [result, setResult] = useState<PagedLogs | null>(null);
+export default function TestMailboxPage() {
+  const [result, setResult] = useState<PagedTestEmails | null>(null);
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [selected, setSelected] = useState<LogRow | null>(null);
+  const [selected, setSelected] = useState<TestEmailRow | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: '50' });
-    if (status) params.set('status', status);
     if (search) params.set('search', search);
     if (from) params.set('from', from);
     if (to) params.set('to', to);
-    const { data } = await api.get<PagedLogs>(`/api/logs?${params}`);
+    const { data } = await api.get<PagedTestEmails>(`/api/test-emails?${params}`);
     setResult(data);
     setLoading(false);
-  }, [page, status, search, from, to]);
+  }, [page, search, from, to]);
 
   useEffect(() => { load(); }, [load]);
 
-  function handleStatus(val: string) { setStatus(val); setPage(1); }
+  async function handleDelete() {
+    if (!selected) return;
+    if (!confirm('Delete this test email?')) return;
+    await api.delete(`/api/test-emails/${selected.id}`);
+    setSelected(null);
+    load();
+  }
+
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     setSearch(searchInput);
@@ -242,28 +188,17 @@ export default function LogsPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* ── Left pane ──────────────────────────────────────────────────────── */}
+      {/* ── Left pane ────────────────────────────────────────────────────── */}
       <div className="w-[560px] flex-shrink-0 flex flex-col border-r border-border overflow-hidden">
         {/* Pane header */}
         <div className="px-6 pt-6 pb-4 border-b border-border flex-shrink-0 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Mail size={14} className="text-primary" />
-                <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Sending</span>
+                <FlaskConical size={14} className="text-primary" />
+                <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Testing</span>
               </div>
-              <h1 className="text-2xl font-bold">Logs</h1>
-            </div>
-            {/* Status toggle */}
-            <div className="flex bg-card border border-border rounded-lg p-[3px]">
-              {STATUS_OPTS.map(o => (
-                <button key={o.value} onClick={() => handleStatus(o.value)}
-                  className={`text-[11px] font-medium px-2.5 py-1 rounded-md transition-all duration-150 ${
-                    status === o.value ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
-                  }`}>
-                  {o.label}
-                </button>
-              ))}
+              <h1 className="text-2xl font-bold">Test Mailbox</h1>
             </div>
           </div>
 
@@ -304,7 +239,7 @@ export default function LogsPage() {
           </div>
         </div>
 
-        {/* Log list */}
+        {/* Email list */}
         <ScrollArea className="flex-1">
           {loading ? (
             <div className="p-3 flex flex-col gap-1.5">
@@ -313,7 +248,7 @@ export default function LogsPage() {
           ) : !result || result.data.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 gap-3 text-muted-foreground py-20">
               <Search size={20} className="opacity-40" />
-              <p className="text-xs">No matching logs</p>
+              <p className="text-xs">No test emails</p>
             </div>
           ) : (
             <div className="p-2 flex flex-col gap-px">
@@ -331,16 +266,16 @@ export default function LogsPage() {
                     )}
                   >
                     <div className="mt-0.5 flex-shrink-0">
-                      <StatusIcon status={log.status} />
+                      {log.status === 'sent'
+                        ? <CheckCircle2 size={13} className="text-emerald-500" />
+                        : <XCircle size={13} className="text-destructive" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <p className="text-[13px] font-medium truncate leading-tight text-foreground">
                           {log.subject || <span className="text-muted-foreground italic font-normal">No subject</span>}
                         </p>
-                        {log.is_test === 1 && (
-                          <Badge className="text-[9px] px-1 py-0 h-4 bg-amber-500/10 text-amber-600 border-amber-200 flex-shrink-0">test</Badge>
-                        )}
+                        <Badge className="text-[9px] px-1 py-0 h-4 bg-amber-500/10 text-amber-600 border-amber-200 flex-shrink-0">test</Badge>
                       </div>
                       <p className="text-[11px] text-muted-foreground font-mono truncate mt-0.5">{log.to_address}</p>
                       {log.error && (
@@ -378,26 +313,17 @@ export default function LogsPage() {
         )}
       </div>
 
-      {/* ── Right pane ──────────────────────────────────────────────────────── */}
+      {/* ── Right pane ───────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-hidden bg-background">
         {selected ? (
-          <DetailPanel key={selected.id} log={selected} />
+          <DetailPanel key={selected.id} log={selected} onDelete={handleDelete} />
         ) : (
           <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground select-none">
             <Mail size={32} strokeWidth={1.2} className="opacity-30" />
-            <p className="text-sm">Select a log entry to inspect</p>
+            <p className="text-sm">Select a test email to inspect</p>
           </div>
         )}
       </div>
     </div>
   );
-}
-
-
-interface PagedLogs {
-  data: LogRow[];
-  total: number;
-  page: number;
-  limit: number;
-  pages: number;
 }

@@ -1,7 +1,7 @@
 // POST /v1/send
 //
 // Workers version differences vs. Node.js backend:
-//   - SMTP test mode is not supported (nodemailer is Node.js-only).
+//   - Test-mode capture (in-house test mailbox) is not supported here.
 //     Both test and live keys go through the Cloudflare Email Sending REST API.
 //     The is_test flag is still stored in email_logs for audit purposes.
 
@@ -126,6 +126,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         idempotency_key: idempotencyKey,
         error: null,
         is_test: apiKey.isTest ? 1 : 0,
+        html_body: apiKey.isTest ? (html ?? null) : null,
+        text_body: apiKey.isTest ? (text ?? null) : null,
         sent_at: now,
       });
 
@@ -147,6 +149,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         idempotency_key: null,
         error: message,
         is_test: apiKey.isTest ? 1 : 0,
+        html_body: apiKey.isTest ? (html ?? null) : null,
+        text_body: apiKey.isTest ? (text ?? null) : null,
         sent_at: now,
       });
 

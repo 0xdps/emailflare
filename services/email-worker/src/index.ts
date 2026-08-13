@@ -5,7 +5,7 @@
 //   - Database: Cloudflare D1 (SQLite) instead of MesaHub
 //   - Sessions: jose SignJWT instead of iron-session (no Node.js crypto)
 //   - Rate limiting: Workers Rate Limiting binding + KV instead of in-memory
-//   - Email sending: CF REST API only (no SMTP/nodemailer for test mode)
+//   - Email sending: CF REST API only (no test-mailbox capture)
 //   - Secrets: wrangler secrets (env bindings) instead of process.env
 
 import { Hono } from 'hono';

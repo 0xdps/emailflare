@@ -110,6 +110,8 @@ export async function bootstrapSchema(): Promise<void> {
       idempotency_key  TEXT,
       error            TEXT,
       is_test          INTEGER NOT NULL DEFAULT 0,
+      html_body        TEXT,
+      text_body        TEXT,
       sent_at          TEXT NOT NULL
     )
   `);
@@ -123,6 +125,10 @@ export async function bootstrapSchema(): Promise<void> {
 
   // Bounce tracking column (added in v2 — safe to run on existing DBs)
   try { await db.exec(`ALTER TABLE email_logs ADD COLUMN bounced_at TEXT`); } catch { /* already exists */ }
+
+  // Test mailbox content columns (added for in-house test mailbox)
+  try { await db.exec(`ALTER TABLE email_logs ADD COLUMN html_body TEXT`); } catch { /* already exists */ }
+  try { await db.exec(`ALTER TABLE email_logs ADD COLUMN text_body TEXT`); } catch { /* already exists */ }
 
   // Suppression list
   await db.exec(`

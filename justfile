@@ -81,10 +81,10 @@ emailflare-doctor:
     echo "doctor: all good"
 
 # ============================================================================
-# EMAILFLARE-API · DOCKER  (email-server + email-ui + Caddy + Mailpit)
+# EMAILFLARE-API · DOCKER  (email-server + email-ui + Caddy)
 # ============================================================================
 
-# Start dev stack with hot reload (MesaHub + email-server + email-ui + Mailpit)
+# Start dev stack with hot reload (MesaHub + email-server + email-ui)
 emailflare-api-dev:
     env -i PATH="$PATH" docker compose --env-file {{ENV_FILE}} -f compose.email-api.dev.yaml up --build
 

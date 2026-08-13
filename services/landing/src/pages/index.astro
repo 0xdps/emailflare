@@ -1173,7 +1173,7 @@ const structuredData = {
               <circle r="3.5" fill="#c05818" opacity="0.9">
                 <animateMotion dur="1.6s" repeatCount="indefinite" begin="1.1s"><mpath href="#p2"/></animateMotion>
               </circle>
-              <text x="418" y="237" text-anchor="start" font-family="SF Mono, Fira Code, monospace" font-size="9.5" fill="#9c8c78">SMTP · route</text>
+              <text x="418" y="237" text-anchor="start" font-family="SF Mono, Fira Code, monospace" font-size="9.5" fill="#9c8c78">test mailbox · capture</text>
 
               <!-- ── NODE 3: Cloudflare Email (bottom-right) ────────── -->
               <rect x="318" y="340" width="162" height="118" rx="10" fill="#080f1c" stroke="#1a3660" stroke-width="1"/>
@@ -1375,14 +1375,14 @@ const structuredData = {
             <span class="ab-check">✓</span>
             <div class="ab-text">
               <strong>Three services, one image</strong>
-              <span>The production Docker image bundles the Hono API backend, React admin UI, Mailpit, and embedded mesahub storage. Mailpit only starts when <code>ENABLE_TEST_MODE=true</code> — zero overhead in a standard production deploy.</span>
+              <span>The production Docker image bundles the Hono API backend, React admin UI, and embedded mesahub storage. Test emails are captured in the in-house Test Mailbox — zero overhead in a standard production deploy.</span>
             </div>
           </li>
           <li>
             <span class="ab-check">✓</span>
             <div class="ab-text">
               <strong>Cloudflare Email Sending for production</strong>
-              <span>Production API keys send exclusively through Cloudflare's infrastructure. Test API keys route through SMTP for safe testing without CF credentials.</span>
+              <span>Production API keys send exclusively through Cloudflare's infrastructure. Test API keys capture email into the built-in Test Mailbox for safe testing without CF credentials.</span>
             </div>
           </li>
           <li>
