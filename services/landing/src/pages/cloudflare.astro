@@ -511,6 +511,20 @@ import { Icon } from 'astro-icon/components';
           </div>
         </div>
       </div>
+
+      <div class="tip-box" style="margin-top:24px;">
+        <span class="tip-icon"><Icon name="lucide:workflow" /></span>
+        <span>
+          <strong>Prefer CI?</strong> EmailFlare also ships a GitHub Actions workflow
+          (<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">deploy-workers.yml</code>)
+          that deploys or updates your Workers from the Actions tab — pick
+          <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">cf-api</code>,
+          <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">cf-inbox</code>, or
+          <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">cf-worker</code>.
+          Requires a one-time local setup and two repo secrets — see the
+          <a class="inline-link" href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md" target="_blank" rel="noopener">Cloudflare docs</a>.
+        </span>
+      </div>
     </div>
   </section>
 

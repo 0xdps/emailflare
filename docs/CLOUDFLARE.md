@@ -126,6 +126,45 @@ npx wrangler versions deploy --version-percentage <VERSION_ID>=10
 npx wrangler versions deploy --version-percentage <VERSION_ID>=100
 ```
 
+## GitHub Actions deployment
+
+EmailFlare ships a GitHub Actions workflow (`.github/workflows/deploy-workers.yml`) that deploys or updates the Cloudflare Workers from CI — no local `wrangler` needed.
+
+### What gets deployed
+
+The workflow is triggered manually and lets you pick a target:
+
+| Target | Deploys | Worker(s) |
+|---|---|---|
+| `cf-api` | Email API edge deployment | `emailflare-api-worker` (email-worker + email-ui) |
+| `cf-inbox` | Inbox edge deployment | `emailflare-inbox-worker` (inbox-worker + inbox-ui) |
+| `cf-worker` | Thin inbound-email forwarders | `email-bridge` + `inbox-bridge` |
+| `all` | Everything above | — |
+
+The `cf-worker` bridges are only needed for **Docker/VPS deployments** — they forward inbound email from Cloudflare Email Routing to your self-hosted servers. Native Worker deployments (`cf-api` / `cf-inbox`) handle inbound email themselves and don't need bridges.
+
+### Prerequisites
+
+1. **One-time local provisioning first.** The workflow updates existing Workers — it does not create D1/KV/R2/Queue, patch `wrangler.jsonc`, or set Worker secrets. Run the local setup once before using CI:
+   ```bash
+   just emailflare-api-worker-setup      # cf-api
+   just emailflare-inbox-deploy          # cf-inbox
+   just emailflare-bridge-setup          # cf-worker (bridges)
+   ```
+2. **Add repository secrets** (Settings → Secrets and variables → Actions):
+   | Secret | Value |
+   |---|---|
+   | `CLOUDFLARE_API_TOKEN` | Scoped token: Workers Scripts (Edit), D1 (Edit), KV (Edit) |
+   | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+
+### Running the workflow
+
+1. Go to the **Actions** tab → **Deploy Cloudflare Workers**.
+2. Click **Run workflow**.
+3. Pick a target from the dropdown and confirm.
+
+Each job builds the shared packages and admin SPA, applies pending D1 migrations (idempotent), then runs `wrangler deploy` to update the Worker in place.
+
 ## Updating secrets
 
 ```bash

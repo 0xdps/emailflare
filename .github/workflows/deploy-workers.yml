@@ -1,0 +1,152 @@
+name: Deploy Cloudflare Workers
+
+# Deploys (or updates) the selected Cloudflare Worker(s).
+#
+# Trigger manually via the "Run workflow" button and pick a target:
+#   cf-api     → emailflare-api-worker   (email-worker + email-ui)
+#   cf-inbox   → emailflare-inbox-worker (inbox-worker + inbox-ui)
+#   cf-worker  → email-bridge + inbox-bridge (thin forwarders for Docker/VPS)
+#   all        → all of the above
+#
+# NOTE: This workflow assumes the Workers' Cloudflare resources (D1, KV, R2,
+# Queue, DO) and secrets have ALREADY been provisioned once via the local
+# setup scripts (`just emailflare-api-worker-setup` / `just emailflare-inbox-deploy`).
+# It only builds assets, applies pending D1 migrations (idempotent), and runs
+# `wrangler deploy` to update the existing Worker in place.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN    — scoped token: Workers Scripts (Edit), D1 (Edit), KV (Edit)
+#   CLOUDFLARE_ACCOUNT_ID   — your Cloudflare account ID
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Which worker(s) to deploy'
+        required: true
+        type: choice
+        default: 'cf-api'
+        options:
+          - cf-api
+          - cf-inbox
+          - cf-worker
+          - all
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  # ── cf-api: emailflare-api-worker (email-worker + email-ui) ─────────────────
+  deploy-api-worker:
+    name: Deploy emailflare-api-worker
+    if: ${{ github.event.inputs.target == 'cf-api' || github.event.inputs.target == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: services/email-worker/pnpm-lock.yaml
+
+      - name: Build shared packages (email-core + emails)
+        run: |
+          pnpm install --frozen-lockfile --dir packages/email-core && pnpm --dir packages/email-core run build
+          pnpm install --frozen-lockfile --dir services/emails && pnpm --dir services/emails run build
+
+      - name: Build admin UI (email-ui)
+        working-directory: services/email-ui
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Install worker deps
+        working-directory: services/email-worker
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply D1 migrations
+        working-directory: services/email-worker
+        run: pnpm run migrations:apply
+
+      - name: Deploy worker
+        working-directory: services/email-worker
+        run: npx wrangler deploy
+
+  # ── cf-inbox: emailflare-inbox-worker (inbox-worker + inbox-ui) ─────────────
+  deploy-inbox-worker:
+    name: Deploy emailflare-inbox-worker
+    if: ${{ github.event.inputs.target == 'cf-inbox' || github.event.inputs.target == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: services/inbox-worker/pnpm-lock.yaml
+
+      - name: Build shared packages (email-core + inbox-core + emails)
+        run: |
+          pnpm install --frozen-lockfile --dir packages/email-core && pnpm --dir packages/email-core run build
+          pnpm install --frozen-lockfile --dir packages/inbox-core && pnpm --dir packages/inbox-core run build
+          pnpm install --frozen-lockfile --dir services/emails && pnpm --dir services/emails run build
+
+      - name: Build inbox UI (inbox-ui)
+        working-directory: services/inbox-ui
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Install worker deps
+        working-directory: services/inbox-worker
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply D1 migrations
+        working-directory: services/inbox-worker
+        run: pnpm run migrations:apply
+
+      - name: Deploy worker
+        working-directory: services/inbox-worker
+        run: npx wrangler deploy
+
+  # ── cf-worker: email-bridge + inbox-bridge (thin forwarders for Docker/VPS) ─
+  deploy-bridges:
+    name: Deploy bridges
+    if: ${{ github.event.inputs.target == 'cf-worker' || github.event.inputs.target == 'all' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: email-bridge
+            path: services/email-bridge
+          - name: inbox-bridge
+            path: services/inbox-bridge
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.path }}/pnpm-lock.yaml
+
+      - name: Install deps
+        working-directory: ${{ matrix.path }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy bridge
+        working-directory: ${{ matrix.path }}
+        run: npx wrangler deploy
