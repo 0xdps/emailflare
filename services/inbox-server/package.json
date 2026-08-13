@@ -12,6 +12,8 @@
     "migrate": "node dist/migrate.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.744.0",
+    "@aws-sdk/s3-request-presigner": "^3.744.0",
     "@emailflare/email-core": "file:../../packages/email-core",
     "@emailflare/inbox-core": "file:../../packages/inbox-core",
     "@emailflare/emails": "file:../emails",

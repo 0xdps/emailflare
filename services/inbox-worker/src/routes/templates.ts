@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
+import { customAlphabet } from 'nanoid';
 import { makeDb } from '../db.ts';
 import type { TemplateRow } from '../db.ts';
 import { renderLayout, LAYOUTS, THEMES } from '../emails.ts';
@@ -7,6 +8,7 @@ import type { LayoutName } from '../emails.ts';
 import type { HonoEnv } from '../env.ts';
 import { templateSchema, toSlug, enrich, generateId } from '@emailflare/email-core';
 
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 21);
 
 const app = new Hono<HonoEnv>();
 

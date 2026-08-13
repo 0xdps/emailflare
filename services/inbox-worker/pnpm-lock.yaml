@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@emailflare/email-core':
+        specifier: file:../../packages/email-core
+        version: file:../../packages/email-core
       '@emailflare/emails':
         specifier: file:../emails
         version: file:../emails
+      '@emailflare/inbox-core':
+        specifier: file:../../packages/inbox-core
+        version: file:../../packages/inbox-core
       '@hono/zod-validator':
         specifier: ^0.4.3
         version: 0.4.3(hono@4.12.18)(zod@3.25.76)
@@ -95,8 +101,14 @@ packages:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
 
+  '@emailflare/email-core@file:../../packages/email-core':
+    resolution: {directory: ../../packages/email-core, type: directory}
+
   '@emailflare/emails@file:../emails':
     resolution: {directory: ../emails, type: directory}
+
+  '@emailflare/inbox-core@file:../../packages/inbox-core':
+    resolution: {directory: ../../packages/inbox-core, type: directory}
 
   '@emnapi/runtime@1.10.0':
     resolution: {integrity: sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA==}
@@ -855,12 +867,21 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
+  '@emailflare/email-core@file:../../packages/email-core':
+    dependencies:
+      nanoid: 5.1.11
+      zod: 3.25.76
+
   '@emailflare/emails@file:../emails':
     dependencies:
       '@react-email/components': 1.0.12(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@react-email/render': 2.0.8(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
+
+  '@emailflare/inbox-core@file:../../packages/inbox-core':
+    dependencies:
+      zod: 3.25.76
 
   '@emnapi/runtime@1.10.0':
     dependencies:

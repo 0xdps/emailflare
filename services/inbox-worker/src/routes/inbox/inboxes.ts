@@ -9,6 +9,7 @@
 
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { generateId } from '@emailflare/email-core';
 import { requireAdmin } from '../../middleware/auth.ts';
 import type { HonoEnv } from '../../env.ts';

@@ -1,6 +1,7 @@
 // Inbox management routes
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { generateId } from '@emailflare/email-core';
 import { requireAdmin } from '../../middleware/auth.js';
 import { rawDb } from '../../db.js';
