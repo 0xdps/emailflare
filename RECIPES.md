@@ -40,7 +40,7 @@ just emailflare-doctor
 
 ## emailflare-api — Docker
 
-Env file: `.env.api.local` (copy from `.env.example`).
+Env file: `.env.api.local` (copy from `.env.api.example`).
 
 ### `just emailflare-api-dev`
 Start the dev stack with hot reload. Runs MesaHub, email-server, email-ui (Vite), and Mailpit.

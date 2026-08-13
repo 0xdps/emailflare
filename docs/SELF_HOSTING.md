@@ -20,7 +20,7 @@ You do not need Postgres, Redis, or a separate database service for the default 
 ## 1. Create your environment file
 
 ```bash
-cp .env.example .env.local
+cp .env.api.example .env.api.local
 ```
 
 Set at least:
@@ -53,7 +53,7 @@ docker compose --env-file .env.local -f compose.email-api.yaml up --build -d
 Or with `just`:
 
 ```bash
-just prod
+just emailflare-api-up
 ```
 
 ## 3. Verify the deployment
@@ -98,9 +98,9 @@ The minimum-infra recommendation remains the embedded local setup until you have
 For local development, use `compose.email-api.dev.yaml` instead of `compose.email-api.yaml`. It runs the same stack but adds a [Mailpit](https://mailpit.axllent.org) container as the SMTP backend so emails are never delivered to real inboxes.
 
 ```bash
-docker compose --env-file .env.local -f compose.email-api.dev.yaml up
+docker compose --env-file .env.api.local -f compose.email-api.dev.yaml up
 # or:
-just dev
+just emailflare-api-dev
 ```
 
 Once running:

@@ -97,14 +97,9 @@
     ]
   },
 
-  // Runtime env vars — set production values via `wrangler secret put`
-  "vars": {
-    "SESSION_SECRET": "set-via-secret",
-    "CF_API_TOKEN": "set-via-secret",
-    "CF_ACCOUNT_ID": "set-via-secret",
-    "VAPID_PUBLIC_KEY": "set-via-secret",
-    "VAPID_PRIVATE_KEY": "set-via-secret"
-  },
+  // Runtime env vars — set production values via `wrangler secret put`.
+  // A Worker cannot declare a `var` and a `secret` with the same name, so
+  // these are intentionally omitted here (see scripts/deploy-inbox.mjs).
 
   // Workers Rate Limiting for API key calls (100 req / 60s per key)
   "unsafe": {

@@ -3,8 +3,8 @@
 ## Development setup
 
 ```bash
-cp .env.example .env.local
-just dev
+cp .env.api.example .env.api.local
+just emailflare-api-dev
 ```
 
 The default local stack uses Docker and embedded mesahub so contributors do not need to provision extra infrastructure.
@@ -19,9 +19,8 @@ The default local stack uses Docker and embedded mesahub so contributors do not 
 Useful commands:
 
 ```bash
-just dev
-just dev-down
-just build
+just emailflare-api-dev
+just emailflare-api-dev-down
 cd services/email-ui && pnpm build
 cd services/email-server && pnpm build
 cd services/landing && pnpm build

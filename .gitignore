@@ -2,16 +2,17 @@ node_modules/
 dist/
 .astro/
 .env*
-!.env.example
+!.env.api.example
 !.env.inbox.example
 *.local
 .DS_Store
 *.log
 .tanstack/
 services/email-ui/src/routeTree.gen.ts
+services/inbox-ui/src/routeTree.gen.ts
 scripts/config.toml
-services/email-worker/.wrangler
-services/email-worker/.localflare
+**/.wrangler
+**/.localflare
 *.tsbuildinfo
 
 # Compiled output from services/emails (safety net if tsc writes into src/)
@@ -19,6 +20,3 @@ services/emails/src/**/*.js
 services/emails/src/**/*.js.map
 services/emails/src/**/*.d.ts
 services/emails/src/**/*.d.ts.map
-
-!.env.api.example
-!.env.inbox.example

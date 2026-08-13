@@ -23,7 +23,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.email-api
           platforms: linux/amd64
           push: false
           build-args: |
@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.inbox
+          file: ./Dockerfile.email-inbox
           platforms: linux/amd64
           push: false
           build-args: |

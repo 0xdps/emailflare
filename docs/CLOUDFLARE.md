@@ -29,7 +29,7 @@ This installs `smol-toml` for the setup script, and all worker and admin depende
 ## 2. Authenticate with Cloudflare
 
 ```bash
-just worker-login
+just emailflare-api-worker-login
 ```
 
 Opens a browser to complete the OAuth flow. This is the only authentication step needed — no API token is required for deployment.
@@ -71,7 +71,7 @@ admin_origin = ""
 ## 4. Run setup
 
 ```bash
-just worker-setup
+just emailflare-api-worker-setup
 ```
 
 This single command:
@@ -98,7 +98,7 @@ https://emailflare-api-worker.YOUR-ACCOUNT.workers.dev
 Set `admin_origin` in `scripts/config.toml` to that URL, then re-run:
 
 ```bash
-just worker-setup
+just emailflare-api-worker-setup
 ```
 
 This updates the `ADMIN_ORIGIN` secret so the admin panel's CORS and auth checks work correctly.
@@ -106,7 +106,7 @@ This updates the `ADMIN_ORIGIN` secret so the admin panel's CORS and auth checks
 ## Deploying updates
 
 ```bash
-just worker-update
+just emailflare-api-worker-update
 ```
 
 Applies any pending D1 migrations then redeploys the Worker atomically.
@@ -129,7 +129,7 @@ npx wrangler versions deploy --version-percentage <VERSION_ID>=100
 ## Updating secrets
 
 ```bash
-just worker-secret SECRET_NAME
+just emailflare-api-worker-secret SECRET_NAME
 ```
 
 You'll be prompted to enter the new value (input is hidden). Available secret names: `ADMIN_TOKEN`, `SESSION_SECRET`, `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `ADMIN_ORIGIN`.
@@ -137,7 +137,7 @@ You'll be prompted to enter the new value (input is hidden). Available secret na
 ## Local development
 
 ```bash
-just worker-dev
+just emailflare-api-worker-dev
 ```
 
 Starts a local Worker dev server with a local D1 database and KV stubs. No secrets are required for local development.
@@ -145,7 +145,7 @@ Starts a local Worker dev server with a local D1 database and KV stubs. No secre
 ## Localflare dashboard
 
 ```bash
-just localflare
+just emailflare-api-worker-localflare
 ```
 
 Starts Localflare against the Worker config in `services/email-worker/wrangler.jsonc` and opens the Localflare dashboard flow with shared local bindings.
@@ -155,13 +155,13 @@ The recipe defaults to port `8790` to avoid collisions with `wrangler dev` on `8
 Use a custom port when needed:
 
 ```bash
-just localflare 8787
+just emailflare-api-worker-localflare 8787
 ```
 
 ## Remove Worker resources
 
 ```bash
-just remove-worker
+just emailflare-api-worker-remove
 ```
 
 Deletes all Cloudflare resources defined in `services/email-worker/wrangler.jsonc`:

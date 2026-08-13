@@ -29,7 +29,7 @@ ghcr.io/0xdps/emailflare-api:latest
 cp .env.api.example .env.local
 # fill in SESSION_SECRET, ADMIN_TOKEN, CF_API_TOKEN, CF_ACCOUNT_ID
 
-docker compose --env-file .env.local -f compose.yaml up -d
+docker compose --env-file .env.local -f compose.email-api.yaml up -d
 ```
 
 Open `http://localhost:8090`.
@@ -67,7 +67,7 @@ ghcr.io/0xdps/emailflare-inbox:latest
 cp .env.inbox.example .env.inbox.local
 # fill in SESSION_SECRET, WEBHOOK_SECRET, CF_API_TOKEN, CF_ACCOUNT_ID, REDIS_URL
 
-docker compose --env-file .env.inbox.local -f compose.inbox.yaml up -d
+docker compose --env-file .env.inbox.local -f compose.email-inbox.yaml up -d
 ```
 
 Open `http://localhost:8091`.
@@ -92,18 +92,18 @@ Read the full guide: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md)
 - `services/email-ui` — React admin panel (Vite + TanStack Router)
 - `services/email-worker` — Cloudflare Worker bundling API + admin UI (D1 + KV)
 - `services/email-bridge` — CF Worker: receives bounce/complaint email and forwards to email-server webhook
-- `Dockerfile` — production image for emailflare-api
-- `compose.yaml` — single-container production compose
-- `compose.dev.yaml` — local dev stack with hot reload
+- `Dockerfile.email-api` — production image for emailflare-api
+- `compose.email-api.yaml` — single-container production compose
+- `compose.email-api.dev.yaml` — local dev stack with hot reload
 
 **Inbox**
 - `services/inbox-server` — Hono inbox API: inboxes, people, threads, sequences, templates
 - `services/inbox-ui` — React inbox dashboard (Vite + TanStack Router)
 - `services/inbox-worker` — Cloudflare Worker variant of the inbox (D1)
 - `services/inbox-bridge` — CF Worker: receives inbound email via CF Email Routing, forwards to inbox-server
-- `Dockerfile.inbox` — production image for emailflare-inbox
-- `compose.inbox.yaml` — single-container production compose
-- `compose.inbox.dev.yaml` — local dev stack with hot reload
+- `Dockerfile.email-inbox` — production image for emailflare-inbox
+- `compose.email-inbox.yaml` — single-container production compose
+- `compose.email-inbox.dev.yaml` — local dev stack with hot reload
 
 **Shared**
 - `services/emails` — shared email layouts and rendering used by both servers
