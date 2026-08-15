@@ -1,0 +1,24 @@
+# EmailFlare · Email API Worker — local dev vars
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy to .dev.vars (gitignored) for `wrangler dev` / `just emailflare-api-worker-dev`.
+#   cp services/email-worker/.dev.vars.example services/email-worker/.dev.vars
+#
+# In production these are set as Worker secrets via `just emailflare-api-worker-setup`
+# (see scripts/setup.mjs + scripts/config.toml). Never commit real values.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Admin dashboard token (min 32 chars)
+ADMIN_TOKEN=
+
+# Session JWT signing secret (min 32 chars)
+SESSION_SECRET=
+
+# Cloudflare API token + account ID (Email Routing + Zone + DNS perms)
+CF_API_TOKEN=
+CF_ACCOUNT_ID=
+
+# CORS origin for the admin UI (comma-separated bare domains)
+ADMIN_ORIGIN=localhost:5173
+
+# Public URL used to build one-click unsubscribe links
+PUBLIC_URL=http://localhost:8787

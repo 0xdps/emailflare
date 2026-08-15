@@ -30,6 +30,11 @@ cf_account_id = ""
 # e.g. https://emailflare-api-worker.YOUR-ACCOUNT.workers.dev
 admin_origin = ""
 
+# Public URL of the Email API worker, used to build one-click unsubscribe links
+# (List-Unsubscribe headers). Same as admin_origin in most deployments.
+# e.g. https://emailflare-api-worker.YOUR-ACCOUNT.workers.dev
+public_url = ""
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Inbox Worker  (deploy-inbox.mjs / just deploy-inbox)
 # Reuses [deploy].database_name, [secrets].session_secret, cf_api_token,
@@ -40,6 +45,10 @@ admin_origin = ""
 # Generate: npx web-push generate-vapid-keys
 vapid_public_key  = ""
 vapid_private_key = ""
+
+# Public URL of the inbox worker, used to build one-click unsubscribe links.
+# e.g. https://emailflare-inbox-worker.YOUR-ACCOUNT.workers.dev
+public_url = ""
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Inbox Server  (deploy-inbox-standalone.mjs / just deploy-inbox-standalone)

@@ -301,6 +301,7 @@ const SECRETS = [
   { name: 'CF_ACCOUNT_ID',     label: 'CF_ACCOUNT_ID',     cfgVal: secrets.cf_account_id || accountId },
   { name: 'VAPID_PUBLIC_KEY',  label: 'VAPID_PUBLIC_KEY',  cfgVal: inboxCfg.vapid_public_key },
   { name: 'VAPID_PRIVATE_KEY', label: 'VAPID_PRIVATE_KEY', cfgVal: inboxCfg.vapid_private_key, sensitive: true },
+  { name: 'PUBLIC_URL',        label: 'PUBLIC_URL (worker URL for unsubscribe links)', cfgVal: inboxCfg.public_url },
 ];
 
 for (const { name, label, cfgVal, sensitive } of SECRETS) {

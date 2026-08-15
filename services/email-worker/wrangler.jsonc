@@ -69,15 +69,9 @@
     }
   ],
 
-  // Local-dev defaults read by Localflare for manifest visibility.
-  // Sensitive values (ADMIN_TOKEN, SESSION_SECRET, CF_API_TOKEN, CF_ACCOUNT_ID)
-  // and per-deploy values (ADMIN_ORIGIN in production) are set via
-  // `wrangler secret put`. A Worker cannot have a `var` and a `secret`
-  // with the same name — the `secret put` call fails with code 10053.
-  "vars": {
-    "ADMIN_ORIGIN": "localhost:5173",
-    "PUBLIC_URL": "https://emailflare-api-worker.example.workers.dev"
-  },
+  // No hardcoded env vars here — all account/deployment-specific values are set
+  // via `wrangler secret put` (see scripts/setup.mjs + scripts/config.toml).
+  // For local `wrangler dev`, copy .dev.vars.example → .dev.vars and fill in.
 
   // Workers Rate Limiting for API key calls (100 req / 60s per key)
   // Requires Workers Paid plan. Remove this block to disable.

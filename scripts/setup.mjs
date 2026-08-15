@@ -291,6 +291,8 @@ The following secrets are required. Press Enter to skip any that are already set
   CF_ACCOUNT_ID    — Your Cloudflare account ID
   ADMIN_ORIGIN     — The Worker URL (admin UI is served from the same origin)
                      e.g. https://emailflare-api-worker.ACCOUNT.workers.dev
+  PUBLIC_URL       — Public Worker URL used for unsubscribe links
+                     (usually the same as ADMIN_ORIGIN)
 
 `);
 
@@ -302,6 +304,7 @@ const SECRETS = [
   { name: 'CF_API_TOKEN',   label: 'CF_API_TOKEN',                       cfgVal: cfg.secrets?.cf_api_token },
   { name: 'CF_ACCOUNT_ID',  label: 'CF_ACCOUNT_ID',                      cfgVal: cfg.secrets?.cf_account_id },
   { name: 'ADMIN_ORIGIN',   label: 'ADMIN_ORIGIN (worker URL, e.g. https://emailflare-api-worker.ACCOUNT.workers.dev)', cfgVal: cfg.secrets?.admin_origin },
+  { name: 'PUBLIC_URL',     label: 'PUBLIC_URL (worker URL for unsubscribe links)', cfgVal: cfg.secrets?.public_url },
 ];
 
 rl.close();

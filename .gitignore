@@ -4,6 +4,8 @@ dist/
 .env*
 !.env.api.example
 !.env.inbox.example
+.dev.vars
+!.dev.vars.example
 *.local
 .DS_Store
 *.log

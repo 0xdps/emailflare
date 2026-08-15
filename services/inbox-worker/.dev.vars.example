@@ -1,0 +1,22 @@
+# EmailFlare · Inbox Worker — local dev vars
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy to .dev.vars (gitignored) for `wrangler dev` / `just inbox-dev`.
+#   cp services/inbox-worker/.dev.vars.example services/inbox-worker/.dev.vars
+#
+# In production these are set as Worker secrets via `just deploy-inbox`
+# (see scripts/deploy-inbox.mjs + scripts/config.toml). Never commit real values.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Session JWT signing secret (min 32 chars)
+SESSION_SECRET=
+
+# Cloudflare API token + account ID (Email Routing + Zone + DNS perms)
+CF_API_TOKEN=
+CF_ACCOUNT_ID=
+
+# VAPID keys for Web Push
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+
+# Public URL used to build one-click unsubscribe links
+PUBLIC_URL=http://localhost:8787

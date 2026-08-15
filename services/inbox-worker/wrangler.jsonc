@@ -41,7 +41,7 @@
     {
       "binding": "DB",
       "database_name": "emailflare",
-      "database_id": "569d845e-5691-4f71-84f6-e31a878e4bd6",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
       "migrations_dir": "../../migrations"
     }
   ],
@@ -50,7 +50,7 @@
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT_KV",
-      "id": "3b52ae5fc6b445bbb72526b8d2f8ca76"
+      "id": "REPLACE_WITH_KV_NAMESPACE_ID"
     }
   ],
 
@@ -99,12 +99,9 @@
     ]
   },
 
-  // Runtime env vars — set production values via `wrangler secret put`.
-  // A Worker cannot declare a `var` and a `secret` with the same name, so
-  // these are intentionally omitted here (see scripts/deploy-inbox.mjs).
-  "vars": {
-    "PUBLIC_URL": "https://emailflare-inbox-worker.example.workers.dev"
-  },
+  // No hardcoded env vars here — all account/deployment-specific values are set
+  // via `wrangler secret put` (see scripts/deploy-inbox.mjs + scripts/config.toml).
+  // For local `wrangler dev`, copy .dev.vars.example → .dev.vars and fill in.
 
   // Workers Rate Limiting for API key calls (100 req / 60s per key)
   "unsafe": {
