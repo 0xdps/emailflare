@@ -1,0 +1,79 @@
+compose.email-inbox.dev.yaml
+  s_3d0722258bf66d::t_e85e5b6003561a 97
+services/inbox-server/src/env.ts
+  s_3d0722258bf66d::t_fa6a168d8f3fd0 93
+services/inbox-server/src/routes/testEmails.ts
+  s_3d0722258bf66d::t_292afb00ec2e3f 1-75
+services/inbox-server/src/routes/invites.ts
+  s_3d0722258bf66d::t_ade2db1b7435e6 87
+services/inbox-ui/src/components/Layout.tsx
+  s_3d0722258bf66d::t_9815e36c6631e2 84,92-96
+  s_3d0722258bf66d::t_b1632d3d87e480 220-224
+  s_3d0722258bf66d::t_aac9b79059230f 133-149
+  s_3d0722258bf66d::t_f1c66ed0e0736a 11-12
+  s_3d0722258bf66d::t_67eecf3c9a932a 110-111
+  s_3d0722258bf66d::t_4898da54937436 97-98
+migrations/0007_tester_role.sql
+  s_3d0722258bf66d::t_18a1447b80ae0c 1-18
+services/inbox-server/src/index.ts
+  s_3d0722258bf66d::t_77b83989da535a 43,56,98-102
+  s_3d0722258bf66d::t_0fc8bd1bd86191 103
+services/inbox-worker/src/index.ts
+  s_3d0722258bf66d::t_77b83989da535a 33,49,97-101
+  s_3d0722258bf66d::t_608f49483a0c4c 102
+services/inbox-worker/src/routes/testEmails.ts
+  s_3d0722258bf66d::t_155524f29b50ad 1-77
+services/inbox-worker/src/middleware/auth.ts
+  s_3d0722258bf66d::t_deeed204a35618 80-88
+  s_3d0722258bf66d::t_b7f23e857e7770 13,30
+services/inbox-server/src/middleware/auth.ts
+  s_3d0722258bf66d::t_deeed204a35618 82-90
+  s_3d0722258bf66d::t_b7f23e857e7770 15,32
+services/inbox-ui/src/pages/TestMailbox.tsx
+  s_3d0722258bf66d::t_c93ae27c14c0b5 1-329
+services/inbox-server/src/routes/send.ts
+  s_3d0722258bf66d::t_45c7f6808b2119 129-141,148-151,163-166
+services/inbox-ui/src/routes/test-emails.tsx
+  s_3d0722258bf66d::t_9dd208b1fbea7f 1-7
+services/inbox-ui/src/api.ts
+  s_3d0722258bf66d::t_dee71a60e8cea7 49,60,85
+services/inbox-worker/src/routes/admin/users.ts
+  s_3d0722258bf66d::t_9184549d5e465a 45
+Dockerfile.email-inbox
+  s_3d0722258bf66d::t_1f543bf13d0e42 94
+services/inbox-ui/src/pages/settings/Users.tsx
+  s_3d0722258bf66d::t_42b3a25397e4b9 34-40,54,111,164,173,226,240-241
+  s_3d0722258bf66d::t_b2e4424e5c7fb6 242
+services/inbox-worker/src/env.ts
+  s_3d0722258bf66d::t_fa6a168d8f3fd0 50
+packages/inbox-core/src/index.ts
+  s_3d0722258bf66d::t_fa6a168d8f3fd0 24,34
+services/inbox-server/src/routes/admin/users.ts
+  s_3d0722258bf66d::t_9184549d5e465a 38
+services/inbox-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_afd819b5791bed 118-134,148-150,172-173
+  s_3d0722258bf66d::t_29c3b76b05a3f7 3-4
+services/inbox-worker/src/routes/invites.ts
+  s_3d0722258bf66d::t_ade2db1b7435e6 25,88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "70097184049b4a64a656838ed5b6f80de15ede9b",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
