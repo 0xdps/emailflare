@@ -40,6 +40,7 @@ import statsRouter      from './routes/stats.js';
 import cloudflareRouter from './routes/cloudflare.js';
 import listsRouter      from './routes/lists.js';
 import suppressionsRouter from './routes/suppressions.js';
+import testEmailsRouter from './routes/testEmails.js';
 import unsubscribeRouter from './routes/unsubscribe.js';
 
 import peopleRouter         from './routes/inbox/people.js';
@@ -52,7 +53,7 @@ import adminUsersRouter     from './routes/admin/users.js';
 // ── Middleware ────────────────────────────────────────────────────────────────
 import { checkRateLimit }             from './middleware/rateLimit.js';
 import { requireApiKey }              from './middleware/apiKey.js';
-import { requireSession, requireAdmin } from './middleware/auth.js';
+import { requireSession, requireAdmin, requireTester } from './middleware/auth.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -93,6 +94,12 @@ protectedApp.route('/stats',      statsRouter);
 protectedApp.route('/cloudflare', cloudflareRouter);
 protectedApp.route('/lists',      listsRouter);
 protectedApp.route('/suppressions', suppressionsRouter);
+
+// Test Mailbox — accessible to tester, admin, and super-admin roles
+const testMailboxApp = new Hono<HonoEnv>();
+testMailboxApp.use('/*', requireTester);
+testMailboxApp.route('/', testEmailsRouter);
+protectedApp.route('/test-emails', testMailboxApp);
 
 protectedApp.route('/inbox/people',    peopleRouter);
 protectedApp.route('/inbox/compose',   composeRouter);

@@ -35,7 +35,7 @@ app.delete('/:id', requireSession, requireSuperAdmin, async (c) => {
 app.patch(
   '/:id/role',
   requireSession, requireSuperAdmin,
-  zValidator('json', z.object({ role: z.enum(['admin', 'member']) })),
+  zValidator('json', z.object({ role: z.enum(['admin', 'member', 'tester']) })),
   async (c) => {
     const id = c.req.param('id');
     if (id === c.get('userId')) return c.json({ error: 'Cannot change own role' }, 400);

@@ -126,22 +126,29 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
     }
 
     try {
-      const cfResult = await sendEmail(
-        {
-          from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
-          to: recipient, subject, html, text, replyTo: body.replyTo,
-          ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
-        },
-        env.CF_API_TOKEN,
-        env.CF_ACCOUNT_ID,
-      );
+      // Test keys are captured to the Test Mailbox (no CF delivery); live keys send.
+      const isTest = apiKey.isTest;
+      const cfResult = isTest
+        ? { id: generateId() }
+        : await sendEmail(
+            {
+              from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
+              to: recipient, subject, html, text, replyTo: body.replyTo,
+              ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
+            },
+            env.CF_API_TOKEN,
+            env.CF_ACCOUNT_ID,
+          );
 
       await emailLogs.insert({
         id: generateId(), to_address: recipient, from_address: body.from, subject,
         status: 'sent', cf_message_id: cfResult.id ?? null,
         domain_id: domainId, template_id: templateId, api_key_id: apiKey.keyId,
         idempotency_key: idempotencyKey, error: null,
-        is_test: apiKey.isTest ? 1 : 0, sent_at: now,
+        is_test: isTest ? 1 : 0,
+        html_body: isTest ? (html ?? null) : null,
+        text_body: isTest ? (text ?? null) : null,
+        sent_at: now,
       });
 
       results.push({ to: recipient, cfId: cfResult.id });
@@ -153,7 +160,10 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         status: 'failed', cf_message_id: null,
         domain_id: domainId, template_id: templateId, api_key_id: apiKey.keyId,
         idempotency_key: null, error: message,
-        is_test: apiKey.isTest ? 1 : 0, sent_at: now,
+        is_test: apiKey.isTest ? 1 : 0,
+        html_body: apiKey.isTest ? (html ?? null) : null,
+        text_body: apiKey.isTest ? (text ?? null) : null,
+        sent_at: now,
       });
       results.push({ to: recipient, error: message });
     }

@@ -22,7 +22,7 @@ async function sha256Hex(input: string): Promise<string> {
 // POST /api/admin/invites
 app.post('/admin/invites', requireSession, requireAdmin, zValidator('json', z.object({
   email: z.string().email().toLowerCase(),
-  role:  z.enum(['admin', 'member']).optional().default('member'),
+  role:  z.enum(['admin', 'member', 'tester']).optional().default('member'),
 })), async (c) => {
   const { email, role: requestedRole } = c.req.valid('json');
 
@@ -85,7 +85,7 @@ app.post('/invites/:token/accept', zValidator('json', acceptSchema), async (c) =
   const passwordHash = await hashPassword(password);
   const userId = generateId();
   const now = new Date().toISOString();
-  const role = (invite.role as 'admin' | 'member') ?? 'member';
+  const role = (invite.role as 'admin' | 'member' | 'tester') ?? 'member';
 
   await c.env.DB.batch([
     c.env.DB.prepare(

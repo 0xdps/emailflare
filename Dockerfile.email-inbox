@@ -91,7 +91,7 @@ COPY --from=build-inbox-server /app/services/inbox-server/dist          ./servic
 COPY services/inbox-server/package.json                                  ./services/inbox-server/
 
 # Migration SQL files (needed at runtime for DB init)
-COPY services/inbox-worker/migrations/ ./migrations/
+COPY migrations/ ./migrations/
 
 # Inbox UI static files
 COPY --from=build-inbox-ui /app/inbox-ui/dist ./inbox-ui/dist

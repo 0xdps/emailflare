@@ -8,6 +8,8 @@ import api, { me, User } from '../api';
 
 // Paths accessible to all roles (member, admin, super-admin)
 const MEMBER_PATHS = ['/inbox', '/inbox/sequences', '/inbox/settings'];
+// Testers can only access the Test Mailbox
+const TESTER_PATHS = ['/test-emails'];
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
 
@@ -79,12 +81,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     me().then(u => {
       setUser(u);
+      const path = window.location.pathname;
       // Redirect members away from admin-only paths
       if (u.role === 'member') {
-        const path = window.location.pathname;
         const isMemberPath = MEMBER_PATHS.some(p => path === p || path.startsWith(p + '/'));
         if (!isMemberPath) {
           router.navigate({ to: '/inbox' });
+        }
+      }
+      // Testers can only access the Test Mailbox
+      if (u.role === 'tester') {
+        const isTesterPath = TESTER_PATHS.some(p => path === p || path.startsWith(p + '/'));
+        if (!isTesterPath) {
+          router.navigate({ to: '/test-emails' });
         }
       }
     }).catch(() => {});
@@ -98,6 +107,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const role       = user?.role;
   const isAdmin    = role === 'admin' || role === 'super-admin';
   const isSuperAdmin = role === 'super-admin';
+  const isTester   = role === 'tester';
+  const isMember   = role === 'member';
   const initials   = user?.name
     ? user.name.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase()
     : '?';
@@ -119,11 +130,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-2 py-2 flex flex-col gap-0">
 
-          {/* ── Inbox (all roles) ── */}
-          <NavSection label="Inbox" />
-          <NavItem to="/inbox" icon={Mail} label="People" />
-          <NavItem to="/inbox/sequences" icon={ListOrdered} label="Sequences" />
-          <NavItem to="/inbox/settings" icon={Inbox} label="Inboxes" />
+          {/* ── Inbox (member, admin, super-admin — not tester) ── */}
+          {!isTester && (
+            <>
+              <NavSection label="Inbox" />
+              <NavItem to="/inbox" icon={Mail} label="People" />
+              <NavItem to="/inbox/sequences" icon={ListOrdered} label="Sequences" />
+              <NavItem to="/inbox/settings" icon={Inbox} label="Inboxes" />
+            </>
+          )}
+
+          {/* ── Test Mailbox (tester + admin + super-admin) ── */}
+          {(isTester || isAdmin) && (
+            <>
+              <NavSection label="Testing" />
+              <NavItem to="/test-emails" icon={FlaskConical} label="Test Mailbox" />
+            </>
+          )}
 
           {/* ── Admin (super-admin only) ── */}
           {isSuperAdmin && (
@@ -192,6 +215,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {role === 'admin' && (
               <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded px-1 py-0.5 shrink-0">
                 admin
+              </span>
+            )}
+            {role === 'tester' && (
+              <span className="text-[9px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 rounded px-1 py-0.5 shrink-0">
+                tester
               </span>
             )}
           </div>

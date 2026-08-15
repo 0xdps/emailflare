@@ -31,6 +31,13 @@ function RoleBadge({ role }: { role: User['role'] }) {
       </Badge>
     );
   }
+  if (role === 'tester') {
+    return (
+      <Badge className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-50">
+        tester
+      </Badge>
+    );
+  }
   return (
     <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
       user
@@ -44,7 +51,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'member' | 'tester'>('member');
   const [inviteUrl, setInviteUrl] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState('');
@@ -101,7 +108,7 @@ export default function UsersPage() {
     }
   }
 
-  async function handleRoleChange(userId: string, newRole: 'admin' | 'member') {
+  async function handleRoleChange(userId: string, newRole: 'admin' | 'member' | 'tester') {
     setChangingRoleId(userId);
     try {
       await changeUserRole(userId, newRole);
@@ -154,7 +161,7 @@ export default function UsersPage() {
                     ) : (
                       <Select
                         value={user.role}
-                        onValueChange={val => handleRoleChange(user.id, val as 'admin' | 'member')}
+                        onValueChange={val => handleRoleChange(user.id, val as 'admin' | 'member' | 'tester')}
                         disabled={changingRoleId === user.id}
                       >
                         <SelectTrigger className="h-6 w-[90px] text-[11px] px-2 border-0 bg-transparent p-0 shadow-none focus:ring-0">
@@ -163,6 +170,7 @@ export default function UsersPage() {
                         <SelectContent>
                           <SelectItem value="admin" className="text-xs">admin</SelectItem>
                           <SelectItem value="member" className="text-xs">user</SelectItem>
+                          <SelectItem value="tester" className="text-xs">tester</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -215,7 +223,7 @@ export default function UsersPage() {
                 <Label htmlFor="invite-role">Role</Label>
                 <Select
                   value={inviteRole}
-                  onValueChange={val => setInviteRole(val as 'admin' | 'member')}
+                  onValueChange={val => setInviteRole(val as 'admin' | 'member' | 'tester')}
                 >
                   <SelectTrigger id="invite-role" className="h-9 text-sm">
                     <SelectValue />
@@ -228,6 +236,9 @@ export default function UsersPage() {
                     )}
                     <SelectItem value="member" className="text-sm">
                       User — inbox access only
+                    </SelectItem>
+                    <SelectItem value="tester" className="text-sm">
+                      Tester — test mailbox access only
                     </SelectItem>
                   </SelectContent>
                 </Select>

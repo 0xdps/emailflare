@@ -84,7 +84,7 @@ app.post('/invites/:token/accept', zValidator('json', acceptSchema), async (c) =
   const passwordHash = await hashPassword(password);
   const userId = generateId();
   const now    = new Date().toISOString();
-  const role   = (invite.role as 'admin' | 'member') ?? 'member';
+  const role   = (invite.role as 'admin' | 'member' | 'tester') ?? 'member';
 
   await rawDb.batch([
     { sql: 'INSERT INTO users (id, name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?, ?)', params: [userId, name, invite.email, passwordHash, role, now] },

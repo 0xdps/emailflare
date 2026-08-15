@@ -30,6 +30,7 @@ import statsRouter      from './routes/stats.ts';
 import cloudflareRouter from './routes/cloudflare.ts';
 import listsRouter      from './routes/lists.ts';
 import suppressionsRouter from './routes/suppressions.ts';
+import testEmailsRouter from './routes/testEmails.ts';
 import unsubscribeRouter from './routes/unsubscribe.ts';
 
 // ── Inbox
@@ -45,7 +46,7 @@ import adminUsersRouter from './routes/admin/users.ts';
 // ── Middleware
 import { checkRateLimit }   from './middleware/rateLimit.ts';
 import { requireApiKey }    from './middleware/apiKey.ts';
-import { requireSession, requireAdmin } from './middleware/auth.ts';
+import { requireSession, requireAdmin, requireTester } from './middleware/auth.ts';
 import { seedSystemTemplates } from './seed.ts';
 
 // ── Email + sequence handlers
@@ -92,6 +93,12 @@ adminApp.route('/stats',      statsRouter);
 adminApp.route('/cloudflare', cloudflareRouter);
 adminApp.route('/lists',      listsRouter);
 adminApp.route('/suppressions', suppressionsRouter);
+
+// Test Mailbox — accessible to tester, admin, and super-admin roles
+const testMailboxApp = new Hono<HonoEnv>();
+testMailboxApp.use('/*', requireTester);
+testMailboxApp.route('/', testEmailsRouter);
+adminApp.route('/test-emails', testMailboxApp);
 
 // ── Inbox routes (session auth required) ──────────────────────────────────────
 adminApp.route('/inbox/people',    peopleRouter);

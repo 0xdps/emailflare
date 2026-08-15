@@ -21,7 +21,7 @@ export interface UserRow {
   name: string;
   email: string;
   password_hash: string;
-  role: 'super-admin' | 'admin' | 'member';
+  role: 'super-admin' | 'admin' | 'member' | 'tester';
   created_at: string;
 }
 
@@ -31,7 +31,7 @@ export interface InviteRow {
   email: string;
   token_hash: string;
   created_by: string;
-  role: 'admin' | 'member';
+  role: 'admin' | 'member' | 'tester';
   expires_at: string;
   used: number; // 0 | 1
   created_at: string;

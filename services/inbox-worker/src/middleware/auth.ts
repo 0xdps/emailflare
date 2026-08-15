@@ -10,7 +10,7 @@ import type { HonoEnv } from '../env.ts';
 
 export interface SessionPayload {
   userId: string;
-  role: 'super-admin' | 'admin' | 'member';
+  role: 'super-admin' | 'admin' | 'member' | 'tester';
 }
 
 const SESSION_COOKIE = 'ef_inbox_session';
@@ -27,7 +27,7 @@ export async function getSession(c: Context<HonoEnv>): Promise<SessionPayload | 
   try {
     const { payload } = await jwtVerify(token, secretKey(c.env.SESSION_SECRET));
     if (typeof payload['userId'] !== 'string' || typeof payload['role'] !== 'string') return null;
-    return { userId: payload['userId'] as string, role: payload['role'] as 'super-admin' | 'admin' | 'member' };
+    return { userId: payload['userId'] as string, role: payload['role'] as 'super-admin' | 'admin' | 'member' | 'tester' };
   } catch {
     return null;
   }
@@ -75,5 +75,14 @@ export const requireAdmin = createMiddleware<HonoEnv>(async (c, next) => {
 export const requireSuperAdmin = createMiddleware<HonoEnv>(async (c, next) => {
   const role = c.get('userRole');
   if (role !== 'super-admin') throw new HTTPException(403, { message: 'Forbidden' });
+  await next();
+});
+
+/** Middleware: require tester, admin, or super-admin role (Test Mailbox access). */
+export const requireTester = createMiddleware<HonoEnv>(async (c, next) => {
+  const role = c.get('userRole');
+  if (role !== 'tester' && role !== 'admin' && role !== 'super-admin') {
+    throw new HTTPException(403, { message: 'Forbidden' });
+  }
   await next();
 });

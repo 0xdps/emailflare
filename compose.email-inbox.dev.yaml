@@ -94,7 +94,7 @@ services:
       - ./services/inbox-server/src:/app/services/inbox-server/src
       - ./services/inbox-server/package.json:/app/services/inbox-server/package.json
       - inbox-server-node-modules:/app/services/inbox-server/node_modules
-      - ./services/inbox-worker/migrations:/app/migrations:ro
+      - ./migrations:/app/migrations:ro
 
   inbox-ui:
     container_name: emailflare-inbox-ui

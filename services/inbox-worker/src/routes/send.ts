@@ -1,9 +1,7 @@
 // POST /v1/send
 //
-// Workers version differences vs. Node.js backend:
-//   - Test-mode capture (in-house test mailbox) is not supported here.
-//     Both test and live keys go through the Cloudflare Email Sending REST API.
-//     The is_test flag is still stored in email_logs for audit purposes.
+// Test API keys are captured into the in-house Test Mailbox (html_body/text_body)
+// instead of delivering via Cloudflare — mirroring the Node.js backend.
 
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
@@ -117,19 +115,23 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
     }
 
     try {
-      const cfResult = await sendEmail(
-        {
-          from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
-          to: recipient,
-          subject,
-          html,
-          text,
-          replyTo: body.replyTo,
-          ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
-        },
-        c.env.CF_API_TOKEN,
-        c.env.CF_ACCOUNT_ID,
-      );
+      // Test keys are captured to the Test Mailbox (no CF delivery); live keys send.
+      const isTest = apiKey.isTest;
+      const cfResult = isTest
+        ? { id: generateId() }
+        : await sendEmail(
+            {
+              from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
+              to: recipient,
+              subject,
+              html,
+              text,
+              replyTo: body.replyTo,
+              ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
+            },
+            c.env.CF_API_TOKEN,
+            c.env.CF_ACCOUNT_ID,
+          );
 
       await emailLogs.insert({
         id: generateId(),
@@ -143,7 +145,9 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         api_key_id: apiKey.keyId,
         idempotency_key: idempotencyKey,
         error: null,
-        is_test: apiKey.isTest ? 1 : 0,
+        is_test: isTest ? 1 : 0,
+        html_body: isTest ? (html ?? null) : null,
+        text_body: isTest ? (text ?? null) : null,
         sent_at: now,
       });
 
@@ -165,6 +169,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         idempotency_key: null,
         error: message,
         is_test: apiKey.isTest ? 1 : 0,
+        html_body: apiKey.isTest ? (html ?? null) : null,
+        text_body: apiKey.isTest ? (text ?? null) : null,
         sent_at: now,
       });
 
