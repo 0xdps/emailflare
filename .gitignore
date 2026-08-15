@@ -7,6 +7,11 @@ dist/
 .dev.vars
 !.dev.vars.example
 *.local
+
+# Generated Cloudflare Worker configs — the tracked templates are the
+# *.example.jsonc files; the setup scripts generate these with real resource IDs.
+services/email-worker/wrangler.jsonc
+services/inbox-worker/wrangler.jsonc
 .DS_Store
 *.log
 .tanstack/

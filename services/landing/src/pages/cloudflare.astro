@@ -351,7 +351,7 @@ import { Icon } from 'astro-icon/components';
         <div class="why-card">
           <span class="card-icon"><Icon name="lucide:terminal" /></span>
           <h3>One command from zero to deployed</h3>
-          <p><code>just emailflare-api-worker-setup</code> creates your D1 database, KV namespace, patches <code>wrangler.jsonc</code>, runs migrations, sets secrets, builds the admin UI, and deploys — all automatically.</p>
+          <p><code>just emailflare-api-worker-setup</code> creates your D1 database, KV namespace, generates <code>wrangler.jsonc</code> from the tracked template, runs migrations, sets secrets, builds the admin UI, and deploys — all automatically.</p>
         </div>
         <div class="why-card">
           <span class="card-icon"><Icon name="lucide:layout-dashboard" /></span>
@@ -500,7 +500,7 @@ import { Icon } from 'astro-icon/components';
               <span>&nbsp;</span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">D1 database created: emailflare</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">KV namespace created: emailflare-api-rate-limit</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">wrangler.jsonc patched with IDs</span></span>
+              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">wrangler.jsonc generated from template</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">D1 migrations applied</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Secrets pushed to Worker</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Admin UI built</span></span>

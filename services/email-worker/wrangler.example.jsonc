@@ -1,12 +1,18 @@
 {
-  // ── Cloudflare Workers config for emailflare ─────────────────────────────────
+  // ── Cloudflare Workers config template for emailflare ────────────────────────
+  //
+  // ⚠ This is a TEMPLATE. It is tracked in git and contains REPLACE_WITH_*
+  //   placeholders. Do NOT put real resource IDs here.
+  //
+  // The setup script (scripts/setup.mjs / `just emailflare-api-worker-setup`)
+  // generates the gitignored `wrangler.jsonc` from this template with your real IDs.
   //
   // ★ FIRST-TIME SETUP — one command does everything:
-  //       pnpm setup
-  //   (creates D1 + KV, fills in IDs below, applies migrations, sets secrets, deploys)
+  //       just emailflare-api-worker-setup
+  //   (creates D1 + KV, generates wrangler.jsonc, applies migrations, sets secrets, deploys)
   //
   // ★ DEPLOY UPDATES — migrates schema then redeploys atomically:
-  //       pnpm update
+  //       just emailflare-api-worker-update
   //
   // ★ GRADUAL ROLLOUT — upload a version and control traffic split:
   //       pnpm rollout:upload          # apply migrations + upload new version

@@ -1,7 +1,18 @@
 {
-  // ── Cloudflare Workers config for emailflare-inbox ────────────────────────
+  // ── Cloudflare Workers config template for emailflare-inbox ──────────────────
+  //
+  // ⚠ This is a TEMPLATE. It is tracked in git and contains REPLACE_WITH_*
+  //   placeholders. Do NOT put real resource IDs here.
+  //
+  // The deploy script (scripts/deploy-inbox.mjs / `just emailflare-inbox-deploy`)
+  // generates the gitignored `wrangler.jsonc` from this template with your real IDs.
   //
   // ★ FIRST-TIME SETUP:
+  //       just emailflare-inbox-deploy
+  //   (creates D1, KV, R2, Queue, generates wrangler.jsonc, applies migrations,
+  //    sets secrets, builds inbox-ui, deploys)
+  //
+  // Manual setup (if needed):
   //   1. Create D1:   wrangler d1 create emailflare-inbox   → fill in database_id
   //   2. Create KV:   wrangler kv namespace create emailflare-inbox-rate-limit   → fill in id
   //   3. Create R2:   wrangler r2 bucket create emailflare-inbox-attachments

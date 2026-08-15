@@ -9,7 +9,7 @@
  *   4.  Creates KV namespace (emailflare-inbox-rate-limit)
  *   5.  Creates R2 bucket (emailflare-inbox-attachments)
  *   5b. Creates Queue (emailflare-inbox-sequences)
- *   6.  Patches services/inbox-worker/wrangler.jsonc with the real resource IDs
+ *   6.  Generates wrangler.jsonc from the tracked wrangler.example.jsonc template
  *   7.  Applies D1 migrations (schema + inbox tables)
  *   8.  Prompts for secrets and sets them via `wrangler secret put`
  *   9.  Builds the inbox UI SPA (services/inbox-ui)
@@ -34,6 +34,7 @@ const ROOT        = resolve(__dirname, '..');
 const INBOX_DIR   = resolve(ROOT, 'services/inbox-worker');
 const DASH_DIR    = resolve(ROOT, 'services/inbox-ui');
 const WRANGLER    = resolve(INBOX_DIR, 'wrangler.jsonc');
+const WRANGLER_TEMPLATE = resolve(INBOX_DIR, 'wrangler.example.jsonc');
 const CONFIG_FILE = resolve(__dirname, 'config.toml');
 
 // ─── load config.toml (optional) ────────────────────────────────────────────
@@ -254,19 +255,19 @@ if (qCreate.status === 0 || qOut.toLowerCase().includes('created queue')) {
   warn(`Queue creation returned unexpected output:\n${qOut.trim()}`);
 }
 
-// ─── step 6: patch wrangler.jsonc ────────────────────────────────────────────
+// ─── step 6: generate wrangler.jsonc from the tracked template ──────────────
 
-log('Patching services/inbox-worker/wrangler.jsonc with resource IDs…');
-let jsonc = readFileSync(WRANGLER, 'utf8');
-const before = jsonc;
-jsonc = jsonc.replace(/REPLACE_WITH_D1_DATABASE_ID/g, d1Id);
-jsonc = jsonc.replace(/REPLACE_WITH_KV_NAMESPACE_ID/g, kvId);
-if (jsonc === before) {
-  warn('wrangler.jsonc already has real IDs — skipping patch.');
-} else {
-  writeFileSync(WRANGLER, jsonc, 'utf8');
-  ok('wrangler.jsonc updated.');
+log('Generating wrangler.jsonc from wrangler.example.jsonc…');
+if (!existsSync(WRANGLER_TEMPLATE)) {
+  die(`Missing template: ${WRANGLER_TEMPLATE}`);
 }
+const jsonc = readFileSync(WRANGLER_TEMPLATE, 'utf8')
+  .replace(/REPLACE_WITH_D1_DATABASE_ID/g, d1Id)
+  .replace(/REPLACE_WITH_KV_NAMESPACE_ID/g, kvId);
+
+// Never write back to the tracked template — write the generated, gitignored file.
+writeFileSync(WRANGLER, jsonc, 'utf8');
+ok('wrangler.jsonc generated (gitignored).');
 
 // ─── step 7: apply D1 migrations ─────────────────────────────────────────────
 

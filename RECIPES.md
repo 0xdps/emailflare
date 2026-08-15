@@ -179,7 +179,7 @@ just emailflare-api-worker-remove
 Uses `services/inbox-worker` (D1 + R2 + KV + Durable Objects + Queue).
 
 ### `just emailflare-inbox-deploy`
-First-time setup. Creates all CF resources (D1, KV, R2, Queue), patches `wrangler.jsonc`, runs migrations, builds `inbox-ui`, and deploys. Idempotent — safe to re-run.
+First-time setup. Creates all CF resources (D1, KV, R2, Queue), generates `wrangler.jsonc` from the tracked template, runs migrations, builds `inbox-ui`, and deploys. Idempotent — safe to re-run.
 
 ```sh
 # Optionally pre-fill config:

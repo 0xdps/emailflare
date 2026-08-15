@@ -17,6 +17,14 @@ name: Deploy Cloudflare Workers
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN    — scoped token: Workers Scripts (Edit), D1 (Edit), KV (Edit)
 #   CLOUDFLARE_ACCOUNT_ID   — your Cloudflare account ID
+#
+# Required repository variables (Settings → Secrets and variables → Actions → Variables):
+#   EMAIL_WORKER_D1_ID    — D1 database_id for emailflare-api-worker (also used by inbox)
+#   EMAIL_WORKER_KV_ID    — KV namespace id for emailflare-api-worker
+#   INBOX_WORKER_KV_ID    — KV namespace id for emailflare-inbox-worker
+#
+# The `wrangler.jsonc` files are gitignored; CI generates them from the tracked
+# `wrangler.example.jsonc` templates and these variables.
 
 on:
   workflow_dispatch:
@@ -69,6 +77,13 @@ jobs:
         working-directory: services/email-worker
         run: pnpm install --frozen-lockfile
 
+      - name: Generate wrangler.jsonc
+        working-directory: services/email-worker
+        run: |
+          sed -e "s/REPLACE_WITH_D1_DATABASE_ID/${{ vars.EMAIL_WORKER_D1_ID }}/g" \
+              -e "s/REPLACE_WITH_KV_NAMESPACE_ID/${{ vars.EMAIL_WORKER_KV_ID }}/g" \
+              wrangler.example.jsonc > wrangler.jsonc
+
       - name: Apply D1 migrations
         working-directory: services/email-worker
         run: pnpm run migrations:apply
@@ -109,6 +124,13 @@ jobs:
       - name: Install worker deps
         working-directory: services/inbox-worker
         run: pnpm install --frozen-lockfile
+
+      - name: Generate wrangler.jsonc
+        working-directory: services/inbox-worker
+        run: |
+          sed -e "s/REPLACE_WITH_D1_DATABASE_ID/${{ vars.EMAIL_WORKER_D1_ID }}/g" \
+              -e "s/REPLACE_WITH_KV_NAMESPACE_ID/${{ vars.INBOX_WORKER_KV_ID }}/g" \
+              wrangler.example.jsonc > wrangler.jsonc
 
       - name: Apply D1 migrations
         working-directory: services/inbox-worker

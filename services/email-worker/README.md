@@ -30,6 +30,10 @@ wrangler kv namespace create RATE_LIMIT_KV
 # → copy the id into wrangler.jsonc
 ```
 
+> `wrangler.jsonc` is gitignored and generated from the tracked `wrangler.example.jsonc`
+> template. Prefer `just emailflare-api-worker-setup` (scripts/setup.mjs), which creates the
+> resources and generates the config automatically.
+
 ### 2. Apply the schema migration
 
 ```bash
@@ -95,7 +99,7 @@ If you need test-mailbox capture locally, use the Node.js backend (`services/ema
 
 API key rate limiting uses the **Workers Rate Limiting** binding (100 req / 60s per key).
 This requires the Workers Paid plan. To disable, remove the `unsafe.bindings` block from
-`wrangler.jsonc` — the middleware will fall back to allowing all requests.
+`wrangler.example.jsonc` (and regenerate `wrangler.jsonc`) — the middleware will fall back to allowing all requests.
 
 Login rate limiting uses Workers KV (10 attempts / 60s per IP). This works on all plans.
 

@@ -76,9 +76,10 @@ public_url = ""
 
 `scripts/config.toml` is gitignored — your secrets stay local.
 
-> **Fork-friendly:** no Cloudflare resource IDs or secrets are committed. The
-> setup script creates D1/KV and patches `wrangler.jsonc` with `REPLACE_WITH_*`
-> placeholders; all secrets come from `config.toml` (or `.dev.vars` for local dev).
+> **Fork-friendly:** no Cloudflare resource IDs or secrets are committed. The tracked
+> `wrangler.example.jsonc` templates hold `REPLACE_WITH_*` placeholders; the setup
+> script generates a gitignored `wrangler.jsonc` with your real IDs. All secrets come
+> from `config.toml` (or `.dev.vars` for local dev).
 
 ## 4. Run setup
 
@@ -91,7 +92,7 @@ This single command:
 1. Verifies Cloudflare authentication
 2. Creates the D1 database (`emailflare`)
 3. Creates the KV namespace (`emailflare-api-rate-limit`)
-4. Patches `wrangler.jsonc` with the real resource IDs
+4. Generates `wrangler.jsonc` from the tracked `wrangler.example.jsonc` template (with your real resource IDs)
 5. Applies database migrations (schema + system email templates)
 6. Sets all Worker secrets
 7. Builds the admin panel
@@ -173,7 +174,7 @@ The `cf-worker` bridges are only needed for **Docker/VPS deployments** — they 
 
 ### Prerequisites
 
-1. **One-time local provisioning first.** The workflow updates existing Workers — it does not create D1/KV/R2/Queue, patch `wrangler.jsonc`, or set Worker secrets. Run the local setup once before using CI:
+1. **One-time local provisioning first.** The workflow updates existing Workers — it does not create D1/KV/R2/Queue or set Worker secrets. Run the local setup once before using CI:
    ```bash
    just emailflare-api-worker-setup      # cf-api
    just emailflare-inbox-deploy          # cf-inbox
@@ -184,6 +185,12 @@ The `cf-worker` bridges are only needed for **Docker/VPS deployments** — they 
    |---|---|
    | `CLOUDFLARE_API_TOKEN` | Scoped token: Workers Scripts (Edit), D1 (Edit), KV (Edit) |
    | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+3. **Add repository variables** (Settings → Secrets and variables → Actions → Variables) so CI can generate the gitignored `wrangler.jsonc` from the tracked template:
+   | Variable | Value |
+   |---|---|
+   | `EMAIL_WORKER_D1_ID` | D1 `database_id` (shared by both workers) |
+   | `EMAIL_WORKER_KV_ID` | KV namespace id for `emailflare-api-worker` |
+   | `INBOX_WORKER_KV_ID` | KV namespace id for `emailflare-inbox-worker` |
 
 ### Running the workflow
 
@@ -224,7 +231,7 @@ most routes work, but admin auth and sending will fail until you populate it.
 just emailflare-api-worker-localflare
 ```
 
-Starts Localflare against the Worker config in `services/email-worker/wrangler.jsonc` and opens the Localflare dashboard flow with shared local bindings.
+Starts Localflare against the Worker config in `services/email-worker/wrangler.jsonc` (generated from the tracked `wrangler.example.jsonc` template) and opens the Localflare dashboard flow with shared local bindings.
 
 The recipe defaults to port `8790` to avoid collisions with `wrangler dev` on `8787`.
 

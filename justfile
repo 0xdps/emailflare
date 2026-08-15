@@ -132,6 +132,11 @@ emailflare-api-worker-dev:
         cd services/email-ui && pnpm install --frozen-lockfile && pnpm build
         cd "$OLDPWD"
     fi
+    # Generate gitignored wrangler.jsonc from the tracked template if missing.
+    if [ ! -f services/email-worker/wrangler.jsonc ]; then
+        echo "wrangler.jsonc missing — generating from wrangler.example.jsonc…"
+        cp services/email-worker/wrangler.example.jsonc services/email-worker/wrangler.jsonc
+    fi
     cd services/email-worker && npx wrangler dev
 
 # Start email-ui Vite dev server (proxies /api to wrangler dev on :8787)
@@ -162,9 +167,9 @@ emailflare-api-worker-remove:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    WORKER_NAME="$(node -e 'const fs=require("node:fs"); const src=fs.readFileSync("services/email-worker/wrangler.jsonc", "utf8"); const cfg=Function(`"use strict"; return (${src});`)(); process.stdout.write(cfg.name ?? "");')"
-    D1_NAME="$(node -e 'const fs=require("node:fs"); const src=fs.readFileSync("services/email-worker/wrangler.jsonc", "utf8"); const cfg=Function(`"use strict"; return (${src});`)(); process.stdout.write(cfg.d1_databases?.[0]?.database_name ?? "");')"
-    KV_ID="$(node -e 'const fs=require("node:fs"); const src=fs.readFileSync("services/email-worker/wrangler.jsonc", "utf8"); const cfg=Function(`"use strict"; return (${src});`)(); process.stdout.write(cfg.kv_namespaces?.[0]?.id ?? "");')"
+    WORKER_NAME="emailflare-api-worker"
+    D1_NAME="emailflare"
+    KV_ID="$(node -e 'const fs=require("node:fs"); const p="services/email-worker/wrangler.jsonc"; if(!fs.existsSync(p)){process.stdout.write("");process.exit(0);} const src=fs.readFileSync(p,"utf8"); const cfg=Function(`"use strict"; return (${src});`)(); process.stdout.write(cfg.kv_namespaces?.[0]?.id ?? "");')"
 
     echo "Removing Email API Worker resources..."
 
@@ -186,7 +191,7 @@ emailflare-api-worker-remove:
         echo "  KV: ${KV_ID}"
         npx wrangler kv namespace delete --namespace-id "${KV_ID}" --skip-confirmation --cwd services/email-worker || true
     else
-        echo "  KV: skipped (id not found)"
+        echo "  KV: skipped (no generated wrangler.jsonc — run setup first, or delete the emailflare-api-rate-limit namespace manually)"
     fi
 
     echo "Done."
@@ -286,6 +291,11 @@ emailflare-inbox-dev:
         echo "inbox-ui/dist missing — building first…"
         cd services/inbox-ui && pnpm install --frozen-lockfile && pnpm build
         cd "$OLDPWD"
+    fi
+    # Generate gitignored wrangler.jsonc from the tracked template if missing.
+    if [ ! -f services/inbox-worker/wrangler.jsonc ]; then
+        echo "wrangler.jsonc missing — generating from wrangler.example.jsonc…"
+        cp services/inbox-worker/wrangler.example.jsonc services/inbox-worker/wrangler.jsonc
     fi
     cd services/inbox-worker && npx wrangler dev
 
