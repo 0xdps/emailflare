@@ -1,0 +1,84 @@
+services/email-server/src/index.ts
+  s_3d0722258bf66d::t_e3618cdb055b54 63
+  s_3d0722258bf66d::t_98e16ad4e58e8f 82-84,86-87
+  s_3d0722258bf66d::t_12c3988c7f28f0 26-27,127
+services/email-ui/src/components/Layout.tsx
+  s_3d0722258bf66d::t_f6e5e4edd6a344 58
+  s_3d0722258bf66d::t_3fa41187a43c67 5
+services/email-worker/wrangler.jsonc
+  s_3d0722258bf66d::t_884e4f67a36894 78-79
+services/email-server/src/db.ts
+  s_3d0722258bf66d::t_3e792decbeea90 15,25,41,167-177
+  s_3d0722258bf66d::t_b819a6f8ebd663 14,24,40,152-166
+services/email-worker/src/index.ts
+  s_3d0722258bf66d::t_b938434950c307 59
+  s_3d0722258bf66d::t_06ae45661c69b2 85,87-88
+  s_3d0722258bf66d::t_12c3988c7f28f0 33-34,83-84,119
+services/email-server/src/routes/suppressions.ts
+  s_3d0722258bf66d::t_4d87e6e4b0fb73 56
+services/email-worker/src/routes/lists.ts
+  s_3d0722258bf66d::t_2335f4c711f1c8 1-53
+services/email-worker/src/routes/unsubscribe.ts
+  s_3d0722258bf66d::t_d49e0c465b8be2 1-63
+services/email-worker/src/env.ts
+  s_3d0722258bf66d::t_7328c91fb0104f 20-22
+services/email-server/src/routes/send.ts
+  s_3d0722258bf66d::t_a3dad679b6025f 82-83,95-111,121
+  s_3d0722258bf66d::t_135948b3f1c507 3,8,10
+services/landing/src/pages/docs.astro
+  s_3d0722258bf66d::t_f46bc60fac70ba 525-542
+services/email-ui/src/pages/Suppressions.tsx
+  s_3d0722258bf66d::t_c79fbeac0b6e22 24,32,45-49,53-57,66,128
+packages/email-core/src/index.ts
+  s_3d0722258bf66d::t_54fcba61d633c8 222-236
+  s_3d0722258bf66d::t_85c8be7b0315d7 107-111
+  s_3d0722258bf66d::t_0fe42565e08f11 90,93-106,133-136,173-181
+  s_3d0722258bf66d::t_3e2f75f4edfa22 182
+  s_3d0722258bf66d::t_23361e22befde3 221
+packages/email-core/src/cloudflare.ts
+  s_3d0722258bf66d::t_8be9eaa35f1250 190,205-210
+services/email-worker/src/routes/suppressions.ts
+  s_3d0722258bf66d::t_4d87e6e4b0fb73 61
+migrations/0006_lists.sql
+  s_3d0722258bf66d::t_18d220f62396d0 2-32
+  s_3d0722258bf66d::t_70f54acb906003 1
+services/email-worker/src/db.ts
+  s_3d0722258bf66d::t_a23898a73b7329 12,22,184
+  s_3d0722258bf66d::t_ccddb4f0fd619a 13,23,185
+services/email-ui/src/pages/Lists.tsx
+  s_3d0722258bf66d::t_7299bab651d081 1-158
+services/email-ui/src/routes/lists.tsx
+  s_3d0722258bf66d::t_e28c3391af8a07 1-7
+services/inbox-server/src/services/cloudflare.ts
+  s_3d0722258bf66d::t_8be9eaa35f1250 127,140-145
+services/email-server/src/services/cloudflare.ts
+  s_3d0722258bf66d::t_8be9eaa35f1250 162,173-178
+services/email-server/src/routes/lists.ts
+  s_3d0722258bf66d::t_fcf2dfa9bda4a8 1-47
+services/email-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_ece309acb7621b 15
+  s_3d0722258bf66d::t_322e5797b257f8 91-96,108-122,132
+services/email-server/src/routes/unsubscribe.ts
+  s_3d0722258bf66d::t_6bb9134eaa895a 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "aa0d1b2c61fc7614f289f246eb6a4a788581010f",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
