@@ -349,6 +349,7 @@ import Base from '../layouts/Base.astro';
           <li><a href="#quickstart">Quickstart</a></li>
           <li><a href="#authentication">Authentication</a></li>
           <li><a href="#api-send">POST /v1/send</a></li>
+          <li><a href="#api-unsubscribe">Unsubscribe</a></li>
           <li><a href="#templates">Templates &amp; themes</a></li>
           <li><a href="#errors">Error responses</a></li>
           <li><a href="#troubleshooting">Troubleshooting</a></li>
@@ -586,6 +587,34 @@ import Base from '../layouts/Base.astro';
     <span class="cb-key">"cfId"</span><span class="cb-punct">:</span> <span class="cb-str">"cf_msg_xxxxxxxxxxxxxxxxxx"</span>
   <span class="cb-punct">&#125;]</span>
 <span class="cb-punct">&#125;</span></div>
+          </div>
+        </section>
+
+        <!-- 3b. UNSUBSCRIBE -->
+        <section class="doc-section" id="api-unsubscribe">
+          <div class="doc-section-header">
+            <h2>Unsubscribe</h2>
+            <a class="anchor-link" href="#api-unsubscribe">#api-unsubscribe</a>
+          </div>
+          <div class="doc-body">
+            <p>EmailFlare supports one-click unsubscribe via <code>List-Unsubscribe</code> headers (RFC 8058). When a send includes a <code>listId</code>, a per-recipient, one-time token is embedded in the header. Recipients who click it are suppressed from all future sends.</p>
+
+            <h3>Public endpoint</h3>
+            <p>The unsubscribe endpoint is public — no API key required:</p>
+            <div class="code-block"><span class="cb-cmd">GET  https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;</span>
+<span class="cb-cmd">POST https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;</span></div>
+            <p><code>GET</code> returns a confirmation page (for browser clicks); <code>POST</code> returns JSON (for mail-client one-click). Each token is single-use.</p>
+
+            <h3>Admin API</h3>
+            <p>Manage lists with the admin API (session-authenticated, same as other <code>/api/*</code> routes):</p>
+            <div class="code-block"><span class="cb-cmd">GET    /api/lists        # list all lists</span>
+<span class="cb-cmd">POST   /api/lists        # create a list</span>
+<span class="cb-cmd">DELETE /api/lists/:id    # delete a list</span></div>
+
+            <div class="callout callout-orange">
+              <span class="callout-icon">⚡</span>
+              Unsubscribe links require <code>PUBLIC_URL</code> (or <code>public_url</code> in <code>config.toml</code>) to be set. Without it, <code>listId</code> is ignored — pass your own <code>listUnsubscribe</code> URL instead.
+            </div>
           </div>
         </section>
 

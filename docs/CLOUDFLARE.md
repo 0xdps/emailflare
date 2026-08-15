@@ -68,9 +68,17 @@ cf_account_id = "your-account-id"
 # Leave blank on first run — fill in after deploy with the worker URL.
 # e.g. https://emailflare-api-worker.YOUR-ACCOUNT.workers.dev
 admin_origin = ""
+
+# Public URL used to build one-click unsubscribe links (List-Unsubscribe).
+# Usually the same as admin_origin.
+public_url = ""
 ```
 
 `scripts/config.toml` is gitignored — your secrets stay local.
+
+> **Fork-friendly:** no Cloudflare resource IDs or secrets are committed. The
+> setup script creates D1/KV and patches `wrangler.jsonc` with `REPLACE_WITH_*`
+> placeholders; all secrets come from `config.toml` (or `.dev.vars` for local dev).
 
 ## 4. Run setup
 
@@ -99,13 +107,29 @@ After the first deploy, the worker URL is printed in the output:
 https://emailflare-api-worker.YOUR-ACCOUNT.workers.dev
 ```
 
-Set `admin_origin` in `scripts/config.toml` to that URL, then re-run:
+Set `admin_origin` and `public_url` in `scripts/config.toml` to that URL, then re-run:
 
 ```bash
 just emailflare-api-worker-setup
 ```
 
-This updates the `ADMIN_ORIGIN` secret so the admin panel's CORS and auth checks work correctly.
+This updates the `ADMIN_ORIGIN` secret so the admin panel's CORS and auth checks work
+correctly, and the `PUBLIC_URL` secret so one-click unsubscribe links resolve to the right origin.
+
+## Lists & one-click unsubscribe
+
+EmailFlare ships audience **lists** with RFC 8058 one-click unsubscribe support.
+
+- Create a list from the admin UI (*Send → Lists*) or `POST /api/lists`.
+- When a `POST /v1/send` request includes a `listId`, EmailFlare attaches a
+  `List-Unsubscribe` header with a per-recipient, one-time token.
+- A recipient who unsubscribes is **suppressed globally** (no further sends), and
+  the suppression is visible under *Monitor → Suppressions*.
+- The public `GET/POST /v1/unsubscribe?token=…` endpoint resolves the token — no
+  API key required.
+
+Unsubscribe links require `PUBLIC_URL` (or `public_url` in `config.toml`). Without
+it, `listId` is ignored; callers can still pass their own `listUnsubscribe` URL.
 
 ## Deploying updates
 
@@ -175,7 +199,7 @@ Each job builds the shared packages and admin SPA, applies pending D1 migrations
 just emailflare-api-worker-secret SECRET_NAME
 ```
 
-You'll be prompted to enter the new value (input is hidden). Available secret names: `ADMIN_TOKEN`, `SESSION_SECRET`, `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `ADMIN_ORIGIN`.
+You'll be prompted to enter the new value (input is hidden). Available secret names: `ADMIN_TOKEN`, `SESSION_SECRET`, `CF_API_TOKEN`, `CF_ACCOUNT_ID`, `ADMIN_ORIGIN`, `PUBLIC_URL`.
 
 ## Local development
 
@@ -183,7 +207,16 @@ You'll be prompted to enter the new value (input is hidden). Available secret na
 just emailflare-api-worker-dev
 ```
 
-Starts a local Worker dev server with a local D1 database and KV stubs. No secrets are required for local development.
+Starts a local Worker dev server with a local D1 database and KV stubs.
+
+For local secrets, copy the example dev-vars file and fill in your values:
+
+```bash
+cp services/email-worker/.dev.vars.example services/email-worker/.dev.vars
+```
+
+`.dev.vars` is gitignored. Without it, `wrangler dev` starts with empty secrets —
+most routes work, but admin auth and sending will fail until you populate it.
 
 ## Localflare dashboard
 

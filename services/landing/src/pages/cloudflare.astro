@@ -310,13 +310,13 @@ import { Icon } from 'astro-icon/components';
             <div><span class="tt-prompt">$</span> <span class="tt-cmd">just install</span></div>
             <div style="margin-top:8px;"><span class="tt-cmt"># 2. Configure Cloudflare credentials</span></div>
             <div><span class="tt-prompt">$</span> <span class="tt-cmd">cp scripts/config.example.toml scripts/config.toml</span></div>
-            <div><span class="tt-prompt">$</span> <span class="tt-cmd">just worker-login</span></div>
+            <div><span class="tt-prompt">$</span> <span class="tt-cmd">just emailflare-api-worker-login</span></div>
             <div style="margin-top:8px;"><span class="tt-cmt"># 3. One-command deploy</span></div>
-            <div><span class="tt-prompt">$</span> <span class="tt-cmd">just worker-setup</span></div>
+            <div><span class="tt-prompt">$</span> <span class="tt-cmd">just emailflare-api-worker-setup</span></div>
             <div style="margin-top:10px;">
               <span class="tt-ok">✓</span> <span class="tt-out">D1 database created: emailflare</span>
             </div>
-            <div><span class="tt-ok">✓</span> <span class="tt-out">KV namespace created: EMAILFLARE_CACHE</span></div>
+            <div><span class="tt-ok">✓</span> <span class="tt-out">KV namespace created: emailflare-api-rate-limit</span></div>
             <div><span class="tt-ok">✓</span> <span class="tt-out">Secrets configured</span></div>
             <div><span class="tt-ok">✓</span> <span class="tt-out">Admin UI built</span></div>
             <div style="margin-top:6px;"><span class="tt-ok">✓</span> <span class="tt-out">Deployed → </span><span class="tt-url">https://emailflare.workers.dev</span></div>
@@ -351,7 +351,7 @@ import { Icon } from 'astro-icon/components';
         <div class="why-card">
           <span class="card-icon"><Icon name="lucide:terminal" /></span>
           <h3>One command from zero to deployed</h3>
-          <p><code>just worker-setup</code> creates your D1 database, KV namespace, patches <code>wrangler.jsonc</code>, runs migrations, sets secrets, builds the admin UI, and deploys — all automatically.</p>
+          <p><code>just emailflare-api-worker-setup</code> creates your D1 database, KV namespace, patches <code>wrangler.jsonc</code>, runs migrations, sets secrets, builds the admin UI, and deploys — all automatically.</p>
         </div>
         <div class="why-card">
           <span class="card-icon"><Icon name="lucide:layout-dashboard" /></span>
@@ -458,12 +458,15 @@ import { Icon } from 'astro-icon/components';
             <p>Edit <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">scripts/config.toml</code> — the key fields are:</p>
             <div class="code-block">
               <span><span class="c-cmt">[deploy]</span></span>
-              <span><span class="c-key">cloudflare_api_token</span> = <span class="c-val">"your_cf_api_token"</span></span>
-              <span><span class="c-key">account_id</span>            = <span class="c-val">"your_account_id"</span></span>
+              <span><span class="c-key">database_name</span> = <span class="c-val">"emailflare"</span></span>
               <span>&nbsp;</span>
               <span><span class="c-cmt">[secrets]</span></span>
-              <span><span class="c-key">admin_token</span>           = <span class="c-val">"$(openssl rand -hex 32)"</span></span>
-              <span><span class="c-key">session_secret</span>        = <span class="c-val">"$(openssl rand -hex 32)"</span></span>
+              <span><span class="c-key">admin_token</span>     = <span class="c-val">"$(openssl rand -hex 32)"</span></span>
+              <span><span class="c-key">session_secret</span>  = <span class="c-val">"$(openssl rand -hex 32)"</span></span>
+              <span><span class="c-key">cf_api_token</span>    = <span class="c-val">"your_runtime_token"</span></span>
+              <span><span class="c-key">cf_account_id</span>   = <span class="c-val">"your_account_id"</span></span>
+              <span><span class="c-key">admin_origin</span>    = <span class="c-val">""</span> <span class="c-cmt"># fill after first deploy</span></span>
+              <span><span class="c-key">public_url</span>      = <span class="c-val">""</span> <span class="c-cmt"># fill after first deploy</span></span>
             </div>
             <div class="tip-box">
               <span class="tip-icon"><Icon name="lucide:key-round" /></span>
@@ -478,7 +481,7 @@ import { Icon } from 'astro-icon/components';
             <h3>Authenticate with Cloudflare</h3>
             <p>Log in to Cloudflare via Wrangler. This opens a browser window — authorise the CLI and return to the terminal. You only need to do this once per machine.</p>
             <div class="code-block">
-              <span class="c-cmd">just worker-login</span>
+              <span class="c-cmd">just emailflare-api-worker-login</span>
             </div>
             <div class="tip-box">
               <span class="tip-icon"><Icon name="lucide:lightbulb" /></span>
@@ -491,19 +494,19 @@ import { Icon } from 'astro-icon/components';
           <div class="ss-num">4</div>
           <div class="ss-body">
             <h3>Run the setup script</h3>
-            <p><code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">just worker-setup</code> does the full deploy — automatically:</p>
+            <p><code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">just emailflare-api-worker-setup</code> does the full deploy — automatically:</p>
             <div class="code-block">
-              <span class="c-cmd">just worker-setup</span>
+              <span class="c-cmd">just emailflare-api-worker-setup</span>
               <span>&nbsp;</span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">D1 database created: emailflare</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">KV namespace created: EMAILFLARE_CACHE</span></span>
+              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">KV namespace created: emailflare-api-rate-limit</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">wrangler.jsonc patched with IDs</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">D1 migrations applied</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Secrets pushed to Worker</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Admin UI built</span></span>
               <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Deployed → </span><span class="c-url">https://emailflare.workers.dev</span></span>
             </div>
-            <p>After the first deploy, add <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">ADMIN_ORIGIN</code> to <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">scripts/config.toml</code> with your Worker URL, then run <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">just worker-setup</code> again to push the secret.</p>
+            <p>After the first deploy, add <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">admin_origin</code> and <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">public_url</code> to <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">scripts/config.toml</code> with your Worker URL, then run <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">just emailflare-api-worker-setup</code> again to push the secrets.</p>
             <div class="tip-box">
               <span class="tip-icon"><Icon name="lucide:circle-check" /></span>
               <span>That's it. Open your <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">workers.dev</code> URL — the EmailFlare admin panel is live. Add a sending domain, generate an API key, and start sending email from the edge.</span>

@@ -36,6 +36,9 @@ MESAHUB_URL=mh://local/emailflare
 CF_API_TOKEN=<cloudflare token>
 CF_ACCOUNT_ID=<cloudflare account id>
 
+# Public base URL — used to build one-click unsubscribe links (optional):
+PUBLIC_URL=https://api.example.com
+
 # Optional — enable in-house test mailbox (no SMTP/Mailpit needed):
 # ENABLE_TEST_MODE=true
 ```
@@ -126,3 +129,21 @@ To use test mode on any deployment:
 1. Create a **test** API key from the admin UI (Keys page)
 2. Send using that key — the email body is stored in `email_logs` and appears in the Test Mailbox page
 3. Inspect or delete test emails from *Monitor → Test Mailbox*
+
+---
+
+## Lists & one-click unsubscribe
+
+EmailFlare ships audience **lists** with RFC 8058 one-click unsubscribe support, available
+on both the Email API and Inbox products.
+
+- Create a list from the admin UI (*Send → Lists* for Email API; *Email API → Lists* for Inbox)
+  or `POST /api/lists`.
+- When a `POST /v1/send` request includes a `listId`, EmailFlare attaches a
+  `List-Unsubscribe` header with a per-recipient, one-time token.
+- In the inbox, sequence steps attach these headers automatically and skip suppressed recipients.
+- A recipient who unsubscribes is **suppressed globally** (no further sends).
+- The public `GET/POST /v1/unsubscribe?token=…` endpoint resolves the token — no API key required.
+
+Unsubscribe links require `PUBLIC_URL`. Without it, `listId` is ignored; callers can still
+pass their own `listUnsubscribe` URL.

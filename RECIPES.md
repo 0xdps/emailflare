@@ -155,6 +155,7 @@ Set or rotate a Worker secret interactively (value is never echoed).
 ```sh
 just emailflare-api-worker-secret ADMIN_TOKEN
 just emailflare-api-worker-secret SESSION_SECRET
+just emailflare-api-worker-secret PUBLIC_URL
 ```
 
 ### `just emailflare-api-worker-rollout`
@@ -227,6 +228,7 @@ Set or rotate an inbox Worker secret interactively.
 ```sh
 just emailflare-inbox-secret SESSION_SECRET
 just emailflare-inbox-secret VAPID_PRIVATE_KEY
+just emailflare-inbox-secret PUBLIC_URL
 ```
 
 ---

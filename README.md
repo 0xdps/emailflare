@@ -6,8 +6,8 @@
 
 EmailFlare is a Cloudflare-native email platform with two independent services that work together:
 
-- **emailflare-api** — transactional email sending API with an admin dashboard (domains, templates, API keys, logs)
-- **emailflare-inbox** — team inbox and lightweight CRM (receive, thread, reply, sequences, multi-user)
+- **emailflare-api** — transactional email sending API with an admin dashboard (domains, templates, API keys, logs, suppressions, lists + one-click unsubscribe)
+- **emailflare-inbox** — team inbox and lightweight CRM (receive, thread, reply, sequences, multi-user, lists + one-click unsubscribe)
 
 Both services are built on Cloudflare — Email Sending, Email Routing, D1, KV, R2, Queues, and Durable Objects — and deploy as **Cloudflare Workers** (primary, zero-ops) or as a single **Docker** container with embedded SQLite (secondary, for self-hosting).
 
@@ -136,6 +136,7 @@ Read the full guides: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md) · [docs/SELF_H
 | `MESAHUB_URL` | `mh://local/emailflare` for embedded SQLite |
 | `CF_API_TOKEN` | Cloudflare token with Email Sending + Zone permissions |
 | `CF_ACCOUNT_ID` | Cloudflare account ID |
+| `PUBLIC_URL` | Public base URL, used for one-click unsubscribe links (optional) |
 
 **emailflare-inbox** (`.env.inbox.local`):
 
@@ -147,6 +148,7 @@ Read the full guides: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md) · [docs/SELF_H
 | `REDIS_URL` | Redis connection string (rate limiting + BullMQ) |
 | `CF_API_TOKEN` | Cloudflare token for sending replies |
 | `CF_ACCOUNT_ID` | Cloudflare account ID |
+| `PUBLIC_URL` | Public base URL, used for one-click unsubscribe links in sequences (optional) |
 
 ---
 
