@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useRouter } from '@tanstack/react-router';
 import {
   LayoutDashboard, Globe, FileText, Key, ScrollText, LogOut, FlaskConical,
-  BookOpen, Github, ExternalLink, Inbox, Users, ListOrdered, Mail,
+  BookOpen, Github, ExternalLink, Inbox, Users, ListOrdered, Mail, ShieldOff,
 } from 'lucide-react';
 import api, { me, User } from '../api';
 
@@ -145,6 +145,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <NavItem to="/domains" icon={Globe} label="Domains" />
               <NavItem to="/keys" icon={Key} label="API Keys" />
               <NavItem to="/lists" icon={Users} label="Unsubscribe" />
+              <NavItem to="/suppressions" icon={ShieldOff} label="Suppressions" />
             </>
           )}
         </nav>

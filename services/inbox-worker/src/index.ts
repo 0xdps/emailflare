@@ -29,6 +29,7 @@ import templatesRouter  from './routes/templates.ts';
 import statsRouter      from './routes/stats.ts';
 import cloudflareRouter from './routes/cloudflare.ts';
 import listsRouter      from './routes/lists.ts';
+import suppressionsRouter from './routes/suppressions.ts';
 import unsubscribeRouter from './routes/unsubscribe.ts';
 
 // ── Inbox
@@ -90,6 +91,7 @@ adminApp.route('/templates',  templatesRouter);
 adminApp.route('/stats',      statsRouter);
 adminApp.route('/cloudflare', cloudflareRouter);
 adminApp.route('/lists',      listsRouter);
+adminApp.route('/suppressions', suppressionsRouter);
 
 // ── Inbox routes (session auth required) ──────────────────────────────────────
 adminApp.route('/inbox/people',    peopleRouter);

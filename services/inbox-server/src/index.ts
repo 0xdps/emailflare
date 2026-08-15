@@ -39,6 +39,7 @@ import templatesRouter  from './routes/templates.js';
 import statsRouter      from './routes/stats.js';
 import cloudflareRouter from './routes/cloudflare.js';
 import listsRouter      from './routes/lists.js';
+import suppressionsRouter from './routes/suppressions.js';
 import unsubscribeRouter from './routes/unsubscribe.js';
 
 import peopleRouter         from './routes/inbox/people.js';
@@ -91,6 +92,7 @@ protectedApp.route('/templates',  templatesRouter);
 protectedApp.route('/stats',      statsRouter);
 protectedApp.route('/cloudflare', cloudflareRouter);
 protectedApp.route('/lists',      listsRouter);
+protectedApp.route('/suppressions', suppressionsRouter);
 
 protectedApp.route('/inbox/people',    peopleRouter);
 protectedApp.route('/inbox/compose',   composeRouter);
