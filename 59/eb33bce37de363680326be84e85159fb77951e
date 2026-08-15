@@ -1,0 +1,14 @@
+services/inbox-ui/src/pages/settings/Users.tsx
+  h_95aea6b4aa8772 228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "59eb33bce37de363680326be84e85159fb77951e",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
