@@ -1,0 +1,43 @@
+services/inbox-worker/.dev.vars.example
+  s_3d0722258bf66d::t_b2a83f2613f71a 1-22
+scripts/config.example.toml
+  s_3d0722258bf66d::t_cc25d848a36be5 33-37,49-51
+  s_3d0722258bf66d::t_1f41a64806cb06 52
+services/email-worker/wrangler.jsonc
+  s_3d0722258bf66d::t_98dadb4f398208 72-74
+scripts/deploy-inbox.mjs
+  s_3d0722258bf66d::t_0a385c9b25c1b0 304
+.env.inbox.example
+  s_3d0722258bf66d::t_cda80c25aa36fe 32-37
+.env.api.example
+  s_3d0722258bf66d::t_cda80c25aa36fe 29-34
+services/email-worker/.dev.vars.example
+  s_3d0722258bf66d::t_438abe2b73dc4b 1-24
+services/inbox-worker/wrangler.jsonc
+  s_3d0722258bf66d::t_98dadb4f398208 44,53,102-104
+.gitignore
+  s_3d0722258bf66d::t_31cfd2672e3f08 7-8
+scripts/setup.mjs
+  s_3d0722258bf66d::t_0a385c9b25c1b0 294-295,307
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "cb5f8dddc87318c5c6a705e31c9bd9f3d93588ec",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
