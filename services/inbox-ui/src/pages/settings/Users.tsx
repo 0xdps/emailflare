@@ -225,7 +225,7 @@ export default function UsersPage() {
                   value={inviteRole}
                   onValueChange={val => setInviteRole(val as 'admin' | 'member' | 'tester')}
                 >
-                  <SelectTrigger id="invite-role" className="h-9 text-sm">
+                  <SelectTrigger id="invite-role" className="h-9 text-sm" style={{ width: 'auto' }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
