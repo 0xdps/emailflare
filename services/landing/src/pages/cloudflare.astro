@@ -377,29 +377,13 @@ import { Icon } from 'astro-icon/components';
     <div class="container">
       <div class="section-head">
         <div class="section-eyebrow">Comparison</div>
-        <h2 class="section-title">Docker self-host vs. Cloudflare Workers</h2>
-        <p class="section-sub">Both options ship with EmailFlare. Choose Docker for full control and on-prem deployments; choose Workers for zero-ops edge hosting.</p>
+        <h2 class="section-title">Cloudflare Workers vs. Docker self-host</h2>
+        <p class="section-sub">Cloudflare Workers is the primary deploy path — zero-ops, edge-native. Docker self-hosting is the secondary option for teams that want full control over their own servers.</p>
       </div>
       <div class="cmp-grid">
-        <div class="cmp-col">
-          <div class="cmp-header">
-            <span class="badge badge-docker">Docker self-host</span>
-            <h3>compose.yaml + .env.local</h3>
-            <p>Full container stack — Hono API, React admin UI, SQLite storage on a server you control.</p>
-          </div>
-          <ul class="cmp-list">
-            <li><span class="ci ci-ok">✓</span> Full control over your infrastructure</li>
-            <li><span class="ci ci-ok">✓</span> On-premises or private cloud friendly</li>
-            <li><span class="ci ci-ok">✓</span> Railway, Fly, VPS, Docker Swarm — works anywhere</li>
-            <li><span class="ci ci-ok">✓</span> In-house test mailbox — no external service</li>
-            <li><span class="ci ci-warn">⚠</span> Requires a server or PaaS platform</li>
-            <li><span class="ci ci-warn">⚠</span> Volume management and backups on you</li>
-            <li><span class="ci ci-warn">⚠</span> Container restarts required for updates</li>
-          </ul>
-        </div>
         <div class="cmp-col highlighted">
           <div class="cmp-header">
-            <span class="badge badge-cf">Cloudflare Workers</span>
+            <span class="badge badge-cf">Cloudflare Workers · Primary</span>
             <h3>wrangler deploy</h3>
             <p>Serverless edge deployment — no containers, no servers, no volumes. D1 + KV + static assets.</p>
           </div>
@@ -411,6 +395,22 @@ import { Icon } from 'astro-icon/components';
             <li><span class="ci ci-ok">✓</span> Gradual rollout with <code>just worker-rollout-upload</code></li>
             <li><span class="ci ci-ok">✓</span> Zero cost on Workers free tier for most teams</li>
             <li><span class="ci ci-ok">✓</span> One command to update: <code>just worker-update</code></li>
+          </ul>
+        </div>
+        <div class="cmp-col">
+          <div class="cmp-header">
+            <span class="badge badge-docker">Docker self-host · Secondary</span>
+            <h3>compose.yaml + .env.local</h3>
+            <p>Full container stack — Hono API, React admin UI, SQLite storage on a server you control.</p>
+          </div>
+          <ul class="cmp-list">
+            <li><span class="ci ci-ok">✓</span> Full control over your infrastructure</li>
+            <li><span class="ci ci-ok">✓</span> On-premises or private cloud friendly</li>
+            <li><span class="ci ci-ok">✓</span> Railway, Fly, VPS, Docker Swarm — works anywhere</li>
+            <li><span class="ci ci-ok">✓</span> In-house test mailbox — no external service</li>
+            <li><span class="ci ci-warn">⚠</span> Requires a server or PaaS platform</li>
+            <li><span class="ci ci-warn">⚠</span> Volume management and backups on you</li>
+            <li><span class="ci ci-warn">⚠</span> Container restarts required for updates</li>
           </ul>
         </div>
       </div>

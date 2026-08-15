@@ -405,7 +405,7 @@ import Base from '../layouts/Base.astro';
           <div class="step-num">7</div>
           <div class="step-body">
             <h3>Add to your config</h3>
-            <p>For Docker self-hosting, add the values to your <code>.env.local</code>. For Cloudflare Workers, add them to <code>scripts/config.toml</code>.</p>
+            <p>For Cloudflare Workers (primary), add the values to <code>scripts/config.toml</code>. For Docker self-hosting (secondary), add them to your <code>.env.local</code>.</p>
 
             <p><strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">.env.local (Docker)</strong></p>
             <div class="env-block"><span class="ev-key">CF_API_TOKEN</span>=<span class="ev-val">your_token_value_here</span>

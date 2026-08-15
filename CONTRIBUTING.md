@@ -9,6 +9,9 @@ just emailflare-api-dev
 
 The default local stack uses Docker and embedded mesahub so contributors do not need to provision extra infrastructure.
 
+> **Production deployment:** Cloudflare Workers is the primary path; Docker is secondary.
+> See [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md) and [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md).
+
 ## Before opening a pull request
 
 - keep changes focused

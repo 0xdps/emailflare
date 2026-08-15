@@ -1,6 +1,10 @@
 # Cloudflare Workers Deployment
 
-EmailFlare can be deployed as a Cloudflare Worker — no Docker, no servers. The Worker bundles the API and admin panel into a single edge deployment backed by D1 (SQLite) and KV.
+> **Note:** Cloudflare Workers is EmailFlare's **primary** deployment path — zero-ops,
+> edge-native, no servers. For the secondary Docker self-host path, see
+> [Self-hosting](./SELF_HOSTING.md).
+
+EmailFlare deploys as Cloudflare Workers — no Docker, no servers. The Worker bundles the API and admin panel into a single edge deployment backed by D1 (SQLite) and KV.
 
 ## What gets deployed
 

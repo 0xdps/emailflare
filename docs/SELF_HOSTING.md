@@ -1,6 +1,10 @@
-# Self-hosting
+# Self-hosting (Docker)
 
-EmailFlare is intentionally optimized for minimum infrastructure.
+> **Note:** Docker self-hosting is EmailFlare's **secondary** deployment path. For the
+> primary, zero-ops edge deployment, see [Cloudflare Workers Deployment](./CLOUDFLARE.md).
+
+EmailFlare can also run on your own infrastructure. The Docker path is intentionally
+optimized for minimum infrastructure.
 
 The default self-host deployment uses:
 

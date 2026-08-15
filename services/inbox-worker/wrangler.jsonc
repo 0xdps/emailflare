@@ -42,7 +42,7 @@
       "binding": "DB",
       "database_name": "emailflare",
       "database_id": "569d845e-5691-4f71-84f6-e31a878e4bd6",
-      "migrations_dir": "migrations"
+      "migrations_dir": "../../migrations"
     }
   ],
 
@@ -72,11 +72,13 @@
     ]
   },
 
-  // DO class migrations — required so Cloudflare tracks the class on first deploy
+  // DO class migrations — required so Cloudflare tracks the class on first deploy.
+  // SQLite-backed DOs are the only supported kind now (KV-backed namespaces are
+  // deprecated — Cloudflare error 10099).
   "migrations": [
     {
       "tag": "v1",
-      "new_classes": ["NotificationsHub"]
+      "new_sqlite_classes": ["NotificationsHub"]
     }
   ],
 

@@ -2,7 +2,12 @@
 
 Quick reference for all `just` commands. Run any recipe with `just <name>`.
 
-> **Prerequisites:** Docker running, `pnpm` installed, and the relevant `.env` file in place (see below).
+> **Deployment modes:** Cloudflare Workers (primary) and Docker (secondary).
+> See [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md) and [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md).
+>
+> **Prerequisites:** `pnpm` installed, plus Docker running for the Docker recipes
+> and a Cloudflare account for the Worker recipes. The relevant `.env` file is needed
+> per recipe (see below).
 
 ---
 

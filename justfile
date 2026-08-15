@@ -192,6 +192,81 @@ emailflare-api-worker-remove:
     echo "Done."
 
 # ============================================================================
+# WIPE EVERYTHING  (all CF Workers, D1, KV, R2, Queues — fresh-start teardown)
+# ============================================================================
+
+# Delete every Cloudflare resource across both products for a clean-slate redeploy.
+# Destructive — prompts for confirmation. Pass `all` to also wipe the two bridges.
+emailflare-wipe scope='':
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    SCOPE="${1:-${SCOPE:-}}"
+
+    echo "======================================================"
+    echo "  EmailFlare — WIPE ALL CLOUDFLARE RESOURCES"
+    echo "======================================================"
+    echo "This will DELETE:"
+    echo "  • Workers : emailflare-api-worker, emailflare-inbox-worker"
+    echo "  • D1      : emailflare (shared database)"
+    echo "  • KV      : emailflare-api-rate-limit, emailflare-inbox-rate-limit"
+    echo "  • R2      : emailflare-inbox-attachments"
+    echo "  • Queue   : emailflare-inbox-sequences"
+    if [ "${SCOPE}" = "all" ]; then
+        echo "  • Bridges : emailflare-api-bridge, emailflare-inbox-bridge"
+    fi
+    echo "======================================================"
+    read -r -p "Type 'DELETE' to confirm: " confirm
+    if [ "${confirm}" != "DELETE" ]; then
+        echo "Aborted."
+        exit 0
+    fi
+
+    delete_worker() {
+        local name="$1"
+        local cwd="$2"
+        echo "  → Worker: ${name}"
+        npx wrangler delete "${name}" --force --cwd "${cwd}" 2>/dev/null || echo "     (skipped / not found)"
+    }
+
+    # ── Workers ───────────────────────────────────────────────────────────
+    delete_worker "emailflare-api-worker"   "services/email-worker"
+    delete_worker "emailflare-inbox-worker" "services/inbox-worker"
+
+    if [ "${SCOPE}" = "all" ]; then
+        delete_worker "emailflare-api-bridge"   "services/email-bridge"
+        delete_worker "emailflare-inbox-bridge" "services/inbox-bridge"
+    fi
+
+    # ── D1 (shared) ───────────────────────────────────────────────────────
+    echo "  → D1: emailflare"
+    npx wrangler d1 delete emailflare --skip-confirmation --cwd services/email-worker 2>/dev/null \
+        || echo "     (skipped / not found)"
+
+    # ── KV namespaces ─────────────────────────────────────────────────────
+    for kv in "emailflare-api-rate-limit" "emailflare-inbox-rate-limit"; do
+        echo "  → KV: ${kv}"
+        npx wrangler kv namespace delete --namespace-id "${kv}" --skip-confirmation --cwd services/email-worker 2>/dev/null \
+            || echo "     (skipped / not found)"
+    done
+
+    # ── R2 bucket ─────────────────────────────────────────────────────────
+    echo "  → R2: emailflare-inbox-attachments"
+    npx wrangler r2 bucket delete emailflare-inbox-attachments --cwd services/inbox-worker 2>/dev/null \
+        || echo "     (skipped / not found)"
+
+    # ── Queue ─────────────────────────────────────────────────────────────
+    echo "  → Queue: emailflare-inbox-sequences"
+    npx wrangler queues delete emailflare-inbox-sequences --cwd services/inbox-worker 2>/dev/null \
+        || echo "     (skipped / not found)"
+
+    echo ""
+    echo "Wipe complete. Run a fresh deploy with:"
+    echo "  just emailflare-api-worker-setup"
+    echo "  just emailflare-inbox-deploy"
+    echo "  just emailflare-bridge-setup        # if you wiped bridges (scope=all)"
+
+# ============================================================================
 # EMAILFLARE-INBOX · CLOUDFLARE WORKER  (inbox-worker + inbox-ui, D1 + R2 + KV + DO)
 # ============================================================================
 

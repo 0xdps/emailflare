@@ -4,12 +4,12 @@
 
 # EmailFlare
 
-EmailFlare is a self-hosted email platform with two independent services that work together:
+EmailFlare is a Cloudflare-native email platform with two independent services that work together:
 
 - **emailflare-api** — transactional email sending API with an admin dashboard (domains, templates, API keys, logs)
 - **emailflare-inbox** — team inbox and lightweight CRM (receive, thread, reply, sequences, multi-user)
 
-Both services are built around Cloudflare Email Sending, use SQLite-backed storage via embedded [mesahub-core](https://github.com/mesahub-db/mesahub-core), and are designed for minimum infrastructure — each runs as a single Docker container with one persistent volume.
+Both services are built on Cloudflare — Email Sending, Email Routing, D1, KV, R2, Queues, and Durable Objects — and deploy as **Cloudflare Workers** (primary, zero-ops) or as a single **Docker** container with embedded SQLite (secondary, for self-hosting).
 
 ---
 
@@ -17,24 +17,7 @@ Both services are built around Cloudflare Email Sending, use SQLite-backed stora
 
 A Hono API for sending transactional email via the Cloudflare Email Sending API, with a React admin panel for managing domains, templates, API keys, and logs.
 
-**Docker image**
-
-```text
-ghcr.io/0xdps/emailflare-api:latest
-```
-
-**Quick start**
-
-```bash
-cp .env.api.example .env.local
-# fill in SESSION_SECRET, ADMIN_TOKEN, CF_API_TOKEN, CF_ACCOUNT_ID
-
-docker compose --env-file .env.local -f compose.email-api.yaml up -d
-```
-
-Open `http://localhost:8090`.
-
-**Cloudflare Worker deployment** (no Docker, edge-native)
+**Cloudflare Worker deployment** (primary — no Docker, edge-native)
 
 ```bash
 just install
@@ -44,6 +27,21 @@ just emailflare-api-worker-setup
 ```
 
 Read the full guide: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md)
+
+**Docker self-host** (secondary)
+
+```text
+gcr.io/0xdps/emailflare-api:latest
+```
+
+```bash
+cp .env.api.example .env.local
+# fill in SESSION_SECRET, ADMIN_TOKEN, CF_API_TOKEN, CF_ACCOUNT_ID
+
+docker compose --env-file .env.local -f compose.email-api.yaml up -d
+```
+
+Open `http://localhost:8090`. Read the full guide: [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)
 
 **Railway**
 
@@ -55,24 +53,7 @@ Read the full guide: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md)
 
 A Node.js inbox server with a React dashboard for receiving inbound email via Cloudflare Email Routing, threading conversations, replying, running sequences, and managing contacts across a team.
 
-**Docker image**
-
-```text
-ghcr.io/0xdps/emailflare-inbox:latest
-```
-
-**Quick start**
-
-```bash
-cp .env.inbox.example .env.inbox.local
-# fill in SESSION_SECRET, WEBHOOK_SECRET, CF_API_TOKEN, CF_ACCOUNT_ID, REDIS_URL
-
-docker compose --env-file .env.inbox.local -f compose.email-inbox.yaml up -d
-```
-
-Open `http://localhost:8091`.
-
-**Cloudflare Worker deployment** (inbox-worker + inbox-bridge)
+**Cloudflare Worker deployment** (primary — inbox-worker, D1 + R2 + KV + DO + Queues)
 
 ```bash
 just install
@@ -83,23 +64,38 @@ just emailflare-inbox-deploy
 
 Read the full guide: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md)
 
+**Docker self-host** (secondary)
+
+```text
+ghcr.io/0xdps/emailflare-inbox:latest
+```
+
+```bash
+cp .env.inbox.example .env.inbox.local
+# fill in SESSION_SECRET, WEBHOOK_SECRET, CF_API_TOKEN, CF_ACCOUNT_ID, REDIS_URL
+
+docker compose --env-file .env.inbox.local -f compose.email-inbox.yaml up -d
+```
+
+Open `http://localhost:8091`. Read the full guide: [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)
+
 ---
 
 ## What ships in this repo
 
 **Email API**
-- `services/email-server` — Hono API: domains, templates, keys, stats, send
+- `services/email-worker` — Cloudflare Worker bundling API + admin UI (D1 + KV) — **primary deploy**
+- `services/email-server` — Hono API (Node.js): domains, templates, keys, stats, send — for Docker
 - `services/email-ui` — React admin panel (Vite + TanStack Router)
-- `services/email-worker` — Cloudflare Worker bundling API + admin UI (D1 + KV)
 - `services/email-bridge` — CF Worker: receives bounce/complaint email and forwards to email-server webhook
 - `Dockerfile.email-api` — production image for emailflare-api
 - `compose.email-api.yaml` — single-container production compose
 - `compose.email-api.dev.yaml` — local dev stack with hot reload
 
 **Inbox**
-- `services/inbox-server` — Hono inbox API: inboxes, people, threads, sequences, templates
+- `services/inbox-worker` — Cloudflare Worker variant of the inbox (D1 + R2 + KV + DO + Queues) — **primary deploy**
+- `services/inbox-server` — Hono inbox API (Node.js): inboxes, people, threads, sequences, templates — for Docker
 - `services/inbox-ui` — React inbox dashboard (Vite + TanStack Router)
-- `services/inbox-worker` — Cloudflare Worker variant of the inbox (D1)
 - `services/inbox-bridge` — CF Worker: receives inbound email via CF Email Routing, forwards to inbox-server
 - `Dockerfile.email-inbox` — production image for emailflare-inbox
 - `compose.email-inbox.yaml` — single-container production compose
@@ -109,20 +105,23 @@ Read the full guide: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md)
 - `services/emails` — shared email layouts and rendering used by both servers
 - `scripts/` — setup tooling for CF Worker deployments (`setup.mjs`, `config.example.toml`)
 - `justfile` — task runner for dev, prod, and Cloudflare Worker operations ([RECIPES.md](./RECIPES.md))
-- `docs/SELF_HOSTING.md` — Docker self-hosting guide
-- `docs/CLOUDFLARE.md` — Cloudflare Workers deployment guide
+- `docs/CLOUDFLARE.md` — Cloudflare Workers deployment guide (**primary**)
+- `docs/SELF_HOSTING.md` — Docker self-hosting guide (**secondary**)
 
 ---
 
-## Self-hosting
+## Deployment modes
 
-Both services follow the same minimal self-host pattern:
+EmailFlare supports two deployment modes for each product:
 
-- SQLite via embedded mesahub-core (no separate database)
-- one Docker image per service
-- one persistent volume at `/data`
+| Mode | Products | Stack | When to use |
+|---|---|---|---|
+| **Cloudflare Workers** (primary) | emailflare-api, emailflare-inbox | D1 + KV (+ R2, Queues, DO for inbox) | Default — zero-ops, edge-native |
+| **Docker** (secondary) | emailflare-api, emailflare-inbox | single container + embedded SQLite | Self-hosting on your own VPS/VM |
 
-Read the full guide: [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)
+The Docker path uses SQLite via embedded mesahub-core (one image, one volume at `/data`).
+
+Read the full guides: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md) · [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)
 
 ---
 

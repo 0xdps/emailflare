@@ -9,7 +9,7 @@ const structuredData = {
   "url": "https://emailflare.dev",
   "description": "EmailFlare ships two open-source products: a REST email sending API on Cloudflare Email Sending (Docker or Workers), and a hosted team inbox built on Cloudflare Email Routing with D1, R2, and Durable Objects.",
   "applicationCategory": "DeveloperApplication",
-  "operatingSystem": "Docker",
+  "operatingSystem": "Cloudflare Workers, Docker",
   "license": "https://github.com/0xdps/emailflare/blob/trunk/LICENSE",
   "codeRepository": "https://github.com/0xdps/emailflare",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
@@ -1092,13 +1092,13 @@ const structuredData = {
           <p class="hero-sub">
             Two open-source products in one repo — a REST email sending API with React Email
             templates, and a full team inbox built on Cloudflare Email Routing.
-            Both deploy as a Cloudflare Worker or self-hosted Docker container.
+            Both deploy natively as Cloudflare Workers — with Docker self-hosting available as a fallback.
           </p>
 
           <div class="hero-actions">
             <a class="btn btn-primary" href="/email-api">Email API →</a>
             <a class="btn btn-secondary" href="/inbox">Inbox →</a>
-            <a class="btn btn-secondary" href="#deploy">Self-host</a>
+            <a class="btn btn-secondary" href="#deploy">Deploy on Cloudflare</a>
             <a class="btn btn-secondary" href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
               View on GitHub
@@ -1229,7 +1229,7 @@ const structuredData = {
           <div class="product-card-head">
             <span class="product-eyebrow product-eyebrow-email">Email API</span>
             <h3>Transactional email<br />on Cloudflare.</h3>
-            <p>A REST email sending API with scoped keys, React Email templates, domain management, send history, and a full admin UI — one Docker image, zero external services.</p>
+            <p>A REST email sending API with scoped keys, React Email templates, domain management, send history, and a full admin UI — deployed as a Cloudflare Worker on D1 + KV.</p>
           </div>
           <ul class="product-feat-list">
             <li><span class="pf-check pf-check-email">✓</span>POST /v1/send — one endpoint, any language</li>
@@ -1240,9 +1240,9 @@ const structuredData = {
           <div class="product-card-foot">
             <div class="product-deploy-row">
               <span class="product-deploy-label">Deploy via</span>
-              <span class="product-badge product-badge-docker">Docker</span>
-              <span class="product-sep">·</span>
               <span class="product-badge product-badge-worker">Workers</span>
+              <span class="product-sep">·</span>
+              <span class="product-badge product-badge-docker">Docker</span>
             </div>
             <a href="/email-api" class="btn-orange-sm">Learn more →</a>
           </div>
@@ -1314,15 +1314,15 @@ const structuredData = {
   <section id="deploy" class="deploy-cta-section">
     <div class="container">
       <div class="section-head">
-        <div class="section-eyebrow">Self-hosting</div>
+        <div class="section-eyebrow">Deploy</div>
         <h2 class="section-title">Deploy in minutes.</h2>
-        <p class="section-sub">Both products ship with Docker and Cloudflare Workers support. Pick a deploy path — both are in the same repo.</p>
+        <p class="section-sub">Cloudflare Workers is the primary path — zero-ops, edge-native. Docker self-hosting is available for teams that want to run their own servers.</p>
       </div>
       <div class="deploy-cta-grid">
         <a href="/email-api#deploy" class="deploy-cta-card deploy-cta-email">
           <div class="dcc-eyebrow">Email API</div>
-          <div class="dcc-title">Docker · Cloudflare Workers</div>
-          <p class="dcc-sub">One image — Hono API + React admin + SQLite. Or deploy serverless on Cloudflare Workers with D1 + KV. <code>just worker-setup</code> handles provisioning.</p>
+          <div class="dcc-title">Cloudflare Workers · Docker</div>
+          <p class="dcc-sub">Deploy serverless on Cloudflare Workers with D1 + KV — or run the Docker image for self-hosting. <code>just emailflare-api-worker-setup</code> handles provisioning.</p>
           <div class="dcc-cta">View deploy options →</div>
         </a>
         <a href="/inbox#deploy" class="deploy-cta-card deploy-cta-inbox">
@@ -1350,16 +1350,16 @@ const structuredData = {
         <div class="arch-diagram">
           <div class="arch-box">Your application / HTTP client</div>
           <div class="arch-arrow">↓</div>
-          <div class="arch-box">Caddy — edge proxy</div>
+          <div class="arch-box">Cloudflare Workers<br /><small style="font-weight:400;font-size:10px;">Hono API + React Admin</small></div>
           <div class="arch-arrow">↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓</div>
           <div class="arch-row">
-            <div class="arch-box hi">Hono API<br /><small style="font-weight:400;font-size:10px;">:3000</small></div>
-            <div class="arch-box hi">React Admin<br /><small style="font-weight:400;font-size:10px;">:80</small></div>
+            <div class="arch-box">D1<br /><small style="font-size:10px;">SQLite at the edge</small></div>
+            <div class="arch-box">KV / R2 / Queues / DO<br /><small style="font-size:10px;">inbox-only</small></div>
           </div>
           <div class="arch-arrow">↓</div>
           <div class="arch-row">
-            <div class="arch-box">SQLite<br /><small style="font-size:10px;">mesahub-core</small></div>
             <div class="arch-box">Cloudflare<br /><small style="font-size:10px;">Email Sending API</small></div>
+            <div class="arch-box">Cloudflare<br /><small style="font-size:10px;">Email Routing</small></div>
           </div>
         </div>
 
@@ -1367,15 +1367,15 @@ const structuredData = {
           <li>
             <span class="ab-check">✓</span>
             <div class="ab-text">
-              <strong>No Postgres or Redis</strong>
-              <span>SQLite runs embedded via mesahub-core. All data persists in the Docker volume at <code>/data</code>. No external database to provision or back up separately.</span>
+              <strong>Everything on Cloudflare</strong>
+              <span>Workers, D1, KV, R2, Queues, and Durable Objects run entirely on Cloudflare's edge. No servers to provision, no volumes to back up, no external database.</span>
             </div>
           </li>
           <li>
             <span class="ab-check">✓</span>
             <div class="ab-text">
-              <strong>Three services, one image</strong>
-              <span>The production Docker image bundles the Hono API backend, React admin UI, and embedded mesahub storage. Test emails are captured in the in-house Test Mailbox — zero overhead in a standard production deploy.</span>
+              <strong>One command to deploy</strong>
+              <span><code>just emailflare-api-worker-setup</code> creates D1 + KV, applies migrations, sets secrets, builds the admin UI, and deploys the Worker — automatically.</span>
             </div>
           </li>
           <li>
@@ -1388,15 +1388,15 @@ const structuredData = {
           <li>
             <span class="ab-check">✓</span>
             <div class="ab-text">
-              <strong>Scale out storage when you need to</strong>
-              <span>Replace <code>MESAHUB_URL</code> with an external mesahub instance if you ever need to split storage out of the app container.</span>
+              <strong>Inbound via Email Routing</strong>
+              <span>The inbox Worker receives email natively through Cloudflare Email Routing — no bridge, no mail server, no MX records to manage.</span>
             </div>
           </li>
           <li>
             <span class="ab-check">✓</span>
             <div class="ab-text">
-              <strong>Schema bootstrapped at startup</strong>
-              <span>All tables are created with <code>CREATE TABLE IF NOT EXISTS</code> on first boot. No migration framework, no manual schema setup, no CLI commands to run.</span>
+              <strong>Docker as a fallback</strong>
+              <span>Prefer your own servers? Both products also ship a single Docker image with embedded SQLite (mesahub-core) for self-hosting on any VPS.</span>
             </div>
           </li>
         </ul>

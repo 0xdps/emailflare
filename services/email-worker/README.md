@@ -9,7 +9,7 @@ Cloudflare-native parallel deployment of the emailflare backend.
 | Sessions | `iron-session` (Node.js crypto) | `jose` SignJWT (Web Crypto) |
 | API rate limiting | In-memory sliding window | **Workers Rate Limiting** binding |
 | Login rate limiting | In-memory | **Workers KV** |
-| Email sending | CF REST API + in-house test mailbox | CF REST API only (no test mailbox capture) |
+| Email sending | CF REST API + in-house test mailbox | CF REST API + in-house test mailbox |
 | Secrets | `.env` file / Docker env vars | `wrangler secret put` |
 
 Both deployments share the same API surface (`/v1/send`, `/api/*`) and the same admin UI.

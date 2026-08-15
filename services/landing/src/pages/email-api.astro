@@ -344,8 +344,8 @@ import { Icon } from 'astro-icon/components';
         </div>
         <div class="why-card">
           <span class="card-icon"><Icon name="lucide:package" /></span>
-          <h3>One container, not an ops project</h3>
-          <p>Backend, admin UI, and embedded SQLite storage are bundled in one Docker image. No Postgres, no Redis, no separate services to run. Mount one volume and deploy.</p>
+          <h3>One Worker, not an ops project</h3>
+          <p>Backend, admin UI, and D1 SQLite storage are bundled in one Cloudflare Worker — no servers, no containers. A Docker image ships too for self-hosting: one volume, no Postgres, no Redis.</p>
         </div>
       </div>
     </div>
@@ -568,19 +568,69 @@ import { Icon } from 'astro-icon/components';
   <section id="deploy" class="ea-deploy-section">
     <div class="container-wide">
       <div class="section-head">
-        <div class="section-eyebrow">Self-hosting</div>
+        <div class="section-eyebrow">Deploy</div>
         <h2 class="section-title">Deploy Email API.</h2>
         <p class="section-sub">
-          Docker for full control on any server. Cloudflare Workers for zero-ops edge hosting.
-          Both in the same repo — pick what fits your stack.
+          Cloudflare Workers is the primary path — zero-ops, edge-native.
+          Docker self-hosting is available for teams that want their own servers.
         </p>
       </div>
       <div class="deploy-options">
 
-        <!-- ── Docker ── -->
+        <!-- ── Workers (primary) ── -->
+        <div class="deploy-option" style="border-color: oklch(28% 0.08 48 / 0.7);">
+          <div class="do-header" style="border-bottom-color: oklch(22% 0.06 48 / 0.5);">
+            <div class="do-badge do-badge-worker"><Icon name="lucide:zap" /> Serverless · Primary</div>
+            <div class="do-title">Cloudflare Workers</div>
+            <p class="do-sub">No servers, no containers, no volumes. D1 database + KV namespace + admin UI all on the edge. One command from clone to live.</p>
+          </div>
+          <div class="do-steps">
+            <div class="do-step">
+              <div class="do-step-num">1</div>
+              <div>
+                <div class="do-step-label">Clone &amp; install</div>
+                <p class="do-step-desc">Requires Node.js, pnpm, and a Wrangler-authenticated Cloudflare account.</p>
+                <div class="code-block">
+                  <span><span class="cb-cmd">git clone https://github.com/0xdps/emailflare</span></span>
+                  <span><span class="cb-cmd">cd emailflare &amp;&amp; just install</span></span>
+                  <span><span class="cb-cmd">just emailflare-api-worker-login</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="do-step">
+              <div class="do-step-num">2</div>
+              <div>
+                <div class="do-step-label">Configure &amp; deploy</div>
+                <p class="do-step-desc">Copy the config template, fill in your values, then run setup — creates D1, KV, runs migrations, and deploys.</p>
+                <div class="code-block">
+                  <span><span class="cb-cmd">cp scripts/config.example.toml scripts/config.toml</span></span>
+                  <span><span class="cb-cmt"># fill in CF_API_TOKEN, CF_ACCOUNT_ID, ADMIN_TOKEN</span></span>
+                  <span>&nbsp;</span>
+                  <span><span class="cb-cmd">just emailflare-api-worker-setup</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="do-step">
+              <div class="do-step-num">3</div>
+              <div>
+                <div class="do-step-label">You're live</div>
+                <p class="do-step-desc">Admin UI and API are served from your Workers subdomain. No separate hosting.</p>
+                <div class="code-block">
+                  <span><span class="cb-url">https://emailflare.your-subdomain.workers.dev</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="do-footer do-footer-worker" style="border-top-color: oklch(22% 0.06 48 / 0.5);">
+            <span class="do-footer-note">D1 + KV + static assets — zero external services</span>
+            <a href="/cloudflare">Full Workers guide →</a>
+          </div>
+        </div>
+
+        <!-- ── Docker (secondary) ── -->
         <div class="deploy-option">
           <div class="do-header">
-            <div class="do-badge do-badge-docker"><Icon name="simple-icons:docker" /> Container</div>
+            <div class="do-badge do-badge-docker"><Icon name="simple-icons:docker" /> Container · Secondary</div>
             <div class="do-title">Docker Compose</div>
             <p class="do-sub">Self-host on any VPS, server, or cloud VM. One image, one volume, full control. Published to GHCR — no local build needed.</p>
           </div>
@@ -626,56 +676,6 @@ import { Icon } from 'astro-icon/components';
           <div class="do-footer do-footer-docker">
             <span class="do-footer-note">Image: <code style="font-size:11px;">ghcr.io/0xdps/emailflare:latest</code></span>
             <a href="/docs">Full Docker guide →</a>
-          </div>
-        </div>
-
-        <!-- ── Workers ── -->
-        <div class="deploy-option" style="border-color: oklch(28% 0.08 48 / 0.7);">
-          <div class="do-header" style="border-bottom-color: oklch(22% 0.06 48 / 0.5);">
-            <div class="do-badge do-badge-worker"><Icon name="lucide:zap" /> Serverless</div>
-            <div class="do-title">Cloudflare Workers</div>
-            <p class="do-sub">No servers, no containers, no volumes. D1 database + KV namespace + admin UI all on the edge. One command from clone to live.</p>
-          </div>
-          <div class="do-steps">
-            <div class="do-step">
-              <div class="do-step-num">1</div>
-              <div>
-                <div class="do-step-label">Clone &amp; install</div>
-                <p class="do-step-desc">Requires Node.js, pnpm, and a Wrangler-authenticated Cloudflare account.</p>
-                <div class="code-block">
-                  <span><span class="cb-cmd">git clone https://github.com/0xdps/emailflare</span></span>
-                  <span><span class="cb-cmd">cd emailflare &amp;&amp; pnpm install</span></span>
-                  <span><span class="cb-cmd">npx wrangler login</span></span>
-                </div>
-              </div>
-            </div>
-            <div class="do-step">
-              <div class="do-step-num">2</div>
-              <div>
-                <div class="do-step-label">Configure &amp; deploy</div>
-                <p class="do-step-desc">Copy the config template, fill in your values, then run setup — creates D1, KV, runs migrations, and deploys.</p>
-                <div class="code-block">
-                  <span><span class="cb-cmd">cp scripts/config.example.toml scripts/config.toml</span></span>
-                  <span><span class="cb-cmt"># fill in CF_API_TOKEN, CF_ACCOUNT_ID, ADMIN_TOKEN</span></span>
-                  <span>&nbsp;</span>
-                  <span><span class="cb-cmd">just worker-setup</span></span>
-                </div>
-              </div>
-            </div>
-            <div class="do-step">
-              <div class="do-step-num">3</div>
-              <div>
-                <div class="do-step-label">You're live</div>
-                <p class="do-step-desc">Admin UI and API are served from your Workers subdomain. No separate hosting.</p>
-                <div class="code-block">
-                  <span><span class="cb-url">https://emailflare.your-subdomain.workers.dev</span></span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="do-footer do-footer-worker" style="border-top-color: oklch(22% 0.06 48 / 0.5);">
-            <span class="do-footer-note">D1 + KV + static assets — zero external services</span>
-            <a href="/cloudflare">Full Workers guide →</a>
           </div>
         </div>
 
