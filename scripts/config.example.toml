@@ -50,6 +50,10 @@ vapid_private_key = ""
 # e.g. https://emailflare-inbox-worker.YOUR-ACCOUNT.workers.dev
 public_url = ""
 
+# Worker name used as the Email Routing catch-all destination when an inbox is
+# created. Defaults to emailflare-inbox-worker.
+inbox_worker_name = "emailflare-inbox-worker"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Inbox Server  (deploy-inbox-standalone.mjs / just deploy-inbox-standalone)
 # Standalone Node.js deployment. Uses Redis + MesaHub instead of CF D1/KV/Queue.

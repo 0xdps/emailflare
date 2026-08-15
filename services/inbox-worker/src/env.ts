@@ -39,6 +39,9 @@ export interface Env {
 
   // ── Public URL of this Worker (for unsubscribe links) ───────────────────────
   PUBLIC_URL: string;
+
+  // ── Worker name used as the Email Routing catch-all destination ─────────────
+  INBOX_WORKER_NAME: string;
 }
 
 // Hono generic type used by every route file

@@ -3,8 +3,10 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { generateId } from '@emailflare/email-core';
+import { enableEmailRouting, setCatchAllToWorker, getZoneByHostname } from '../../services/cloudflare.js';
 import { requireAdmin } from '../../middleware/auth.js';
 import { rawDb } from '../../db.js';
+import { env } from '../../env.js';
 import type { HonoEnv } from '../../env.js';
 import { inboxSchema } from '@emailflare/inbox-core';
 
@@ -20,12 +22,33 @@ app.post('/', requireAdmin, zValidator('json', inboxSchema), async (c) => {
   const existing = await rawDb.first('SELECT id FROM inboxes WHERE email = ? LIMIT 1', [body.email]);
   if (existing) return c.json({ error: 'Inbox already exists' }, 409);
 
+  // ── Configure Cloudflare Email Routing (catch-all → inbox worker) ──────────
+  // The inbox-bridge forwards inbound mail to this server; Email Routing must
+  // point the catch-all at the inbox worker. Surface a warning if not possible.
+  let routing: { configured: boolean; error?: string } = { configured: false };
+  try {
+    const domain = body.email.split('@')[1];
+    const zone = await getZoneByHostname(domain, env.CF_API_TOKEN);
+    if (zone) {
+      await enableEmailRouting(zone.id, env.CF_API_TOKEN);
+      await setCatchAllToWorker(zone.id, env.INBOX_WORKER_NAME, env.CF_API_TOKEN);
+      routing = { configured: true };
+    } else {
+      routing = { configured: false, error: `No active Cloudflare zone found for "${domain}"` };
+    }
+  } catch (err) {
+    routing = {
+      configured: false,
+      error: err instanceof Error ? err.message : 'Email Routing configuration failed',
+    };
+  }
+
   const id = generateId();
   await rawDb.run(
     'INSERT INTO inboxes (id, email, display_name, mode, created_at) VALUES (?, ?, ?, ?, ?)',
     [id, body.email, body.display_name, body.mode, new Date().toISOString()],
   );
-  return c.json({ id, ...body }, 201);
+  return c.json({ id, ...body, routing }, 201);
 });
 
 app.put('/:id', requireAdmin, zValidator('json', inboxSchema.partial()), async (c) => {

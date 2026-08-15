@@ -178,6 +178,49 @@ export async function getSubdomainDnsRecords(
   );
 }
 
+// ── Email Routing (inbound) ──────────────────────────────────────────────────
+
+export interface CFEmailRoutingCatchAll {
+  enabled: boolean;
+  name: string | null;
+  tag: string | null;
+  matchers: Array<{ type: string }>;
+  actions: Array<{ type: string; value: string[] }>;
+}
+
+/** Enable Email Routing on a zone (idempotent — safe to call if already on). */
+export async function enableEmailRouting(zoneId: string, cfApiToken: string): Promise<void> {
+  try {
+    await cfFetch(`/zones/${zoneId}/email/routing/enable`, cfApiToken, { method: 'POST' });
+  } catch (err) {
+    // Already enabled → CF returns 4xx; treat as success.
+    if (err instanceof CloudflareApiError && (err.status === 400 || err.status === 409)) return;
+    throw err;
+  }
+}
+
+/** Read the current catch-all routing rule for a zone. */
+export async function getCatchAllRule(zoneId: string, cfApiToken: string): Promise<CFEmailRoutingCatchAll> {
+  return cfFetch<CFEmailRoutingCatchAll>(`/zones/${zoneId}/email/routing/rules/catch_all`, cfApiToken);
+}
+
+/**
+ * Set the catch-all routing rule for a zone to forward all inbound mail to the
+ * named Worker. This is how the inbox receives email: Cloudflare delivers the
+ * message to the Worker's `email()` export.
+ */
+export async function setCatchAllToWorker(zoneId: string, workerName: string, cfApiToken: string): Promise<void> {
+  await cfFetch(`/zones/${zoneId}/email/routing/rules/catch_all`, cfApiToken, {
+    method: 'PUT',
+    body: JSON.stringify({
+      enabled: true,
+      name: 'EmailFlare inbox catch-all',
+      matchers: [{ type: 'all' }],
+      actions: [{ type: 'worker', value: [workerName] }],
+    }),
+  });
+}
+
 // ── Email Sending ─────────────────────────────────────────────────────────────
 
 export interface CFSendEmailParams {

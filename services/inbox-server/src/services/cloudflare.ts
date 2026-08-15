@@ -115,6 +115,41 @@ export async function getSubdomainDnsRecords(zoneId: string, subdomainId: string
   return cfFetch<CFDnsRecord[]>(`/zones/${zoneId}/email/sending/subdomains/${subdomainId}/dns`, cfApiToken);
 }
 
+// Email Routing (inbound)
+
+export interface CFEmailRoutingCatchAll {
+  enabled: boolean;
+  name: string | null;
+  tag: string | null;
+  matchers: Array<{ type: string }>;
+  actions: Array<{ type: string; value: string[] }>;
+}
+
+export async function enableEmailRouting(zoneId: string, cfApiToken: string): Promise<void> {
+  try {
+    await cfFetch(`/zones/${zoneId}/email/routing/enable`, cfApiToken, { method: 'POST' });
+  } catch (err) {
+    if (err instanceof CloudflareApiError && (err.status === 400 || err.status === 409)) return;
+    throw err;
+  }
+}
+
+export async function getCatchAllRule(zoneId: string, cfApiToken: string): Promise<CFEmailRoutingCatchAll> {
+  return cfFetch<CFEmailRoutingCatchAll>(`/zones/${zoneId}/email/routing/rules/catch_all`, cfApiToken);
+}
+
+export async function setCatchAllToWorker(zoneId: string, workerName: string, cfApiToken: string): Promise<void> {
+  await cfFetch(`/zones/${zoneId}/email/routing/rules/catch_all`, cfApiToken, {
+    method: 'PUT',
+    body: JSON.stringify({
+      enabled: true,
+      name: 'EmailFlare inbox catch-all',
+      matchers: [{ type: 'all' }],
+      actions: [{ type: 'worker', value: [workerName] }],
+    }),
+  });
+}
+
 // Email sending
 
 export interface CFSendEmailParams {

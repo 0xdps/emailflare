@@ -72,6 +72,9 @@ export const env = {
   // Public URL of this server (for unsubscribe links)
   PUBLIC_URL: process.env.PUBLIC_URL ?? '',
 
+  // Worker name used as the Email Routing catch-all destination
+  INBOX_WORKER_NAME: process.env.INBOX_WORKER_NAME ?? 'emailflare-inbox-worker',
+
   // Dashboard SPA dist directory (served by Caddy, but path used by index.ts in dev)
   DASHBOARD_DIST: process.env.DASHBOARD_DIST ?? '/app/inbox-ui/dist',
 } as const;

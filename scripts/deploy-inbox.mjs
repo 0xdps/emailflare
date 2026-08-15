@@ -303,6 +303,7 @@ const SECRETS = [
   { name: 'VAPID_PUBLIC_KEY',  label: 'VAPID_PUBLIC_KEY',  cfgVal: inboxCfg.vapid_public_key },
   { name: 'VAPID_PRIVATE_KEY', label: 'VAPID_PRIVATE_KEY', cfgVal: inboxCfg.vapid_private_key, sensitive: true },
   { name: 'PUBLIC_URL',        label: 'PUBLIC_URL (worker URL for unsubscribe links)', cfgVal: inboxCfg.public_url },
+  { name: 'INBOX_WORKER_NAME', label: 'INBOX_WORKER_NAME (Email Routing catch-all destination)', cfgVal: inboxCfg.inbox_worker_name || 'emailflare-inbox-worker' },
 ];
 
 for (const { name, label, cfgVal, sensitive } of SECRETS) {
