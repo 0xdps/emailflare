@@ -38,6 +38,8 @@ import sendRouter       from './routes/send.js';
 import templatesRouter  from './routes/templates.js';
 import statsRouter      from './routes/stats.js';
 import cloudflareRouter from './routes/cloudflare.js';
+import listsRouter      from './routes/lists.js';
+import unsubscribeRouter from './routes/unsubscribe.js';
 
 import peopleRouter         from './routes/inbox/people.js';
 import composeRouter        from './routes/inbox/compose.js';
@@ -71,6 +73,9 @@ app.route('/api/auth',    authRouter);
 app.route('/api',         invitesRouter); // /api/invites/:token + /api/admin/invites
 app.route('/webhook',     webhookRouter); // /webhook/email (inbox-bridge posts here)
 
+// ── Public unsubscribe (token-authenticated, no API key) ───────────────────────
+app.route('/v1/unsubscribe', unsubscribeRouter);
+
 // ── Send API (API key auth + rate limiting) ───────────────────────────────────
 app.use('/v1/*', requireApiKey, checkRateLimit);
 app.route('/v1/send', sendRouter);
@@ -85,6 +90,7 @@ protectedApp.route('/logs',       logsRouter);
 protectedApp.route('/templates',  templatesRouter);
 protectedApp.route('/stats',      statsRouter);
 protectedApp.route('/cloudflare', cloudflareRouter);
+protectedApp.route('/lists',      listsRouter);
 
 protectedApp.route('/inbox/people',    peopleRouter);
 protectedApp.route('/inbox/compose',   composeRouter);

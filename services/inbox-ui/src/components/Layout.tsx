@@ -144,6 +144,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <NavDivider />
               <NavItem to="/domains" icon={Globe} label="Domains" />
               <NavItem to="/keys" icon={Key} label="API Keys" />
+              <NavItem to="/lists" icon={Users} label="Lists" />
             </>
           )}
         </nav>

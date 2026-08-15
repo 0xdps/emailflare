@@ -22,6 +22,9 @@ export type {
   ApiKeyRow,
   ApiKeyDomainRow,
   EmailLogRow,
+  SuppressionRow,
+  ListRow,
+  UnsubscribeTokenRow,
 } from '@emailflare/email-core';
 import type {
   DomainRow,
@@ -29,6 +32,9 @@ import type {
   ApiKeyRow,
   ApiKeyDomainRow,
   EmailLogRow,
+  SuppressionRow,
+  ListRow,
+  UnsubscribeTokenRow,
 } from '@emailflare/email-core';
 
 // ── Where clause builder (same as D1 version) ─────────────────────────────────
@@ -188,6 +194,9 @@ export function makeDb() {
     apiKeys:       new MesaTable<ApiKeyRow>('api_keys'),
     apiKeyDomains: new MesaTable<ApiKeyDomainRow>('api_key_domains'),
     emailLogs:     new MesaTable<EmailLogRow>('email_logs'),
+    suppressions:  new MesaTable<SuppressionRow>('suppressions'),
+    lists:         new MesaTable<ListRow>('lists'),
+    unsubscribeTokens: new MesaTable<UnsubscribeTokenRow>('unsubscribe_tokens'),
   };
 }
 

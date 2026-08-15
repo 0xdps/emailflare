@@ -102,6 +102,9 @@
   // Runtime env vars — set production values via `wrangler secret put`.
   // A Worker cannot declare a `var` and a `secret` with the same name, so
   // these are intentionally omitted here (see scripts/deploy-inbox.mjs).
+  "vars": {
+    "PUBLIC_URL": "https://emailflare-inbox-worker.example.workers.dev"
+  },
 
   // Workers Rate Limiting for API key calls (100 req / 60s per key)
   "unsafe": {

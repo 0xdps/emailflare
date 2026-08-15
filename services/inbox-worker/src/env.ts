@@ -36,6 +36,9 @@ export interface Env {
   CF_ACCOUNT_ID: string;
   VAPID_PUBLIC_KEY: string;
   VAPID_PRIVATE_KEY: string;
+
+  // ── Public URL of this Worker (for unsubscribe links) ───────────────────────
+  PUBLIC_URL: string;
 }
 
 // Hono generic type used by every route file

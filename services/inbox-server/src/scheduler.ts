@@ -10,6 +10,7 @@ import { Queue, Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import { rawDb } from './db.js';
 import { sendEmail } from './services/cloudflare.js';
+import { generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
 import { env, type SequenceJobData } from './env.js';
 
 const QUEUE_NAME = 'sequence-steps';
@@ -91,6 +92,29 @@ function startSequenceWorker(): Worker<SequenceJobData> {
 
       const vars: Record<string, string> = JSON.parse(enrollment.variables);
 
+      // ── Suppression check: skip unsubscribed/bounced addresses ────────────
+      const suppressed = await rawDb.first<{ reason: string }>(
+        'SELECT reason FROM suppressions WHERE email = ? LIMIT 1',
+        [person.email.toLowerCase()],
+      );
+      if (suppressed) {
+        console.log(`[scheduler] Skipping suppressed recipient ${person.email} (${suppressed.reason})`);
+        await rawDb.run(
+          `UPDATE sequence_enrollments SET current_step = ? WHERE id = ?`,
+          [stepIndex + 1, enrollmentId],
+        );
+        return;
+      }
+
+      // ── Issue one-time unsubscribe token + RFC 8058 headers ──────────────
+      const publicOrigin = env.PUBLIC_URL.replace(/\/$/, '');
+      const token = generateId();
+      await rawDb.run(
+        'INSERT INTO unsubscribe_tokens (token, email, list_id, created_at) VALUES (?, ?, NULL, ?)',
+        [token, person.email.toLowerCase(), new Date().toISOString()],
+      );
+      const headers = publicOrigin ? listUnsubscribeHeaders(publicOrigin, token, true) : undefined;
+
       await sendEmail(
         {
           from: enrollment.from_address,
@@ -98,6 +122,7 @@ function startSequenceWorker(): Worker<SequenceJobData> {
           subject: applyVars(step.subject, vars),
           html: step.html ? applyVars(step.html, vars) : undefined,
           text: step.text ? applyVars(step.text, vars) : undefined,
+          ...(headers ? { headers } : {}),
         },
         env.CF_API_TOKEN,
         env.CF_ACCOUNT_ID,

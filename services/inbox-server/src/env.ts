@@ -69,6 +69,9 @@ export const env = {
   // Migrations SQL directory (resolved at runtime)
   MIGRATIONS_DIR: process.env.MIGRATIONS_DIR ?? '/app/migrations',
 
+  // Public URL of this server (for unsubscribe links)
+  PUBLIC_URL: process.env.PUBLIC_URL ?? '',
+
   // Dashboard SPA dist directory (served by Caddy, but path used by index.ts in dev)
   DASHBOARD_DIST: process.env.DASHBOARD_DIST ?? '/app/inbox-ui/dist',
 } as const;

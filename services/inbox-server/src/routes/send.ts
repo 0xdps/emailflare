@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { generateId } from '@emailflare/email-core';
+import { generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
 import { makeDb, rawDb } from '../db.js';
 import { sendEmail } from '../services/cloudflare.js';
 import { renderLayout } from '@emailflare/emails';
@@ -23,6 +23,9 @@ const sendSchema = z.object({
   templateSlug: z.string().optional(),
   variables:    z.record(z.string()).optional(),
   themeId:      z.string().optional(),
+  listId:       z.string().optional(),
+  listUnsubscribe: z.string().optional(),
+  listUnsubscribePost: z.boolean().optional(),
 }).refine(d => d.templateId || d.templateSlug || d.html || d.text, {
   message: 'Provide templateId, templateSlug, or at least one of html/text',
 });
@@ -94,12 +97,40 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
   const results: Array<{ to: string; cfId?: string; error?: string }> = [];
   let successCount = 0;
 
+  const publicOrigin = env.PUBLIC_URL.replace(/\/$/, '');
+
   for (const recipient of toList) {
+    // ── Suppression check ─────────────────────────────────────────────────
+    const suppressed = await rawDb.query<{ reason: string }>(
+      'SELECT reason FROM suppressions WHERE email = ? LIMIT 1',
+      [recipient.toLowerCase()],
+    );
+    if (suppressed.rows.length > 0) {
+      results.push({ to: recipient, error: `Suppressed: ${suppressed.rows[0].reason}` });
+      continue;
+    }
+
+    // ── Issue one-time unsubscribe token when sending to a list ────────────
+    let unsubscribeHeaders: Record<string, string> | undefined;
+    if (body.listId && publicOrigin) {
+      const token = generateId();
+      await rawDb.run(
+        'INSERT INTO unsubscribe_tokens (token, email, list_id, created_at) VALUES (?, ?, ?, ?)',
+        [token, recipient.toLowerCase(), body.listId, now],
+      );
+      unsubscribeHeaders = listUnsubscribeHeaders(publicOrigin, token, body.listUnsubscribePost ?? true);
+    } else if (body.listUnsubscribe) {
+      const headers: Record<string, string> = { 'List-Unsubscribe': body.listUnsubscribe };
+      if (body.listUnsubscribePost) headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+      unsubscribeHeaders = headers;
+    }
+
     try {
       const cfResult = await sendEmail(
         {
           from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
           to: recipient, subject, html, text, replyTo: body.replyTo,
+          ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
         },
         env.CF_API_TOKEN,
         env.CF_ACCOUNT_ID,

@@ -28,6 +28,8 @@ import sendRouter       from './routes/send.ts';
 import templatesRouter  from './routes/templates.ts';
 import statsRouter      from './routes/stats.ts';
 import cloudflareRouter from './routes/cloudflare.ts';
+import listsRouter      from './routes/lists.ts';
+import unsubscribeRouter from './routes/unsubscribe.ts';
 
 // ── Inbox
 import peopleRouter   from './routes/inbox/people.ts';
@@ -70,6 +72,9 @@ app.route('/api/setup', setupRouter);
 app.route('/api/auth',  authRouter);
 app.route('/api',       invitesRouter); // mounts /api/invites/:token and /api/admin/invites
 
+// ── Public unsubscribe (token-authenticated, no API key) ───────────────────────
+app.route('/v1/unsubscribe', unsubscribeRouter);
+
 // ── Send API (API key auth + rate limiting) ───────────────────────────────────
 app.use('/v1/*', requireApiKey, checkRateLimit);
 app.route('/v1/send', sendRouter);
@@ -84,6 +89,7 @@ adminApp.route('/logs',       logsRouter);
 adminApp.route('/templates',  templatesRouter);
 adminApp.route('/stats',      statsRouter);
 adminApp.route('/cloudflare', cloudflareRouter);
+adminApp.route('/lists',      listsRouter);
 
 // ── Inbox routes (session auth required) ──────────────────────────────────────
 adminApp.route('/inbox/people',    peopleRouter);

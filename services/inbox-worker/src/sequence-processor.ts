@@ -5,6 +5,7 @@
 // Queue: sends the individual step email via CF Email API.
 
 import { sendEmail } from './services/cloudflare.ts';
+import { generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
 import type { Env, SequenceQueueMessage } from './env.ts';
 
 interface SequenceStep {
@@ -99,6 +100,27 @@ export async function handleSequenceQueueMessage(
 
   const vars: Record<string, string> = JSON.parse(enrollment.variables);
 
+  // ── Suppression check: skip unsubscribed/bounced addresses ────────────────
+  const suppressed = await env.DB.prepare(
+    'SELECT reason FROM suppressions WHERE email = ? LIMIT 1',
+  ).bind(person.email.toLowerCase()).first<{ reason: string }>();
+  if (suppressed) {
+    console.log(`[sequence] Skipping suppressed recipient ${person.email} (${suppressed.reason})`);
+    // Advance so the sequence doesn't stall on this step
+    await env.DB.prepare(
+      `UPDATE sequence_enrollments SET current_step = ? WHERE id = ?`,
+    ).bind(msg.stepIndex + 1, enrollment.id).run();
+    return;
+  }
+
+  // ── Issue one-time unsubscribe token + RFC 8058 headers ──────────────────
+  const publicOrigin = (env.PUBLIC_URL ?? '').replace(/\/$/, '');
+  const token = generateId();
+  await env.DB.prepare(
+    'INSERT INTO unsubscribe_tokens (token, email, list_id, created_at) VALUES (?, ?, NULL, ?)',
+  ).bind(token, person.email.toLowerCase(), new Date().toISOString()).run();
+  const headers = publicOrigin ? listUnsubscribeHeaders(publicOrigin, token, true) : undefined;
+
   try {
     await sendEmail(
       {
@@ -107,9 +129,10 @@ export async function handleSequenceQueueMessage(
         subject: applyVars(step.subject, vars),
         html: step.html ? applyVars(step.html, vars) : undefined,
         text: step.text ? applyVars(step.text, vars) : undefined,
+        ...(headers ? { headers } : {}),
       },
-      env.CF_ACCOUNT_ID,
       env.CF_API_TOKEN,
+      env.CF_ACCOUNT_ID,
     );
 
     // Advance to next step
