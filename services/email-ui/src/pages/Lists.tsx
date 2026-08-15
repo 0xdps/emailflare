@@ -72,11 +72,11 @@ export default function ListsPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Users size={14} className="text-primary" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Audiences</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Unsubscribe</span>
             </div>
-            <h1 className="text-2xl font-bold">Lists</h1>
+            <h1 className="text-2xl font-bold">Unsubscribe lists</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Lists let you attach one-click unsubscribe headers to sends. A recipient who unsubscribes is suppressed globally.
+              Attach one-click unsubscribe headers to sends. A recipient who unsubscribes is suppressed globally.
             </p>
           </div>
           <Button onClick={() => setCreating(true)}>
@@ -128,7 +128,7 @@ export default function ListsPage() {
             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
           </div>
         ) : lists.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground text-sm">No lists yet. Create one to enable unsubscribe headers.</div>
+          <div className="text-center py-20 text-muted-foreground text-sm">No unsubscribe lists yet. Create one to enable one-click unsubscribe headers.</div>
         ) : (
           <Card className="overflow-hidden p-0 divide-y divide-border">
             {lists.map(l => (

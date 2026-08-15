@@ -55,7 +55,7 @@ const navSections = [
     items: [
       { to: '/templates',  label: 'Templates',  icon: FileText },
       { to: '/playground', label: 'Playground', icon: FlaskConical },
-      { to: '/lists',      label: 'Lists',      icon: Users },
+      { to: '/lists',      label: 'Unsubscribe',      icon: Users },
     ],
   },
   {
