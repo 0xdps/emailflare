@@ -1,0 +1,41 @@
+README.md
+  s_3d0722258bf66d::t_e3bd491dd89c42 9-10,139,151
+RECIPES.md
+  s_3d0722258bf66d::t_f3b6fdacd6f753 158,231
+docs/CLOUDFLARE.md
+  s_3d0722258bf66d::t_2c05ecde728a58 119-132
+  s_3d0722258bf66d::t_9b6d4336187c96 71-74,79-82,110,116-117,202,210-219
+  s_3d0722258bf66d::t_5e7c55decb6715 118
+services/landing/src/pages/cloudflare.astro
+  s_3d0722258bf66d::t_30e15694f587c5 313,315,354,509
+  s_3d0722258bf66d::t_987cdd0b67aa3b 319,502
+  s_3d0722258bf66d::t_ab6a5f09892246 484
+  s_3d0722258bf66d::t_3a190f21d15c04 461,464-469
+  s_3d0722258bf66d::t_d844eac83cb4cc 497,499
+services/landing/src/pages/docs.astro
+  s_3d0722258bf66d::t_591ec93e773c70 593-620
+  s_3d0722258bf66d::t_c7cdf214eb05ae 352
+docs/SELF_HOSTING.md
+  s_3d0722258bf66d::t_1c782eb8f1870f 39-41,131-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9fa8648d8c875597c068e5d735ceb08112333192",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
