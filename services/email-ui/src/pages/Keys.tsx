@@ -14,6 +14,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ApiKey {
   id: string;
@@ -31,6 +32,12 @@ interface NewKey extends ApiKey {
   key: string;
 }
 
+interface Domain {
+  id: string;
+  name: string;
+  verified: number;
+}
+
 function timeAgo(iso: string) {
   const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (secs < 60)    return `${secs}s ago`;
@@ -45,8 +52,14 @@ export default function KeysPage() {
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState<NewKey | null>(null);
   const [copied, setCopied] = useState(false);
-  const [form, setForm] = useState({ name: '', type: 'live' as 'test' | 'live', scope: 'global' as const });
+  const [form, setForm] = useState<{
+    name: string;
+    type: 'test' | 'live';
+    scope: 'global' | 'domain' | 'multi';
+    domainIds: string[];
+  }>({ name: '', type: 'live', scope: 'global', domainIds: [] });
   const [revokeId, setRevokeId] = useState<string | null>(null);
+  const [domains, setDomains] = useState<Domain[]>([]);
 
   async function load() {
     setLoading(true);
@@ -55,14 +68,30 @@ export default function KeysPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  async function loadDomains() {
+    const { data } = await api.get<Domain[]>('/api/domains');
+    setDomains(data);
+  }
+
+  useEffect(() => {
+    load();
+    loadDomains();
+  }, []);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const { data } = await api.post<NewKey>('/api/keys', form);
+    const payload: { name: string; type: 'test' | 'live'; scope: 'global' | 'domain' | 'multi'; domainIds?: string[] } = {
+      name: form.name,
+      type: form.type,
+      scope: form.scope,
+    };
+    if (form.scope !== 'global') {
+      payload.domainIds = form.domainIds;
+    }
+    const { data } = await api.post<NewKey>('/api/keys', payload);
     setNewKey(data);
     setCreating(false);
-    setForm({ name: '', type: 'live', scope: 'global' });
+    setForm({ name: '', type: 'live', scope: 'global', domainIds: [] });
     load();
   }
 
@@ -177,7 +206,7 @@ export default function KeysPage() {
                   <Label>Scope</Label>
                   <Select
                     value={form.scope}
-                    onValueChange={v => setForm(f => ({ ...f, scope: v as typeof form.scope }))}
+                    onValueChange={v => setForm(f => ({ ...f, scope: v as typeof form.scope, domainIds: [] }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -189,8 +218,70 @@ export default function KeysPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                {(form.scope === 'domain' || form.scope === 'multi') && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label>
+                      {form.scope === 'domain' ? 'Domain' : 'Domains'}
+                      <span className="text-muted-foreground font-normal ml-1">
+                        {form.scope === 'domain' ? '(select one)' : '(select one or more)'}
+                      </span>
+                    </Label>
+                    {domains.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">No domains found. Add a domain first.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2 rounded-md border border-input p-3">
+                        {domains.map(d => {
+                          const checked = form.domainIds.includes(d.id);
+                          return (
+                            <label
+                              key={d.id}
+                              className="flex items-center gap-2.5 cursor-pointer select-none"
+                            >
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={(isChecked: boolean) => {
+                                  if (form.scope === 'domain') {
+                                    setForm(f => ({ ...f, domainIds: isChecked ? [d.id] : [] }));
+                                  } else {
+                                    setForm(f => ({
+                                      ...f,
+                                      domainIds: isChecked
+                                        ? [...f.domainIds, d.id]
+                                        : f.domainIds.filter(id => id !== d.id),
+                                    }));
+                                  }
+                                }}
+                              />
+                              <span className="text-sm leading-none">
+                                {d.name}
+                                {!d.verified && (
+                                  <span className="ml-1.5 text-xs text-muted-foreground">(unverified)</span>
+                                )}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {form.domainIds.length === 0 && (
+                      <p className="text-xs text-destructive">
+                        {form.scope === 'domain'
+                          ? 'Select a domain to continue.'
+                          : 'Select at least one domain to continue.'}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div className="flex gap-2">
-                  <Button type="submit">Create</Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      (form.scope === 'domain' || form.scope === 'multi') &&
+                      form.domainIds.length === 0
+                    }
+                  >
+                    Create
+                  </Button>
                   <Button type="button" variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
                 </div>
               </form>

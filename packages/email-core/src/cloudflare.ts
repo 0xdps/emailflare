@@ -198,10 +198,15 @@ export async function sendEmail(
   cfApiToken: string,
   cfAccountId: string,
 ): Promise<CFSendEmailResult> {
+  // The Cloudflare Email Service REST API expects snake_case `reply_to`; our
+  // params use camelCase `replyTo`. Map it (and omit when absent) — CF's schema
+  // is strict and rejects unknown fields with invalid_request_schema.
+  const { replyTo, ...rest } = params;
+  const body = { ...rest, ...(replyTo ? { reply_to: replyTo } : {}) };
   return cfFetch<CFSendEmailResult>(
     `/accounts/${cfAccountId}/email/sending/send`,
     cfApiToken,
-    { method: 'POST', body: JSON.stringify(params) },
+    { method: 'POST', body: JSON.stringify(body) },
   );
 }
 
