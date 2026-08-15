@@ -23,6 +23,8 @@ import cloudflareRoutes    from './routes/cloudflare.js';
 import sendRoutes          from './routes/send.js';
 import { suppressionsRoutes } from './routes/suppressions.js';
 import { webhooksRoutes }     from './routes/webhooks.js';
+import listsRoutes         from './routes/lists.js';
+import unsubscribeRoutes   from './routes/unsubscribe.js';
 import { LAYOUTS, renderLayout } from '@emailflare/emails';
 import type { LayoutName } from '@emailflare/emails';
 
@@ -58,7 +60,7 @@ app.use('*', secureHeaders());
 // Public API: wide-open CORS (callers send from any origin)
 app.use('/v1/*', cors({
   origin: '*',
-  allowMethods: ['POST', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
 }));
 
@@ -77,9 +79,12 @@ app.get('/health', (c) => c.json({
   ts: Date.now(),
 }));
 
+// ── Public: unsubscribe (token-authenticated, no API key) ─────────────────────
+app.route('/v1/unsubscribe', unsubscribeRoutes);
+
 // ── Public: send (API key protected + rate limited) ───────────────────────────
-app.use('/v1/*', requireApiKey);
-app.use('/v1/*', async (c, next) => {
+app.use('/v1/send', requireApiKey);
+app.use('/v1/send', async (c, next) => {
   const apiKey = c.get('apiKey' as never) as { keyId: string };
   const rl = checkRateLimit(apiKey.keyId);
   c.header('X-RateLimit-Limit',     String(rl.limit));
@@ -119,6 +124,7 @@ admin.route('/test-emails',  testEmailsRoutes);
 admin.route('/stats',        statsRoutes);
 admin.route('/cloudflare',   cloudflareRoutes);
 admin.route('/suppressions', suppressionsRoutes);
+admin.route('/lists',        listsRoutes);
 
 app.route('/api', admin);
 

@@ -12,7 +12,7 @@ import { sendEmail } from '../services/cloudflare.ts';
 import { renderLayout } from '../emails.ts';
 import type { LayoutName } from '../emails.ts';
 import type { HonoEnv, ApiKeyContext } from '../env.ts';
-import { sendSchema, applyVariables, generateId } from '@emailflare/email-core';
+import { sendSchema, applyVariables, generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
 
 
 const app = new Hono<HonoEnv>();
@@ -88,6 +88,12 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
   const results: Array<{ to: string; cfId?: string; error?: string }> = [];
   let successCount = 0;
 
+  // ── Resolve List-Unsubscribe headers ───────────────────────────────────────
+  // If a listId is provided, issue a one-time unsubscribe token per recipient and
+  // attach RFC 8058 headers. A caller-provided listUnsubscribe URL (with no
+  // token) is passed through verbatim.
+  const publicOrigin = (c.env.PUBLIC_URL ?? '').replace(/\/$/, '');
+
   for (const recipient of toList) {
     // ── Suppression check ──────────────────────────────────────────────────
     const suppressed = await db.query<{ reason: string }>(
@@ -99,6 +105,21 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
       continue;
     }
 
+    // ── Issue one-time unsubscribe token when sending to a list ────────────
+    let unsubscribeHeaders: Record<string, string> | undefined;
+    if (body.listId && publicOrigin) {
+      const token = generateId();
+      await db.run(
+        `INSERT INTO unsubscribe_tokens (token, email, list_id, created_at) VALUES (?, ?, ?, ?)`,
+        [token, recipient.toLowerCase(), body.listId, now],
+      );
+      unsubscribeHeaders = listUnsubscribeHeaders(publicOrigin, token, body.listUnsubscribePost ?? true);
+    } else if (body.listUnsubscribe) {
+      const headers: Record<string, string> = { 'List-Unsubscribe': body.listUnsubscribe };
+      if (body.listUnsubscribePost) headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+      unsubscribeHeaders = headers;
+    }
+
     try {
       const cfResult = await sendEmail(
         {
@@ -108,6 +129,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
           html,
           text,
           replyTo: body.replyTo,
+          ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
         },
         c.env.CF_API_TOKEN,
         c.env.CF_ACCOUNT_ID,

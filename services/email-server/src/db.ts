@@ -11,6 +11,8 @@ export type {
   ApiKeyDomainRow,
   EmailLogRow,
   SuppressionRow,
+  ListRow,
+  UnsubscribeTokenRow,
 } from '@emailflare/email-core';
 import type {
   DomainRow,
@@ -19,6 +21,8 @@ import type {
   ApiKeyDomainRow,
   EmailLogRow,
   SuppressionRow,
+  ListRow,
+  UnsubscribeTokenRow,
 } from '@emailflare/email-core';
 
 const { apiUrl, apiKey, dbName } = parseMesahubUrl(env.MESAHUB_URL);
@@ -33,6 +37,8 @@ export const apiKeys       = db.table<ApiKeyRow>('api_keys');
 export const apiKeyDomains = db.table<ApiKeyDomainRow>('api_key_domains');
 export const emailLogs     = db.table<EmailLogRow>('email_logs');
 export const suppressions  = db.table<SuppressionRow>('suppressions');
+export const lists         = db.table<ListRow>('lists');
+export const unsubscribeTokens = db.table<UnsubscribeTokenRow>('unsubscribe_tokens');
 
 /** Delete a domain and cascade-remove its api_key_domains associations. */
 export async function deleteDomainCascade(domainId: string): Promise<void> {
@@ -143,6 +149,32 @@ export async function bootstrapSchema(): Promise<void> {
   `);
   try { await db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_suppressions_email  ON suppressions(email)`); } catch { /* ignore */ }
   try { await db.exec(`CREATE INDEX        IF NOT EXISTS idx_suppressions_domain ON suppressions(domain_id)`); } catch { /* ignore */ }
+  try { await db.exec(`ALTER TABLE suppressions ADD COLUMN list_id TEXT`); } catch { /* already exists */ }
+  try { await db.exec(`CREATE INDEX IF NOT EXISTS idx_suppressions_list ON suppressions(list_id)`); } catch { /* ignore */ }
+
+  // Lists (audiences) for unsubscribe management
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS lists (
+      id          TEXT PRIMARY KEY,
+      name        TEXT NOT NULL,
+      slug        TEXT UNIQUE,
+      description TEXT,
+      domain_id   TEXT,
+      created_at  TEXT NOT NULL
+    )
+  `);
+  try { await db.exec(`CREATE INDEX IF NOT EXISTS idx_lists_domain ON lists(domain_id)`); } catch { /* ignore */ }
+
+  // One-time unsubscribe tokens issued at send time
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS unsubscribe_tokens (
+      token      TEXT PRIMARY KEY,
+      email      TEXT NOT NULL,
+      list_id    TEXT,
+      created_at TEXT NOT NULL
+    )
+  `);
+  try { await db.exec(`CREATE INDEX IF NOT EXISTS idx_unsubscribe_tokens_email ON unsubscribe_tokens(email)`); } catch { /* ignore */ }
 
   if (process.env.NODE_ENV !== 'production') console.log('[db] schema bootstrapped');
 }

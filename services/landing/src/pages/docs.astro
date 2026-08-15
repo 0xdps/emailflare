@@ -522,6 +522,24 @@ import Base from '../layouts/Base.astro';
                     <td><span class="pill pill-opt">optional</span></td>
                     <td>Reply-to address for the recipient.</td>
                   </tr>
+                  <tr>
+                    <td><code>listId</code></td>
+                    <td>string</td>
+                    <td><span class="pill pill-opt">optional</span></td>
+                    <td>Audience list ID. Attaches a one-click <code>List-Unsubscribe</code> header with a per-recipient token, so the recipient can unsubscribe (globally suppressed for all future sends).</td>
+                  </tr>
+                  <tr>
+                    <td><code>listUnsubscribe</code></td>
+                    <td>string</td>
+                    <td><span class="pill pill-opt">optional</span></td>
+                    <td>Override the unsubscribe URL (e.g. your own <code>https://…/unsubscribe</code>). Passed through verbatim.</td>
+                  </tr>
+                  <tr>
+                    <td><code>listUnsubscribePost</code></td>
+                    <td>boolean</td>
+                    <td><span class="pill pill-opt">optional</span></td>
+                    <td>Adds <code>List-Unsubscribe-Post: List-Unsubscribe=One-Click</code> (RFC 8058). Defaults to <code>true</code> when <code>listId</code> is set.</td>
+                  </tr>
                 </tbody>
               </table>
             </div>

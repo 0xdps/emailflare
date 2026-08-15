@@ -30,6 +30,8 @@ import statsRoutes        from './routes/stats.ts';
 import cloudflareRoutes   from './routes/cloudflare.ts';
 import sendRoutes         from './routes/send.ts';
 import suppressionsRoutes from './routes/suppressions.ts';
+import listsRoutes        from './routes/lists.ts';
+import unsubscribeRoutes  from './routes/unsubscribe.ts';
 import { handleInboundEmail } from './email-handler.ts';
 
 // ── CORS helpers ──────────────────────────────────────────────────────────────
@@ -54,7 +56,7 @@ app.use('*', secureHeaders());
 // Public API: wide-open CORS for callers on any origin
 app.use('/v1/*', (c, next) => cors({
   origin: '*',
-  allowMethods: ['POST', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
 })(c, next));
 
@@ -78,9 +80,12 @@ app.use('/api/*', async (c, next) => {
 // ── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (c) => c.json({ ok: true, service: 'emailflare-api-worker', ts: Date.now() }));
 
+// ── Public unsubscribe (token-authenticated, no API key) ───────────────────────
+app.route('/v1/unsubscribe', unsubscribeRoutes);
+
 // ── Public send API (API key + rate limited) ───────────────────────────────────
-app.use('/v1/*', requireApiKey);
-app.use('/v1/*', checkRateLimit);
+app.use('/v1/send', requireApiKey);
+app.use('/v1/send', checkRateLimit);
 app.route('/v1/send', sendRoutes);
 
 // ── Auth (public — login/logout/me) ──────────────────────────────────────────
@@ -111,6 +116,7 @@ admin.route('/logs',         logsRoutes);
 admin.route('/stats',        statsRoutes);
 admin.route('/cloudflare',   cloudflareRoutes);
 admin.route('/suppressions', suppressionsRoutes);
+admin.route('/lists',        listsRoutes);
 
 app.route('/api', admin);
 

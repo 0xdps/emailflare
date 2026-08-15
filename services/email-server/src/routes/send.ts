@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { db, emailLogs, templates } from '../db.js';
+import { db, emailLogs, templates, unsubscribeTokens } from '../db.js';
 import { sendEmail } from '../services/cloudflare.js';
 import { storeTestEmail } from '../services/testEmail.js';
 import { renderLayout } from '@emailflare/emails';
 import type { LayoutName } from '@emailflare/emails';
-import { sendSchema, applyVariables, generateId } from '@emailflare/email-core';
+import { sendSchema, applyVariables, generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
 import type { ApiKeyContext } from '../middleware/apiKey.js';
+import { env } from '../env.js';
 
 const app = new Hono();
 
@@ -78,6 +79,8 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
   const results: Array<{ to: string; cfId?: string; error?: string }> = [];
   let successCount = 0;
 
+  const publicOrigin = env.PUBLIC_URL.replace(/\/$/, '');
+
   for (const recipient of toList) {
     // ── Suppression check ─────────────────────────────────────────────────
     const suppressed = await db.query(
@@ -89,6 +92,23 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
       continue;
     }
 
+    // ── Issue one-time unsubscribe token when sending to a list ────────────
+    let unsubscribeHeaders: Record<string, string> | undefined;
+    if (body.listId && publicOrigin) {
+      const token = generateId();
+      await unsubscribeTokens.insert({
+        token,
+        email: recipient.toLowerCase(),
+        list_id: body.listId,
+        created_at: now,
+      });
+      unsubscribeHeaders = listUnsubscribeHeaders(publicOrigin, token, body.listUnsubscribePost ?? true);
+    } else if (body.listUnsubscribe) {
+      const headers: Record<string, string> = { 'List-Unsubscribe': body.listUnsubscribe };
+      if (body.listUnsubscribePost) headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+      unsubscribeHeaders = headers;
+    }
+
     try {
       const sendFn = isTest ? storeTestEmail : sendEmail;
       const cfResult = await sendFn({
@@ -98,6 +118,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         html,
         text,
         replyTo: body.replyTo,
+        ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
       });
 
       await emailLogs.insert({

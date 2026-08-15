@@ -75,7 +75,8 @@
   // `wrangler secret put`. A Worker cannot have a `var` and a `secret`
   // with the same name — the `secret put` call fails with code 10053.
   "vars": {
-    "ADMIN_ORIGIN": "localhost:5173"
+    "ADMIN_ORIGIN": "localhost:5173",
+    "PUBLIC_URL": "https://emailflare-api-worker.example.workers.dev"
   },
 
   // Workers Rate Limiting for API key calls (100 req / 60s per key)

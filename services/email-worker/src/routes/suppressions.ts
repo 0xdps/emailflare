@@ -58,7 +58,7 @@ app.get('/', async (c) => {
 // POST /api/suppressions — manual suppression
 const addSchema = z.object({
   email:     z.string().email(),
-  reason:    z.enum(['hard_bounce', 'soft_bounce', 'complaint', 'manual']).default('manual'),
+  reason:    z.enum(['hard_bounce', 'soft_bounce', 'complaint', 'manual', 'unsubscribed']).default('manual'),
   domain_id: z.string().optional(),
 });
 

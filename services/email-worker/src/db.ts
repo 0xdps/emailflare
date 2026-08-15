@@ -9,6 +9,8 @@ export type {
   ApiKeyDomainRow,
   EmailLogRow,
   SuppressionRow,
+  ListRow,
+  UnsubscribeTokenRow,
 } from '@emailflare/email-core';
 import type {
   DomainRow,
@@ -17,6 +19,8 @@ import type {
   ApiKeyDomainRow,
   EmailLogRow,
   SuppressionRow,
+  ListRow,
+  UnsubscribeTokenRow,
 } from '@emailflare/email-core';
 
 // ── D1Table — typed query wrapper ────────────────────────────────────────────
@@ -177,6 +181,8 @@ export function makeDb(d1: D1Database) {
     apiKeyDomains: db.table<ApiKeyDomainRow>('api_key_domains'),
     emailLogs:     db.table<EmailLogRow>('email_logs'),
     suppressions:  db.table<SuppressionRow>('suppressions'),
+    lists:         db.table<ListRow>('lists'),
+    unsubscribeTokens: db.table<UnsubscribeTokenRow>('unsubscribe_tokens'),
   };
 }
 

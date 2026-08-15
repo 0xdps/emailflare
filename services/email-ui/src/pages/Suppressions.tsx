@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-type SuppressionReason = 'hard_bounce' | 'soft_bounce' | 'complaint' | 'manual';
+type SuppressionReason = 'hard_bounce' | 'soft_bounce' | 'complaint' | 'manual' | 'unsubscribed';
 
 interface SuppressionRow {
   id: string;
@@ -29,6 +29,7 @@ interface SuppressionRow {
   reason: SuppressionReason;
   domain_id: string | null;
   email_log_id: string | null;
+  list_id: string | null;
   created_at: string;
 }
 
@@ -41,17 +42,19 @@ interface PagedSuppressions {
 }
 
 const REASON_LABEL: Record<SuppressionReason, string> = {
-  hard_bounce: 'Hard bounce',
-  soft_bounce: 'Soft bounce',
-  complaint:   'Complaint',
-  manual:      'Manual',
+  hard_bounce:  'Hard bounce',
+  soft_bounce:  'Soft bounce',
+  complaint:    'Complaint',
+  manual:       'Manual',
+  unsubscribed: 'Unsubscribed',
 };
 
 const REASON_CLASS: Record<SuppressionReason, string> = {
-  hard_bounce: 'bg-destructive/10 text-destructive border-destructive/20',
-  soft_bounce: 'bg-amber-500/10 text-amber-600 border-amber-200',
-  complaint:   'bg-orange-500/10 text-orange-600 border-orange-200',
-  manual:      'bg-muted text-muted-foreground border-border',
+  hard_bounce:  'bg-destructive/10 text-destructive border-destructive/20',
+  soft_bounce:  'bg-amber-500/10 text-amber-600 border-amber-200',
+  complaint:    'bg-orange-500/10 text-orange-600 border-orange-200',
+  manual:       'bg-muted text-muted-foreground border-border',
+  unsubscribed: 'bg-blue-500/10 text-blue-600 border-blue-200',
 };
 
 const REASON_FILTER_OPTS = [
@@ -60,6 +63,7 @@ const REASON_FILTER_OPTS = [
   { label: 'Soft bounce',  value: 'soft_bounce' },
   { label: 'Complaint',    value: 'complaint' },
   { label: 'Manual',       value: 'manual' },
+  { label: 'Unsubscribed', value: 'unsubscribed' },
 ];
 
 // ─── Add dialog ───────────────────────────────────────────────────────────────
@@ -121,6 +125,7 @@ function AddDialog({ open, onClose, onAdded }: {
                 <SelectItem value="hard_bounce">Hard bounce</SelectItem>
                 <SelectItem value="soft_bounce">Soft bounce</SelectItem>
                 <SelectItem value="complaint">Complaint</SelectItem>
+                <SelectItem value="unsubscribed">Unsubscribed</SelectItem>
               </SelectContent>
             </Select>
           </div>

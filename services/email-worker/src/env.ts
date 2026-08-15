@@ -17,6 +17,9 @@ export interface Env {
   CF_API_TOKEN: string;
   CF_ACCOUNT_ID: string;
 
+  // ── Public URL of this Worker (for unsubscribe links) ───────────────────────
+  PUBLIC_URL: string;
+
   // ── CORS — comma-separated bare domains, e.g. "admin.example.com" ───────────
   ADMIN_ORIGIN: string;
 }

@@ -87,9 +87,28 @@ export interface SuppressionRow {
   [key: string]: unknown;
   id: string;
   email: string;
-  reason: 'hard_bounce' | 'soft_bounce' | 'complaint' | 'manual';
+  reason: 'hard_bounce' | 'soft_bounce' | 'complaint' | 'manual' | 'unsubscribed';
   domain_id: string | null;
   email_log_id: string | null;
+  list_id?: string | null;
+  created_at: string;
+}
+
+export interface ListRow {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  domain_id: string | null;
+  created_at: string;
+}
+
+export interface UnsubscribeTokenRow {
+  [key: string]: unknown;
+  token: string;
+  email: string;
+  list_id: string | null;
   created_at: string;
 }
 
@@ -111,6 +130,10 @@ export const sendSchema = z.object({
   templateSlug: z.string().optional(),
   variables: z.record(z.string()).optional(),
   themeId: z.string().optional(),
+  // List management / unsubscribe
+  listId: z.string().optional(),
+  listUnsubscribe: z.string().optional(),
+  listUnsubscribePost: z.boolean().optional(),
 }).refine(d => d.templateId || d.templateSlug || d.html || d.text, {
   message: 'Provide templateId, templateSlug, or at least one of html/text',
 });
@@ -146,6 +169,16 @@ export const keyCreateSchema = z.object({
 });
 
 export type KeyCreateInput = z.infer<typeof keyCreateSchema>;
+
+/** POST /api/lists — create a list (audience). */
+export const listCreateSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, hyphens').optional(),
+  description: z.string().optional(),
+  domainId: z.string().optional().nullable(),
+});
+
+export type ListCreateInput = z.infer<typeof listCreateSchema>;
 
 /**
  * POST /api/auth/login — admin token login (email-server / email-worker).
@@ -183,6 +216,22 @@ export function applyVariables(template: string, vars: Record<string, string>): 
  */
 export function toSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Build RFC 8058 List-Unsubscribe headers for a one-time token.
+ * `origin` is the public base URL of the API (e.g. https://app.example.com).
+ * When `post` is true, adds List-Unsubscribe-Post for one-click unsubscribe.
+ */
+export function listUnsubscribeHeaders(
+  origin: string,
+  token: string,
+  post: boolean,
+): Record<string, string> {
+  const url = `${origin.replace(/\/$/, '')}/v1/unsubscribe?token=${encodeURIComponent(token)}`;
+  const headers: Record<string, string> = { 'List-Unsubscribe': `<${url}>` };
+  if (post) headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+  return headers;
 }
 
 /**
