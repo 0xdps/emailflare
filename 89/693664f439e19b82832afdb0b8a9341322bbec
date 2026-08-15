@@ -1,0 +1,63 @@
+services/inbox-worker/src/routes/unsubscribe.ts
+  s_3d0722258bf66d::t_b43c0ddd695f55 1-56
+services/inbox-worker/src/index.ts
+  s_3d0722258bf66d::t_48ccffeac4e6c3 31-32,75-77,92
+services/inbox-ui/src/pages/Lists.tsx
+  s_3d0722258bf66d::t_2bdf0b6b54711e 1-153
+services/inbox-server/src/routes/send.ts
+  s_3d0722258bf66d::t_580e36f90f65f8 4,26-28,100-101,103-127,133
+services/inbox-server/src/index.ts
+  s_3d0722258bf66d::t_48ccffeac4e6c3 41-42,76-78,93
+services/inbox-worker/src/env.ts
+  s_3d0722258bf66d::t_a6e371455afdec 39-41
+services/inbox-server/src/db.ts
+  s_3d0722258bf66d::t_e61e5cbae41cbc 25-27,35-37,197-199
+services/inbox-ui/src/routes/lists.tsx
+  s_3d0722258bf66d::t_fc10f1f9f0ad9c 1-7
+services/inbox-worker/src/routes/lists.ts
+  s_3d0722258bf66d::t_359073ae66bb3f 1-52
+services/inbox-server/src/env.ts
+  s_3d0722258bf66d::t_a6e371455afdec 72-74
+services/inbox-server/src/routes/unsubscribe.ts
+  s_3d0722258bf66d::t_4f200778dc2c7b 1-9,11-15,18-19,21-22,24-27,29-55
+  s_3d0722258bf66d::t_d49faf87596787 10,16-17,20,23,28
+services/inbox-worker/src/sequence-processor.ts
+  s_3d0722258bf66d::t_727077f14df7a6 103-123,132
+  s_3d0722258bf66d::t_8a1e79fa52526d 135
+  s_3d0722258bf66d::t_cf0b28159a01bb 8
+services/inbox-server/src/scheduler.ts
+  s_3d0722258bf66d::t_20e6917a4b8288 13
+  s_3d0722258bf66d::t_b0d78b112a22f0 95-117,125
+services/inbox-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_7770eefe76599f 15
+  s_3d0722258bf66d::t_f8d73bd9a647dc 91-92,94-118,128
+services/inbox-worker/src/db.ts
+  s_3d0722258bf66d::t_e61e5cbae41cbc 13-15,23-25,185-187
+services/inbox-worker/wrangler.jsonc
+  s_3d0722258bf66d::t_955acb4daa629f 105-107
+services/inbox-server/src/routes/lists.ts
+  s_3d0722258bf66d::t_beadf23a56112a 1-50
+services/inbox-ui/src/components/Layout.tsx
+  s_3d0722258bf66d::t_193e5e73ad31d0 147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "89693664f439e19b82832afdb0b8a9341322bbec",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
