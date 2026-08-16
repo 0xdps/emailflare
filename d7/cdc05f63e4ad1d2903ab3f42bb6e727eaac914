@@ -1,0 +1,71 @@
+services/inbox-server/src/routes/send.ts
+  s_3d0722258bf66d::t_036794686ac964 131-159
+  s_3d0722258bf66d::t_1d8016add3c16f 4
+services/email-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_5f013d868633bd 15
+  s_3d0722258bf66d::t_4e96168631dd48 124-134,146-150
+services/email-server/src/routes/send.ts
+  s_3d0722258bf66d::t_0223da4561e7d6 8
+  s_3d0722258bf66d::t_2de0a1c8e152bb 113-133,135-139
+services/inbox-worker/src/routes/inbox/compose.ts
+  s_3d0722258bf66d::t_078207904488ed 26-44,59,104-105
+  s_3d0722258bf66d::t_ad37b67a151a40 10,52-58,60
+  s_3d0722258bf66d::t_4c6b2b8f8e00ff 65-67
+  s_3d0722258bf66d::t_f90647c045a075 7
+  s_3d0722258bf66d::t_bf4fa14fc18a7f 72-92,106,108
+services/inbox-ui/src/lib/threading.ts
+  s_3d0722258bf66d::t_c65ccf24fde4dd 41,46-80,88-91,93,96,98-101,103-104,110-116,118
+packages/email-core/src/index.ts
+  s_3d0722258bf66d::t_c544f3d38f8bc3 260
+  s_3d0722258bf66d::t_bed92642893a05 237-259,261-326
+services/inbox-ui/src/api.ts
+  s_3d0722258bf66d::t_4ac02246bb97f8 124
+packages/inbox-core/src/index.ts
+  s_3d0722258bf66d::t_0263af3f19bd97 264-313
+services/inbox-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_7f6f77ffc3e279 13
+  s_3d0722258bf66d::t_5a61dc831f9bd2 120-142,144-148,151
+services/inbox-server/src/routes/inbox/compose.ts
+  s_3d0722258bf66d::t_a920fcd038327e 83-103,118,121
+  s_3d0722258bf66d::t_a851621e04a658 5
+  s_3d0722258bf66d::t_4e2bf873fa37de 67-73,75-78
+  s_3d0722258bf66d::t_bfaf302735cbf0 40-57,74,116-117
+  s_3d0722258bf66d::t_3ba26890f9c77a 6
+migrations/0001_schema.sql
+  s_3d0722258bf66d::t_ac7275eb3c5928 1-14,17-21,23-24,73-75,85-296
+services/inbox-server/src/email-handler.ts
+  s_3d0722258bf66d::t_8e7b8cace421a7 88-106,110,112,115
+  s_3d0722258bf66d::t_a93cc55d40283b 35-38,42,44
+  s_3d0722258bf66d::t_2eca10f179288e 82-86
+  s_3d0722258bf66d::t_cd57333980ac89 87
+services/inbox-worker/src/email-handler.ts
+  s_3d0722258bf66d::t_33de2a0b2f0901 78-94,98,100,105
+  s_3d0722258bf66d::t_843d34087fae3a 9,23-28,32,34
+  s_3d0722258bf66d::t_1cdb1266d8efba 72-76
+  s_3d0722258bf66d::t_161cae345484e8 77
+services/inbox-server/src/routes/inbox/people.ts
+  s_3d0722258bf66d::t_05f0204541e821 70,74
+services/inbox-worker/src/routes/inbox/people.ts
+  s_3d0722258bf66d::t_7e54d5516bc28c 77,81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d7cdc05f63e4ad1d2903ab3f42bb6e727eaac914",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
