@@ -6,7 +6,8 @@
 
 import PostalMime from 'postal-mime';
 import { generateId } from '@emailflare/email-core';
-import { parseThreadToken, stripThreadToken, threadMessageId } from '@emailflare/inbox-core';
+import { parseThreadToken, stripThreadToken, threadMessageId, upsertPerson, resolveThreadId } from '@emailflare/inbox-core';
+import { D1Db } from './db.ts';
 import type { Env } from './env.ts';
 
 
@@ -15,6 +16,7 @@ const LARGE_BODY_THRESHOLD = 512 * 1024; // 512 KB
 export async function handleIncomingEmail(message: ForwardableEmailMessage, env: Env): Promise<void> {
   const raw = await new Response(message.raw).arrayBuffer();
   const email = await PostalMime.parse(raw);
+  const db = new D1Db(env.DB);
 
   const fromAddress = message.from.toLowerCase();
   const toAddress   = message.to.toLowerCase();
@@ -34,20 +36,10 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
   const inboxAddress = inboxRow?.email ?? baseAddress;
 
   // ── Upsert person (scoped to this inbox) ────────────────────────────────────
-  // A conversation is uniquely identified by (counterparty email, inbox address)
-  // so the same sender writing to two different inboxes stays separate.
-  let person = await env.DB.prepare(
-    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
-  ).bind(fromAddress, inboxAddress).first<{ id: string }>();
-
-  if (!person) {
-    const pid = generateId();
-    const personName = email.from?.name ?? null;
-    await env.DB.prepare(
-      'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, ?, ?, ?)',
-    ).bind(pid, fromAddress, personName, inboxAddress, now).run();
-    person = { id: pid };
-  }
+  const personId = await upsertPerson(db, fromAddress, inboxAddress, {
+    name: email.from?.name ?? null,
+    generateId,
+  });
 
   // ── Store body (R2 if large, D1 inline otherwise) ──────────────────────────
   const bodyHtml = email.html ?? null;
@@ -76,22 +68,7 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
   const references = email.references ?? (tokenParent ? tokenParent : null);
 
   // Resolve thread_id: reply inherits its parent's thread; otherwise new thread.
-  let threadId: string | null = null;
-  const parentRef = tokenParent ?? email.inReplyTo ?? null;
-  if (parentRef) {
-    const parentRow = await env.DB.prepare(
-      'SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1',
-    ).bind(parentRef).first<{ thread_id: string | null }>();
-    if (parentRow?.thread_id) {
-      threadId = parentRow.thread_id;
-    } else {
-      const inboxParent = await env.DB.prepare(
-        'SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1',
-      ).bind(parentRef).first<{ thread_id: string | null }>();
-      threadId = inboxParent?.thread_id ?? null;
-    }
-  }
-  if (!threadId) threadId = generateId();
+  const threadId = await resolveThreadId(db, tokenParent ?? email.inReplyTo, { generateId });
 
   await env.DB.prepare(
     `INSERT INTO inbox_emails
@@ -101,7 +78,7 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
      ON CONFLICT (message_id) DO NOTHING`,
   ).bind(
     emailId,
-    person.id,
+    personId,
     threadId,
     inboxAddress,
     email.subject ?? '(no subject)',

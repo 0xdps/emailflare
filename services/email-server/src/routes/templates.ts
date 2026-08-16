@@ -1,13 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { customAlphabet } from 'nanoid';
 import { db, templates } from '../db.js';
 import { LAYOUTS, renderLayout, THEMES } from '@emailflare/emails';
 import type { LayoutName } from '@emailflare/emails';
 import type { TemplateRow } from '../db.js';
-import { templateSchema, toSlug, enrich, generateId } from '@emailflare/email-core';
-
-const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 21);
+import { templateSchema, toSlug, enrich, generateId, shortId } from '@emailflare/email-core';
 
 const app = new Hono();
 
@@ -48,7 +45,7 @@ app.post('/', zValidator('json', templateSchema), async (c) => {
 
   // Ensure slug is unique — append nanoid suffix if collision
   const existing = await templates.findOne({ where: { slug } });
-  const finalSlug = existing ? `${slug}-${nanoid(4)}` : slug;
+  const finalSlug = existing ? `${slug}-${shortId(4)}` : slug;
 
   const row = await templates.insert({
     id: generateId(),

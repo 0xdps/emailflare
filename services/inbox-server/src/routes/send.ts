@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
-import { generateId, listUnsubscribeHeaders, sendWithLog } from '@emailflare/email-core';
+import { generateId, sendSchema, applyVariables, listUnsubscribeHeaders, sendWithLog } from '@emailflare/email-core';
 import { makeDb, rawDb } from '../db.js';
 import { sendEmail } from '../services/cloudflare.js';
 import { renderLayout } from '@emailflare/emails';
@@ -10,29 +9,6 @@ import { env } from '../env.js';
 import type { HonoEnv, ApiKeyContext } from '../env.js';
 
 const app = new Hono<HonoEnv>();
-
-const sendSchema = z.object({
-  from:         z.string().email(),
-  fromName:     z.string().optional(),
-  to:           z.union([z.string().email(), z.array(z.string().email()).max(50)]),
-  replyTo:      z.string().email().optional(),
-  subject:      z.string().min(1).optional(),
-  html:         z.string().optional(),
-  text:         z.string().optional(),
-  templateId:   z.string().optional(),
-  templateSlug: z.string().optional(),
-  variables:    z.record(z.string()).optional(),
-  themeId:      z.string().optional(),
-  listId:       z.string().optional(),
-  listUnsubscribe: z.string().optional(),
-  listUnsubscribePost: z.boolean().optional(),
-}).refine(d => d.templateId || d.templateSlug || d.html || d.text, {
-  message: 'Provide templateId, templateSlug, or at least one of html/text',
-});
-
-function applyVariables(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
-}
 
 app.post('/', zValidator('json', sendSchema), async (c) => {
   const body   = c.req.valid('json');

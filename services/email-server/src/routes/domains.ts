@@ -33,7 +33,7 @@ app.post('/', zValidator('json', domainCreateSchema), async (c) => {
   // Resolve zone: use provided ID or look it up from Cloudflare
   let zoneId = cfZoneId;
   if (!zoneId) {
-    const zone = await getZoneByHostname(name);
+    const zone = await getZoneByHostname(name, env.CF_API_TOKEN);
     if (!zone) {
       return c.json({ error: `No active Cloudflare zone found for "${name}". Make sure the root domain is added to your Cloudflare account.` }, 422);
     }
@@ -43,8 +43,8 @@ app.post('/', zValidator('json', domainCreateSchema), async (c) => {
   // Check CF first — reuse existing subdomain if found, otherwise create it.
   let cfResult;
   try {
-    const allSubdomains = await listSendingSubdomains(zoneId);
-    cfResult = allSubdomains.find(s => s.name === name) ?? await createSendingSubdomain(zoneId, name);
+    const allSubdomains = await listSendingSubdomains(zoneId, env.CF_API_TOKEN);
+    cfResult = allSubdomains.find(s => s.name === name) ?? await createSendingSubdomain(zoneId, name, env.CF_API_TOKEN);
   } catch (error) {
     if (error instanceof CloudflareApiError) {
       if (error.code === 10000 || error.code === 9109 || error.status === 401 || error.status === 403) {
@@ -73,10 +73,10 @@ app.post('/', zValidator('json', domainCreateSchema), async (c) => {
   // Auto-configure bounce routing if the forwarder Worker is already deployed.
   // Runs fire-and-forget so it never blocks the response.
   if (zoneId) {
-    getBounceWorkerInfo(env.BOUNCE_WORKER_NAME).then(async (info) => {
+    getBounceWorkerInfo(env.BOUNCE_WORKER_NAME, env.CF_API_TOKEN, env.CF_ACCOUNT_ID).then(async (info) => {
       if (!info.deployed) return;
-      await enableEmailRouting(zoneId);
-      await setCatchAllToWorker(zoneId, env.BOUNCE_WORKER_NAME);
+      await enableEmailRouting(zoneId, env.CF_API_TOKEN);
+      await setCatchAllToWorker(zoneId, env.BOUNCE_WORKER_NAME, env.CF_API_TOKEN, 'Bounce forwarding (emailflare)');
     }).catch((err) => {
       console.warn(`[bounce] auto-setup failed for ${name}:`, err instanceof Error ? err.message : err);
     });
@@ -91,7 +91,7 @@ app.get('/:id/dns', async (c) => {
   if (!domain) return c.json({ error: 'Domain not found' }, 404);
   if (!domain.cf_subdomain_id) return c.json({ error: 'Cloudflare subdomain not yet provisioned' }, 400);
 
-  const records = await getSubdomainDnsRecords(domain.cf_zone_id, domain.cf_subdomain_id);
+  const records = await getSubdomainDnsRecords(domain.cf_zone_id, domain.cf_subdomain_id, env.CF_API_TOKEN);
   return c.json(records);
 });
 
@@ -101,7 +101,7 @@ app.post('/:id/verify', async (c) => {
   if (!domain) return c.json({ error: 'Domain not found' }, 404);
   if (!domain.cf_subdomain_id) return c.json({ error: 'Cloudflare subdomain not provisioned' }, 400);
 
-  const cfData = await getSendingSubdomain(domain.cf_zone_id, domain.cf_subdomain_id);
+  const cfData = await getSendingSubdomain(domain.cf_zone_id, domain.cf_subdomain_id, env.CF_API_TOKEN);
 
   await domains.update({
     where: { id: domain.id },

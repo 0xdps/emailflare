@@ -311,3 +311,61 @@ export function threadMessageId(token: string): string {
   return `<${THREAD_TOKEN_MARKER}${token}@emailflare.inbox>`;
 }
 
+// ── Inbox data helpers (injected DB access → runtime-agnostic) ────────────────
+
+/** Minimal query/run handle for the helpers below. */
+export interface InboxDbHandle {
+  query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<Record<string, unknown>> }>;
+  run: (sql: string, params?: unknown[]) => Promise<unknown>;
+}
+
+/**
+ * Find-or-create a `people` row (conversation counterparty) scoped to an inbox
+ * address. Returns the person id.
+ */
+export async function upsertPerson(
+  db: InboxDbHandle,
+  email: string,
+  inboxAddress: string,
+  opts: { name?: string | null; generateId: () => string },
+): Promise<string> {
+  const existing = await db.query(
+    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
+    [email, inboxAddress],
+  );
+  if (existing.rows[0]?.id) return existing.rows[0].id as string;
+
+  const id = opts.generateId();
+  await db.run(
+    'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, ?, ?, ?)',
+    [id, email, opts.name ?? null, inboxAddress, new Date().toISOString()],
+  );
+  return id;
+}
+
+/**
+ * Resolve the thread_id a message belongs to. A reply inherits its parent's
+ * thread (looked up by In-Reply-To Message-ID across received + sent emails);
+ * a brand-new message gets a fresh thread id.
+ */
+export async function resolveThreadId(
+  db: InboxDbHandle,
+  inReplyTo: string | null | undefined,
+  opts: { generateId: () => string },
+): Promise<string> {
+  if (inReplyTo) {
+    const parent = await db.query(
+      'SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1',
+      [inReplyTo],
+    );
+    if (parent.rows[0]?.thread_id) return parent.rows[0].thread_id as string;
+
+    const sent = await db.query(
+      'SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1',
+      [inReplyTo],
+    );
+    if (sent.rows[0]?.thread_id) return sent.rows[0].thread_id as string;
+  }
+  return opts.generateId();
+}
+

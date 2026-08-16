@@ -202,6 +202,11 @@ export const generateId = customAlphabet(
   21,
 );
 
+/** Short collision-suffix id (e.g. for slug disambiguation). */
+export function shortId(n = 4): string {
+  return generateId().slice(0, n);
+}
+
 /**
  * Substitute `{{variableName}}` placeholders in a string with values from `vars`.
  * Unknown placeholders are left as-is.
@@ -322,6 +327,78 @@ export async function sendWithLog(
     });
     return { error: message };
   }
+}
+
+// ── Send-pipeline helpers (injected DB access → runtime-agnostic) ────────────
+
+/** Minimal query handle: run SQL with params and get rows. */
+export interface DbQueryHandle {
+  query: (sql: string, params?: unknown[]) => Promise<{ rows: Array<Record<string, unknown>> }>;
+  run: (sql: string, params?: unknown[]) => Promise<unknown>;
+}
+
+/**
+ * Resolve the domain id for a sender address. Matches the exact domain or a
+ * subdomain (`foo@mail.example.com` → `example.com`). Returns null if unknown.
+ */
+export async function resolveDomainId(
+  db: Pick<DbQueryHandle, 'query'>,
+  fromAddress: string,
+): Promise<string | null> {
+  const senderDomain = fromAddress.split('@')[1];
+  if (!senderDomain) return null;
+  const result = await db.query(
+    'SELECT id FROM domains WHERE name = ? OR name LIKE ? LIMIT 1',
+    [senderDomain, `%.${senderDomain}`],
+  );
+  return (result.rows[0]?.id as string | undefined) ?? null;
+}
+
+/**
+ * Check whether an address is suppressed. Returns the suppression reason, or
+ * null if the address is safe to send to.
+ */
+export async function checkSuppressed(
+  db: Pick<DbQueryHandle, 'query'>,
+  email: string,
+): Promise<string | null> {
+  const result = await db.query(
+    'SELECT reason FROM suppressions WHERE email = ? LIMIT 1',
+    [email.toLowerCase()],
+  );
+  return (result.rows[0]?.reason as string | undefined) ?? null;
+}
+
+/**
+ * Issue a one-time unsubscribe token and build the RFC 8058 List-Unsubscribe
+ * headers. Handles both the `listId` (token-issuing) and `listUnsubscribe`
+ * (pass-through URL) cases. Returns undefined if no unsubscribe headers apply.
+ */
+export async function issueUnsubscribeToken(
+  db: Pick<DbQueryHandle, 'run'>,
+  opts: {
+    publicOrigin: string;
+    email: string;
+    listId?: string;
+    listUnsubscribe?: string;
+    listUnsubscribePost?: boolean;
+    generateToken: () => string;
+  },
+): Promise<Record<string, string> | undefined> {
+  if (opts.listId && opts.publicOrigin) {
+    const token = opts.generateToken();
+    await db.run(
+      'INSERT INTO unsubscribe_tokens (token, email, list_id, created_at) VALUES (?, ?, ?, ?)',
+      [token, opts.email.toLowerCase(), opts.listId, new Date().toISOString()],
+    );
+    return listUnsubscribeHeaders(opts.publicOrigin, token, opts.listUnsubscribePost ?? true);
+  }
+  if (opts.listUnsubscribe) {
+    const headers: Record<string, string> = { 'List-Unsubscribe': opts.listUnsubscribe };
+    if (opts.listUnsubscribePost) headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+    return headers;
+  }
+  return undefined;
 }
 
 /**

@@ -20,7 +20,7 @@ const app = new Hono();
 
 // GET /api/cloudflare/status
 app.get('/status', async (c) => {
-  const status = await getCloudflareTokenStatus();
+  const status = await getCloudflareTokenStatus(env.CF_API_TOKEN, env.CF_ACCOUNT_ID);
   return c.json(status);
 });
 
@@ -31,7 +31,7 @@ app.get('/status', async (c) => {
 app.get('/bounce-status', async (c) => {
   const workerName = env.BOUNCE_WORKER_NAME;
   const [workerInfo, allDomains] = await Promise.all([
-    getBounceWorkerInfo(workerName),
+    getBounceWorkerInfo(workerName, env.CF_API_TOKEN, env.CF_ACCOUNT_ID),
     domains.find({ orderBy: [{ column: 'created_at', direction: 'desc' }] }),
   ]);
 
@@ -40,7 +40,7 @@ app.get('/bounce-status', async (c) => {
       const base = { id: d.id, name: d.name, return_path_domain: d.return_path_domain };
       if (!d.cf_zone_id) return { ...base, routingEnabled: false, routingConfigured: false };
       try {
-        const rule = await getCatchAllRule(d.cf_zone_id);
+        const rule = await getCatchAllRule(d.cf_zone_id, env.CF_API_TOKEN);
         const routingConfigured =
           rule.enabled &&
           rule.actions.some(a => a.type === 'worker' && a.value.includes(workerName));
@@ -67,12 +67,12 @@ app.post('/bounce-setup', zValidator('json', setupSchema), async (c) => {
   const workerName = customName ?? env.BOUNCE_WORKER_NAME;
 
   // 1. Deploy / redeploy the Worker
-  await deployBounceForwarder(workerName);
+  await deployBounceForwarder(workerName, env.CF_API_TOKEN, env.CF_ACCOUNT_ID);
 
   // 2. Set secrets on the Worker
   await Promise.all([
-    setWorkerSecret(workerName, 'BACKEND_URL', backendUrl),
-    setWorkerSecret(workerName, 'WEBHOOK_SECRET', webhookSecret),
+    setWorkerSecret(workerName, 'BACKEND_URL', backendUrl, env.CF_API_TOKEN, env.CF_ACCOUNT_ID),
+    setWorkerSecret(workerName, 'WEBHOOK_SECRET', webhookSecret, env.CF_API_TOKEN, env.CF_ACCOUNT_ID),
   ]);
 
   // 3. Enable Email Routing + set catch-all for every domain
@@ -81,8 +81,8 @@ app.post('/bounce-setup', zValidator('json', setupSchema), async (c) => {
     allDomains.map(async (d) => {
       if (!d.cf_zone_id) return { id: d.id, name: d.name, ok: false, error: 'No zone ID' };
       try {
-        await enableEmailRouting(d.cf_zone_id);
-        await setCatchAllToWorker(d.cf_zone_id, workerName);
+        await enableEmailRouting(d.cf_zone_id, env.CF_API_TOKEN);
+        await setCatchAllToWorker(d.cf_zone_id, workerName, env.CF_API_TOKEN, 'Bounce forwarding (emailflare)');
         return { id: d.id, name: d.name, ok: true };
       } catch (err) {
         return { id: d.id, name: d.name, ok: false, error: err instanceof Error ? err.message : 'Unknown' };
@@ -101,13 +101,13 @@ app.post('/bounce-setup-domain/:domainId', async (c) => {
   if (!domain.cf_zone_id) return c.json({ error: 'Domain has no Cloudflare zone ID' }, 422);
 
   const workerName = env.BOUNCE_WORKER_NAME;
-  const info = await getBounceWorkerInfo(workerName);
+  const info = await getBounceWorkerInfo(workerName, env.CF_API_TOKEN, env.CF_ACCOUNT_ID);
   if (!info.deployed) {
     return c.json({ error: `Worker "${workerName}" is not yet deployed — run the full Bounce Setup first.` }, 422);
   }
 
-  await enableEmailRouting(domain.cf_zone_id);
-  await setCatchAllToWorker(domain.cf_zone_id, workerName);
+  await enableEmailRouting(domain.cf_zone_id, env.CF_API_TOKEN);
+  await setCatchAllToWorker(domain.cf_zone_id, workerName, env.CF_API_TOKEN, 'Bounce forwarding (emailflare)');
   return c.json({ ok: true, domain: domain.name });
 });
 
@@ -116,14 +116,14 @@ app.post('/bounce-setup-domain/:domainId', async (c) => {
 // are not yet registered in emailflare. Email delivery history cannot be
 // recovered because Cloudflare does not expose outbound email logs via API.
 app.post('/backfill-domains', async (c) => {
-  const zones = await listAllZones();
+  const zones = await listAllZones(env.CF_API_TOKEN);
 
   const results: Array<{ name: string; status: 'imported' | 'existing' | 'skipped'; error?: string }> = [];
 
   for (const zone of zones) {
     let subdomains;
     try {
-      subdomains = await listSendingSubdomains(zone.id);
+      subdomains = await listSendingSubdomains(zone.id, env.CF_API_TOKEN);
     } catch {
       // Zone has no email sending configured — skip silently.
       continue;

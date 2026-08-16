@@ -7,7 +7,7 @@
 
 import PostalMime from 'postal-mime';
 import { generateId } from '@emailflare/email-core';
-import { parseThreadToken, stripThreadToken, threadMessageId } from '@emailflare/inbox-core';
+import { parseThreadToken, stripThreadToken, threadMessageId, upsertPerson, resolveThreadId } from '@emailflare/inbox-core';
 import { rawDb } from './db.js';
 import { putObject } from './storage.js';
 import { wsManager } from './websocket.js';
@@ -44,22 +44,10 @@ export async function handleIncomingEmail(payload: EmailPayload): Promise<void> 
   const inboxAddress = inboxRow?.email ?? baseAddress;
 
   // ── Upsert person (scoped to this inbox) ────────────────────────────────────
-  // A conversation is uniquely identified by (counterparty email, inbox address)
-  // so the same sender writing to two different inboxes stays separate.
-  let person = await rawDb.first<{ id: string }>(
-    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
-    [fromAddress, inboxAddress],
-  );
-
-  if (!person) {
-    const pid = generateId();
-    const personName = email.from?.name ?? null;
-    await rawDb.run(
-      'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, ?, ?, ?)',
-      [pid, fromAddress, personName, inboxAddress, now],
-    );
-    person = { id: pid };
-  }
+  const personId = await upsertPerson(rawDb, fromAddress, inboxAddress, {
+    name: email.from?.name ?? null,
+    generateId,
+  });
 
   // ── Store body (R2 if large, inline otherwise) ─────────────────────────────
   const bodyHtml  = email.html ?? null;
@@ -86,24 +74,7 @@ export async function handleIncomingEmail(payload: EmailPayload): Promise<void> 
   const references = email.references ?? (tokenParent ? tokenParent : null);
 
   // Resolve thread_id: reply inherits its parent's thread; otherwise new thread.
-  let threadId: string | null = null;
-  const parentRef = tokenParent ?? email.inReplyTo ?? null;
-  if (parentRef) {
-    const parentRow = await rawDb.first<{ thread_id: string | null }>(
-      'SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1',
-      [parentRef],
-    );
-    if (parentRow?.thread_id) {
-      threadId = parentRow.thread_id;
-    } else {
-      const inboxParent = await rawDb.first<{ thread_id: string | null }>(
-        'SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1',
-        [parentRef],
-      );
-      threadId = inboxParent?.thread_id ?? null;
-    }
-  }
-  if (!threadId) threadId = generateId();
+  const threadId = await resolveThreadId(rawDb, tokenParent ?? email.inReplyTo, { generateId });
 
   await rawDb.run(
     `INSERT INTO inbox_emails
@@ -112,7 +83,7 @@ export async function handleIncomingEmail(payload: EmailPayload): Promise<void> 
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
      ON CONFLICT (message_id) DO NOTHING`,
     [
-      emailId, person.id, threadId, inboxAddress,
+      emailId, personId, threadId, inboxAddress,
       email.subject ?? '(no subject)',
       storedBodyHtml, bodyText, bodyR2Key,
       messageId, inReplyTo, references,

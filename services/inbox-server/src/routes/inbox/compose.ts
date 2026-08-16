@@ -1,9 +1,8 @@
 // Inbox compose / reply routes
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
-import { generateId, sendWithLog } from '@emailflare/email-core';
-import { buildReplyToAddress, threadMessageId } from '@emailflare/inbox-core';
+import { generateId, sendWithLog, resolveDomainId } from '@emailflare/email-core';
+import { composeSchema, buildReplyToAddress, threadMessageId, upsertPerson, resolveThreadId } from '@emailflare/inbox-core';
 import { sendEmail, type CFSendEmailParams } from '../../services/cloudflare.js';
 import { rawDb } from '../../db.js';
 import { env } from '../../env.js';
@@ -11,54 +10,10 @@ import type { HonoEnv } from '../../env.js';
 
 const app = new Hono<HonoEnv>();
 
-const sendSchema = z.object({
-  to:        z.string().email(),
-  from:      z.string().email(),
-  fromName:  z.string().optional(),
-  subject:   z.string().min(1),
-  html:      z.string().optional(),
-  text:      z.string().optional(),
-  inReplyTo: z.string().optional(),
-  references: z.string().optional(),
-  personId:  z.string().optional(),
-});
-
-async function upsertPerson(email: string, inboxAddress: string): Promise<string> {
-  const existing = await rawDb.first<{ id: string }>(
-    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
-    [email, inboxAddress],
-  );
-  if (existing) return existing.id;
-  const id = generateId();
-  await rawDb.run(
-    'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, NULL, ?, ?)',
-    [id, email, inboxAddress, new Date().toISOString()],
-  );
-  return id;
-}
-
-// Resolve the thread_id a message belongs to. A reply inherits its parent's
-// thread; a brand-new email gets its own thread.
-async function resolveThreadId(inReplyTo: string | null | undefined): Promise<string> {
-  if (inReplyTo) {
-    const parent = await rawDb.first<{ thread_id: string | null }>(
-      'SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1',
-      [inReplyTo],
-    );
-    if (parent?.thread_id) return parent.thread_id;
-    const sent = await rawDb.first<{ thread_id: string | null }>(
-      'SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1',
-      [inReplyTo],
-    );
-    if (sent?.thread_id) return sent.thread_id;
-  }
-  return generateId();
-}
-
-app.post('/', zValidator('json', sendSchema), async (c) => {
+app.post('/', zValidator('json', composeSchema), async (c) => {
   const body     = c.req.valid('json');
   const now      = new Date().toISOString();
-  const personId = body.personId ?? (await upsertPerson(body.to, body.from));
+  const personId = body.personId ?? (await upsertPerson(rawDb, body.to, body.from, { generateId }));
 
   const fromField: CFSendEmailParams['from'] = body.fromName
     ? { address: body.from, name: body.fromName }
@@ -71,7 +26,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
   const threadToken = generateId();
   const syntheticMessageId = threadMessageId(threadToken);
   const replyToAddress = buildReplyToAddress(body.from, threadToken);
-  const threadId = await resolveThreadId(body.inReplyTo);
+  const threadId = await resolveThreadId(rawDb, body.inReplyTo, { generateId });
 
   // Forward threading headers so replies thread correctly in the recipient's
   // client too (In-Reply-To / References are allowlisted by CF). Reply-To is a
@@ -87,12 +42,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         env.CF_API_TOKEN,
         env.CF_ACCOUNT_ID,
       ),
-      resolveDomainId: async (from) => {
-        const senderDomain = from.split('@')[1];
-        if (!senderDomain) return null;
-        const row = await rawDb.first<{ id: string }>('SELECT id FROM domains WHERE name = ? LIMIT 1', [senderDomain]);
-        return row?.id ?? null;
-      },
+      resolveDomainId: (from) => resolveDomainId(rawDb, from),
       insertLog: async (row) => {
         await rawDb.run(
           `INSERT INTO email_logs (id, to_address, from_address, subject, status, cf_message_id, domain_id, template_id, api_key_id, idempotency_key, error, is_test, sent_at)

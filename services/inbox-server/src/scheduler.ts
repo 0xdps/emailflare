@@ -10,7 +10,7 @@ import { Queue, Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import { rawDb } from './db.js';
 import { sendEmail } from './services/cloudflare.js';
-import { generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
+import { generateId, listUnsubscribeHeaders, applyVariables } from '@emailflare/email-core';
 import { env, type SequenceJobData } from './env.js';
 
 const QUEUE_NAME = 'sequence-steps';
@@ -25,10 +25,6 @@ const sequenceQueue   = new Queue<SequenceJobData>(QUEUE_NAME, { connection: red
 interface SequenceStep { delay_days: number; subject: string; html?: string; text?: string; }
 interface Enrollment { id: string; sequence_id: string; person_id: string; from_address: string; variables: string; current_step: number; status: string; enrolled_at: string; steps: string; }
 interface Person { id: string; email: string; }
-
-function applyVars(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`);
-}
 
 // ── Cron tick: find due enrollments, enqueue BullMQ jobs ─────────────────────
 
@@ -119,9 +115,9 @@ function startSequenceWorker(): Worker<SequenceJobData> {
         {
           from: enrollment.from_address,
           to: person.email,
-          subject: applyVars(step.subject, vars),
-          html: step.html ? applyVars(step.html, vars) : undefined,
-          text: step.text ? applyVars(step.text, vars) : undefined,
+          subject: applyVariables(step.subject, vars),
+          html: step.html ? applyVariables(step.html, vars) : undefined,
+          text: step.text ? applyVariables(step.text, vars) : undefined,
           ...(headers ? { headers } : {}),
         },
         env.CF_API_TOKEN,

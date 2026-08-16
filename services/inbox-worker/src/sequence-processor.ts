@@ -5,7 +5,7 @@
 // Queue: sends the individual step email via CF Email API.
 
 import { sendEmail } from './services/cloudflare.ts';
-import { generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
+import { generateId, listUnsubscribeHeaders, applyVariables } from '@emailflare/email-core';
 import type { Env, SequenceQueueMessage } from './env.ts';
 
 interface SequenceStep {
@@ -34,10 +34,6 @@ interface Person {
 interface Sequence {
   id: string;
   steps: string;
-}
-
-function applyVars(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`);
 }
 
 /** Cron handler: find due enrollments and enqueue them. */
@@ -126,9 +122,9 @@ export async function handleSequenceQueueMessage(
       {
         from: enrollment.from_address,
         to: person.email,
-        subject: applyVars(step.subject, vars),
-        html: step.html ? applyVars(step.html, vars) : undefined,
-        text: step.text ? applyVars(step.text, vars) : undefined,
+        subject: applyVariables(step.subject, vars),
+        html: step.html ? applyVariables(step.html, vars) : undefined,
+        text: step.text ? applyVariables(step.text, vars) : undefined,
         ...(headers ? { headers } : {}),
       },
       env.CF_API_TOKEN,

@@ -112,7 +112,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
     try {
       const out = await sendWithLog(
         {
-          deliver: async (msg) => isTest ? storeTestEmail(msg) : sendEmail(msg),
+          deliver: async (msg) => isTest ? storeTestEmail(msg) : sendEmail(msg, env.CF_API_TOKEN, env.CF_ACCOUNT_ID),
           resolveDomainId: async () => domainId,
           insertLog: (row) => emailLogs.insert(row),
           templateId,

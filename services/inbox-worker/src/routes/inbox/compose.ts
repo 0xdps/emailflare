@@ -4,50 +4,21 @@
 
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { generateId, sendWithLog } from '@emailflare/email-core';
+import { generateId, sendWithLog, resolveDomainId } from '@emailflare/email-core';
 import { sendEmail, type CFSendEmailParams } from '../../services/cloudflare.ts';
+import { D1Db } from '../../db.ts';
 import type { HonoEnv } from '../../env.ts';
-import { composeSchema, buildReplyToAddress, threadMessageId } from '@emailflare/inbox-core';
+import { composeSchema, buildReplyToAddress, threadMessageId, upsertPerson, resolveThreadId } from '@emailflare/inbox-core';
 
 const app = new Hono<HonoEnv>();
-
-async function upsertPerson(env: HonoEnv['Bindings'], email: string, inboxAddress: string): Promise<string> {
-  const existing = await env.DB.prepare(
-    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
-  ).bind(email, inboxAddress).first<{ id: string }>();
-  if (existing) return existing.id;
-  const id = generateId();
-  await env.DB.prepare(
-    'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, NULL, ?, ?)',
-  ).bind(id, email, inboxAddress, new Date().toISOString()).run();
-  return id;
-}
-
-// Resolve the thread_id a message belongs to. A reply inherits its parent's
-// thread; a brand-new email gets its own thread.
-async function resolveThreadId(
-  env: HonoEnv['Bindings'],
-  inReplyTo: string | null | undefined,
-): Promise<string> {
-  if (inReplyTo) {
-    const parent = await env.DB.prepare(
-      'SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1',
-    ).bind(inReplyTo).first<{ thread_id: string | null }>();
-    if (parent?.thread_id) return parent.thread_id;
-    const sent = await env.DB.prepare(
-      'SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1',
-    ).bind(inReplyTo).first<{ thread_id: string | null }>();
-    if (sent?.thread_id) return sent.thread_id;
-  }
-  return generateId();
-}
 
 // POST /api/inbox/compose
 app.post('/', zValidator('json', composeSchema), async (c) => {
   const body = c.req.valid('json');
   const now  = new Date().toISOString();
+  const db   = new D1Db(c.env.DB);
 
-  const personId = body.personId ?? (await upsertPerson(c.env, body.to, body.from));
+  const personId = body.personId ?? (await upsertPerson(db, body.to, body.from, { generateId }));
 
   // A fresh token per message, embedded in the Reply-To address. When the
   // recipient replies, the +ef_<token> address routes back here so we can
@@ -56,7 +27,7 @@ app.post('/', zValidator('json', composeSchema), async (c) => {
   const threadToken = generateId();
   const syntheticMessageId = threadMessageId(threadToken);
   const replyToAddress = buildReplyToAddress(body.from, threadToken);
-  const threadId = await resolveThreadId(c.env, body.inReplyTo);
+  const threadId = await resolveThreadId(db, body.inReplyTo, { generateId });
 
   const fromField: CFSendEmailParams['from'] = body.fromName
     ? { address: body.from, name: body.fromName }
@@ -76,13 +47,7 @@ app.post('/', zValidator('json', composeSchema), async (c) => {
         c.env.CF_API_TOKEN,
         c.env.CF_ACCOUNT_ID,
       ),
-      resolveDomainId: async (from) => {
-        const senderDomain = from.split('@')[1];
-        if (!senderDomain) return null;
-        const row = await c.env.DB.prepare('SELECT id FROM domains WHERE name = ? LIMIT 1')
-          .bind(senderDomain).first<{ id: string }>();
-        return row?.id ?? null;
-      },
+      resolveDomainId: (from) => resolveDomainId(db, from),
       insertLog: async (row) => {
         await c.env.DB.prepare(
           `INSERT INTO email_logs (id, to_address, from_address, subject, status, cf_message_id, domain_id, template_id, api_key_id, idempotency_key, error, is_test, sent_at)
