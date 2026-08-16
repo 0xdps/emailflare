@@ -74,11 +74,11 @@ app.get('/:id/thread', async (c) => {
   // Merge received + sent, ordered by time
   const thread = await c.env.DB.prepare(`
     SELECT id, 'inbound' AS direction, subject, body_html, body_text, body_r2_key,
-           message_id, in_reply_to, is_read, received_at AS timestamp
+           message_id, in_reply_to, is_read, received_at AS timestamp, inbox_address
     FROM inbox_emails WHERE person_id = ?
     UNION ALL
     SELECT id, 'outbound' AS direction, subject, NULL, NULL, NULL,
-           NULL, in_reply_to, 1, sent_at AS timestamp
+           NULL, in_reply_to, 1, sent_at AS timestamp, NULL AS inbox_address
     FROM sent_inbox_emails WHERE person_id = ?
     ORDER BY timestamp DESC LIMIT ? OFFSET ?
   `).bind(personId, personId, limit, offset).all();

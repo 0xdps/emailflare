@@ -11,11 +11,15 @@ import { composeSchema } from '@emailflare/inbox-core';
 
 const app = new Hono<HonoEnv>();
 
-async function upsertPerson(env: HonoEnv['Bindings'], email: string): Promise<string> {
-  const existing = await env.DB.prepare('SELECT id FROM people WHERE email = ? LIMIT 1').bind(email).first<{ id: string }>();
+async function upsertPerson(env: HonoEnv['Bindings'], email: string, inboxAddress: string): Promise<string> {
+  const existing = await env.DB.prepare(
+    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
+  ).bind(email, inboxAddress).first<{ id: string }>();
   if (existing) return existing.id;
   const id = generateId();
-  await env.DB.prepare('INSERT INTO people (id, email, name, created_at) VALUES (?, ?, NULL, ?)').bind(id, email, new Date().toISOString()).run();
+  await env.DB.prepare(
+    'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, NULL, ?, ?)',
+  ).bind(id, email, inboxAddress, new Date().toISOString()).run();
   return id;
 }
 
@@ -24,7 +28,7 @@ app.post('/compose', zValidator('json', composeSchema), async (c) => {
   const body = c.req.valid('json');
   const now  = new Date().toISOString();
 
-  const personId = body.personId ?? (await upsertPerson(c.env, body.to));
+  const personId = body.personId ?? (await upsertPerson(c.env, body.to, body.from));
 
   const fromField: CFSendEmailParams['from'] = body.fromName
     ? { address: body.from, name: body.fromName }
@@ -32,8 +36,8 @@ app.post('/compose', zValidator('json', composeSchema), async (c) => {
 
   const result = await sendEmail(
     { from: fromField, to: body.to, subject: body.subject, html: body.html, text: body.text },
-    c.env.CF_ACCOUNT_ID,
     c.env.CF_API_TOKEN,
+    c.env.CF_ACCOUNT_ID,
   );
 
   const id = generateId();

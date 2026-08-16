@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Plus, Trash2, Pencil, Loader2, Inbox, Users, Globe, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Pencil, Loader2, Inbox, Users, Globe, AlertTriangle, Check } from 'lucide-react';
 import {
-  getInboxes, createInbox, updateInbox, deleteInbox,
+  getInboxes, createInbox, updateInbox, deleteInbox, setupInboxRouting,
   getInboxMembers, addInboxMember, removeInboxMember,
   getDomains,
   Inbox as InboxType, Domain as DomainType, User, getUsers,
@@ -29,15 +29,25 @@ export default function InboxSettings() {
   const [inboxes, setInboxes] = useState<InboxType[]>([]);
   const [domains, setDomains] = useState<DomainType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createStep, setCreateStep] = useState<1 | 2 | 3>(1);
+  const [createdInbox, setCreatedInbox] = useState<InboxType | null>(null);
+  const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<InboxType | null>(null);
   const [localPart, setLocalPart] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [mode, setMode] = useState<'thread' | 'chat'>('thread');
+  const [mode, setMode] = useState<'thread' | 'individual'>('thread');
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [routingId, setRoutingId] = useState<string | null>(null);
+
+  // Step 3 — user assignment
+  const [assignUsers, setAssignUsers] = useState<User[]>([]);
+  const [assignMembers, setAssignMembers] = useState<User[]>([]);
+  const [assignUserId, setAssignUserId] = useState('');
+  const [assignAdding, setAssignAdding] = useState(false);
 
   // Members sheet
   const [membersInbox, setMembersInbox] = useState<InboxType | null>(null);
@@ -55,32 +65,91 @@ export default function InboxSettings() {
   }, []);
 
   function openCreate() {
-    setEditing(null);
     setLocalPart('');
     setSelectedDomain(domains[0]?.name ?? '');
     setDisplayName('');
     setMode('thread');
-    setDialogOpen(true);
+    setCreateStep(1);
+    setCreatedInbox(null);
+    setAssignUsers([]);
+    setAssignMembers([]);
+    setAssignUserId('');
+    setCreateOpen(true);
   }
 
   function openEdit(inbox: InboxType) {
     setEditing(inbox);
     setDisplayName(inbox.display_name);
     setMode(inbox.mode);
-    setDialogOpen(true);
   }
 
-  async function handleSave() {
+  // Step 1 → create the inbox (backend also attempts routing auto-config)
+  async function handleCreateInbox() {
+    setCreating(true);
+    try {
+      const created = await createInbox({ email: `${localPart.trim()}@${selectedDomain}`, display_name: displayName, mode });
+      setCreatedInbox(created);
+      setInboxes(prev => [...prev, created]);
+      setCreateStep(2);
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  // Step 2 → retry routing if it failed
+  async function handleRetryRouting() {
+    if (!createdInbox) return;
+    setRoutingId(createdInbox.id);
+    try {
+      const result = await setupInboxRouting(createdInbox.id);
+      const updated = { ...createdInbox, routing: result.routing };
+      setCreatedInbox(updated);
+      setInboxes(prev => prev.map(i => i.id === createdInbox.id ? updated : i));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Routing setup failed';
+      const updated = { ...createdInbox, routing: { configured: false, error: msg } };
+      setCreatedInbox(updated);
+      setInboxes(prev => prev.map(i => i.id === createdInbox.id ? updated : i));
+    } finally {
+      setRoutingId(null);
+    }
+  }
+
+  // Step 2 → advance to user assignment (load all users)
+  async function goToAssign() {
+    setCreateStep(3);
+    setAssignUserId('');
+    try {
+      setAssignUsers(await getUsers());
+    } catch { /* leave empty */ }
+  }
+
+  async function handleAssignMember() {
+    if (!createdInbox || !assignUserId) return;
+    setAssignAdding(true);
+    try {
+      await addInboxMember(createdInbox.id, assignUserId);
+      const user = assignUsers.find(u => u.id === assignUserId);
+      if (user) setAssignMembers(prev => [...prev, user]);
+      setAssignUserId('');
+    } finally {
+      setAssignAdding(false);
+    }
+  }
+
+  function finishCreate() {
+    setCreateOpen(false);
+    setCreatedInbox(null);
+    setCreateStep(1);
+  }
+
+  async function handleEditSave() {
+    if (!editing) return;
     setSaving(true);
     try {
-      if (editing) {
-        const updated = await updateInbox(editing.id, { display_name: displayName, mode });
-        setInboxes(prev => prev.map(i => i.id === updated.id ? updated : i));
-      } else {
-        const created = await createInbox({ email: `${localPart.trim()}@${selectedDomain}`, display_name: displayName, mode });
-        setInboxes(prev => [...prev, created]);
-      }
-      setDialogOpen(false);
+      const updated = await updateInbox(editing.id, { display_name: displayName, mode });
+      setInboxes(prev => prev.map(i => i.id === updated.id ? updated : i));
+      setEditing(null);
     } finally {
       setSaving(false);
     }
@@ -95,6 +164,19 @@ export default function InboxSettings() {
       setDeleteId(null);
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleSetupRouting(inbox: InboxType) {
+    setRoutingId(inbox.id);
+    try {
+      const result = await setupInboxRouting(inbox.id);
+      setInboxes(prev => prev.map(i => i.id === inbox.id ? { ...i, routing: result.routing } : i));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Routing setup failed';
+      setInboxes(prev => prev.map(i => i.id === inbox.id ? { ...i, routing: { configured: false, error: msg } } : i));
+    } finally {
+      setRoutingId(null);
     }
   }
 
@@ -185,6 +267,7 @@ export default function InboxSettings() {
                 <TableHead>Email address</TableHead>
                 <TableHead>Display name</TableHead>
                 <TableHead>Mode</TableHead>
+                <TableHead>Routing</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -195,6 +278,31 @@ export default function InboxSettings() {
                   <TableCell className="text-sm">{inbox.display_name}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="capitalize text-xs">{inbox.mode}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {inbox.routing?.configured ? (
+                      <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
+                        Active
+                      </Badge>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 gap-1.5 text-xs"
+                          disabled={routingId === inbox.id}
+                          onClick={() => handleSetupRouting(inbox)}
+                        >
+                          {routingId === inbox.id && <Loader2 size={12} className="animate-spin" />}
+                          Setup routing
+                        </Button>
+                        {inbox.routing?.error && (
+                          <span className="text-[11px] text-amber-600" title={inbox.routing.error}>
+                            <AlertTriangle size={12} className="inline" />
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -217,14 +325,30 @@ export default function InboxSettings() {
         </div>
       )}
 
-      {/* Create / Edit dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* ── Create wizard: 1 Inbox → 2 Routing → 3 Members ── */}
+      <Dialog open={createOpen} onOpenChange={open => { if (!open) finishCreate(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit inbox' : 'New inbox'}</DialogTitle>
+            <DialogTitle>New inbox</DialogTitle>
+            <div className="flex items-center gap-1 pt-1">
+              {([1, 2, 3] as const).map(step => (
+                <div key={step} className="flex items-center gap-1">
+                  <span
+                    className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold ${
+                      createStep > step ? 'bg-emerald-500 text-white' : createStep === step ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {createStep > step ? <Check size={11} /> : step}
+                  </span>
+                  {step < 3 && <span className={`h-px w-4 ${createStep > step ? 'bg-emerald-500' : 'bg-muted'}`} />}
+                </div>
+              ))}
+            </div>
           </DialogHeader>
-          <div className="flex flex-col gap-4 py-2">
-            {!editing && (
+
+          {/* Step 1 — Inbox details */}
+          {createStep === 1 && (
+            <div className="flex flex-col gap-4 py-2">
               <div className="flex flex-col gap-1.5">
                 <Label>Email address</Label>
                 <div className="flex items-center gap-1.5">
@@ -249,34 +373,167 @@ export default function InboxSettings() {
                 </div>
                 <p className="text-[11px] text-muted-foreground">Must be configured in Cloudflare Email Routing</p>
               </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>Display name</Label>
+                <Input placeholder="Support" value={displayName} onChange={e => setDisplayName(e.target.value)} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>Mode</Label>
+                <Select value={mode} onValueChange={v => setMode(v as 'thread' | 'individual')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="thread">Thread</SelectItem>
+                    <SelectItem value="individual">Individual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 — Routing result */}
+          {createStep === 2 && createdInbox && (
+            <div className="flex flex-col gap-4 py-2">
+              {createdInbox.routing?.configured ? (
+                <div className="flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
+                  <Check size={15} className="shrink-0 text-emerald-500" />
+                  <span>Email Routing is configured — inbound mail will be delivered to this inbox.</span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3">
+                  <div className="flex items-center gap-2.5 text-sm text-amber-800">
+                    <AlertTriangle size={15} className="shrink-0 text-amber-500" />
+                    <span>Email Routing couldn't be configured automatically.</span>
+                  </div>
+                  {createdInbox.routing?.error && (
+                    <p className="text-[12px] text-amber-700 break-words">{createdInbox.routing.error}</p>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="self-start"
+                    disabled={routingId === createdInbox.id}
+                    onClick={handleRetryRouting}
+                  >
+                    {routingId === createdInbox.id && <Loader2 size={12} className="animate-spin" />}
+                    Retry setup
+                  </Button>
+                </div>
+              )}
+              <p className="text-[12px] text-muted-foreground">
+                You can also configure routing later from the inbox list.
+              </p>
+            </div>
+          )}
+
+          {/* Step 3 — User assignment */}
+          {createStep === 3 && createdInbox && (
+            <div className="flex flex-col gap-4 py-2">
+              <p className="text-sm text-muted-foreground">Assign team members who can access <span className="font-mono text-foreground">{createdInbox.email}</span>.</p>
+
+              {assignMembers.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  {assignMembers.map(u => (
+                    <div key={u.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/50">
+                      <div>
+                        <p className="text-[13px] font-medium text-foreground">{u.name}</p>
+                        <p className="text-[11.5px] text-muted-foreground">{u.email}</p>
+                      </div>
+                      <button
+                        onClick={() => setAssignMembers(prev => prev.filter(m => m.id !== u.id))}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {assignUsers.filter(u => !assignMembers.some(m => m.id === u.id)).length === 0 ? (
+                <p className="text-xs text-muted-foreground">All users are already members</p>
+              ) : (
+                <div className="flex gap-2">
+                  <Select value={assignUserId} onValueChange={v => setAssignUserId(v ?? '')}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select user…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {assignUsers.filter(u => !assignMembers.some(m => m.id === u.id)).map(u => (
+                        <SelectItem key={u.id} value={u.id}>{u.name} ({u.email})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={handleAssignMember} disabled={!assignUserId || assignAdding}>
+                    {assignAdding ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+                    Add
+                  </Button>
+                </div>
+              )}
+
+              <p className="text-[12px] text-muted-foreground">You can add or remove members later from the inbox list.</p>
+            </div>
+          )}
+
+          <DialogFooter>
+            {createStep > 1 && (
+              <Button variant="outline" onClick={() => setCreateStep(prev => (prev - 1) as 1 | 2 | 3)} disabled={creating || routingId === createdInbox?.id}>
+                Back
+              </Button>
             )}
+            {createStep === 1 && (
+              <Button onClick={handleCreateInbox} disabled={creating || !localPart.trim() || !selectedDomain || !displayName.trim()}>
+                {creating && <Loader2 size={13} className="animate-spin" />}
+                {creating ? 'Creating…' : 'Create'}
+              </Button>
+            )}
+            {createStep === 2 && (
+              <Button onClick={goToAssign} disabled={routingId === createdInbox?.id}>
+                Continue
+              </Button>
+            )}
+            {createStep === 3 && (
+              <Button onClick={finishCreate}>Finish</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit dialog */}
+      <Dialog open={!!editing} onOpenChange={open => { if (!open) setEditing(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit inbox</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-1.5">
               <Label>Display name</Label>
               <Input
                 placeholder="Support"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
-                autoFocus={!!editing}
+                autoFocus
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label>Mode</Label>
-              <Select value={mode} onValueChange={v => setMode(v as 'thread' | 'chat')}>
+              <Select value={mode} onValueChange={v => setMode(v as 'thread' | 'individual')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="thread">Thread</SelectItem>
-                  <SelectItem value="chat">Chat</SelectItem>
+                  <SelectItem value="individual">Individual</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving || (!editing && (!localPart.trim() || !selectedDomain)) || !displayName.trim()}>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button onClick={handleEditSave} disabled={saving || !displayName.trim()}>
               {saving && <Loader2 size={13} className="animate-spin" />}
-              {saving ? 'Saving…' : editing ? 'Save changes' : 'Create'}
+              {saving ? 'Saving…' : 'Save changes'}
             </Button>
           </DialogFooter>
         </DialogContent>

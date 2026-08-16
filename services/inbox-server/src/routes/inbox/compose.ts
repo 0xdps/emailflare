@@ -21,15 +21,16 @@ const sendSchema = z.object({
   personId:  z.string().optional(),
 });
 
-async function upsertPerson(email: string): Promise<string> {
+async function upsertPerson(email: string, inboxAddress: string): Promise<string> {
   const existing = await rawDb.first<{ id: string }>(
-    'SELECT id FROM people WHERE email = ? LIMIT 1', [email],
+    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
+    [email, inboxAddress],
   );
   if (existing) return existing.id;
   const id = generateId();
   await rawDb.run(
-    'INSERT INTO people (id, email, name, created_at) VALUES (?, ?, NULL, ?)',
-    [id, email, new Date().toISOString()],
+    'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, NULL, ?, ?)',
+    [id, email, inboxAddress, new Date().toISOString()],
   );
   return id;
 }
@@ -37,7 +38,7 @@ async function upsertPerson(email: string): Promise<string> {
 app.post('/compose', zValidator('json', sendSchema), async (c) => {
   const body     = c.req.valid('json');
   const now      = new Date().toISOString();
-  const personId = body.personId ?? (await upsertPerson(body.to));
+  const personId = body.personId ?? (await upsertPerson(body.to, body.from));
 
   const fromField: CFSendEmailParams['from'] = body.fromName
     ? { address: body.from, name: body.fromName }

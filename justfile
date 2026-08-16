@@ -309,6 +309,12 @@ emailflare-inbox-update:
     cd services/inbox-ui && pnpm build
     cd services/inbox-worker && npx wrangler deploy
 
+# Set up Cloudflare Email Routing locally (with full API diagnostics).
+# Usage: just emailflare-inbox-routing              (prompts for domain)
+#        just emailflare-inbox-routing example.com  (optional domain arg)
+emailflare-inbox-routing domain='':
+    node scripts/setup-email-routing.mjs {{if domain != '' { '--domain ' + domain } else { '' }}}
+
 # Build inbox-ui only (without deploying)
 emailflare-inbox-build-ui:
     cd services/inbox-ui && pnpm install --frozen-lockfile && pnpm build

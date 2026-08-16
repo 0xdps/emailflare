@@ -12,9 +12,44 @@ import { inboxSchema } from '@emailflare/inbox-core';
 
 const app = new Hono<HonoEnv>();
 
+// Configure Cloudflare Email Routing so the zone's catch-all rule delivers
+// inbound mail to the inbox worker. Returns { configured, error? } — never
+// throws so callers can persist/surface the outcome.
+async function configureRouting(
+  email: string,
+  cfApiToken: string,
+  workerName: string,
+): Promise<{ configured: boolean; error?: string }> {
+  try {
+    const domain = email.split('@')[1];
+    const zone = await getZoneByHostname(domain, cfApiToken);
+    if (!zone) return { configured: false, error: `No active Cloudflare zone found for "${domain}"` };
+    await enableEmailRouting(zone.id, cfApiToken);
+    await setCatchAllToWorker(zone.id, workerName, cfApiToken);
+    return { configured: true };
+  } catch (err) {
+    return {
+      configured: false,
+      error: err instanceof Error ? err.message : 'Email Routing configuration failed',
+    };
+  }
+}
+
+// Map a persisted row → API shape (adds the `routing` object).
+function toInbox(row: any) {
+  const { routing_configured, routing_error, ...rest } = row;
+  return {
+    ...rest,
+    routing: {
+      configured: !!routing_configured,
+      ...(routing_error ? { error: routing_error } : {}),
+    },
+  };
+}
+
 app.get('/', async (c) => {
   const { rows } = await rawDb.query('SELECT * FROM inboxes ORDER BY created_at DESC');
-  return c.json(rows);
+  return c.json(rows.map(toInbox));
 });
 
 app.post('/', requireAdmin, zValidator('json', inboxSchema), async (c) => {
@@ -22,33 +57,32 @@ app.post('/', requireAdmin, zValidator('json', inboxSchema), async (c) => {
   const existing = await rawDb.first('SELECT id FROM inboxes WHERE email = ? LIMIT 1', [body.email]);
   if (existing) return c.json({ error: 'Inbox already exists' }, 409);
 
-  // ── Configure Cloudflare Email Routing (catch-all → inbox worker) ──────────
-  // The inbox-bridge forwards inbound mail to this server; Email Routing must
-  // point the catch-all at the inbox worker. Surface a warning if not possible.
-  let routing: { configured: boolean; error?: string } = { configured: false };
-  try {
-    const domain = body.email.split('@')[1];
-    const zone = await getZoneByHostname(domain, env.CF_API_TOKEN);
-    if (zone) {
-      await enableEmailRouting(zone.id, env.CF_API_TOKEN);
-      await setCatchAllToWorker(zone.id, env.INBOX_WORKER_NAME, env.CF_API_TOKEN);
-      routing = { configured: true };
-    } else {
-      routing = { configured: false, error: `No active Cloudflare zone found for "${domain}"` };
-    }
-  } catch (err) {
-    routing = {
-      configured: false,
-      error: err instanceof Error ? err.message : 'Email Routing configuration failed',
-    };
-  }
+  // Configure Email Routing (catch-all → inbox worker). If the token can't
+  // configure routing we still create the inbox, but persist the failure so
+  // the UI can offer a "Setup routing" retry.
+  const routing = await configureRouting(body.email, env.CF_API_TOKEN, env.INBOX_WORKER_NAME);
 
   const id = generateId();
   await rawDb.run(
-    'INSERT INTO inboxes (id, email, display_name, mode, created_at) VALUES (?, ?, ?, ?, ?)',
-    [id, body.email, body.display_name, body.mode, new Date().toISOString()],
+    'INSERT INTO inboxes (id, email, display_name, mode, routing_configured, routing_error, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, body.email, body.display_name, body.mode, routing.configured ? 1 : 0, routing.error ?? null, new Date().toISOString()],
   );
   return c.json({ id, ...body, routing }, 201);
+});
+
+// POST /api/inbox/inboxes/:id/routing — (re)configure Email Routing for an inbox
+app.post('/:id/routing', requireAdmin, async (c) => {
+  const row = await rawDb.first<{ id: string; email: string }>('SELECT id, email FROM inboxes WHERE id = ? LIMIT 1', [c.req.param('id')]);
+  if (!row) return c.json({ error: 'Inbox not found' }, 404);
+
+  const routing = await configureRouting(row.email, env.CF_API_TOKEN, env.INBOX_WORKER_NAME);
+
+  await rawDb.run(
+    'UPDATE inboxes SET routing_configured = ?, routing_error = ? WHERE id = ?',
+    [routing.configured ? 1 : 0, routing.error ?? null, c.req.param('id')],
+  );
+
+  return c.json({ ...row, routing });
 });
 
 app.put('/:id', requireAdmin, zValidator('json', inboxSchema.partial()), async (c) => {

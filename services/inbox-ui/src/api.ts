@@ -111,45 +111,40 @@ export interface Person {
   last_email_at: string | null;
 }
 
-export interface InboxEmail {
+export interface ThreadItem {
   id: string;
-  type: 'received';
-  person_id: string;
-  inbox_address: string;
-  subject: string;
+  direction: 'inbound' | 'outbound';
+  subject: string | null;
   body_html: string | null;
   body_text: string | null;
-  message_id: string;
-  spf: string | null;
-  dkim: string | null;
-  dmarc: string | null;
+  body_r2_key: string | null;
+  message_id: string | null;
+  in_reply_to: string | null;
   is_read: number;
-  received_at: string;
+  timestamp: string;
+  inbox_address?: string | null;
 }
-
-export interface SentEmail {
-  id: string;
-  type: 'sent';
-  person_id: string;
-  from_address: string;
-  to_address: string;
-  subject: string;
-  status: string;
-  sent_at: string;
-}
-
-export type ThreadItem = InboxEmail | SentEmail;
 
 export interface Thread {
   person: Person;
-  emails: ThreadItem[];
+  thread: ThreadItem[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export interface InboxRouting {
+  configured: boolean;
+  error?: string;
 }
 
 export interface Inbox {
   id: string;
   email: string;
   display_name: string;
-  mode: 'thread' | 'chat';
+  mode: 'thread' | 'individual';
+  routing?: InboxRouting;
 }
 
 export interface Sequence {
@@ -203,17 +198,25 @@ export async function composeSend(params: {
   text: string;
   personId?: string;
 }): Promise<void> {
-  await api.post('/api/inbox/send', params);
+  await api.post('/api/inbox/compose', params);
 }
 
 export async function replyTo(params: {
   personId: string;
+  to: string;
   from: string;
   subject: string;
   text: string;
   replyToMessageId: string;
 }): Promise<void> {
-  await api.post('/api/inbox/send', { ...params, isReply: true });
+  await api.post('/api/inbox/compose', {
+    to: params.to,
+    from: params.from,
+    subject: params.subject,
+    text: params.text,
+    inReplyTo: params.replyToMessageId,
+    personId: params.personId,
+  });
 }
 
 // ── Inboxes ───────────────────────────────────────────────────────────────────
@@ -230,6 +233,11 @@ export async function createInbox(d: Pick<Inbox, 'email' | 'display_name' | 'mod
 
 export async function updateInbox(id: string, d: Partial<Pick<Inbox, 'display_name' | 'mode'>>): Promise<Inbox> {
   const { data } = await api.put<Inbox>(`/api/inbox/inboxes/${id}`, d);
+  return data;
+}
+
+export async function setupInboxRouting(id: string): Promise<Inbox & { routing: InboxRouting }> {
+  const { data } = await api.post<Inbox & { routing: InboxRouting }>(`/api/inbox/inboxes/${id}/routing`);
   return data;
 }
 

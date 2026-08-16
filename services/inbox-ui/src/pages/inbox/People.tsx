@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Loader2, Search, Send, MailOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import {
   getPeople, getThread, markRead, replyTo,
-  Person, Thread, InboxEmail, SentEmail,
+  Person, Thread, ThreadItem,
 } from '../../api';
 import { cn } from '@/lib/utils';
 import OwnerAccessBanner from '../../components/OwnerAccessBanner';
@@ -90,18 +90,14 @@ function ContactRow({ person, selected, onClick }: {
 // ── Email card ────────────────────────────────────────────────────────────────
 
 function EmailCard({ item, defaultOpen = false }: {
-  item: InboxEmail | SentEmail;
+  item: ThreadItem;
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const isSent = item.type === 'sent';
-  const date = isSent
-    ? new Date((item as SentEmail).sent_at)
-    : new Date((item as InboxEmail).received_at);
-  const subject = isSent
-    ? (item as SentEmail).subject
-    : (item as InboxEmail).subject;
-  const body = 'body_text' in item ? item.body_text : undefined;
+  const isSent = item.direction === 'outbound';
+  const date = new Date(item.timestamp);
+  const subject = item.subject;
+  const body = item.body_text;
   const preview = body?.replace(/\s+/g, ' ').trim().slice(0, 120);
 
   return (
@@ -177,11 +173,11 @@ function ThreadPanel({ person, thread, onReply }: {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [thread.emails.length]);
+  }, [thread.thread.length]);
 
-  const lastReceived = [...thread.emails]
+  const lastReceived = [...thread.thread]
     .reverse()
-    .find(e => e.type === 'received') as InboxEmail | undefined;
+    .find(e => e.direction === 'inbound') as ThreadItem | undefined;
 
   async function handleSend() {
     if (!replyText.trim()) return;
@@ -215,17 +211,17 @@ function ThreadPanel({ person, thread, onReply }: {
           )}
         </div>
         <span className="text-[11.5px] text-zinc-400 shrink-0">
-          {thread.emails.length} message{thread.emails.length !== 1 ? 's' : ''}
+          {thread.thread.length} message{thread.thread.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       {/* Email cards */}
       <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-2">
-        {thread.emails.map((item, i) => (
+        {thread.thread.map((item, i) => (
           <EmailCard
             key={item.id}
             item={item}
-            defaultOpen={i === thread.emails.length - 1}
+            defaultOpen={i === thread.thread.length - 1}
           />
         ))}
         <div ref={bottomRef} />
@@ -319,15 +315,22 @@ export default function People() {
 
   async function handleReply({ text, subject }: { text: string; subject: string }) {
     if (!selectedId || !thread) return;
-    const lastReceived = [...thread.emails]
+    const lastReceived = [...thread.thread]
       .reverse()
-      .find(e => e.type === 'received') as InboxEmail | undefined;
+      .find(e => e.direction === 'inbound') as ThreadItem | undefined;
+    if (!lastReceived) return;
+
+    // Reply FROM the inbox address the sender wrote to, TO the sender.
+    const from = lastReceived.inbox_address ?? fromAddress;
+    if (!from) return;
+
     await replyTo({
       personId: selectedId,
-      from: fromAddress,
+      to: thread.person.email,
+      from,
       subject,
       text,
-      replyToMessageId: lastReceived?.message_id ?? '',
+      replyToMessageId: lastReceived.message_id ?? '',
     });
     const updated = await getThread(selectedId);
     setThread(updated);

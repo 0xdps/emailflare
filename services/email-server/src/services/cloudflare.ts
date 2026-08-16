@@ -94,18 +94,23 @@ export async function listAllZones(): Promise<CFZone[]> {
 /**
  * Find a Cloudflare zone for the given hostname.
  * Tries progressively shorter suffixes (e.g. mail.example.com → example.com).
+ * Re-throws the last real error (bad token / missing Zone:Read) if no zone is
+ * found, so it doesn't masquerade as "no zone".
  */
 export async function getZoneByHostname(hostname: string): Promise<CFZone | null> {
   const parts = hostname.split('.');
+  let lastError: unknown = null;
   for (let i = 0; i < parts.length - 1; i++) {
     const candidate = parts.slice(i).join('.');
     try {
       const zones = await cfFetch<CFZone[]>(`/zones?name=${encodeURIComponent(candidate)}&status=active`);
       if (zones.length > 0) return zones[0];
-    } catch {
+    } catch (err) {
+      lastError = err;
       // continue
     }
   }
+  if (lastError) throw lastError;
   return null;
 }
 

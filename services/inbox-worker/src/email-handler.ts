@@ -19,26 +19,28 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
   const toAddress   = message.to.toLowerCase();
   const now         = new Date().toISOString();
 
-  // ── Upsert person ───────────────────────────────────────────────────────────
-  let person = await env.DB.prepare(
-    'SELECT id FROM people WHERE email = ? LIMIT 1',
-  ).bind(fromAddress).first<{ id: string }>();
-
-  if (!person) {
-    const pid = generateId();
-    const personName = email.from?.name ?? null;
-    await env.DB.prepare(
-      'INSERT INTO people (id, email, name, created_at) VALUES (?, ?, ?, ?)',
-    ).bind(pid, fromAddress, personName, now).run();
-    person = { id: pid };
-  }
-
   // ── Resolve inbox ───────────────────────────────────────────────────────────
   const inboxRow = await env.DB.prepare(
     'SELECT email FROM inboxes WHERE email = ? LIMIT 1',
   ).bind(toAddress).first<{ email: string }>();
 
   const inboxAddress = inboxRow?.email ?? toAddress;
+
+  // ── Upsert person (scoped to this inbox) ────────────────────────────────────
+  // A conversation is uniquely identified by (counterparty email, inbox address)
+  // so the same sender writing to two different inboxes stays separate.
+  let person = await env.DB.prepare(
+    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
+  ).bind(fromAddress, inboxAddress).first<{ id: string }>();
+
+  if (!person) {
+    const pid = generateId();
+    const personName = email.from?.name ?? null;
+    await env.DB.prepare(
+      'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, ?, ?, ?)',
+    ).bind(pid, fromAddress, personName, inboxAddress, now).run();
+    person = { id: pid };
+  }
 
   // ── Store body (R2 if large, D1 inline otherwise) ──────────────────────────
   const bodyHtml = email.html ?? null;

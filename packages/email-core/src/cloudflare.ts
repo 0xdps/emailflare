@@ -91,12 +91,19 @@ export async function listAllZones(cfApiToken: string): Promise<CFZone[]> {
 /**
  * Find a Cloudflare zone for the given hostname.
  * Tries progressively shorter suffixes (e.g. mail.example.com → example.com).
+ *
+ * A non-existent zone returns `success:true` with an empty result array (no
+ * throw) — that's the "not found" case. An *error* here (bad token, missing
+ * Zone:Read permission) is meaningful and must NOT be swallowed, otherwise it
+ * masquerades as "No active Cloudflare zone found". We remember the last error
+ * and rethrow it only if no zone was found, so the real cause surfaces.
  */
 export async function getZoneByHostname(
   hostname: string,
   cfApiToken: string,
 ): Promise<CFZone | null> {
   const parts = hostname.split('.');
+  let lastError: unknown = null;
   for (let i = 0; i < parts.length - 1; i++) {
     const candidate = parts.slice(i).join('.');
     try {
@@ -105,10 +112,12 @@ export async function getZoneByHostname(
         cfApiToken,
       );
       if (zones.length > 0) return zones[0];
-    } catch {
+    } catch (err) {
+      lastError = err;
       // try next suffix
     }
   }
+  if (lastError) throw lastError;
   return null;
 }
 

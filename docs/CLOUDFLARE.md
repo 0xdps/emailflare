@@ -259,6 +259,13 @@ This command is destructive and intended for teardown/cleanup. It is safe to re-
 
 | Token | Required permissions |
 |---|---|
-| Runtime token (`secrets.cf_api_token`) | Email Routing: Edit, Zone: Read, DNS: Edit |
+| Runtime token (`secrets.cf_api_token`) | Zone: Read, Zone Settings: Edit, DNS: Edit, Email Routing Rules: Edit |
+
+> **Email Routing (inbound) note:** enabling Email Routing on a zone
+> (`POST /zones/{id}/email/routing/enable`) is gated by **Zone Settings: Edit**,
+> and setting the catch-all rule (`PUT .../rules/catch_all`) by
+> **Email Routing Rules: Edit**. These do not appear as an obvious
+> "Email Routing" entry in the token's permission list — Zone Settings: Edit
+> is the one that trips most people up.
 
 Create tokens at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens).

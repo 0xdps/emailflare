@@ -71,13 +71,15 @@ export async function listAllZones(cfApiToken: string): Promise<CFZone[]> {
 
 export async function getZoneByHostname(hostname: string, cfApiToken: string): Promise<CFZone | null> {
   const parts = hostname.split('.');
+  let lastError: unknown = null;
   for (let i = 0; i < parts.length - 1; i++) {
     const candidate = parts.slice(i).join('.');
     try {
       const zones = await cfFetch<CFZone[]>(`/zones?name=${encodeURIComponent(candidate)}&status=active`, cfApiToken);
       if (zones.length > 0) return zones[0];
-    } catch { /* try next suffix */ }
+    } catch (err) { lastError = err; /* try next suffix */ }
   }
+  if (lastError) throw lastError;
   return null;
 }
 

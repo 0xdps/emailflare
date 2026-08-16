@@ -31,28 +31,30 @@ export async function handleIncomingEmail(payload: EmailPayload): Promise<void> 
   const toAddress   = payload.to.toLowerCase();
   const now         = new Date().toISOString();
 
-  // ── Upsert person ───────────────────────────────────────────────────────────
-  let person = await rawDb.first<{ id: string }>(
-    'SELECT id FROM people WHERE email = ? LIMIT 1',
-    [fromAddress],
-  );
-
-  if (!person) {
-    const pid = generateId();
-    const personName = email.from?.name ?? null;
-    await rawDb.run(
-      'INSERT INTO people (id, email, name, created_at) VALUES (?, ?, ?, ?)',
-      [pid, fromAddress, personName, now],
-    );
-    person = { id: pid };
-  }
-
   // ── Resolve inbox ───────────────────────────────────────────────────────────
   const inboxRow = await rawDb.first<{ email: string }>(
     'SELECT email FROM inboxes WHERE email = ? LIMIT 1',
     [toAddress],
   );
   const inboxAddress = inboxRow?.email ?? toAddress;
+
+  // ── Upsert person (scoped to this inbox) ────────────────────────────────────
+  // A conversation is uniquely identified by (counterparty email, inbox address)
+  // so the same sender writing to two different inboxes stays separate.
+  let person = await rawDb.first<{ id: string }>(
+    'SELECT id FROM people WHERE email = ? AND inbox_address = ? LIMIT 1',
+    [fromAddress, inboxAddress],
+  );
+
+  if (!person) {
+    const pid = generateId();
+    const personName = email.from?.name ?? null;
+    await rawDb.run(
+      'INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, ?, ?, ?)',
+      [pid, fromAddress, personName, inboxAddress, now],
+    );
+    person = { id: pid };
+  }
 
   // ── Store body (R2 if large, inline otherwise) ─────────────────────────────
   const bodyHtml  = email.html ?? null;
