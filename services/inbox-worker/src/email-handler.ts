@@ -6,6 +6,7 @@
 
 import PostalMime from 'postal-mime';
 import { generateId } from '@emailflare/email-core';
+import { parseThreadToken, stripThreadToken, threadMessageId } from '@emailflare/inbox-core';
 import type { Env } from './env.ts';
 
 
@@ -19,12 +20,18 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
   const toAddress   = message.to.toLowerCase();
   const now         = new Date().toISOString();
 
+  // ── Resolve thread token (plus-address Reply-To) ────────────────────────────
+  // If the recipient replied via the +ef_<token> address we set in Reply-To,
+  // link this reply to the sent message that carried that token.
+  const threadToken = parseThreadToken(toAddress);
+  const baseAddress = stripThreadToken(toAddress);
+
   // ── Resolve inbox ───────────────────────────────────────────────────────────
   const inboxRow = await env.DB.prepare(
     'SELECT email FROM inboxes WHERE email = ? LIMIT 1',
-  ).bind(toAddress).first<{ email: string }>();
+  ).bind(baseAddress).first<{ email: string }>();
 
-  const inboxAddress = inboxRow?.email ?? toAddress;
+  const inboxAddress = inboxRow?.email ?? baseAddress;
 
   // ── Upsert person (scoped to this inbox) ────────────────────────────────────
   // A conversation is uniquely identified by (counterparty email, inbox address)
@@ -62,18 +69,40 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
   // ── Insert email row ────────────────────────────────────────────────────────
   const emailId   = generateId();
   const messageId = email.messageId ?? null;
-  const inReplyTo = email.inReplyTo ?? null;
-  const references = email.references ?? null;
+  // If this is a reply via our +ef_<token> Reply-To address, thread it to the
+  // sent message that carried that token (using our synthetic Message-ID).
+  const tokenParent = threadToken ? threadMessageId(threadToken) : null;
+  const inReplyTo  = email.inReplyTo ?? tokenParent;
+  const references = email.references ?? (tokenParent ? tokenParent : null);
+
+  // Resolve thread_id: reply inherits its parent's thread; otherwise new thread.
+  let threadId: string | null = null;
+  const parentRef = tokenParent ?? email.inReplyTo ?? null;
+  if (parentRef) {
+    const parentRow = await env.DB.prepare(
+      'SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1',
+    ).bind(parentRef).first<{ thread_id: string | null }>();
+    if (parentRow?.thread_id) {
+      threadId = parentRow.thread_id;
+    } else {
+      const inboxParent = await env.DB.prepare(
+        'SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1',
+      ).bind(parentRef).first<{ thread_id: string | null }>();
+      threadId = inboxParent?.thread_id ?? null;
+    }
+  }
+  if (!threadId) threadId = generateId();
 
   await env.DB.prepare(
     `INSERT INTO inbox_emails
-       (id, person_id, inbox_address, subject, body_html, body_text, body_r2_key,
+       (id, person_id, thread_id, inbox_address, subject, body_html, body_text, body_r2_key,
         message_id, in_reply_to, "references", spf, dkim, dmarc, is_read, received_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
      ON CONFLICT (message_id) DO NOTHING`,
   ).bind(
     emailId,
     person.id,
+    threadId,
     inboxAddress,
     email.subject ?? '(no subject)',
     storedBodyHtml,

@@ -261,3 +261,53 @@ export function extractPlainText(html: string): string {
     .trim();
 }
 
+// ── Thread token helpers ──────────────────────────────────────────────────────
+//
+// Cloudflare controls the outgoing Message-ID, and its REST send API does not
+// return it — so we can't rely on RFC 5322 headers to thread replies back to a
+// message we sent. Instead we encode a per-message token into the Reply-To
+// address using plus-addressing (RFC 5233):
+//
+//   From:     hello@dps.codes
+//   Reply-To: hello+ef_<token>@dps.codes
+//
+// When the recipient replies, their client sends to the +ef_<token> address
+// (no header echo required), and our inbound handler reads the token to thread
+// the reply to the exact sent message. This is the same technique used by
+// Help Scout / Front / Intercom.
+
+const THREAD_TOKEN_MARKER = 'ef_';
+
+/** Build the Reply-To address carrying a thread token. */
+export function buildReplyToAddress(inboxEmail: string, token: string): string {
+  const at = inboxEmail.lastIndexOf('@');
+  if (at === -1) return inboxEmail;
+  const local  = inboxEmail.slice(0, at);
+  const domain = inboxEmail.slice(at + 1);
+  return `${local}+${THREAD_TOKEN_MARKER}${token}@${domain}`;
+}
+
+/** Extract the thread token from a plus-address, or null if absent. */
+export function parseThreadToken(address: string): string | null {
+  const at = address.lastIndexOf('@');
+  const local = at === -1 ? address : address.slice(0, at);
+  const m = local.match(new RegExp(`\\+${THREAD_TOKEN_MARKER}([A-Za-z0-9_-]+)$`));
+  return m ? m[1] : null;
+}
+
+/** Remove the +ef_<token> suffix, returning the base inbox address. */
+export function stripThreadToken(address: string): string {
+  const token = parseThreadToken(address);
+  if (!token) return address;
+  const at = address.lastIndexOf('@');
+  if (at === -1) return address;
+  const local  = address.slice(0, at);
+  const domain = address.slice(at + 1);
+  return `${local.replace(new RegExp(`\\+${THREAD_TOKEN_MARKER}${token}$`), '')}@${domain}`;
+}
+
+/** Synthetic Message-ID for a sent message, derived from its thread token. */
+export function threadMessageId(token: string): string {
+  return `<${THREAD_TOKEN_MARKER}${token}@emailflare.inbox>`;
+}
+

@@ -38,69 +38,32 @@ function normalizeSubject(s: string | null | undefined): string {
 export function groupThread(items: ThreadItem[]): ThreadGroup[] {
   if (items.length === 0) return [];
 
-  // Chronological order so parent lookups and rendering are stable.
+  // Chronological order so rendering is stable.
   const sorted = [...items].sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
   );
 
-  const byId = new Map<string, ThreadItem>();
-  for (const it of sorted) {
-    if (it.message_id) {
-      const id = strip(it.message_id);
-      if (!byId.has(id)) byId.set(id, it);
-    }
-  }
-
-  // Find the parent of an item via headers, then via a subject-prefix fallback
-  // (for forwards/replies that drop reference headers, e.g. Gmail "Forward").
-  function findParent(item: ThreadItem): ThreadItem | null {
-    if (item.in_reply_to) {
-      const p = byId.get(strip(item.in_reply_to));
-      if (p && p.id !== item.id) return p;
-    }
-    const ids = refIds(item.references);
-    for (let i = ids.length - 1; i >= 0; i--) {
-      const p = byId.get(ids[i]);
-      if (p && p.id !== item.id) return p;
-    }
-    // Subject fallback. A message is a candidate for subject-based linking when:
-    //   • its subject carries a Re:/Fwd: prefix, or
-    //   • it has threading headers (In-Reply-To/References) that didn't resolve —
-    //     e.g. a reply to a Cloudflare-assigned Message-ID we never captured
-    //     (compose-new → reply). A truly new email has no such headers, so it
-    //     won't be false-merged here.
-    const hasUnresolvedRefs = !!item.in_reply_to || refIds(item.references).length > 0;
-    if (isPrefixed(item.subject) || hasUnresolvedRefs) {
-      const norm = normalizeSubject(item.subject);
-      const itemTime = new Date(item.timestamp).getTime();
-      for (const cand of sorted) {
-        if (cand.id === item.id) continue;
-        if (new Date(cand.timestamp).getTime() >= itemTime) break;
-        if (normalizeSubject(cand.subject) === norm) return cand;
-      }
-    }
-    return null;
-  }
-
-  function findRoot(item: ThreadItem): ThreadItem {
-    let cur = item;
-    const seen = new Set<string>();
-    while (!seen.has(cur.id)) {
-      seen.add(cur.id);
-      const parent = findParent(cur);
-      if (!parent) return cur;
-      cur = parent;
-    }
-    return cur;
-  }
-
+  // ── Server-authoritative grouping by thread_id ──────────────────────────────
+  // The backend now assigns a stable thread_id per conversation chain. When
+  // present, trust it exactly — a new email gets its own thread, a reply joins
+  // its parent's thread. Fall back to header inference only for legacy rows.
   const groupMap = new Map<string, ThreadGroup>();
   for (const it of sorted) {
-    const root = findRoot(it);
-    let g = groupMap.get(root.id);
+    if (it.thread_id) {
+      let g = groupMap.get(it.thread_id);
+      if (!g) {
+        g = { key: it.thread_id, subject: it.subject, items: [] };
+        groupMap.set(it.thread_id, g);
+      }
+      g.items.push(it);
+      continue;
+    }
+    // Legacy item without thread_id — group by header/subject inference.
+    const root = findRoot(it, sorted);
+    let g = groupMap.get(`legacy:${root.id}`);
     if (!g) {
-      g = { key: root.id, subject: root.subject, items: [] };
-      groupMap.set(root.id, g);
+      g = { key: `legacy:${root.id}`, subject: root.subject, items: [] };
+      groupMap.set(`legacy:${root.id}`, g);
     }
     g.items.push(it);
   }
@@ -111,6 +74,48 @@ export function groupThread(items: ThreadItem[]): ThreadGroup[] {
     const tb = b.items[b.items.length - 1]?.timestamp ?? '';
     return new Date(tb).getTime() - new Date(ta).getTime();
   });
+}
+
+// Legacy header-based root finder (used only for rows without thread_id).
+function findRoot(item: ThreadItem, sorted: ThreadItem[]): ThreadItem {
+  const byId = new Map<string, ThreadItem>();
+  for (const it of sorted) {
+    if (it.message_id) {
+      const id = strip(it.message_id);
+      if (!byId.has(id)) byId.set(id, it);
+    }
+  }
+  function findParent(cur: ThreadItem): ThreadItem | null {
+    if (cur.in_reply_to) {
+      const p = byId.get(strip(cur.in_reply_to));
+      if (p && p.id !== cur.id) return p;
+    }
+    const ids = refIds(cur.references);
+    for (let i = ids.length - 1; i >= 0; i--) {
+      const p = byId.get(ids[i]);
+      if (p && p.id !== cur.id) return p;
+    }
+    const hasUnresolvedRefs = !!cur.in_reply_to || refIds(cur.references).length > 0;
+    if (isPrefixed(cur.subject) || hasUnresolvedRefs) {
+      const norm = normalizeSubject(cur.subject);
+      const curTime = new Date(cur.timestamp).getTime();
+      for (const cand of sorted) {
+        if (cand.id === cur.id) continue;
+        if (new Date(cand.timestamp).getTime() >= curTime) break;
+        if (normalizeSubject(cand.subject) === norm) return cand;
+      }
+    }
+    return null;
+  }
+  let cur = item;
+  const seen = new Set<string>();
+  while (!seen.has(cur.id)) {
+    seen.add(cur.id);
+    const parent = findParent(cur);
+    if (!parent) return cur;
+    cur = parent;
+  }
+  return cur;
 }
 
 /** The references chain to send when replying to `parent`. */

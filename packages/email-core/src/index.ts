@@ -234,6 +234,96 @@ export function listUnsubscribeHeaders(
   return headers;
 }
 
+// ── sendWithLog — shared "deliver + record" orchestration ────────────────────
+//
+// The single seam both the transactional API (`/v1/send`) and the inbox compose
+// flow use to actually deliver an email and write the `email_logs` row that
+// powers the Logs page + Dashboard. Delivery and persistence are injected so
+// this stays runtime-agnostic (works for D1 and MesaHub, live and test sends).
+
+export interface SendWithLogMessage {
+  from: string | { address: string; name: string };
+  to: string;
+  subject: string;
+  html?: string;
+  text?: string;
+  replyTo?: string;
+  headers?: Record<string, string>;
+}
+
+export interface SendWithLogOptions {
+  /** Deliver the email (live CF send, or test capture). Returns the CF message id. */
+  deliver: (msg: SendWithLogMessage) => Promise<{ id: string }>;
+  /** Resolve the domain_id for a sender address (null if unknown). */
+  resolveDomainId: (fromAddress: string) => Promise<string | null>;
+  /** Persist an email_logs row. */
+  insertLog: (row: EmailLogRow) => Promise<unknown>;
+  /** Extra metadata attached to the log row. */
+  templateId?: string | null;
+  apiKeyId?: string | null;
+  idempotencyKey?: string | null;
+  isTest?: boolean;
+  /** Store html/text bodies in the log (used by the in-house test mailbox). */
+  storeBodies?: boolean;
+}
+
+export interface SendWithLogResult {
+  cfId?: string;
+  error?: string;
+}
+
+export async function sendWithLog(
+  opts: SendWithLogOptions,
+  msg: SendWithLogMessage,
+): Promise<SendWithLogResult> {
+  const fromAddress = typeof msg.from === 'string' ? msg.from : msg.from.address;
+  const now         = new Date().toISOString();
+  const domainId    = await opts.resolveDomainId(fromAddress);
+  const isTest      = opts.isTest ? 1 : 0;
+
+  try {
+    const result = await opts.deliver(msg);
+    await opts.insertLog({
+      id: generateId(),
+      to_address: msg.to,
+      from_address: fromAddress,
+      subject: msg.subject,
+      status: 'sent',
+      cf_message_id: result.id ?? null,
+      domain_id: domainId,
+      template_id: opts.templateId ?? null,
+      api_key_id: opts.apiKeyId ?? null,
+      idempotency_key: opts.idempotencyKey ?? null,
+      error: null,
+      is_test: isTest,
+      html_body: opts.storeBodies ? (msg.html ?? null) : null,
+      text_body: opts.storeBodies ? (msg.text ?? null) : null,
+      sent_at: now,
+    });
+    return { cfId: result.id };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    await opts.insertLog({
+      id: generateId(),
+      to_address: msg.to,
+      from_address: fromAddress,
+      subject: msg.subject,
+      status: 'failed',
+      cf_message_id: null,
+      domain_id: domainId,
+      template_id: opts.templateId ?? null,
+      api_key_id: opts.apiKeyId ?? null,
+      idempotency_key: null,
+      error: message,
+      is_test: isTest,
+      html_body: opts.storeBodies ? (msg.html ?? null) : null,
+      text_body: opts.storeBodies ? (msg.text ?? null) : null,
+      sent_at: now,
+    });
+    return { error: message };
+  }
+}
+
 /**
  * Enrich a template row with a computed `variables` array, derived from
  * the layout registry. Pass the `LAYOUTS` map from `@emailflare/emails`.

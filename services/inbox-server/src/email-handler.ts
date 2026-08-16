@@ -7,6 +7,7 @@
 
 import PostalMime from 'postal-mime';
 import { generateId } from '@emailflare/email-core';
+import { parseThreadToken, stripThreadToken, threadMessageId } from '@emailflare/inbox-core';
 import { rawDb } from './db.js';
 import { putObject } from './storage.js';
 import { wsManager } from './websocket.js';
@@ -31,12 +32,16 @@ export async function handleIncomingEmail(payload: EmailPayload): Promise<void> 
   const toAddress   = payload.to.toLowerCase();
   const now         = new Date().toISOString();
 
+  // ── Resolve thread token (plus-address Reply-To) ────────────────────────────
+  const threadToken = parseThreadToken(toAddress);
+  const baseAddress = stripThreadToken(toAddress);
+
   // ── Resolve inbox ───────────────────────────────────────────────────────────
   const inboxRow = await rawDb.first<{ email: string }>(
     'SELECT email FROM inboxes WHERE email = ? LIMIT 1',
-    [toAddress],
+    [baseAddress],
   );
-  const inboxAddress = inboxRow?.email ?? toAddress;
+  const inboxAddress = inboxRow?.email ?? baseAddress;
 
   // ── Upsert person (scoped to this inbox) ────────────────────────────────────
   // A conversation is uniquely identified by (counterparty email, inbox address)
@@ -74,17 +79,40 @@ export async function handleIncomingEmail(payload: EmailPayload): Promise<void> 
   // ── Insert email row ────────────────────────────────────────────────────────
   const emailId   = generateId();
   const messageId = email.messageId ?? null;
-  const inReplyTo = email.inReplyTo ?? null;
-  const references = email.references ?? null;
+  // If this is a reply via our +ef_<token> Reply-To address, thread it to the
+  // sent message that carried that token (using our synthetic Message-ID).
+  const tokenParent = threadToken ? threadMessageId(threadToken) : null;
+  const inReplyTo  = email.inReplyTo ?? tokenParent;
+  const references = email.references ?? (tokenParent ? tokenParent : null);
+
+  // Resolve thread_id: reply inherits its parent's thread; otherwise new thread.
+  let threadId: string | null = null;
+  const parentRef = tokenParent ?? email.inReplyTo ?? null;
+  if (parentRef) {
+    const parentRow = await rawDb.first<{ thread_id: string | null }>(
+      'SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1',
+      [parentRef],
+    );
+    if (parentRow?.thread_id) {
+      threadId = parentRow.thread_id;
+    } else {
+      const inboxParent = await rawDb.first<{ thread_id: string | null }>(
+        'SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1',
+        [parentRef],
+      );
+      threadId = inboxParent?.thread_id ?? null;
+    }
+  }
+  if (!threadId) threadId = generateId();
 
   await rawDb.run(
     `INSERT INTO inbox_emails
-       (id, person_id, inbox_address, subject, body_html, body_text, body_r2_key,
+       (id, person_id, thread_id, inbox_address, subject, body_html, body_text, body_r2_key,
         message_id, in_reply_to, "references", spf, dkim, dmarc, is_read, received_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
      ON CONFLICT (message_id) DO NOTHING`,
     [
-      emailId, person.id, inboxAddress,
+      emailId, person.id, threadId, inboxAddress,
       email.subject ?? '(no subject)',
       storedBodyHtml, bodyText, bodyR2Key,
       messageId, inReplyTo, references,

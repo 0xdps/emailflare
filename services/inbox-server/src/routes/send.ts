@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { generateId, listUnsubscribeHeaders } from '@emailflare/email-core';
+import { generateId, listUnsubscribeHeaders, sendWithLog } from '@emailflare/email-core';
 import { makeDb, rawDb } from '../db.js';
 import { sendEmail } from '../services/cloudflare.js';
 import { renderLayout } from '@emailflare/emails';
@@ -128,43 +128,38 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
     try {
       // Test keys are captured to the Test Mailbox (no CF delivery); live keys send.
       const isTest = apiKey.isTest;
-      const cfResult = isTest
-        ? { id: generateId() }
-        : await sendEmail(
-            {
-              from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
-              to: recipient, subject, html, text, replyTo: body.replyTo,
-              ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
-            },
-            env.CF_API_TOKEN,
-            env.CF_ACCOUNT_ID,
-          );
+      const out = await sendWithLog(
+        {
+          deliver: async (msg) => isTest
+            ? { id: generateId() }
+            : sendEmail(msg, env.CF_API_TOKEN, env.CF_ACCOUNT_ID),
+          resolveDomainId: async () => domainId,
+          insertLog: (row) => emailLogs.insert(row),
+          templateId,
+          apiKeyId: apiKey.keyId,
+          idempotencyKey,
+          isTest,
+          storeBodies: isTest,
+        },
+        {
+          from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
+          to: recipient,
+          subject,
+          html,
+          text,
+          replyTo: body.replyTo,
+          ...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
+        },
+      );
 
-      await emailLogs.insert({
-        id: generateId(), to_address: recipient, from_address: body.from, subject,
-        status: 'sent', cf_message_id: cfResult.id ?? null,
-        domain_id: domainId, template_id: templateId, api_key_id: apiKey.keyId,
-        idempotency_key: idempotencyKey, error: null,
-        is_test: isTest ? 1 : 0,
-        html_body: isTest ? (html ?? null) : null,
-        text_body: isTest ? (text ?? null) : null,
-        sent_at: now,
-      });
-
-      results.push({ to: recipient, cfId: cfResult.id });
+      if (out.error) {
+        results.push({ to: recipient, error: out.error });
+        continue;
+      }
+      results.push({ to: recipient, cfId: out.cfId });
       successCount++;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      await emailLogs.insert({
-        id: generateId(), to_address: recipient, from_address: body.from, subject,
-        status: 'failed', cf_message_id: null,
-        domain_id: domainId, template_id: templateId, api_key_id: apiKey.keyId,
-        idempotency_key: null, error: message,
-        is_test: apiKey.isTest ? 1 : 0,
-        html_body: apiKey.isTest ? (html ?? null) : null,
-        text_body: apiKey.isTest ? (text ?? null) : null,
-        sent_at: now,
-      });
       results.push({ to: recipient, error: message });
     }
   }

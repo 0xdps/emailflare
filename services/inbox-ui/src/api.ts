@@ -121,6 +121,7 @@ export interface ThreadItem {
   message_id: string | null;
   in_reply_to: string | null;
   references: string | null;
+  thread_id: string | null;
   is_read: number;
   timestamp: string;
   inbox_address?: string | null;
