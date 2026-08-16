@@ -1,0 +1,69 @@
+services/inbox-worker/src/routes/inbox/compose.ts
+  s_3d0722258bf66d::t_ed449dca1596d1 58
+  s_3d0722258bf66d::t_fed5dfcbf7463c 37-42,44-51
+  s_3d0722258bf66d::t_66144b3d892fc9 59-60
+  s_3d0722258bf66d::t_8869e79afd5339 27
+migrations/0010_inbox_references.sql
+  s_3d0722258bf66d::t_c318b9c9c1b5e1 1-4
+  s_3d0722258bf66d::t_ed449dca1596d1 5,9
+  s_3d0722258bf66d::t_4404bfb4c09dc1 6-8
+packages/inbox-core/src/index.ts
+  s_3d0722258bf66d::t_0016547d56a562 219
+services/inbox-server/src/routes/inbox/compose.ts
+  s_3d0722258bf66d::t_ed449dca1596d1 70
+  s_3d0722258bf66d::t_d97eb83d4617cd 39
+  s_3d0722258bf66d::t_ea26232a6ebe6c 21
+  s_3d0722258bf66d::t_03c4752d47387a 71-72
+  s_3d0722258bf66d::t_fed5dfcbf7463c 48-53,55-62
+services/inbox-worker/src/email-handler.ts
+  s_3d0722258bf66d::t_ce8dca40687100 66,72,84
+  s_3d0722258bf66d::t_ed449dca1596d1 71
+services/inbox-worker/src/routes/inbox/people.ts
+  s_3d0722258bf66d::t_ed449dca1596d1 77
+  s_3d0722258bf66d::t_582f45a7c2bdab 81
+services/inbox-server/src/routes/inbox/people.ts
+  s_3d0722258bf66d::t_21af8a3d41e093 74
+  s_3d0722258bf66d::t_ed449dca1596d1 70
+services/inbox-ui/src/pages/inbox/People.tsx
+  s_3d0722258bf66d::t_4845abcb920ca2 440,448-516
+  s_3d0722258bf66d::t_1442b48b3f3930 96,99,113-124,126-146,149-167
+  s_3d0722258bf66d::t_376576c58e66cb 367-377
+  s_3d0722258bf66d::t_991517f05e7aa9 267-276,285-287,303-304,307-326,328,330-353
+  s_3d0722258bf66d::t_c4b842e8086e26 302,305-306
+  s_3d0722258bf66d::t_6d2b7d899aaebc 2,4-5,9-11
+  s_3d0722258bf66d::t_987014e66aacbf 8
+  s_3d0722258bf66d::t_3ea0996bde4809 327,329
+  s_3d0722258bf66d::t_25fcb041c004a8 189,212,216-234,236-238
+  s_3d0722258bf66d::t_f50f6fb9136796 186,235
+  s_3d0722258bf66d::t_d133334a85880f 288
+services/inbox-server/src/email-handler.ts
+  s_3d0722258bf66d::t_a4acabaab02f61 78,84,90
+  s_3d0722258bf66d::t_ed449dca1596d1 83
+services/inbox-ui/src/api.ts
+  s_3d0722258bf66d::t_42606dbe423feb 123
+  s_3d0722258bf66d::t_1c8d0505268c5a 212,220
+services/inbox-ui/src/lib/threading.ts
+  s_3d0722258bf66d::t_55270aa2a74a86 1-65,74-120
+  s_3d0722258bf66d::t_81ee7253c434d5 66-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "763b857751ebb06e9d80330b52f16128ba57b875",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
