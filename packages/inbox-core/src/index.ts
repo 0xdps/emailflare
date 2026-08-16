@@ -216,6 +216,7 @@ export const composeSchema = z.object({
   html: z.string().optional(),
   text: z.string().optional(),
   inReplyTo: z.string().optional(),
+  references: z.string().optional(),
   personId: z.string().optional(),
 });
 

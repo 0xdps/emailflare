@@ -63,12 +63,13 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
   const emailId   = generateId();
   const messageId = email.messageId ?? null;
   const inReplyTo = email.inReplyTo ?? null;
+  const references = email.references ?? null;
 
   await env.DB.prepare(
     `INSERT INTO inbox_emails
        (id, person_id, inbox_address, subject, body_html, body_text, body_r2_key,
-        message_id, in_reply_to, spf, dkim, dmarc, is_read, received_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+        message_id, in_reply_to, "references", spf, dkim, dmarc, is_read, received_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
      ON CONFLICT (message_id) DO NOTHING`,
   ).bind(
     emailId,
@@ -80,6 +81,7 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
     bodyR2Key,
     messageId,
     inReplyTo,
+    references,
     message.headers.get('Authentication-Results-SPF') ?? null,
     message.headers.get('Authentication-Results-DKIM') ?? null,
     message.headers.get('Authentication-Results-DMARC') ?? null,

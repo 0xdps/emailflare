@@ -18,6 +18,7 @@ const sendSchema = z.object({
   html:      z.string().optional(),
   text:      z.string().optional(),
   inReplyTo: z.string().optional(),
+  references: z.string().optional(),
   personId:  z.string().optional(),
 });
 
@@ -35,7 +36,7 @@ async function upsertPerson(email: string, inboxAddress: string): Promise<string
   return id;
 }
 
-app.post('/compose', zValidator('json', sendSchema), async (c) => {
+app.post('/', zValidator('json', sendSchema), async (c) => {
   const body     = c.req.valid('json');
   const now      = new Date().toISOString();
   const personId = body.personId ?? (await upsertPerson(body.to, body.from));
@@ -44,8 +45,21 @@ app.post('/compose', zValidator('json', sendSchema), async (c) => {
     ? { address: body.from, name: body.fromName }
     : body.from;
 
+  // Forward threading headers to Cloudflare so replies thread correctly in the
+  // recipient's client too (In-Reply-To / References are allowlisted by CF).
+  const headers: Record<string, string> = {};
+  if (body.inReplyTo) headers['In-Reply-To'] = body.inReplyTo;
+  if (body.references) headers['References'] = body.references;
+
   const result = await sendEmail(
-    { from: fromField, to: body.to, subject: body.subject, html: body.html, text: body.text },
+    {
+      from: fromField,
+      to: body.to,
+      subject: body.subject,
+      html: body.html,
+      text: body.text,
+      ...(Object.keys(headers).length ? { headers } : {}),
+    },
     env.CF_API_TOKEN,
     env.CF_ACCOUNT_ID,
   );
@@ -53,9 +67,9 @@ app.post('/compose', zValidator('json', sendSchema), async (c) => {
   const id = generateId();
   await rawDb.run(
     `INSERT INTO sent_inbox_emails
-       (id, person_id, in_reply_to, from_address, to_address, subject, status, cf_message_id, sent_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, personId, body.inReplyTo ?? null, body.from, body.to, body.subject, 'sent', result?.id ?? null, now],
+       (id, person_id, in_reply_to, "references", from_address, to_address, subject, status, cf_message_id, sent_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, personId, body.inReplyTo ?? null, body.references ?? null, body.from, body.to, body.subject, 'sent', result?.id ?? null, now],
   );
 
   return c.json({ ok: true, id });

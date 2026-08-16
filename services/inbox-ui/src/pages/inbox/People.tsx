@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader2, Search, Send, MailOpen, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2, Search, Send, MailOpen, ChevronDown, ChevronRight, Reply, PenLine } from 'lucide-react';
 import {
-  getPeople, getThread, markRead, replyTo,
-  Person, Thread, ThreadItem,
+  getPeople, getThread, markRead, replyTo, composeSend, getInboxes,
+  Person, Thread, ThreadItem, Inbox as InboxType,
 } from '../../api';
 import { cn } from '@/lib/utils';
+import { groupThread, replyReferences } from '@/lib/threading';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 import OwnerAccessBanner from '../../components/OwnerAccessBanner';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -89,9 +93,10 @@ function ContactRow({ person, selected, onClick }: {
 
 // ── Email card ────────────────────────────────────────────────────────────────
 
-function EmailCard({ item, defaultOpen = false }: {
+function EmailCard({ item, defaultOpen = false, onReply }: {
   item: ThreadItem;
   defaultOpen?: boolean;
+  onReply?: (item: ThreadItem) => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const isSent = item.direction === 'outbound';
@@ -105,47 +110,61 @@ function EmailCard({ item, defaultOpen = false }: {
       'rounded-lg border overflow-hidden transition-shadow',
       open ? 'border-zinc-200 shadow-sm' : 'border-zinc-100 hover:border-zinc-200',
     )}>
-      <button
-        className="w-full flex items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-zinc-50/60"
-        onClick={() => setOpen(v => !v)}
-      >
-        {/* Sender avatar */}
-        <div className={cn(
-          'size-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-semibold',
-          isSent ? 'bg-orange-100 text-orange-700' : 'bg-zinc-200 text-zinc-600',
-        )}>
-          {isSent ? 'Me' : subject?.[0]?.toUpperCase() ?? '?'}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="text-[12.5px] font-semibold text-zinc-800 truncate">
-              {isSent ? 'You' : subject || '(no subject)'}
-            </p>
-            <span className="text-[11px] text-zinc-400 shrink-0 tabular-nums">
-              {date.toLocaleString(undefined, {
-                month: 'short', day: 'numeric',
-                hour: 'numeric', minute: '2-digit',
-              })}
-            </span>
+      <div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-zinc-50/60">
+        <button
+          className="flex-1 flex items-start gap-3 text-left min-w-0"
+          onClick={() => setOpen(v => !v)}
+        >
+          {/* Sender avatar */}
+          <div className={cn(
+            'size-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-semibold',
+            isSent ? 'bg-orange-100 text-orange-700' : 'bg-zinc-200 text-zinc-600',
+          )}>
+            {isSent ? 'Me' : subject?.[0]?.toUpperCase() ?? '?'}
           </div>
-          {!open && preview && (
-            <p className="text-[12px] text-zinc-400 truncate mt-0.5">{preview}</p>
-          )}
-          {isSent && (
-            <span className="mt-1 inline-block text-[10.5px] text-orange-600 bg-orange-50 border border-orange-100 rounded px-1.5 py-0.5 font-medium">
-              Sent
-            </span>
-          )}
-        </div>
 
-        {/* Chevron */}
-        <ChevronDown
-          size={13}
-          className={cn('text-zinc-300 shrink-0 mt-0.5 transition-transform', open && 'rotate-180')}
-        />
-      </button>
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[12.5px] font-semibold text-zinc-800 truncate">
+                {isSent ? 'You' : subject || '(no subject)'}
+              </p>
+              <span className="text-[11px] text-zinc-400 shrink-0 tabular-nums">
+                {date.toLocaleString(undefined, {
+                  month: 'short', day: 'numeric',
+                  hour: 'numeric', minute: '2-digit',
+                })}
+              </span>
+            </div>
+            {!open && preview && (
+              <p className="text-[12px] text-zinc-400 truncate mt-0.5">{preview}</p>
+            )}
+            {isSent && (
+              <span className="mt-1 inline-block text-[10.5px] text-orange-600 bg-orange-50 border border-orange-100 rounded px-1.5 py-0.5 font-medium">
+                Sent
+              </span>
+            )}
+          </div>
+
+          {/* Chevron */}
+          <ChevronDown
+            size={13}
+            className={cn('text-zinc-300 shrink-0 mt-0.5 transition-transform', open && 'rotate-180')}
+          />
+        </button>
+
+        {/* Per-message reply */}
+        {onReply && (
+          <button
+            onClick={() => onReply(item)}
+            className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded text-[11px] font-medium text-zinc-500 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+            title={`Reply to ${isSent ? 'this message' : subject ?? 'message'}`}
+          >
+            <Reply size={12} />
+            Reply
+          </button>
+        )}
+      </div>
 
       {open && (
         <div className="px-4 pb-4 pt-1 border-t border-zinc-100">
@@ -164,35 +183,14 @@ function EmailCard({ item, defaultOpen = false }: {
 function ThreadPanel({ person, thread, onReply }: {
   person: Person;
   thread: Thread;
-  onReply: (params: { text: string; subject: string }) => Promise<void>;
+  onReply: (item: ThreadItem) => void;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [replyText, setReplyText] = useState('');
-  const [subject, setSubject] = useState('');
-  const [sending, setSending] = useState(false);
+  const groups = groupThread(thread.thread);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [thread.thread.length]);
-
-  const lastReceived = [...thread.thread]
-    .reverse()
-    .find(e => e.direction === 'inbound') as ThreadItem | undefined;
-
-  async function handleSend() {
-    if (!replyText.trim()) return;
-    setSending(true);
-    try {
-      await onReply({
-        text: replyText.trim(),
-        subject: subject.trim() || `Re: ${lastReceived?.subject ?? '(no subject)'}`,
-      });
-      setReplyText('');
-      setSubject('');
-    } finally {
-      setSending(false);
-    }
-  }
 
   return (
     <div className="flex flex-col h-full">
@@ -211,60 +209,35 @@ function ThreadPanel({ person, thread, onReply }: {
           )}
         </div>
         <span className="text-[11.5px] text-zinc-400 shrink-0">
-          {thread.thread.length} message{thread.thread.length !== 1 ? 's' : ''}
+          {groups.length} conversation{groups.length !== 1 ? 's' : ''}
         </span>
       </div>
 
-      {/* Email cards */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-2">
-        {thread.thread.map((item, i) => (
-          <EmailCard
-            key={item.id}
-            item={item}
-            defaultOpen={i === thread.thread.length - 1}
-          />
+      {/* Threads */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
+        {groups.map(group => (
+          <div key={group.key} className="flex flex-col gap-2">
+            {/* Sub-thread label */}
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide truncate">
+                {group.subject ?? '(no subject)'}
+              </span>
+              <span className="text-[10.5px] text-zinc-300 shrink-0">
+                {group.items.length} msg{group.items.length !== 1 ? 's' : ''}
+              </span>
+              <span className="flex-1 h-px bg-zinc-100" />
+            </div>
+            {group.items.map((item, i) => (
+              <EmailCard
+                key={item.id}
+                item={item}
+                defaultOpen={i === group.items.length - 1}
+                onReply={onReply}
+              />
+            ))}
+          </div>
         ))}
         <div ref={bottomRef} />
-      </div>
-
-      {/* Compose reply */}
-      <div className="border-t border-border p-4 shrink-0">
-        <div className="rounded-lg border border-zinc-200 bg-white overflow-hidden">
-          <input
-            value={subject}
-            onChange={e => setSubject(e.target.value)}
-            placeholder={`Re: ${lastReceived?.subject ?? '(no subject)'}`}
-            className="w-full px-4 py-2.5 text-[12.5px] text-zinc-700 border-b border-zinc-100
-              bg-transparent outline-none placeholder:text-zinc-400"
-          />
-          <textarea
-            value={replyText}
-            onChange={e => setReplyText(e.target.value)}
-            placeholder="Write a reply…"
-            rows={3}
-            className="w-full px-4 py-3 text-[13px] text-zinc-800 bg-transparent outline-none
-              resize-none placeholder:text-zinc-400"
-            onKeyDown={e => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSend();
-            }}
-          />
-          <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-50 border-t border-zinc-100">
-            <span className="text-[11px] text-zinc-400">⌘ Enter to send</span>
-            <button
-              onClick={handleSend}
-              disabled={sending || !replyText.trim()}
-              className="inline-flex items-center gap-1.5 h-7 px-3 rounded-md bg-orange-500 text-white
-                text-[12px] font-medium hover:bg-orange-600
-                disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              {sending
-                ? <Loader2 size={11} className="animate-spin" />
-                : <Send size={11} />
-              }
-              Send
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -291,7 +264,16 @@ export default function People() {
   const [thread, setThread] = useState<Thread | null>(null);
   const [loadingPeople, setLoadingPeople] = useState(true);
   const [loadingThread, setLoadingThread] = useState(false);
-  const [fromAddress, setFromAddress] = useState('');
+  const [inboxes, setInboxes] = useState<InboxType[]>([]);
+
+  // Compose dialog state
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTo, setComposeTo] = useState('');
+  const [composeFrom, setComposeFrom] = useState('');
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeBody, setComposeBody] = useState('');
+  const [composeSending, setComposeSending] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<ThreadItem | null>(null);
 
   useEffect(() => {
     setLoadingPeople(true);
@@ -299,6 +281,10 @@ export default function People() {
       .then(({ data }) => setPeople(data))
       .finally(() => setLoadingPeople(false));
   }, [search]);
+
+  useEffect(() => {
+    getInboxes().then(setInboxes).catch(() => {});
+  }, []);
 
   async function selectPerson(id: string) {
     setSelectedId(id);
@@ -313,27 +299,58 @@ export default function People() {
     }
   }
 
-  async function handleReply({ text, subject }: { text: string; subject: string }) {
-    if (!selectedId || !thread) return;
-    const lastReceived = [...thread.thread]
-      .reverse()
-      .find(e => e.direction === 'inbound') as ThreadItem | undefined;
-    if (!lastReceived) return;
+  // Open compose dialog for a brand-new email (to anyone).
+  function openCompose() {
+    setReplyTarget(null);
+    // Prefill with the selected contact if there is one; otherwise blank.
+    setComposeTo(selected?.email ?? '');
+    setComposeFrom(inboxes[0]?.email ?? '');
+    setComposeSubject('');
+    setComposeBody('');
+    setComposeOpen(true);
+  }
 
-    // Reply FROM the inbox address the sender wrote to, TO the sender.
-    const from = lastReceived.inbox_address ?? fromAddress;
-    if (!from) return;
+  // Open compose dialog pre-filled as a reply to a specific message.
+  function openReply(target: ThreadItem) {
+    setReplyTarget(target);
+    setComposeTo(thread?.person.email ?? '');
+    setComposeFrom(target.inbox_address ?? inboxes[0]?.email ?? '');
+    setComposeSubject(target.direction === 'inbound' ? `Re: ${target.subject ?? ''}` : target.subject ?? '');
+    setComposeBody('');
+    setComposeOpen(true);
+  }
 
-    await replyTo({
-      personId: selectedId,
-      to: thread.person.email,
-      from,
-      subject,
-      text,
-      replyToMessageId: lastReceived.message_id ?? '',
-    });
-    const updated = await getThread(selectedId);
-    setThread(updated);
+  async function handleComposeSend() {
+    if (!composeBody.trim() || !composeTo.trim() || !composeFrom.trim()) return;
+    setComposeSending(true);
+    try {
+      if (replyTarget && selectedId) {
+        await replyTo({
+          personId: selectedId,
+          to: composeTo,
+          from: composeFrom,
+          subject: composeSubject,
+          text: composeBody.trim(),
+          replyToMessageId: replyTarget.message_id ?? '',
+          references: replyReferences(replyTarget),
+        });
+      } else {
+        await composeSend({
+          to: composeTo,
+          from: composeFrom,
+          subject: composeSubject,
+          text: composeBody.trim(),
+          personId: selectedId ?? undefined,
+        });
+      }
+      setComposeOpen(false);
+      if (selectedId) {
+        const updated = await getThread(selectedId);
+        setThread(updated);
+      }
+    } finally {
+      setComposeSending(false);
+    }
   }
 
   const filtered = people.filter(p => filter === 'unread' ? p.unread_count > 0 : true);
@@ -346,6 +363,17 @@ export default function People() {
 
       {/* ── Left: contact list ── */}
       <div className="w-[272px] shrink-0 flex flex-col border-r border-border h-full">
+
+        {/* Compose (global) */}
+        <div className="px-3 pt-3 shrink-0">
+          <button
+            onClick={openCompose}
+            className="w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-md bg-orange-500 text-white text-[12.5px] font-medium hover:bg-orange-600 transition-colors"
+          >
+            <PenLine size={13} />
+            Compose
+          </button>
+        </div>
 
         {/* Search + filter bar */}
         <div className="h-14 border-b border-border flex items-center gap-2 px-3 shrink-0">
@@ -409,7 +437,7 @@ export default function People() {
           <ThreadPanel
             person={selected}
             thread={thread}
-            onReply={handleReply}
+            onReply={openReply}
           />
         ) : (
           <EmptyState message="Select a contact to view their thread" />
@@ -417,6 +445,75 @@ export default function People() {
       </div>
 
       </div>
+
+      {/* ── Compose / Reply dialog ── */}
+      <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{replyTarget ? 'Reply' : 'New email'}</DialogTitle>
+            {replyTarget && (
+              <p className="text-[12px] text-muted-foreground">
+                Replying to <span className="font-medium text-foreground">{replyTarget.subject ?? '(no subject)'}</span>
+              </p>
+            )}
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-medium text-muted-foreground">From</span>
+                <input
+                  value={composeFrom}
+                  onChange={e => setComposeFrom(e.target.value)}
+                  list="compose-from-inboxes"
+                  className="h-8 px-2.5 rounded-md border border-border text-[12.5px] outline-none focus:border-orange-300"
+                />
+                <datalist id="compose-from-inboxes">
+                  {inboxes.map(ib => <option key={ib.id} value={ib.email} />)}
+                </datalist>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-medium text-muted-foreground">To</span>
+                <input
+                  value={composeTo}
+                  onChange={e => setComposeTo(e.target.value)}
+                  className="h-8 px-2.5 rounded-md border border-border text-[12.5px] outline-none focus:border-orange-300"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-medium text-muted-foreground">Subject</span>
+              <input
+                value={composeSubject}
+                onChange={e => setComposeSubject(e.target.value)}
+                className="h-8 px-2.5 rounded-md border border-border text-[12.5px] outline-none focus:border-orange-300"
+              />
+            </div>
+            <textarea
+              value={composeBody}
+              onChange={e => setComposeBody(e.target.value)}
+              placeholder="Write your message…"
+              rows={8}
+              className="w-full px-3 py-2.5 rounded-md border border-border text-[13px] outline-none resize-none focus:border-orange-300"
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setComposeOpen(false)}
+              className="h-8 px-3 rounded-md border border-border text-[12.5px] text-muted-foreground hover:bg-muted transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleComposeSend}
+              disabled={composeSending || !composeBody.trim() || !composeTo.trim() || !composeFrom.trim()}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-orange-500 text-white text-[12.5px] font-medium hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {composeSending && <Loader2 size={12} className="animate-spin" />}
+              {composeSending ? 'Sending…' : 'Send'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

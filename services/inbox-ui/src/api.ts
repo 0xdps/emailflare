@@ -120,6 +120,7 @@ export interface ThreadItem {
   body_r2_key: string | null;
   message_id: string | null;
   in_reply_to: string | null;
+  references: string | null;
   is_read: number;
   timestamp: string;
   inbox_address?: string | null;
@@ -208,6 +209,7 @@ export async function replyTo(params: {
   subject: string;
   text: string;
   replyToMessageId: string;
+  references?: string;
 }): Promise<void> {
   await api.post('/api/inbox/compose', {
     to: params.to,
@@ -215,6 +217,7 @@ export async function replyTo(params: {
     subject: params.subject,
     text: params.text,
     inReplyTo: params.replyToMessageId,
+    references: params.references,
     personId: params.personId,
   });
 }

@@ -75,18 +75,19 @@ export async function handleIncomingEmail(payload: EmailPayload): Promise<void> 
   const emailId   = generateId();
   const messageId = email.messageId ?? null;
   const inReplyTo = email.inReplyTo ?? null;
+  const references = email.references ?? null;
 
   await rawDb.run(
     `INSERT INTO inbox_emails
        (id, person_id, inbox_address, subject, body_html, body_text, body_r2_key,
-        message_id, in_reply_to, spf, dkim, dmarc, is_read, received_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+        message_id, in_reply_to, "references", spf, dkim, dmarc, is_read, received_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
      ON CONFLICT (message_id) DO NOTHING`,
     [
       emailId, person.id, inboxAddress,
       email.subject ?? '(no subject)',
       storedBodyHtml, bodyText, bodyR2Key,
-      messageId, inReplyTo,
+      messageId, inReplyTo, references,
       payload.spf ?? null, payload.dkim ?? null, payload.dmarc ?? null,
       now,
     ],
