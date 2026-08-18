@@ -39,7 +39,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
       : await templates.findOne({ where: { id: body.templateId! } });
     if (!template) return c.json({ error: 'Template not found' }, 404);
 
-    const vars = body.variables ?? {};
+    const vars = (body.variables ?? {}) as Record<string, unknown>;
     subject = applyVariables(body.subject ?? template.subject, vars);
 
     if (template.layout) {

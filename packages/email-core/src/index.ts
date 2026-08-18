@@ -12,6 +12,7 @@
 
 import { z } from 'zod';
 import { customAlphabet } from 'nanoid';
+import Handlebars from 'handlebars';
 
 // ── Row interfaces ─────────────────────────────────────────────────────────────
 // SQLite columns use INTEGER for booleans (0 | 1) and TEXT for dates (ISO 8601).
@@ -128,7 +129,7 @@ export const sendSchema = z.object({
   text: z.string().optional(),
   templateId: z.string().optional(),
   templateSlug: z.string().optional(),
-  variables: z.record(z.string()).optional(),
+  variables: z.record(z.unknown()).optional(),
   themeId: z.string().optional(),
   // List management / unsubscribe
   listId: z.string().optional(),
@@ -151,7 +152,7 @@ export type DomainCreateInput = z.infer<typeof domainCreateSchema>;
 /** POST /api/templates — create or update an email template. */
 export const templateSchema = z.object({
   name: z.string().min(1),
-  slug: z.string().regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, hyphens').optional(),
+  slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, hyphens'),
   subject: z.string().min(1),
   htmlBody: z.string().min(1),
   textBody: z.string().optional(),
@@ -208,11 +209,18 @@ export function shortId(n = 4): string {
 }
 
 /**
- * Substitute `{{variableName}}` placeholders in a string with values from `vars`.
- * Unknown placeholders are left as-is.
+ * Render a Handlebars template string with the given variables.
+ *
+ * Supports the full Handlebars feature set: `{{name}}`, `{{#each items}}`,
+ * `{{#if condition}}`, helpers, and more. Missing variables render as an empty
+ * string (Handlebars default), so a variable omitted from `vars` is dropped
+ * rather than left as a literal `{{token}}`.
+ *
+ * ⚠️ Templates authored against the old `{{variable}}`-only syntax remain
+ * fully compatible — plain `{{name}}` interpolation behaves identically.
  */
-export function applyVariables(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
+export function applyVariables(template: string, vars: Record<string, unknown>): string {
+  return Handlebars.compile(template, { noEscape: true })(vars);
 }
 
 /**

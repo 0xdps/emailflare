@@ -122,7 +122,7 @@ export const LAYOUTS: Record<LayoutName, { label: string; variables: string[] }>
   'support-ticket-reply':   { label: 'Support Ticket Reply',    variables: ['name', 'appName', 'ticketId', 'agentName', 'messageSnippet', 'ticketUrl'] },
 };
 
-export async function renderLayout(layout: LayoutName, variables: Record<string, string>, themeId?: string): Promise<string> {
+export async function renderLayout(layout: LayoutName, variables: Record<string, unknown>, themeId?: string): Promise<string> {
   const theme = THEMES[themeId ?? 'default'] ?? THEMES['default'];
   const tailwindConfig = themeToTailwindConfig(theme);
   const components: Record<LayoutName, React.FC<Record<string, string>>> = {
@@ -181,5 +181,5 @@ export async function renderLayout(layout: LayoutName, variables: Record<string,
   const Component = components[layout];
   if (!Component) throw new Error(`Unknown layout: ${layout}`);
 
-  return runWithTheme(tailwindConfig, () => render(React.createElement(Component, variables)));
+  return runWithTheme(tailwindConfig, () => render(React.createElement(Component, variables as Record<string, string>)));
 }

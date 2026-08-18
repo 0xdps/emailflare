@@ -203,7 +203,7 @@ export default function TemplatesPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     const payload = {
-      name: form.name, slug: form.slug || undefined,
+      name: form.name, slug: form.slug,
       subject: form.subject, htmlBody: form.htmlBody,
       textBody: form.textBody || undefined, domainId: form.domainId || undefined,
     };
@@ -289,12 +289,13 @@ export default function TemplatesPage() {
               <Input value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))} required />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label>Slug <span className="text-muted-foreground font-normal">(auto-generated if empty)</span></Label>
+              <Label>Slug <span className="text-muted-foreground font-normal">(required)</span></Label>
               <Input
                 value={form.slug}
                 onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
-                placeholder="auto-generated-from-name"
+                placeholder="welcome-email"
                 className="font-mono"
+                required
               />
               <p className="text-[10px] text-muted-foreground">Used as <code className="text-muted-foreground">templateSlug</code> in the send API.</p>
             </div>

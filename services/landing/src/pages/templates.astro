@@ -1,0 +1,468 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Email templates — EmailFlare"
+  description="Create custom email templates with Handlebars variables, loops, and conditionals — or use one of 50 built-in React Email layouts with themes. Reference any template by slug from POST /v1/send."
+  keywords="emailflare templates, email template handlebars, custom email templates, react email layouts, email template variables, template slug"
+  canonical="https://emailflare.dev/templates"
+  ogUrl="https://emailflare.dev/templates"
+  ogType="article"
+  navType="docs"
+  navTitle="Templates"
+>
+
+<style is:global>
+  /* ── TEMPLATES PAGE ───────────────────────────────────────── */
+
+  /* HERO */
+  .tpl-hero {
+    background: oklch(14% 0.016 48);
+    padding: clamp(3rem, 7vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
+    overflow: hidden;
+  }
+
+  .tpl-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: oklch(22% 0.04 48 / 0.8);
+    color: oklch(68% 0.14 55);
+    font-size: 12px; font-weight: 500;
+    padding: 4px 13px;
+    border-radius: 100px;
+    border: 1px solid oklch(35% 0.08 55 / 0.5);
+    margin-bottom: 22px;
+  }
+
+  .tpl-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.875rem, 4vw, 2.75rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: oklch(95% 0.008 58);
+    margin-bottom: 16px;
+  }
+
+  .tpl-hero h1 em { font-style: italic; color: var(--orange); }
+
+  .tpl-hero-sub {
+    font-size: 1rem;
+    color: oklch(58% 0.01 58);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  /* LAYOUT */
+  .tpl-layout {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    gap: 0;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    .tpl-layout { grid-template-columns: 1fr; }
+    .tpl-sidebar { display: none; }
+  }
+
+  .tpl-sidebar {
+    position: sticky;
+    top: 82px;
+    padding: 32px 0 32px;
+    border-right: 1px solid var(--border);
+  }
+
+  .tpl-label {
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 16px; margin-bottom: 10px;
+  }
+
+  .tpl-nav { list-style: none; }
+  .tpl-nav li a {
+    display: block; padding: 6px 16px;
+    font-size: 13px; color: var(--text-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .tpl-nav li a:hover { color: var(--text); border-left-color: var(--orange); }
+
+  .tpl-main { padding: 32px 0 56px 40px; }
+  @media (max-width: 760px) { .tpl-main { padding: 32px 0 48px; } }
+
+  /* SECTION */
+  .tpl-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .tpl-section-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-alt);
+  }
+
+  .tpl-section-header h2 {
+    font-size: 1.0625rem; font-weight: 600;
+    letter-spacing: -0.01em; flex: 1; margin: 0;
+  }
+
+  .tpl-anchor {
+    font-size: 12px; color: var(--text-muted);
+    text-decoration: none; font-family: var(--font-mono);
+  }
+  .tpl-anchor:hover { color: var(--orange); }
+
+  .tpl-body { padding: 24px; }
+  .tpl-body > p:first-child { margin-top: 0; }
+  .tpl-body > *:last-child { margin-bottom: 0; }
+
+  .tpl-body p {
+    font-size: 0.9rem; color: var(--text-muted);
+    line-height: 1.75; margin-bottom: 14px;
+  }
+
+  .tpl-body h3 {
+    font-size: 0.875rem; font-weight: 600;
+    letter-spacing: -0.005em;
+    margin: 22px 0 12px; color: var(--text);
+  }
+  .tpl-body h3:first-child { margin-top: 0; }
+
+  .tpl-body ul { padding-left: 18px; margin-bottom: 14px; }
+  .tpl-body ul li {
+    font-size: 0.9rem; color: var(--text-muted);
+    line-height: 1.75; margin-bottom: 5px;
+  }
+  .tpl-body ul li::marker { color: var(--orange); }
+
+  .tpl-body code {
+    font-family: var(--font-mono); font-size: 12px;
+    background: oklch(93% 0.006 60);
+    border: 1px solid var(--border-strong);
+    padding: 1px 5px; border-radius: 4px;
+    color: var(--orange-dark);
+  }
+
+  /* TABLE */
+  .tpl-table-wrap { overflow-x: auto; margin: 14px 0; }
+  .tpl-body table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tpl-body th {
+    text-align: left; padding: 9px 12px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-alt);
+  }
+  .tpl-body td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; line-height: 1.6; }
+  .tpl-body tr:last-child td { border-bottom: none; }
+  .tpl-body td:first-child code { background: var(--orange-light); border-color: var(--orange-mid); color: var(--orange-dark); }
+
+  /* CODE BLOCK */
+  .tpl-code {
+    background: oklch(14% 0.016 48);
+    border: 1px solid oklch(24% 0.016 48);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: var(--font-mono);
+    font-size: 12.5px; line-height: 1.85;
+    overflow-x: auto; margin: 14px 0;
+    white-space: pre-wrap;
+  }
+  .tc-cmd   { color: oklch(82% 0.06 58); }
+  .tc-str   { color: oklch(74% 0.12 140); }
+  .tc-key   { color: oklch(78% 0.12 230); }
+  .tc-punct { color: oklch(62% 0.06 58); }
+  .tc-cmt   { color: oklch(44% 0.01 58); font-style: italic; }
+  .tc-plain { color: oklch(75% 0.01 58); }
+
+  /* CALLOUT */
+  .tpl-callout {
+    display: flex; gap: 11px; align-items: flex-start;
+    padding: 13px 16px; border-radius: var(--radius);
+    font-size: 0.875rem; line-height: 1.65; margin: 16px 0;
+  }
+  .tpl-callout-icon { font-size: 15px; flex-shrink: 0; }
+  .tpl-callout-orange { background: var(--orange-light); border: 1px solid var(--orange-mid); color: var(--orange-dark); }
+  .tpl-callout-green  { background: oklch(95% 0.012 150); border: 1px solid oklch(82% 0.08 150); color: oklch(36% 0.1 150); }
+
+  /* THEME CHIPS */
+  .tpl-themes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .tpl-theme-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--bg-alt); border: 1px solid var(--border);
+    border-radius: 100px; padding: 5px 14px; font-size: 13px;
+  }
+  .tpl-theme-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* NEXT CARDS */
+  .tpl-next { background: var(--bg-alt); border-top: 1px solid var(--border); padding: clamp(2.5rem, 6vw, 4rem) 0; }
+  .tpl-next-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 28px; }
+  .tpl-next-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 20px 22px;
+    text-decoration: none; color: var(--text);
+    transition: border-color 0.15s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .tpl-next-card:hover { border-color: var(--border-strong); }
+  .tpl-next-card .nc-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); }
+  .tpl-next-card h3 { font-size: 0.9375rem; font-weight: 600; }
+  .tpl-next-card p  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+</style>
+
+  <!-- HERO -->
+  <div class="tpl-hero">
+    <div class="container">
+      <div class="tpl-badge">Templates</div>
+      <h1>Email templates with <em>Handlebars</em>,<br />or one of 50 built-in layouts.</h1>
+      <p class="tpl-hero-sub">
+        Store custom templates with variables, loops, and conditionals — or reference a
+        React Email layout and switch themes per send. Every template is sent by
+        <code style="font-family:var(--font-mono);font-size:12px;background:oklch(24% 0.03 48);border:1px solid oklch(32% 0.02 48);color:oklch(74% 0.1 55);padding:1px 5px;border-radius:4px;">templateSlug</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div style="border-bottom: 1px solid var(--border);">
+    <div class="tpl-layout">
+      <!-- SIDEBAR -->
+      <aside class="tpl-sidebar">
+        <div class="tpl-label">On this page</div>
+        <ul class="tpl-nav">
+          <li><a href="#custom">Custom templates</a></li>
+          <li><a href="#variables">Variables</a></li>
+          <li><a href="#logic">Loops &amp; conditionals</a></li>
+          <li><a href="#layouts">Built-in layouts</a></li>
+          <li><a href="#managing">Managing templates</a></li>
+          <li><a href="#sending">Sending with a template</a></li>
+        </ul>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="tpl-main">
+
+        <!-- CUSTOM -->
+        <section class="tpl-section" id="custom">
+          <div class="tpl-section-header">
+            <h2>Custom templates</h2>
+            <a class="tpl-anchor" href="#custom">#custom</a>
+          </div>
+          <div class="tpl-body">
+            <p>A custom template is an HTML body (with an optional plain-text fallback) that you create and store. Reference it by its <code>slug</code>.</p>
+
+            <div class="tpl-table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Field</th><th>Required</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>name</code></td><td>✅</td><td>Label shown in the UI.</td></tr>
+                  <tr><td><code>slug</code></td><td>✅</td><td>Stable identifier used by <code>templateSlug</code>. Lowercase letters, numbers, hyphens.</td></tr>
+                  <tr><td><code>subject</code></td><td>✅</td><td>May contain Handlebars placeholders.</td></tr>
+                  <tr><td><code>htmlBody</code></td><td>✅</td><td>The HTML body with Handlebars placeholders.</td></tr>
+                  <tr><td><code>textBody</code></td><td>—</td><td>Optional plain-text fallback.</td></tr>
+                  <tr><td><code>domainId</code></td><td>—</td><td>Optionally scope the template to a domain.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="tpl-callout tpl-callout-orange">
+              <span class="tpl-callout-icon">⚡</span>
+              <span><strong>Slugs are mandatory.</strong> If the slug you pick already exists, EmailFlare appends a short suffix to keep it unique — always read the create response for the final slug.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- VARIABLES -->
+        <section class="tpl-section" id="variables">
+          <div class="tpl-section-header">
+            <h2>Variables</h2>
+            <a class="tpl-anchor" href="#variables">#variables</a>
+          </div>
+          <div class="tpl-body">
+            <p>Insert values with double curly braces, then pass them via <code>variables</code> on <code>/v1/send</code>:</p>
+
+            <div class="tpl-code"><span class="tc-plain">&lt;p&gt;Hi </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">name</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">,&lt;/p&gt;</span>
+<span class="tc-plain">&lt;p&gt;Order &lt;strong&gt;</span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">orderId</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">&lt;/strong&gt; is on its way.&lt;/p&gt;</span></div>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;</span>
+  <span class="tc-key">"to"</span><span class="tc-punct">:</span> <span class="tc-str">"alex@example.com"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"templateSlug"</span><span class="tc-punct">:</span> <span class="tc-str">"order-confirmation"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"variables"</span><span class="tc-punct">:</span> <span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Alex"</span><span class="tc-punct">,</span> <span class="tc-key">"orderId"</span><span class="tc-punct">:</span> <span class="tc-str">"ORD-1042"</span> <span class="tc-punct">&#125;</span>
+<span class="tc-punct">&#125;</span></div>
+
+            <div class="tpl-callout tpl-callout-green">
+              <span class="tpl-callout-icon">💡</span>
+              <span>If a variable is missing from the payload, it renders as an <strong>empty string</strong> — not as a literal <code>&#123;&#123;name&#125;&#125;</code> placeholder.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- LOOPS & CONDITIONALS -->
+        <section class="tpl-section" id="logic">
+          <div class="tpl-section-header">
+            <h2>Loops &amp; conditionals</h2>
+            <a class="tpl-anchor" href="#logic">#logic</a>
+          </div>
+          <div class="tpl-body">
+            <p>Custom templates render with <a href="https://handlebarsjs.com/" target="_blank" rel="noopener" style="color:var(--orange);text-decoration:none;">Handlebars</a>, so the full block syntax is available:</p>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;&#123;#</span><span class="tc-key">if</span> <span class="tc-key">items</span><span class="tc-punct">&#125;&#125;</span>
+  <span class="tc-plain">&lt;ul&gt;</span>
+    <span class="tc-punct">&#123;&#123;#</span><span class="tc-key">each</span> <span class="tc-key">items</span><span class="tc-punct">&#125;&#125;</span>
+      <span class="tc-plain">&lt;li&gt;</span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">name</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain"> — </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">price</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">&lt;/li&gt;</span>
+    <span class="tc-punct">&#123;&#123;/</span><span class="tc-key">each</span><span class="tc-punct">&#125;&#125;</span>
+  <span class="tc-plain">&lt;/ul&gt;</span>
+<span class="tc-punct">&#123;&#123;</span><span class="tc-key">else</span><span class="tc-punct">&#125;&#125;</span>
+  <span class="tc-plain">&lt;p&gt;Your cart is empty.&lt;/p&gt;</span>
+<span class="tc-punct">&#123;&#123;/</span><span class="tc-key">if</span><span class="tc-punct">&#125;&#125;</span></div>
+
+            <p><code>variables</code> accepts nested objects and arrays, so the example above works with:</p>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;</span>
+  <span class="tc-key">"templateSlug"</span><span class="tc-punct">:</span> <span class="tc-str">"cart-summary"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"variables"</span><span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>
+    <span class="tc-key">"items"</span><span class="tc-punct">:</span> <span class="tc-punct">[</span>
+      <span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Widget"</span><span class="tc-punct">,</span> <span class="tc-key">"price"</span><span class="tc-punct">:</span> <span class="tc-str">"$9.00"</span> <span class="tc-punct">&#125;,</span>
+      <span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Gadget"</span><span class="tc-punct">,</span> <span class="tc-key">"price"</span><span class="tc-punct">:</span> <span class="tc-str">"$14.50"</span> <span class="tc-punct">&#125;</span>
+    <span class="tc-punct">]</span>
+  <span class="tc-punct">&#125;</span>
+<span class="tc-punct">&#125;</span></div>
+
+            <p>Built-in helpers (<code>&#123;&#123;#unless&#125;&#125;</code>, <code>&#123;&#123;#with&#125;&#125;</code>, …) are all available.</p>
+          </div>
+        </section>
+
+        <!-- LAYOUTS -->
+        <section class="tpl-section" id="layouts">
+          <div class="tpl-section-header">
+            <h2>Built-in layouts</h2>
+            <a class="tpl-anchor" href="#layouts">#layouts</a>
+          </div>
+          <div class="tpl-body">
+            <p>EmailFlare seeds 50 system templates — one per React Email layout — on first run. Their HTML body is empty because the layout <em>is</em> the content. Reference them by slug exactly like custom templates:</p>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;</span> <span class="tc-key">"to"</span><span class="tc-punct">:</span> <span class="tc-str">"alex@example.com"</span><span class="tc-punct">,</span> <span class="tc-key">"templateSlug"</span><span class="tc-punct">:</span> <span class="tc-str">"welcome"</span><span class="tc-punct">,</span> <span class="tc-key">"variables"</span><span class="tc-punct">:</span> <span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Alex"</span><span class="tc-punct">,</span> <span class="tc-key">"appName"</span><span class="tc-punct">:</span> <span class="tc-str">"Acme"</span> <span class="tc-punct">&#125;</span> <span class="tc-punct">&#125;</span></div>
+
+            <h3>Themes</h3>
+            <p>Layout templates support colour themes via <code>themeId</code>. Switch per send — no CSS edits needed.</p>
+            <div class="tpl-themes">
+              <div class="tpl-theme-chip"><span class="tpl-theme-dot" style="background:#f97316;"></span><code>default</code></div>
+              <div class="tpl-theme-chip"><span class="tpl-theme-dot" style="background:#0ea5e9;"></span><code>ocean</code></div>
+              <div class="tpl-theme-chip"><span class="tpl-theme-dot" style="background:#16a34a;"></span><code>forest</code></div>
+              <div class="tpl-theme-chip"><span class="tpl-theme-dot" style="background:#7c3aed;"></span><code>violet</code></div>
+              <div class="tpl-theme-chip"><span class="tpl-theme-dot" style="background:#334155;"></span><code>slate</code></div>
+            </div>
+
+            <div class="tpl-callout tpl-callout-orange">
+              <span class="tpl-callout-icon">⚡</span>
+              <span><code>themeId</code> only applies to layout templates. Custom HTML templates ignore it — you control styling directly in the body.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- MANAGING -->
+        <section class="tpl-section" id="managing">
+          <div class="tpl-section-header">
+            <h2>Managing templates</h2>
+            <a class="tpl-anchor" href="#managing">#managing</a>
+          </div>
+          <div class="tpl-body">
+            <p>Create and edit templates from the <strong>Templates</strong> page in the admin UI — the live preview highlights resolved variables inline. Or use the admin API (session-authenticated <code>/api/templates</code>):</p>
+
+            <div class="tpl-code"><span class="tc-cmd">GET    /api/templates             # list templates</span>
+<span class="tc-cmd">GET    /api/templates/:idOrSlug   # fetch one (by id or slug)</span>
+<span class="tc-cmd">POST   /api/templates             # create</span>
+<span class="tc-cmd">PUT    /api/templates/:id         # update</span>
+<span class="tc-cmd">DELETE /api/templates/:id         # delete</span>
+<span class="tc-cmd">POST   /api/templates/:id/preview # render with variables + optional themeId</span></div>
+
+            <p>Create example:</p>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;</span>
+  <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Order confirmation"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"slug"</span><span class="tc-punct">:</span> <span class="tc-str">"order-confirmation"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"subject"</span><span class="tc-punct">:</span> <span class="tc-str">"Your order &#123;&#123;orderId&#125;&#125; is confirmed"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"htmlBody"</span><span class="tc-punct">:</span> <span class="tc-str">"&lt;p&gt;Hi &#123;&#123;name&#125;&#125;,&lt;/p&gt;&lt;p&gt;Order &#123;&#123;orderId&#125;&#125; is confirmed.&lt;/p&gt;"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"textBody"</span><span class="tc-punct">:</span> <span class="tc-str">"Hi &#123;&#123;name&#125;&#125;, your order &#123;&#123;orderId&#125;&#125; is confirmed."</span>
+<span class="tc-punct">&#125;</span></div>
+          </div>
+        </section>
+
+        <!-- SENDING -->
+        <section class="tpl-section" id="sending">
+          <div class="tpl-section-header">
+            <h2>Sending with a template</h2>
+            <a class="tpl-anchor" href="#sending">#sending</a>
+          </div>
+          <div class="tpl-body">
+            <p>Send by slug (preferred) or by id:</p>
+
+            <div class="tpl-code"><span class="tc-cmd">POST https://your-emailflare.com/v1/send</span>
+<span class="tc-key">Authorization</span><span class="tc-punct">:</span> <span class="tc-str">Bearer eflive_xxx</span>
+
+<span class="tc-punct">&#123;</span>
+  <span class="tc-key">"from"</span><span class="tc-punct">:</span> <span class="tc-str">"hello@yourdomain.com"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"to"</span><span class="tc-punct">:</span> <span class="tc-str">"alex@example.com"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"templateSlug"</span><span class="tc-punct">:</span> <span class="tc-str">"order-confirmation"</span><span class="tc-punct">,</span>
+  <span class="tc-key">"variables"</span><span class="tc-punct">:</span> <span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Alex"</span><span class="tc-punct">,</span> <span class="tc-key">"orderId"</span><span class="tc-punct">:</span> <span class="tc-str">"ORD-1042"</span> <span class="tc-punct">&#125;</span>
+<span class="tc-punct">&#125;</span></div>
+
+            <ul>
+              <li><code>subject</code> on the send payload overrides the template subject.</li>
+              <li><code>variables</code> are applied to both the subject and the body.</li>
+              <li>At least one of <code>templateSlug</code>, <code>templateId</code>, <code>html</code>, or <code>text</code> must be present.</li>
+              <li>Test keys (<code>eftest_</code>) capture the rendered email into the Test Mailbox — verify without burning real delivery.</li>
+            </ul>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- NEXT -->
+  <section class="tpl-next">
+    <div class="container">
+      <h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">Keep going</h2>
+      <p style="font-size:0.9rem;color:var(--text-muted);">More EmailFlare reference material.</p>
+      <div class="tpl-next-cards">
+        <a class="tpl-next-card" href="/docs">
+          <span class="nc-label">API Reference</span>
+          <h3>Read the API docs</h3>
+          <p>The complete reference for <code>/v1/send</code>, authentication, error codes, and troubleshooting.</p>
+        </a>
+        <a class="tpl-next-card" href="/cloudflare-token">
+          <span class="nc-label">Setup</span>
+          <h3>Cloudflare API token guide</h3>
+          <p>Exact permissions needed for Email Sending, DNS, and routing rules.</p>
+        </a>
+        <a class="tpl-next-card" href="https://github.com/0xdps/emailflare/blob/trunk/docs/TEMPLATES.md" target="_blank" rel="noopener">
+          <span class="nc-label">Source</span>
+          <h3>Templates on GitHub</h3>
+          <p>The Markdown version of this guide, kept in the repository.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <ul slot="footer-links" class="footer-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">GitHub</a></li>
+    <li><a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
+  </ul>
+
+</Base>

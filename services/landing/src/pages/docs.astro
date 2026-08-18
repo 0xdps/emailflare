@@ -503,7 +503,7 @@ import Base from '../layouts/Base.astro';
                     <td><code>variables</code></td>
                     <td>object</td>
                     <td><span class="pill pill-opt">optional</span></td>
-                    <td>Key/value map for <code>&#123;&#123;variable&#125;&#125;</code> interpolation in subject and body.</td>
+                    <td>Key/value map for <code>&#123;&#123;variable&#125;&#125;</code> interpolation in subject and body. Supports Handlebars loops and conditionals — see <a href="/templates" style="color:var(--orange);">templates</a>.</td>
                   </tr>
                   <tr>
                     <td><code>html</code></td>
@@ -625,7 +625,7 @@ import Base from '../layouts/Base.astro';
             <a class="anchor-link" href="#templates">#templates</a>
           </div>
           <div class="doc-body">
-            <p>EmailFlare ships 50 layout-based templates built with React Email. Reference them by their <code>templateSlug</code>. Pass <code>themeId</code> to switch colour palettes per send — no CSS edits needed.</p>
+            <p>EmailFlare ships 50 layout-based templates built with React Email. Reference them by their <code>templateSlug</code>. Pass <code>themeId</code> to switch colour palettes per send — no CSS edits needed. For custom templates, see the <a href="/templates" style="color:var(--orange);text-decoration:none;">templates guide →</a></p>
 
             <h3>Available themes</h3>
             <div class="theme-list">
@@ -645,7 +645,8 @@ import Base from '../layouts/Base.astro';
             <ul>
               <li>Prefer <code>templateSlug</code> over <code>templateId</code> — slugs are stable across restores.</li>
               <li>Variable names follow the <code>&#123;&#123;camelCase&#125;&#125;</code> convention used in the template body and subject.</li>
-              <li>If a variable is missing from the payload, it renders as the literal <code>&#123;&#123;variableName&#125;&#125;</code> placeholder.</li>
+              <li>If a variable is missing from the payload, it renders as an empty string — not as the literal <code>&#123;&#123;variableName&#125;&#125;</code> placeholder.</li>
+              <li>Custom templates use Handlebars, so loops (<code>&#123;&#123;#each&#125;&#125;</code>) and conditionals (<code>&#123;&#123;#if&#125;&#125;</code>) work. See the <a href="/templates" style="color:var(--orange);text-decoration:none;">templates guide →</a></li>
               <li><code>themeId</code> only applies to layout-based templates. Custom HTML templates ignore it.</li>
             </ul>
           </div>

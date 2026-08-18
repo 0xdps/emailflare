@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { generateId, templateSchema, toSlug, enrich, shortId } from '@emailflare/email-core';
+import { generateId, templateSchema, toSlug, enrich, shortId, applyVariables } from '@emailflare/email-core';
 import { makeDb } from '../db.js';
 import type { TemplateRow } from '../db.js';
 import { renderLayout, LAYOUTS, THEMES } from '@emailflare/emails';
@@ -44,10 +44,9 @@ app.post('/', zValidator('json', templateSchema), async (c) => {
   const { templates } = makeDb();
   const body = c.req.valid('json');
   const now  = new Date().toISOString();
-  const slug = body.slug ?? toSlug(body.name);
 
-  const existing  = await templates.findOne({ where: { slug } });
-  const finalSlug = existing ? `${slug}-${shortId(4)}` : slug;
+  const existing  = await templates.findOne({ where: { slug: body.slug } });
+  const finalSlug = existing ? `${body.slug}-${shortId(4)}` : body.slug;
 
   const row = await templates.insert({
     id:         generateId(),
@@ -116,19 +115,18 @@ app.post('/:id/preview', async (c) => {
     ?? (await templates.findOne({ where: { slug: key } }));
   if (!row) return c.json({ error: 'Template not found' }, 404);
 
-  const body: { variables?: Record<string, string>; themeId?: string } =
+  const body: { variables?: Record<string, unknown>; themeId?: string } =
     await c.req.json().catch(() => ({}));
-  const variables: Record<string, string> = body.variables ?? {};
-  const sub = (s: string) => s.replace(/\{\{(\w+)\}\}/g, (_, k) => variables[k] ?? `{{${k}}}`);
+  const variables: Record<string, unknown> = body.variables ?? {};
 
   let html: string;
   if (row.layout) {
     html = await renderLayout(row.layout as LayoutName, variables, body.themeId);
   } else {
-    html = sub(row.html_body);
+    html = applyVariables(row.html_body, variables);
   }
 
-  return c.json({ html, subject: sub(row.subject) });
+  return c.json({ html, subject: applyVariables(row.subject, variables) });
 });
 
 export default app;

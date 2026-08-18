@@ -4,7 +4,7 @@ import { db, templates } from '../db.js';
 import { LAYOUTS, renderLayout, THEMES } from '@emailflare/emails';
 import type { LayoutName } from '@emailflare/emails';
 import type { TemplateRow } from '../db.js';
-import { templateSchema, toSlug, enrich, generateId, shortId } from '@emailflare/email-core';
+import { templateSchema, toSlug, enrich, generateId, shortId, applyVariables } from '@emailflare/email-core';
 
 const app = new Hono();
 
@@ -41,11 +41,10 @@ app.get('/:idOrSlug', async (c) => {
 app.post('/', zValidator('json', templateSchema), async (c) => {
   const body = c.req.valid('json');
   const now = new Date().toISOString();
-  const slug = body.slug ?? toSlug(body.name);
 
   // Ensure slug is unique — append nanoid suffix if collision
-  const existing = await templates.findOne({ where: { slug } });
-  const finalSlug = existing ? `${slug}-${shortId(4)}` : slug;
+  const existing = await templates.findOne({ where: { slug: body.slug } });
+  const finalSlug = existing ? `${body.slug}-${shortId(4)}` : body.slug;
 
   const row = await templates.insert({
     id: generateId(),
@@ -119,19 +118,17 @@ app.post('/:id/preview', async (c) => {
   if (!row) return c.json({ error: 'Template not found' }, 404);
 
   const body = await c.req.json().catch(() => ({}));
-  const variables: Record<string, string> = body.variables ?? {};
+  const variables: Record<string, unknown> = body.variables ?? {};
   const themeId: string | undefined = body.themeId;
-
-  const sub = (s: string) => s.replace(/\{\{(\w+)\}\}/g, (_, k) => variables[k] ?? `{{${k}}}`);
 
   let html: string;
   if (row.layout) {
     html = await renderLayout(row.layout as LayoutName, variables, themeId);
   } else {
-    html = sub(row.html_body);
+    html = applyVariables(row.html_body, variables);
   }
 
-  return c.json({ html, subject: sub(row.subject) });
+  return c.json({ html, subject: applyVariables(row.subject, variables) });
 });
 
 export default app;

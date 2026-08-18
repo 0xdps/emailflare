@@ -319,12 +319,29 @@ import Base from '../layouts/Base.astro';
                   <td><span class="perm-access">Read</span></td>
                 </tr>
                 <tr>
+                  <td><code>Zone Settings</code></td>
+                  <td>Zone</td>
+                  <td><span class="perm-access">Edit</span></td>
+                </tr>
+                <tr>
                   <td><code>DNS</code></td>
                   <td>Zone</td>
                   <td><span class="perm-access">Edit</span></td>
                 </tr>
               </tbody>
             </table>
+
+            <div class="info-box info-warn">
+              <span class="info-box-icon">⚠️</span>
+              <span>
+                <strong>Zone Settings: Edit is the one most people miss.</strong>
+                Enabling Email Routing (<code>POST /zones/&#123;id&#125;/email/routing/enable</code>)
+                is gated by <strong>Zone Settings: Edit</strong> — <em>not</em> by
+                "Email Routing Rules". There is no obvious "Email Routing" entry in the
+                permission list, so without Zone Settings: Edit the enable step fails
+                with an authentication error even though everything else works.
+              </span>
+            </div>
 
             <div class="info-box info-tip">
               <span class="info-box-icon">💡</span>
