@@ -40,7 +40,7 @@ export default function DomainsPage() {
   const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: '', cfZoneId: '' });
+  const [form, setForm] = useState({ name: '' });
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState<string | null>(null);
@@ -61,8 +61,8 @@ export default function DomainsPage() {
     setFormError(null);
     setSubmitting(true);
     try {
-      await api.post('/api/domains', { name: form.name, ...(form.cfZoneId ? { cfZoneId: form.cfZoneId } : {}) });
-      setForm({ name: '', cfZoneId: '' });
+      await api.post('/api/domains', { name: form.name });
+      setForm({ name: '' });
       setCreating(false);
       load();
     } catch (err: unknown) {
@@ -153,17 +153,6 @@ export default function DomainsPage() {
                       onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                       placeholder="mail.example.com"
                       required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label>
-                      Cloudflare Zone ID
-                      <span className="text-muted-foreground font-normal ml-1">(optional)</span>
-                    </Label>
-                    <Input
-                      value={form.cfZoneId}
-                      onChange={e => setForm(f => ({ ...f, cfZoneId: e.target.value }))}
-                      placeholder="abc123def456"
                     />
                   </div>
                 </div>
