@@ -1,0 +1,81 @@
+services/landing/src/pages/templates.astro
+  s_3d0722258bf66d::t_f407b28a5d865c 1-468
+services/inbox-worker/src/routes/templates.ts
+  s_3d0722258bf66d::t_c0117d429e5bb1 8,128,130,136,139
+  s_3d0722258bf66d::t_cbe9aed5cf1a12 52-53
+services/email-ui/src/pages/Templates.tsx
+  s_3d0722258bf66d::t_0d5df25f745a77 206,292,296,298
+services/email-server/src/routes/send.ts
+  s_3d0722258bf66d::t_09e6aace810852 42
+services/inbox-server/src/routes/templates.ts
+  s_3d0722258bf66d::t_cbe9aed5cf1a12 48-49
+  s_3d0722258bf66d::t_c0117d429e5bb1 3,118,120,126,129
+services/email-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_09e6aace810852 54
+packages/email-core/src/index.ts
+  s_3d0722258bf66d::t_293943f0ad1779 155
+  s_3d0722258bf66d::t_d589abdc4ca2b8 212-220,222-223
+  s_3d0722258bf66d::t_c1fb1df69099f9 132
+  s_3d0722258bf66d::t_fab2c22c0ed638 15
+services/landing/src/pages/docs.astro
+  s_3d0722258bf66d::t_03f7d9e8b9dc49 648-649
+  s_3d0722258bf66d::t_2d3dbb25d4284d 506
+  s_3d0722258bf66d::t_fe62fb725b9c55 628
+services/inbox-worker/src/routes/send.ts
+  s_3d0722258bf66d::t_09e6aace810852 52
+services/email-server/src/routes/templates.ts
+  s_3d0722258bf66d::t_cbe9aed5cf1a12 46-47
+  s_3d0722258bf66d::t_c0117d429e5bb1 7,121,128,131
+docs/TEMPLATES.md
+  s_3d0722258bf66d::t_47e374809b1fe9 1-186
+services/email-worker/src/routes/templates.ts
+  s_3d0722258bf66d::t_cbe9aed5cf1a12 52-53
+  s_3d0722258bf66d::t_c0117d429e5bb1 8,128,130,136,139
+services/inbox-server/src/routes/send.ts
+  s_3d0722258bf66d::t_09e6aace810852 41
+services/landing/public/sitemap.xml
+  s_3d0722258bf66d::t_5e33052dfd1fea 25-28
+  s_3d0722258bf66d::t_acd0b3151ab072 24
+services/inbox-ui/src/pages/Templates.tsx
+  s_3d0722258bf66d::t_0d5df25f745a77 206,292,296,298
+services/emails/src/render.ts
+  s_3d0722258bf66d::t_afb182dd7ff5d6 184
+  s_3d0722258bf66d::t_8929435a6ba5af 125
+services/landing/src/pages/cloudflare-token.astro
+  s_3d0722258bf66d::t_bf7fd6f90b6e07 322-325,334-344
+  s_3d0722258bf66d::t_12b95af6302f8f 321
+  s_3d0722258bf66d::t_14f1ad9501b467 345
+packages/email-core/package.json
+  s_3d0722258bf66d::t_6922be899e05f8 24,29
+packages/email-core/pnpm-lock.yaml
+  s_3d0722258bf66d::t_5552c6a87d2c57 11-13,21-23,30-41,47-53,59-66,72-86,89-92,95-99
+services/email-server/pnpm-lock.yaml
+  s_3d0722258bf66d::t_69a17ead42ed2d 473-477,506-508,514-516,553-556,570-574,585-587,595,904-912,944-945,948-949,978-979,991-993,1000-1001
+services/email-worker/pnpm-lock.yaml
+  s_3d0722258bf66d::t_f0a2df494dc53d 688-692,724-726,732-734,783-786,802-806,817-819,889,1311-1319,1357-1358,1361-1362,1426-1427,1437-1439,1448-1449
+services/inbox-server/pnpm-lock.yaml
+  s_3d0722258bf66d::t_ae0dcdbf3b2556 735-739,776-778,794-796,858-861,884-888,901-903,1201,1624-1632,1676-1677,1698-1699,1747-1748,1765-1767,1774-1775
+services/inbox-worker/pnpm-lock.yaml
+  s_3d0722258bf66d::t_e2eae63a5cd3ab 694-698,730-732,738-740,789-792,808-812,823-825,895,1321-1329,1367-1368,1371-1372,1436-1437,1447-1449,1458-1459
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c95fba27dcb09f62aba6bc3d4f99e1b8d64b91c4",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
