@@ -145,6 +145,7 @@ export default function TemplatesPage() {
   const [previewing, setPreviewing] = useState<Template | null>(null);
   const [previewVars, setPreviewVars] = useState<Record<string, string>>({});
   const [previewHtml, setPreviewHtml] = useState('');
+  const [previewSubject, setPreviewSubject] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
   const [varsOpen, setVarsOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Template | null>(null);
@@ -175,11 +176,13 @@ export default function TemplatesPage() {
     setPreviewing(t);
     setPreviewVars({});
     setPreviewHtml('');
+    setPreviewSubject('');
     setVarsOpen(false);
     setPreviewLoading(true);
     try {
-      const { data } = await api.post<{ html: string }>(`/api/templates/${t.id}/preview`, { variables: {}, themeId });
+      const { data } = await api.post<{ html: string; subject: string }>(`/api/templates/${t.id}/preview`, { variables: {}, themeId });
       setPreviewHtml(data.html);
+      setPreviewSubject(data.subject);
     } catch {
       setPreviewHtml('<p style="padding:1rem;color:red">Failed to render preview</p>');
     } finally {
@@ -189,8 +192,9 @@ export default function TemplatesPage() {
 
   async function refreshPreview(t: Template, vars: Record<string, string>, themeId = previewThemeId) {
     try {
-      const { data } = await api.post<{ html: string }>(`/api/templates/${t.id}/preview`, { variables: vars, themeId });
+      const { data } = await api.post<{ html: string; subject: string }>(`/api/templates/${t.id}/preview`, { variables: vars, themeId });
       setPreviewHtml(data.html);
+      setPreviewSubject(data.subject);
     } catch { /* keep previous */ }
   }
 
@@ -534,7 +538,7 @@ export default function TemplatesPage() {
                     <Badge variant="outline" className="text-[11px] text-primary/80 font-mono border-primary/10">{previewing.slug}</Badge>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground truncate">{previewing.subject}</p>
+                <p className="text-xs text-muted-foreground truncate">{previewSubject || previewing.subject}</p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
                 <ThemePicker value={previewThemeId} onChange={id => setPreviewThemeId(id)} />
@@ -567,7 +571,7 @@ export default function TemplatesPage() {
                         <div className="size-2.5 rounded-full bg-[#febc2e]" />
                         <div className="size-2.5 rounded-full bg-[#28c840]" />
                       </div>
-                      <span className="text-[11px] text-[#999] font-mono ml-2 truncate">{previewing.subject}</span>
+                      <span className="text-[11px] text-[#999] font-mono ml-2 truncate">{previewSubject || previewing.subject}</span>
                     </div>
                     <div className="bg-white rounded-b-xl overflow-hidden border border-border border-t-0 shadow-2xl shadow-black/50">
                       <iframe

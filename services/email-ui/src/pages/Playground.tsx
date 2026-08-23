@@ -143,6 +143,7 @@ export default function PlaygroundPage() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string; detail?: string } | null>(null);
   const [previewHtml, setPreviewHtml] = useState('');
+  const [previewSubject, setPreviewSubject] = useState('');
   const [rightTab, setRightTab] = useState<RightTab>('preview');
   const [themeId, setThemeId] = useState('default');
 
@@ -178,6 +179,7 @@ export default function PlaygroundPage() {
     setSelectedId(id);
     setVariables({});
     setPreviewHtml('');
+    setPreviewSubject('');
     setResult(null);
     if (id.startsWith('t:')) {
       const tpl = templates.find(t => t.id === id.slice(2));
@@ -195,13 +197,14 @@ export default function PlaygroundPage() {
   const fromAddress = fromLocal && fromDomain ? `${fromLocal}@${fromDomain}` : '';
 
   useEffect(() => {
-    if (!selectedTemplate) { setPreviewHtml(''); return; }
+    if (!selectedTemplate) { setPreviewHtml(''); setPreviewSubject(''); return; }
     if (selectedTemplate.layout) {
-      api.post<{ html: string }>(`/api/templates/${selectedTemplate.id}/preview`, { variables, themeId })
-        .then(r => setPreviewHtml(r.data.html))
+      api.post<{ html: string; subject: string }>(`/api/templates/${selectedTemplate.id}/preview`, { variables, themeId })
+        .then(r => { setPreviewHtml(r.data.html); setPreviewSubject(r.data.subject); })
         .catch(() => setPreviewHtml('<p style="padding:1rem;color:red">Failed to render preview</p>'));
     } else {
       setPreviewHtml(applyVarsPreview(selectedTemplate.html_body, variables));
+      setPreviewSubject(applyVarsPreview(selectedTemplate.subject, variables));
     }
   }, [selectedTemplate, variables, themeId]);
 
@@ -333,7 +336,7 @@ export default function PlaygroundPage() {
                   {selectedTemplate.is_system === 1 && (
                     <Badge variant="secondary" className="text-[10px] text-purple-400 bg-purple-500/10 uppercase">built-in</Badge>
                   )}
-                  <p className="text-xs text-muted-foreground truncate">Subject: {selectedTemplate.subject}</p>
+                  <p className="text-xs text-muted-foreground truncate">Subject: {previewSubject || selectedTemplate.subject}</p>
                 </div>
               )}
             </div>
@@ -516,7 +519,7 @@ export default function PlaygroundPage() {
                       <>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1.5">Subject</p>
-                          <pre className="bg-card border border-border rounded-xl px-4 py-3 text-xs text-amber-300 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">{selectedTemplate.subject}</pre>
+                          <pre className="bg-card border border-border rounded-xl px-4 py-3 text-xs text-amber-300 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">{previewSubject || selectedTemplate.subject}</pre>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1.5">HTML Body</p>
