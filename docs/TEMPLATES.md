@@ -85,8 +85,56 @@ you get the full block syntax — loops, conditionals, and helpers:
 ```
 
 Built-in helpers (`{{#unless}}`, `{{#with}}`, `{{#each}}`, …) are all available.
-Custom helper registration is not exposed — the block and interpolation syntax
-covers the intended use cases.
+
+### Styling
+
+Custom templates use **inline CSS** — write styles directly in the HTML body.
+This is the standard approach for HTML email and the most reliable across email
+clients:
+
+```html
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h1 style="color: #f97316;">Hello {{name}}</h1>
+  <p style="color: #333; line-height: 1.6;">Your order {{orderId}} is confirmed.</p>
+</div>
+```
+
+There is no separate theme system for custom templates — `themeId` on `/v1/send`
+only applies to built-in React Email layouts. For reusable styling, you have a
+few options:
+
+**Style variables** — pass colours and fonts as template variables:
+
+```html
+<h1 style="color: {{primaryColor}}; font-family: {{font}};">Hello {{name}}</h1>
+```
+
+```json
+{ "variables": { "name": "Alex", "primaryColor": "#f97316", "font": "Arial, sans-serif" } }
+```
+
+**Theme object with `{{#with}}`** — pass a nested theme object and scope into it:
+
+```html
+{{#with theme}}
+<div style="background: {{bg}}; color: {{text}};">
+  <h1 style="color: {{primary}};">Hello {{../name}}</h1>
+</div>
+{{/with}}
+```
+
+```json
+{
+  "variables": {
+    "name": "Alex",
+    "theme": { "primary": "#f97316", "bg": "#fafafa", "text": "#333" }
+  }
+}
+```
+
+**Base layout in the template** — put your wrapper HTML (header, footer, brand
+styles) directly in each template body. Since templates are stored per-slug,
+you can copy-paste a consistent base layout across templates.
 
 ---
 

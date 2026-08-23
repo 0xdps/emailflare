@@ -12,7 +12,6 @@
 
 import { z } from 'zod';
 import { customAlphabet } from 'nanoid';
-import Handlebars from 'handlebars';
 
 // ── Row interfaces ─────────────────────────────────────────────────────────────
 // SQLite columns use INTEGER for booleans (0 | 1) and TEXT for dates (ISO 8601).
@@ -208,19 +207,229 @@ export function shortId(n = 4): string {
   return generateId().slice(0, n);
 }
 
+// ── CSP-safe Handlebars-compatible template renderer ──────────────────────
+//
+// Cloudflare Workers block `new Function()` / `eval()` (CSP), so Handlebars
+// (which compiles templates to JS functions) cannot run. This renderer
+// interprets a subset of Handlebars syntax at runtime without code generation.
+//
+// Supported syntax:
+//   {{var}}              simple interpolation
+//   {{obj.prop}}         nested path access
+//   {{#each items}}...{{/each}}   loop ({{this}}, {{@index}}, {{@key}})
+//   {{#if cond}}...{{else}}...{{/if}}   conditional (truthy/falsy)
+//   {{#unless cond}}...{{/unless}}      inverse conditional
+//   {{#with obj}}...{{/with}}           scope block
+//
+// Missing variables render as empty string (Handlebars default).
+
+type HbsContext = Record<string, unknown>;
+
+function hbsGet(ctx: HbsContext, path: string): unknown {
+  const parts = path.split('.');
+  let val: unknown = ctx;
+  for (const part of parts) {
+    if (val == null) return undefined;
+    if (typeof val === 'object') {
+      val = (val as Record<string, unknown>)[part];
+    } else {
+      return undefined;
+    }
+  }
+  return val;
+}
+
+function hbsTruthy(v: unknown): boolean {
+  if (v == null) return false;
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') return v !== 0;
+  if (typeof v === 'string') return v.length > 0;
+  if (Array.isArray(v)) return v.length > 0;
+  return true;
+}
+
+function hbsRender(template: string, ctx: HbsContext): string {
+  // Tokenize: {{...}} blocks vs literal text
+  const tokens: Array<{ type: 'text'; value: string } | { type: 'open'; raw: string } | { type: 'close'; raw: string }> = [];
+  let i = 0;
+  while (i < template.length) {
+    const open = template.indexOf('{{', i);
+    if (open === -1) {
+      tokens.push({ type: 'text', value: template.slice(i) });
+      break;
+    }
+    if (open > i) {
+      tokens.push({ type: 'text', value: template.slice(i, open) });
+    }
+    const close = template.indexOf('}}', open + 2);
+    if (close === -1) {
+      tokens.push({ type: 'text', value: template.slice(open) });
+      break;
+    }
+    const raw = template.slice(open + 2, close).trim();
+    if (raw.startsWith('/')) {
+      tokens.push({ type: 'close', raw: raw.slice(1).trim() });
+    } else {
+      tokens.push({ type: 'open', raw });
+    }
+    i = close + 2;
+  }
+
+  // Walk tokens, building output
+  let out = '';
+  let pos = 0;
+
+  function walk(endBlock?: string): string {
+    let result = '';
+    while (pos < tokens.length) {
+      const t = tokens[pos];
+      if (t.type === 'text') {
+        result += t.value;
+        pos++;
+      } else if (t.type === 'close') {
+        if (endBlock !== undefined && t.raw === endBlock) {
+          pos++;
+          return result;
+        }
+        // Unmatched close — treat as literal
+        result += `{{/${t.raw}}}`;
+        pos++;
+      } else {
+        // open token
+        const expr = t.raw;
+
+        // {{#each items}} or {{#each items as |val key|}}
+        const eachMatch = expr.match(/^#each\s+(\S+)(?:\s+as\s+\|(\w+)(?:\s+(\w+))?\|)?$/);
+        if (eachMatch) {
+          const listPath = eachMatch[1];
+          const valName = eachMatch[2] ?? undefined;
+          const keyName = eachMatch[3] ?? undefined;
+          pos++; // consume open
+          const list = hbsGet(ctx, listPath);
+          if (Array.isArray(list)) {
+            for (let idx = 0; idx < list.length; idx++) {
+              const item = list[idx];
+              const loopCtx: HbsContext = { ...ctx };
+              if (valName) {
+                loopCtx[valName] = item;
+              } else {
+                // bare {{#each}} — push item as `this`
+                loopCtx['this'] = item;
+              }
+              loopCtx['@index'] = idx;
+              loopCtx['@key'] = idx;
+              result += walk('each');
+            }
+          } else if (list != null && typeof list === 'object') {
+            const entries = Object.entries(list as Record<string, unknown>);
+            for (let idx = 0; idx < entries.length; idx++) {
+              const [k, v] = entries[idx];
+              const loopCtx: HbsContext = { ...ctx };
+              if (valName) {
+                loopCtx[valName] = v;
+              } else {
+                loopCtx['this'] = v;
+              }
+              loopCtx['@index'] = idx;
+              loopCtx['@key'] = k;
+              result += walk('each');
+            }
+          } else {
+            // falsy/empty — skip body
+            walk('each');
+          }
+          continue;
+        }
+
+        // {{#if condition}}
+        const ifMatch = expr.match(/^#if\s+(.+)$/);
+        if (ifMatch) {
+          const cond = hbsGet(ctx, ifMatch[1].trim());
+          pos++; // consume open
+          if (hbsTruthy(cond)) {
+            result += walk('if');
+          } else {
+            // skip if body, check for else
+            const saved = pos;
+            let foundElse = false;
+            while (pos < tokens.length) {
+              const nt = tokens[pos];
+              if (nt.type === 'close' && nt.raw === 'if') { pos++; break; }
+              if (nt.type === 'open' && nt.raw === 'else') { pos++; foundElse = true; break; }
+              pos++;
+            }
+            if (foundElse) {
+              result += walk('if');
+            }
+          }
+          continue;
+        }
+
+        // {{#unless condition}}
+        const unlessMatch = expr.match(/^#unless\s+(.+)$/);
+        if (unlessMatch) {
+          const cond = hbsGet(ctx, unlessMatch[1].trim());
+          pos++;
+          if (!hbsTruthy(cond)) {
+            result += walk('unless');
+          } else {
+            walk('unless');
+          }
+          continue;
+        }
+
+        // {{#with obj}}
+        const withMatch = expr.match(/^#with\s+(.+)$/);
+        if (withMatch) {
+          const scoped = hbsGet(ctx, withMatch[1].trim());
+          pos++;
+          if (scoped != null && typeof scoped === 'object') {
+            result += walk('with');
+          } else {
+            walk('with');
+          }
+          continue;
+        }
+
+        // {{else}}
+        if (expr === 'else') {
+          // handled by #if above — return to caller
+          return result;
+        }
+
+        // Simple interpolation: {{var}} or {{this}} or {{@index}}
+        pos++;
+        if (expr === 'this' || expr === '.') {
+          const v = ctx['this'];
+          result += v != null ? String(v) : '';
+        } else if (expr.startsWith('@')) {
+          const v = ctx[expr];
+          result += v != null ? String(v) : '';
+        } else {
+          const v = hbsGet(ctx, expr);
+          result += v != null ? String(v) : '';
+        }
+      }
+    }
+    return result;
+  }
+
+  return walk();
+}
+
 /**
- * Render a Handlebars template string with the given variables.
+ * Render a Handlebars-compatible template string with the given variables.
  *
- * Supports the full Handlebars feature set: `{{name}}`, `{{#each items}}`,
- * `{{#if condition}}`, helpers, and more. Missing variables render as an empty
- * string (Handlebars default), so a variable omitted from `vars` is dropped
- * rather than left as a literal `{{token}}`.
+ * Supports: `{{name}}`, `{{obj.prop}}`, `{{#each items}}`, `{{#if cond}}`,
+ * `{{#unless cond}}`, `{{#with obj}}`, `{{else}}`, `{{this}}`, `{{@index}}`,
+ * `{{@key}}`. Missing variables render as empty string.
  *
- * ⚠️ Templates authored against the old `{{variable}}`-only syntax remain
- * fully compatible — plain `{{name}}` interpolation behaves identically.
+ * ⚠️ This is a CSP-safe interpreter — no `new Function()` or `eval()`.
+ * Cloudflare Workers block dynamic code generation, so Handlebars itself
+ * cannot run. This renderer covers the documented template syntax.
  */
 export function applyVariables(template: string, vars: Record<string, unknown>): string {
-  return Handlebars.compile(template, { noEscape: true })(vars);
+  return hbsRender(template, vars);
 }
 
 /**

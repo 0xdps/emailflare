@@ -230,6 +230,13 @@ export default function TemplatesPage() {
 
   const editPreviewVars = useMemo(() => extractVars(`${form.subject} ${form.htmlBody}`), [form.subject, form.htmlBody]);
   const [editVarValues, setEditVarValues] = useState<Record<string, string>>({});
+  const editPreviewSubject = useMemo(() => {
+    if (!form.subject) return '';
+    return form.subject.replace(
+      /\{\{(\w+)\}\}/g,
+      (_, k) => editVarValues[k] ?? `{{${k}}}`,
+    );
+  }, [form.subject, editVarValues]);
   const editPreviewHtml = useMemo(() => {
     if (!form.htmlBody) return '';
     const escHtml = (s: string) =>
@@ -333,7 +340,7 @@ export default function TemplatesPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-5 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Live Preview</span>
-            {form.subject && <span className="text-xs text-muted-foreground truncate max-w-xs">{form.subject}</span>}
+            {editPreviewSubject && <span className="text-xs text-muted-foreground truncate max-w-xs">{editPreviewSubject}</span>}
           </div>
           {editPreviewVars.length > 0 && (
             <div className="px-5 py-3 border-b border-border flex flex-wrap gap-3">
@@ -361,7 +368,7 @@ export default function TemplatesPage() {
                         <div className="size-2.5 rounded-full bg-[#febc2e]" />
                         <div className="size-2.5 rounded-full bg-[#28c840]" />
                       </div>
-                      {form.subject && <span className="text-[11px] text-[#999] font-mono ml-2 truncate">{form.subject}</span>}
+                      {editPreviewSubject && <span className="text-[11px] text-[#999] font-mono ml-2 truncate">{editPreviewSubject}</span>}
                     </div>
                     <div className="bg-white rounded-b-xl overflow-hidden border border-[#3a3a3a] border-t-0">
                       <iframe srcDoc={editPreviewHtml} className="w-full h-full border-0 bg-white" style={{ minHeight: '400px' }} sandbox="allow-same-origin" title="Template preview" />

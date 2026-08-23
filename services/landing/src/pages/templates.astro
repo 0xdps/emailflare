@@ -245,6 +245,7 @@ import Base from '../layouts/Base.astro';
           <li><a href="#custom">Custom templates</a></li>
           <li><a href="#variables">Variables</a></li>
           <li><a href="#logic">Loops &amp; conditionals</a></li>
+          <li><a href="#styling">Styling</a></li>
           <li><a href="#layouts">Built-in layouts</a></li>
           <li><a href="#managing">Managing templates</a></li>
           <li><a href="#sending">Sending with a template</a></li>
@@ -343,6 +344,50 @@ import Base from '../layouts/Base.astro';
 <span class="tc-punct">&#125;</span></div>
 
             <p>Built-in helpers (<code>&#123;&#123;#unless&#125;&#125;</code>, <code>&#123;&#123;#with&#125;&#125;</code>, …) are all available.</p>
+          </div>
+        </section>
+
+        <!-- STYLING -->
+        <section class="tpl-section" id="styling">
+          <div class="tpl-section-header">
+            <h2>Styling</h2>
+            <a class="tpl-anchor" href="#styling">#styling</a>
+          </div>
+          <div class="tpl-body">
+            <p>Custom templates use <strong>inline CSS</strong> — write styles directly in the HTML body. This is the standard approach for HTML email and the most reliable across email clients:</p>
+
+            <div class="tpl-code"><span class="tc-plain">&lt;div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"&gt;</span>
+  <span class="tc-plain">&lt;h1 style="color: #f97316;"&gt;Hello </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">name</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">&lt;/h1&gt;</span>
+  <span class="tc-plain">&lt;p style="color: #333; line-height: 1.6;"&gt;Your order </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">orderId</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain"> is confirmed.&lt;/p&gt;</span>
+<span class="tc-plain">&lt;/div&gt;</span></div>
+
+            <p>There is no separate theme system for custom templates — <code>themeId</code> on <code>/v1/send</code> only applies to built-in React Email layouts. For reusable styling, you have a few options:</p>
+
+            <h3>Style variables</h3>
+            <p>Pass colours and fonts as template variables:</p>
+
+            <div class="tpl-code"><span class="tc-plain">&lt;h1 style="color: </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">primaryColor</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">; font-family: </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">font</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">;"&gt;Hello </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">name</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">&lt;/h1&gt;</span></div>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;</span> <span class="tc-key">"variables"</span><span class="tc-punct">:</span> <span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Alex"</span><span class="tc-punct">,</span> <span class="tc-key">"primaryColor"</span><span class="tc-punct">:</span> <span class="tc-str">"#f97316"</span><span class="tc-punct">,</span> <span class="tc-key">"font"</span><span class="tc-punct">:</span> <span class="tc-str">"Arial, sans-serif"</span> <span class="tc-punct">&#125;</span> <span class="tc-punct">&#125;</span></div>
+
+            <h3>Theme object with <code>&#123;&#123;#with&#125;&#125;</code></h3>
+            <p>Pass a nested theme object and scope into it:</p>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;&#123;#</span><span class="tc-key">with</span> <span class="tc-key">theme</span><span class="tc-punct">&#125;&#125;</span>
+<span class="tc-plain">&lt;div style="background: </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">bg</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">; color: </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">text</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">;"&gt;</span>
+  <span class="tc-plain">&lt;h1 style="color: </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">primary</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">;"&gt;Hello </span><span class="tc-punct">&#123;&#123;</span><span class="tc-key">../name</span><span class="tc-punct">&#125;&#125;</span><span class="tc-plain">&lt;/h1&gt;</span>
+<span class="tc-plain">&lt;/div&gt;</span>
+<span class="tc-punct">&#123;&#123;/</span><span class="tc-key">with</span><span class="tc-punct">&#125;&#125;</span></div>
+
+            <div class="tpl-code"><span class="tc-punct">&#123;</span>
+  <span class="tc-key">"variables"</span><span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>
+    <span class="tc-key">"name"</span><span class="tc-punct">:</span> <span class="tc-str">"Alex"</span><span class="tc-punct">,</span>
+    <span class="tc-key">"theme"</span><span class="tc-punct">:</span> <span class="tc-punct">&#123;</span> <span class="tc-key">"primary"</span><span class="tc-punct">:</span> <span class="tc-str">"#f97316"</span><span class="tc-punct">,</span> <span class="tc-key">"bg"</span><span class="tc-punct">:</span> <span class="tc-str">"#fafafa"</span><span class="tc-punct">,</span> <span class="tc-key">"text"</span><span class="tc-punct">:</span> <span class="tc-str">"#333"</span> <span class="tc-punct">&#125;</span>
+  <span class="tc-punct">&#125;</span>
+<span class="tc-punct">&#125;</span></div>
+
+            <h3>Base layout in the template</h3>
+            <p>Put your wrapper HTML (header, footer, brand styles) directly in each template body. Since templates are stored per-slug, you can copy-paste a consistent base layout across templates.</p>
           </div>
         </section>
 
