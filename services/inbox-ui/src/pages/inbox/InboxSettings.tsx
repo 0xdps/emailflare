@@ -260,68 +260,91 @@ export default function InboxSettings() {
           </div>
         )
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email address</TableHead>
-                <TableHead>Display name</TableHead>
-                <TableHead>Mode</TableHead>
-                <TableHead>Routing</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {inboxes.map(inbox => (
-                <TableRow key={inbox.id}>
-                  <TableCell className="font-mono text-sm">{inbox.email}</TableCell>
-                  <TableCell className="text-sm">{inbox.display_name}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize text-xs">{inbox.mode}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {inbox.routing?.configured ? (
-                      <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
-                        Active
-                      </Badge>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 px-2 gap-1.5 text-xs"
-                          disabled={routingId === inbox.id}
-                          onClick={() => handleSetupRouting(inbox)}
-                        >
-                          {routingId === inbox.id && <Loader2 size={12} className="animate-spin" />}
-                          Setup routing
-                        </Button>
-                        {inbox.routing?.error && (
-                          <span className="text-[11px] text-amber-600" title={inbox.routing.error}>
-                            <AlertTriangle size={12} className="inline" />
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button size="sm" variant="ghost" onClick={() => openMembers(inbox)} className="h-7 px-2 gap-1.5 text-xs">
-                        <Users size={12} />
-                        Members
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(inbox)} className="h-7 px-2">
-                        <Pencil size={12} />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setDeleteId(inbox.id)} className="h-7 px-2 hover:text-destructive">
-                        <Trash2 size={12} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="flex flex-col gap-6">
+          {/* Group inboxes by domain */}
+          {(() => {
+            const grouped = new Map<string, InboxType[]>();
+            for (const inbox of inboxes) {
+              const domain = inbox.email.split('@')[1] ?? 'unknown';
+              if (!grouped.has(domain)) grouped.set(domain, []);
+              grouped.get(domain)!.push(inbox);
+            }
+            return Array.from(grouped.entries()).map(([domain, domainInboxes]) => (
+              <div key={domain}>
+                {/* Domain header */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe size={13} className="text-muted-foreground shrink-0" />
+                  <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">{domain}</span>
+                  <span className="text-[11px] text-muted-foreground/60">{domainInboxes.length} inbox{domainInboxes.length !== 1 ? 'es' : ''}</span>
+                  <span className="flex-1 h-px bg-border ml-1" />
+                </div>
+                {/* Inbox table for this domain */}
+                <div className="rounded-xl border border-border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email address</TableHead>
+                        <TableHead>Display name</TableHead>
+                        <TableHead>Mode</TableHead>
+                        <TableHead>Routing</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {domainInboxes.map(inbox => (
+                        <TableRow key={inbox.id}>
+                          <TableCell className="font-mono text-sm">{inbox.email}</TableCell>
+                          <TableCell className="text-sm">{inbox.display_name}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize text-xs">{inbox.mode}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {inbox.routing?.configured ? (
+                              <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
+                                Active
+                              </Badge>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 px-2 gap-1.5 text-xs"
+                                  disabled={routingId === inbox.id}
+                                  onClick={() => handleSetupRouting(inbox)}
+                                >
+                                  {routingId === inbox.id && <Loader2 size={12} className="animate-spin" />}
+                                  Setup routing
+                                </Button>
+                                {inbox.routing?.error && (
+                                  <span className="text-[11px] text-amber-600" title={inbox.routing.error}>
+                                    <AlertTriangle size={12} className="inline" />
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button size="sm" variant="ghost" onClick={() => openMembers(inbox)} className="h-7 px-2 gap-1.5 text-xs">
+                                <Users size={12} />
+                                Members
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => openEdit(inbox)} className="h-7 px-2">
+                                <Pencil size={12} />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setDeleteId(inbox.id)} className="h-7 px-2 hover:text-destructive">
+                                <Trash2 size={12} />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            ));
+          })()}
         </div>
       )}
 

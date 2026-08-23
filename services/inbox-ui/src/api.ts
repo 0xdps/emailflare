@@ -199,8 +199,9 @@ export async function composeSend(params: {
   subject: string;
   text: string;
   personId?: string;
-}): Promise<void> {
-  await api.post('/api/inbox/compose', params);
+}): Promise<{ ok: boolean; id: string; threadId: string; personId?: string }> {
+  const { data } = await api.post('/api/inbox/compose', params);
+  return data;
 }
 
 export async function replyTo(params: {

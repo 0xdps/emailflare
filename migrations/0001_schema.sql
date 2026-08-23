@@ -224,6 +224,7 @@ CREATE TABLE IF NOT EXISTS sent_inbox_emails (
   from_address    TEXT NOT NULL,
   to_address      TEXT NOT NULL,
   subject         TEXT NOT NULL,
+  body_text       TEXT,
   status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
   cf_message_id   TEXT,
   sent_at         TEXT NOT NULL

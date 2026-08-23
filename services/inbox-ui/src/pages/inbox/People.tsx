@@ -5,7 +5,7 @@ import {
   Person, Thread, ThreadItem, Inbox as InboxType,
 } from '../../api';
 import { cn } from '@/lib/utils';
-import { groupThread, replyReferences } from '@/lib/threading';
+import { groupThread, replyReferences, ThreadGroup } from '@/lib/threading';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
@@ -28,6 +28,28 @@ function relativeTime(dateStr: string) {
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d`;
   return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Strip the quoted reply portion from an email body.
+ * Detects common "On ... wrote:" headers and removes everything from that
+ * point onward, including the `> ` quoted lines that follow.
+ */
+function stripQuotedReply(body: string | null | undefined): string {
+  if (!body) return '';
+  // Match "On <date>, <name> <email> wrote:" style headers
+  const replyHeader = /^On\s.+?wrote:\s*$/m;
+  const match = body.match(replyHeader);
+  if (match && match.index !== undefined) {
+    return body.slice(0, match.index).trim();
+  }
+  // Also strip lines that are entirely quoted (start with >)
+  const lines = body.split('\n');
+  const firstQuote = lines.findIndex(l => /^>\s/.test(l));
+  if (firstQuote > 0) {
+    return lines.slice(0, firstQuote).join('\n').trim();
+  }
+  return body.trim();
 }
 
 // ── Contact row ───────────────────────────────────────────────────────────────
@@ -102,7 +124,7 @@ function EmailCard({ item, defaultOpen = false, onReply }: {
   const isSent = item.direction === 'outbound';
   const date = new Date(item.timestamp);
   const subject = item.subject;
-  const body = item.body_text;
+  const body = stripQuotedReply(item.body_text);
   const preview = body?.replace(/\s+/g, ' ').trim().slice(0, 120);
 
   return (
@@ -188,6 +210,14 @@ function ThreadPanel({ person, thread, onReply }: {
   const bottomRef = useRef<HTMLDivElement>(null);
   const groups = groupThread(thread.thread);
 
+  // Group threads by inbox address
+  const inboxGroups = new Map<string, ThreadGroup[]>();
+  for (const g of groups) {
+    const addr = g.items[0]?.inbox_address ?? 'unknown';
+    if (!inboxGroups.has(addr)) inboxGroups.set(addr, []);
+    inboxGroups.get(addr)!.push(g);
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [thread.thread.length]);
@@ -213,28 +243,41 @@ function ThreadPanel({ person, thread, onReply }: {
         </span>
       </div>
 
-      {/* Threads */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-        {groups.map(group => (
-          <div key={group.key} className="flex flex-col gap-2">
-            {/* Sub-thread label */}
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide truncate">
-                {group.subject ?? '(no subject)'}
-              </span>
-              <span className="text-[10.5px] text-zinc-300 shrink-0">
-                {group.items.length} msg{group.items.length !== 1 ? 's' : ''}
-              </span>
+      {/* Threads grouped by inbox */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-6">
+        {Array.from(inboxGroups.entries()).map(([inboxAddr, inboxThreads]) => (
+          <div key={inboxAddr}>
+            {/* Inbox header */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10.5px] font-semibold text-zinc-400 uppercase tracking-wide">{inboxAddr}</span>
+              <span className="text-[10px] text-zinc-300">{inboxThreads.length} thread{inboxThreads.length !== 1 ? 's' : ''}</span>
               <span className="flex-1 h-px bg-zinc-100" />
             </div>
-            {group.items.map((item, i) => (
-              <EmailCard
-                key={item.id}
-                item={item}
-                defaultOpen={i === group.items.length - 1}
-                onReply={onReply}
-              />
-            ))}
+            {/* Threads within this inbox */}
+            <div className="flex flex-col gap-4">
+              {inboxThreads.map(group => (
+                <div key={group.key} className="flex flex-col gap-2">
+                  {/* Sub-thread label */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide truncate">
+                      {group.subject ?? '(no subject)'}
+                    </span>
+                    <span className="text-[10.5px] text-zinc-300 shrink-0">
+                      {group.items.length} msg{group.items.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="flex-1 h-px bg-zinc-100" />
+                  </div>
+                  {group.items.map((item: ThreadItem, i: number) => (
+                    <EmailCard
+                      key={item.id}
+                      item={item}
+                      defaultOpen={i === group.items.length - 1}
+                      onReply={onReply}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
         <div ref={bottomRef} />
@@ -275,11 +318,15 @@ export default function People() {
   const [composeSending, setComposeSending] = useState(false);
   const [replyTarget, setReplyTarget] = useState<ThreadItem | null>(null);
 
-  useEffect(() => {
+  function loadPeople() {
     setLoadingPeople(true);
     getPeople({ search: search || undefined })
       .then(({ data }) => setPeople(data))
       .finally(() => setLoadingPeople(false));
+  }
+
+  useEffect(() => {
+    loadPeople();
   }, [search]);
 
   useEffect(() => {
@@ -335,17 +382,25 @@ export default function People() {
           references: replyReferences(replyTarget),
         });
       } else {
-        await composeSend({
+        const result = await composeSend({
           to: composeTo,
           from: composeFrom,
           subject: composeSubject,
           text: composeBody.trim(),
           personId: selectedId ?? undefined,
         });
+        // If this was a brand-new contact, select it
+        if (!selectedId && result.personId) {
+          setSelectedId(result.personId);
+        }
       }
       setComposeOpen(false);
-      if (selectedId) {
-        const updated = await getThread(selectedId);
+      // Refresh the people list (new contact may have been created)
+      loadPeople();
+      // Refresh the thread
+      const refreshId = selectedId;
+      if (refreshId) {
+        const updated = await getThread(refreshId);
         setThread(updated);
       }
     } finally {

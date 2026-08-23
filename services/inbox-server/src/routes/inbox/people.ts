@@ -70,7 +70,7 @@ app.get('/:id/thread', async (c) => {
               message_id, in_reply_to, "references", thread_id, is_read, received_at AS timestamp, inbox_address
        FROM inbox_emails WHERE person_id = ?
        UNION ALL
-       SELECT id, 'outbound' AS direction, subject, NULL, NULL, NULL,
+    SELECT id, 'outbound' AS direction, subject, NULL, body_text, NULL,
               message_id, in_reply_to, "references", thread_id, 1, sent_at AS timestamp, from_address AS inbox_address
        FROM sent_inbox_emails WHERE person_id = ?
        ORDER BY timestamp DESC LIMIT ? OFFSET ?`,

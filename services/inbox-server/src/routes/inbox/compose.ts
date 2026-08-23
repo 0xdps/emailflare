@@ -11,6 +11,7 @@ import type { HonoEnv } from '../../env.js';
 const app = new Hono<HonoEnv>();
 
 app.post('/', zValidator('json', composeSchema), async (c) => {
+  try {
   const body     = c.req.valid('json');
   const now      = new Date().toISOString();
   const personId = body.personId ?? (await upsertPerson(rawDb, body.to, body.from, { generateId }));
@@ -63,12 +64,17 @@ app.post('/', zValidator('json', composeSchema), async (c) => {
   const id = generateId();
   await rawDb.run(
     `INSERT INTO sent_inbox_emails
-       (id, person_id, thread_id, in_reply_to, "references", message_id, thread_token, from_address, to_address, subject, status, cf_message_id, sent_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, personId, threadId, body.inReplyTo ?? null, body.references ?? null, syntheticMessageId, threadToken, body.from, body.to, body.subject, 'sent', result.cfId ?? null, now],
+       (id, person_id, thread_id, in_reply_to, "references", message_id, thread_token, from_address, to_address, subject, body_text, status, cf_message_id, sent_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, personId, threadId, body.inReplyTo ?? null, body.references ?? null, syntheticMessageId, threadToken, body.from, body.to, body.subject, body.text ?? null, 'sent', result.cfId ?? null, now],
   );
 
-  return c.json({ ok: true, id, threadId, error: result.error });
+  return c.json({ ok: true, id, threadId, personId, error: result.error });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[compose]', message, err);
+    return c.json({ error: message }, 500);
+  }
 });
 
 export default app;
