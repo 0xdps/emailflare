@@ -1,0 +1,52 @@
+migrations/0001_schema.sql
+  s_3d0722258bf66d::t_cc95797841828e 227
+services/inbox-worker/src/routes/inbox/compose.ts
+  s_3d0722258bf66d::t_7af394885955b6 74
+  s_3d0722258bf66d::t_dbbdc16c7d9a96 17,75-79
+  s_3d0722258bf66d::t_0df408ef022f7c 70-72
+services/inbox-ui/src/pages/inbox/People.tsx
+  s_3d0722258bf66d::t_e97f4d32ac7ab3 213-220,246-253,256-269,271-279
+  s_3d0722258bf66d::t_a37f5e3e68a0c3 270
+  s_3d0722258bf66d::t_c7156837e3693e 127
+  s_3d0722258bf66d::t_c89c50f8ed1c9b 8
+  s_3d0722258bf66d::t_7af394885955b6 392,400-403
+  s_3d0722258bf66d::t_dc5354fff5e99a 33-54
+  s_3d0722258bf66d::t_0c1bb77f24ba53 385,393-395,398-399
+  s_3d0722258bf66d::t_d903a9e02da90a 321,326-329
+  s_3d0722258bf66d::t_8f4318b6804ebc 280
+services/inbox-server/src/routes/inbox/compose.ts
+  s_3d0722258bf66d::t_dbbdc16c7d9a96 14,73-77
+  s_3d0722258bf66d::t_7af394885955b6 72
+  s_3d0722258bf66d::t_0df408ef022f7c 67-69
+services/inbox-server/src/routes/inbox/people.ts
+  s_3d0722258bf66d::t_0df408ef022f7c 73
+services/inbox-ui/src/api.ts
+  s_3d0722258bf66d::t_01e1a80baf228d 202-204
+migrations/0003_add_sent_body_text.sql
+  s_3d0722258bf66d::t_3ae81e396b6340 1-5
+services/inbox-worker/src/routes/inbox/people.ts
+  s_3d0722258bf66d::t_0df408ef022f7c 80
+services/inbox-ui/src/pages/inbox/InboxSettings.tsx
+  s_3d0722258bf66d::t_a41df4fb3b9630 263-347
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.23",
+  "base_commit_sha": "46c718bfc9c1413abbe9d50116e788975292071d",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3d0722258bf66d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "67c95331-c80a-43f9-9c30-afbca5b42050",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
