@@ -3,6 +3,11 @@ import { db, emailLogs } from '../db.js';
 
 const app = new Hono();
 
+/** Row shape returned by COUNT(*) queries on email_logs. */
+interface CountRow {
+  total: number;
+}
+
 // GET /api/test-emails?page=1&limit=50&domainId=&search=&from=&to=
 app.get('/', async (c) => {
   const page     = Math.max(1, parseInt(c.req.query('page')  ?? '1',  10));
@@ -36,7 +41,7 @@ app.get('/', async (c) => {
     db.query(`SELECT COUNT(*) as total FROM email_logs ${where}`, params),
   ]);
 
-  const total = (countResult.rows[0] as any)?.total ?? 0;
+  const total = (countResult.rows[0] as CountRow | undefined)?.total ?? 0;
 
   return c.json({
     data: dataResult.rows,

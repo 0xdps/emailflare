@@ -3,8 +3,8 @@ name: emailflare
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile.email-api
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.email-api
     ports:
       - "${PORT:-8090}:80"
     env_file:

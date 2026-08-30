@@ -188,7 +188,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   async function handleLogout() {
-    await api.post('/api/auth/logout').catch(() => {});
+    await api.post('/api/auth/logout').catch((err) => {
+      console.error('[layout] logout failed:', err);
+    });
     router.navigate({ to: '/login' });
   }
 

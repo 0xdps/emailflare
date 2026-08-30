@@ -13,6 +13,8 @@ import { env } from '../env.js';
 export interface SessionPayload {
   userId: string;
   role: 'super-admin' | 'admin' | 'member' | 'tester';
+  name: string;
+  email: string;
 }
 
 const SESSION_COOKIE = 'ef_inbox_session';
@@ -28,15 +30,30 @@ export async function getSession(c: Context<HonoEnv>): Promise<SessionPayload | 
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secretKey());
-    if (typeof payload['userId'] !== 'string' || typeof payload['role'] !== 'string') return null;
-    return { userId: payload['userId'] as string, role: payload['role'] as 'super-admin' | 'admin' | 'member' | 'tester' };
+    if (
+      typeof payload['userId'] !== 'string' ||
+      typeof payload['role'] !== 'string' ||
+      typeof payload['name'] !== 'string' ||
+      typeof payload['email'] !== 'string'
+    ) return null;
+    return {
+      userId: payload['userId'] as string,
+      role: payload['role'] as SessionPayload['role'],
+      name: payload['name'] as string,
+      email: payload['email'] as string,
+    };
   } catch {
     return null;
   }
 }
 
 export async function saveSession(c: Context<HonoEnv>, data: SessionPayload): Promise<void> {
-  const token = await new SignJWT({ userId: data.userId, role: data.role })
+  const token = await new SignJWT({
+    userId: data.userId,
+    role: data.role,
+    name: data.name,
+    email: data.email,
+  })
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_TTL}s`)

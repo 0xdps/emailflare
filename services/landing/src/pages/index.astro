@@ -1476,7 +1476,7 @@ const structuredData = {
       fetch('https://api.github.com/repos/0xdps/emailflare')
         .then(function(r) { return r.json(); })
         .then(function(d) { if (d.stargazers_count) animateStars(d.stargazers_count); })
-        .catch(function() {});
+        .catch(function(err) { console.error('[landing] failed to fetch star count:', err); });
     }
     document.addEventListener('astro:page-load', runStarCount);
     document.addEventListener('DOMContentLoaded', runStarCount);

@@ -94,7 +94,7 @@ app.post('/invites/:token/accept', zValidator('json', acceptSchema), async (c) =
     c.env.DB.prepare('UPDATE invites SET used = 1 WHERE id = ?').bind(invite.id),
   ]);
 
-  await saveSession(c, { userId, role });
+  await saveSession(c, { userId, role, name, email: invite.email });
   return c.json({ ok: true }, 201);
 });
 

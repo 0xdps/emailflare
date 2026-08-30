@@ -84,7 +84,7 @@ COPY services/email-server/package.json                       ./services/email-s
 # Email UI static files
 COPY --from=build-email-ui /app/email-ui/dist /usr/share/caddy
 
-COPY start-email-api.sh /app/start-email-api.sh
+COPY deploy/docker/start-email-api.sh /app/start-email-api.sh
 RUN chmod +x /app/start-email-api.sh
 
 EXPOSE 80

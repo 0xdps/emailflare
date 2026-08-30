@@ -38,7 +38,7 @@ gcr.io/0xdps/emailflare-api:latest
 cp .env.api.example .env.local
 # fill in SESSION_SECRET, ADMIN_TOKEN, CF_API_TOKEN, CF_ACCOUNT_ID
 
-docker compose --env-file .env.local -f compose.email-api.yaml up -d
+docker compose --env-file .env.local -f deploy/docker/compose.email-api.yaml up -d
 ```
 
 Open `http://localhost:8090`. Read the full guide: [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)
@@ -74,7 +74,7 @@ ghcr.io/0xdps/emailflare-inbox:latest
 cp .env.inbox.example .env.inbox.local
 # fill in SESSION_SECRET, WEBHOOK_SECRET, CF_API_TOKEN, CF_ACCOUNT_ID, REDIS_URL
 
-docker compose --env-file .env.inbox.local -f compose.email-inbox.yaml up -d
+docker compose --env-file .env.inbox.local -f deploy/docker/compose.email-inbox.yaml up -d
 ```
 
 Open `http://localhost:8091`. Read the full guide: [docs/SELF_HOSTING.md](./docs/SELF_HOSTING.md)
@@ -88,23 +88,23 @@ Open `http://localhost:8091`. Read the full guide: [docs/SELF_HOSTING.md](./docs
 - `services/email-server` — Hono API (Node.js): domains, templates, keys, stats, send — for Docker
 - `services/email-ui` — React admin panel (Vite + TanStack Router)
 - `services/email-bridge` — CF Worker: receives bounce/complaint email and forwards to email-server webhook
-- `Dockerfile.email-api` — production image for emailflare-api
-- `compose.email-api.yaml` — single-container production compose
-- `compose.email-api.dev.yaml` — local dev stack with hot reload
+- `deploy/docker/Dockerfile.email-api` — production image for emailflare-api
+- `deploy/docker/compose.email-api.yaml` — single-container production compose
+- `deploy/docker/compose.email-api.dev.yaml` — local dev stack with hot reload
 
 **Inbox**
 - `services/inbox-worker` — Cloudflare Worker variant of the inbox (D1 + R2 + KV + DO + Queues) — **primary deploy**
 - `services/inbox-server` — Hono inbox API (Node.js): inboxes, people, threads, sequences, templates — for Docker
 - `services/inbox-ui` — React inbox dashboard (Vite + TanStack Router)
 - `services/inbox-bridge` — CF Worker: receives inbound email via CF Email Routing, forwards to inbox-server
-- `Dockerfile.email-inbox` — production image for emailflare-inbox
-- `compose.email-inbox.yaml` — single-container production compose
-- `compose.email-inbox.dev.yaml` — local dev stack with hot reload
+- `deploy/docker/Dockerfile.email-inbox` — production image for emailflare-inbox
+- `deploy/docker/compose.email-inbox.yaml` — single-container production compose
+- `deploy/docker/compose.email-inbox.dev.yaml` — local dev stack with hot reload
 
 **Shared**
 - `services/emails` — shared email layouts and rendering used by both servers
 - `scripts/` — setup tooling for CF Worker deployments (`setup.mjs`, `config.example.toml`)
-- `justfile` — task runner for dev, prod, and Cloudflare Worker operations ([RECIPES.md](./RECIPES.md))
+- `justfile` — task runner for dev, prod, and Cloudflare Worker operations ([docs/RECIPES.md](./docs/RECIPES.md))
 - `docs/CLOUDFLARE.md` — Cloudflare Workers deployment guide (**primary**)
 - `docs/SELF_HOSTING.md` — Docker self-hosting guide (**secondary**)
 

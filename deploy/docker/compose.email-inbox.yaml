@@ -2,7 +2,7 @@
 #
 # Usage:
 #   Copy .env.inbox.example to .env.inbox, fill in values, then:
-#   docker compose -f compose.email-inbox.yaml --env-file .env.inbox up -d
+#   docker compose -f deploy/docker/compose.email-inbox.yaml --env-file .env.inbox up -d
 #
 # Services:
 #   inbox — Node.js inbox-server + Caddy (port 8091)
@@ -25,8 +25,8 @@ services:
 
   inbox:
     build:
-      context: .
-      dockerfile: Dockerfile.email-inbox
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.email-inbox
     restart: unless-stopped
     ports:
       - "${INBOX_PORT:-8091}:80"

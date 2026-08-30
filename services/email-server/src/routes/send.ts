@@ -11,6 +11,11 @@ import { env } from '../env.js';
 
 const app = new Hono();
 
+/** Row shape returned by domain lookup queries. */
+interface DomainRow {
+  id: string;
+}
+
 // POST /v1/send
 app.post('/', zValidator('json', sendSchema), async (c) => {
   const body = c.req.valid('json');
@@ -60,7 +65,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         `SELECT id FROM domains WHERE name = ? OR name LIKE ? LIMIT 1`,
         [senderDomain, `%.${senderDomain}`],
       );
-      domainId = (result.rows[0] as any)?.id ?? null;
+      domainId = (result.rows[0] as DomainRow | undefined)?.id ?? null;
     }
   }
 

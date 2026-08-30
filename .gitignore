@@ -7,6 +7,7 @@ dist/
 .dev.vars
 !.dev.vars.example
 *.local
+.vscode/
 
 # Generated Cloudflare Worker configs — the tracked templates are the
 # *.example.jsonc files; the setup scripts generate these with real resource IDs.

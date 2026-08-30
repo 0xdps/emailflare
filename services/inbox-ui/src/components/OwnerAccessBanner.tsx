@@ -1,19 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { me } from '../api';
+import { useUser } from '../UserContext';
 
 /**
  * Shown at the top of inbox pages when the logged-in user is a super-admin.
  * Makes cross-inbox access visible — no silent owner access.
  */
 export default function OwnerAccessBanner() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    me().then(u => {
-      if (u.role === 'super-admin') setShow(true);
-    }).catch(() => {});
-  }, []);
+  const { user } = useUser();
+  const show = user?.role === 'super-admin';
 
   if (!show) return null;
 

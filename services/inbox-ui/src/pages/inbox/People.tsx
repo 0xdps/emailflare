@@ -330,7 +330,9 @@ export default function People() {
   }, [search]);
 
   useEffect(() => {
-    getInboxes().then(setInboxes).catch(() => {});
+    getInboxes().then(setInboxes).catch((err) => {
+      console.error('[People] failed to fetch inboxes:', err);
+    });
   }, []);
 
   async function selectPerson(id: string) {
@@ -339,7 +341,9 @@ export default function People() {
     try {
       const t = await getThread(id);
       setThread(t);
-      await markRead(id).catch(() => {});
+      await markRead(id).catch((err) => {
+        console.error('[People] failed to mark thread as read:', err);
+      });
       setPeople(prev => prev.map(p => p.id === id ? { ...p, unread_count: 0 } : p));
     } finally {
       setLoadingThread(false);

@@ -42,7 +42,7 @@ app.post('/', zValidator('json', setupSchema), async (c) => {
     [id, name, email, passwordHash, 'super-admin', now],
   );
 
-  await saveSession(c, { userId: id, role: 'super-admin' });
+  await saveSession(c, { userId: id, role: 'super-admin', name, email });
   return c.json({ ok: true }, 201);
 });
 

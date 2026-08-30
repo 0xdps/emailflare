@@ -52,7 +52,7 @@ Notes:
 ## 2. Start the production-style stack
 
 ```bash
-docker compose --env-file .env.local -f compose.email-api.yaml up --build -d
+docker compose --env-file .env.local -f deploy/docker/compose.email-api.yaml up --build -d
 ```
 
 Or with `just`:
@@ -85,7 +85,7 @@ If you are running from source:
 
 ```bash
 git pull
-docker compose --env-file .env.local -f compose.email-api.yaml up --build -d
+docker compose --env-file .env.local -f deploy/docker/compose.email-api.yaml up --build -d
 ```
 
 If you are running from the published image, pull the new tag and redeploy the container with the same mounted `/data` volume.
@@ -100,10 +100,10 @@ The minimum-infra recommendation remains the embedded local setup until you have
 
 ## Local development
 
-For local development, use `compose.email-api.dev.yaml` instead of `compose.email-api.yaml`. It runs the same stack with hot reload, so test emails are captured in the in-house Test Mailbox and never delivered to real inboxes.
+For local development, use `deploy/docker/compose.email-api.dev.yaml` instead of `deploy/docker/compose.email-api.yaml`. It runs the same stack with hot reload, so test emails are captured in the in-house Test Mailbox and never delivered to real inboxes.
 
 ```bash
-docker compose --env-file .env.api.local -f compose.email-api.dev.yaml up
+docker compose --env-file .env.api.local -f deploy/docker/compose.email-api.dev.yaml up
 # or:
 just emailflare-api-dev
 ```

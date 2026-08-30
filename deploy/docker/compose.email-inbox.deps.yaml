@@ -15,7 +15,7 @@ services:
   mesahub-inbox:
     container_name: emailflare-inbox-mesahub
     build:
-      context: ./infra
+      context: ../../infra
       dockerfile: Dockerfile.mesahub
     environment:
       - PORT=3002

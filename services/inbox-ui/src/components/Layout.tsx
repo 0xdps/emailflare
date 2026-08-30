@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useRouter } from '@tanstack/react-router';
 import {
   LayoutDashboard, Globe, FileText, Key, ScrollText, LogOut, FlaskConical,
   BookOpen, Github, ExternalLink, Inbox, Users, ListOrdered, Mail, ShieldOff,
 } from 'lucide-react';
-import api, { me, User } from '../api';
+import api from '../api';
+import { useUser } from '../UserContext';
+import type { User } from '../api';
 
 // Paths accessible to all roles (member, admin, super-admin)
 const MEMBER_PATHS = ['/inbox', '/inbox/sequences', '/inbox/settings'];
@@ -76,31 +78,31 @@ function NavSection({ label }: { label: string }) {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading } = useUser();
 
   useEffect(() => {
-    me().then(u => {
-      setUser(u);
-      const path = window.location.pathname;
-      // Redirect members away from admin-only paths
-      if (u.role === 'member') {
-        const isMemberPath = MEMBER_PATHS.some(p => path === p || path.startsWith(p + '/'));
-        if (!isMemberPath) {
-          router.navigate({ to: '/inbox' });
-        }
+    if (!user) return;
+    const path = window.location.pathname;
+    // Redirect members away from admin-only paths
+    if (user.role === 'member') {
+      const isMemberPath = MEMBER_PATHS.some(p => path === p || path.startsWith(p + '/'));
+      if (!isMemberPath) {
+        router.navigate({ to: '/inbox' });
       }
-      // Testers can only access the Test Mailbox
-      if (u.role === 'tester') {
-        const isTesterPath = TESTER_PATHS.some(p => path === p || path.startsWith(p + '/'));
-        if (!isTesterPath) {
-          router.navigate({ to: '/test-emails' });
-        }
+    }
+    // Testers can only access the Test Mailbox
+    if (user.role === 'tester') {
+      const isTesterPath = TESTER_PATHS.some(p => path === p || path.startsWith(p + '/'));
+      if (!isTesterPath) {
+        router.navigate({ to: '/test-emails' });
       }
-    }).catch(() => {});
-  }, []);
+    }
+  }, [user]);
 
   async function handleLogout() {
-    await api.post('/api/auth/logout').catch(() => {});
+    await api.post('/api/auth/logout').catch((err) => {
+      console.error('[layout] logout failed:', err);
+    });
     router.navigate({ to: '/login' });
   }
 
@@ -112,6 +114,29 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const initials   = user?.name
     ? user.name.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase()
     : '?';
+
+  // Show skeleton sidebar while user is loading
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-background overflow-hidden">
+        <div className="w-[212px] shrink-0 h-full border-r border-border bg-sidebar">
+          <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border">
+            <div className="size-7 rounded-lg bg-orange-100 animate-pulse" />
+            <div className="space-y-1.5">
+              <div className="h-3 w-20 bg-zinc-100 rounded animate-pulse" />
+              <div className="h-2.5 w-10 bg-zinc-100 rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="px-2 py-3 space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-[33px] bg-zinc-50 rounded-md animate-pulse" />
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 bg-background" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">

@@ -21,8 +21,8 @@ app.post('/login', zValidator('json', userLoginSchema), async (c) => {
 
   const { email, password } = c.req.valid('json');
 
-  const user = await rawDb.first<{ id: string; password_hash: string; role: string }>(
-    'SELECT id, password_hash, role FROM users WHERE email = ? LIMIT 1',
+  const user = await rawDb.first<{ id: string; name: string; email: string; password_hash: string; role: string }>(
+    'SELECT id, name, email, password_hash, role FROM users WHERE email = ? LIMIT 1',
     [email],
   );
 
@@ -34,7 +34,12 @@ app.post('/login', zValidator('json', userLoginSchema), async (c) => {
   const valid = await verifyPassword(password, user.password_hash);
   if (!valid) return c.json({ error: 'Invalid email or password' }, 401);
 
-  await saveSession(c, { userId: user.id, role: user.role as 'admin' | 'member' });
+  await saveSession(c, {
+    userId: user.id,
+    role: user.role as 'admin' | 'member',
+    name: user.name,
+    email: user.email,
+  });
   return c.json({ ok: true });
 });
 
@@ -43,17 +48,18 @@ app.post('/logout', (c) => {
   return c.json({ ok: true });
 });
 
+// GET /api/auth/me — returns user from session cookie (no DB query needed;
+// name, email, and role are embedded in the JWT at login time).
 app.get('/me', async (c) => {
   const session = await getSession(c);
   if (!session) return c.json({ error: 'Unauthorized' }, 401);
 
-  const user = await rawDb.first<{ id: string; name: string; email: string; role: string; created_at: string }>(
-    'SELECT id, name, email, role, created_at FROM users WHERE id = ? LIMIT 1',
-    [session.userId],
-  );
-
-  if (!user) return c.json({ error: 'User not found' }, 404);
-  return c.json(user);
+  return c.json({
+    id: session.userId,
+    name: session.name,
+    email: session.email,
+    role: session.role,
+  });
 });
 
 export default app;

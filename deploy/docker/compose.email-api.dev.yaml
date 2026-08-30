@@ -2,7 +2,7 @@ services:
   mesahub:
     container_name: emailflare-api-mesahub
     build:
-      context: ./infra
+      context: ../../infra
       dockerfile: Dockerfile.mesahub
     env_file:
       - .env.api.local
@@ -26,7 +26,7 @@ services:
   email-server:
     container_name: emailflare-api-server
     build:
-      context: .
+      context: ../..
       dockerfile: services/email-server/Dockerfile
       target: dev
     # On first start (or after wipe), builds email-core + emails before starting the server.
@@ -53,26 +53,26 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     volumes:
-      - ./packages/email-core:/app/packages/email-core
+      - ../../packages/email-core:/app/packages/email-core
       - email-core-node-modules:/app/packages/email-core/node_modules
-      - ./services/emails:/app/services/emails
+      - ../../services/emails:/app/services/emails
       - emails-node-modules:/app/services/emails/node_modules
-      - ./services/email-server/src:/app/services/email-server/src
-      - ./services/email-server/package.json:/app/services/email-server/package.json
+      - ../../services/email-server/src:/app/services/email-server/src
+      - ../../services/email-server/package.json:/app/services/email-server/package.json
       - backend-node-modules:/app/services/email-server/node_modules
 
   email-ui:
     container_name: emailflare-api-admin
     build:
-      context: ./services/email-ui
+      context: ../../services/email-ui
       dockerfile: Dockerfile
       target: dev
     command: sh -c "pnpm install && pnpm run dev"
     volumes:
-      - ./services/email-ui/src:/app/src
-      - ./services/email-ui/.tanstack:/app/.tanstack
-      - ./services/email-ui/index.html:/app/index.html:ro
-      - ./services/email-ui/package.json:/app/package.json
+      - ../../services/email-ui/src:/app/src
+      - ../../services/email-ui/.tanstack:/app/.tanstack
+      - ../../services/email-ui/index.html:/app/index.html:ro
+      - ../../services/email-ui/package.json:/app/package.json
       - admin-node-modules:/app/node_modules
     expose:
       - "5173"
@@ -81,7 +81,7 @@ services:
     container_name: emailflare-api-caddy
     image: caddy:2-alpine
     volumes:
-      - ./infra/Caddyfile.email-api.dev:/etc/caddy/Caddyfile:ro
+      - ../../infra/Caddyfile.email-api.dev:/etc/caddy/Caddyfile:ro
     ports:
       - "${PORT:-8090}:80"
     depends_on:

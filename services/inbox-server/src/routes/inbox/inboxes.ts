@@ -35,8 +35,19 @@ async function configureRouting(
   }
 }
 
+/** Row shape returned by inbox queries. */
+interface InboxRow {
+  id: string;
+  email: string;
+  display_name: string;
+  mode: string;
+  routing_configured: number;
+  routing_error: string | null;
+  created_at: string;
+}
+
 // Map a persisted row → API shape (adds the `routing` object).
-function toInbox(row: any) {
+function toInbox(row: InboxRow) {
   const { routing_configured, routing_error, ...rest } = row;
   return {
     ...rest,

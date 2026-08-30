@@ -15,7 +15,7 @@ services:
   mesahub-inbox:
     container_name: emailflare-inbox-mesahub
     build:
-      context: ./infra
+      context: ../../infra
       dockerfile: Dockerfile.mesahub
     environment:
       - PORT=3002
@@ -50,7 +50,7 @@ services:
   inbox-server:
     container_name: emailflare-inbox-server
     build:
-      context: .
+      context: ../..
       dockerfile: services/inbox-server/Dockerfile
       target: dev
     # On first start (or after wipe), builds email-core + inbox-core + emails before starting.
@@ -85,28 +85,28 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     volumes:
-      - ./packages/email-core:/app/packages/email-core
+      - ../../packages/email-core:/app/packages/email-core
       - email-core-node-modules:/app/packages/email-core/node_modules
-      - ./packages/inbox-core:/app/packages/inbox-core
+      - ../../packages/inbox-core:/app/packages/inbox-core
       - inbox-core-node-modules:/app/packages/inbox-core/node_modules
-      - ./services/emails:/app/services/emails
+      - ../../services/emails:/app/services/emails
       - emails-node-modules-inbox:/app/services/emails/node_modules
-      - ./services/inbox-server/src:/app/services/inbox-server/src
-      - ./services/inbox-server/package.json:/app/services/inbox-server/package.json
+      - ../../services/inbox-server/src:/app/services/inbox-server/src
+      - ../../services/inbox-server/package.json:/app/services/inbox-server/package.json
       - inbox-server-node-modules:/app/services/inbox-server/node_modules
-      - ./migrations:/app/migrations:ro
+      - ../../migrations:/app/migrations:ro
 
   inbox-ui:
     container_name: emailflare-inbox-ui
     build:
-      context: ./services/inbox-ui
+      context: ../../services/inbox-ui
       dockerfile: Dockerfile
       target: dev
     command: sh -c "pnpm install && pnpm run dev"
     volumes:
-      - ./services/inbox-ui/src:/app/src
-      - ./services/inbox-ui/index.html:/app/index.html:ro
-      - ./services/inbox-ui/package.json:/app/package.json
+      - ../../services/inbox-ui/src:/app/src
+      - ../../services/inbox-ui/index.html:/app/index.html:ro
+      - ../../services/inbox-ui/package.json:/app/package.json
       - inbox-ui-node-modules:/app/node_modules
     expose:
       - "5174"
@@ -115,7 +115,7 @@ services:
     container_name: emailflare-inbox-edge
     image: caddy:2-alpine
     volumes:
-      - ./infra/Caddyfile.email-inbox.dev:/etc/caddy/Caddyfile:ro
+      - ../../infra/Caddyfile.email-inbox.dev:/etc/caddy/Caddyfile:ro
     ports:
       - "${INBOX_PORT:-8091}:80"
     depends_on:

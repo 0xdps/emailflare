@@ -86,6 +86,11 @@ jobs:
         working-directory: ${{ matrix.path }}
         run: pnpm run build
 
+      - name: Audit dependencies
+        working-directory: ${{ matrix.path }}
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
   # ── Docker: emailflare-api ───────────────────────────────────────────────────
   docker-api:
     name: Build emailflare-api image
@@ -137,7 +142,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.email-api
+          file: ./deploy/docker/Dockerfile.email-api
           platforms: linux/amd64,linux/arm64
           push: ${{ github.ref_type == 'tag' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -200,7 +205,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.email-inbox
+          file: ./deploy/docker/Dockerfile.email-inbox
           platforms: linux/amd64,linux/arm64
           push: ${{ github.ref_type == 'tag' }}
           tags: ${{ steps.meta.outputs.tags }}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Loader2, Users, Trash2, Copy, Check } from 'lucide-react';
-import { getUsers, createInvite, revokeUser, changeUserRole, me, User } from '../../api';
+import { getUsers, createInvite, revokeUser, changeUserRole, User } from '../../api';
+import { useUser } from '../../UserContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,7 +47,7 @@ function RoleBadge({ role }: { role: User['role'] }) {
 }
 
 export default function UsersPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user: currentUser } = useUser();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -61,8 +62,8 @@ export default function UsersPage() {
   const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([me(), getUsers()])
-      .then(([u, list]) => { setCurrentUser(u); setUsers(list); })
+    getUsers()
+      .then(setUsers)
       .finally(() => setLoading(false));
   }, []);
 

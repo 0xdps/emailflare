@@ -23,7 +23,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.email-api
+          file: ./deploy/docker/Dockerfile.email-api
           platforms: linux/amd64
           push: false
           build-args: |
@@ -49,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.email-inbox
+          file: ./deploy/docker/Dockerfile.email-inbox
           platforms: linux/amd64
           push: false
           build-args: |
@@ -119,3 +119,8 @@ jobs:
       - name: Check (${{ matrix.check }})
         working-directory: ${{ matrix.path }}
         run: ${{ matrix.check }}
+
+      - name: Audit dependencies
+        working-directory: ${{ matrix.path }}
+        run: pnpm audit --audit-level=high
+        continue-on-error: true

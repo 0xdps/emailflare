@@ -77,6 +77,11 @@ jobs:
         working-directory: services/email-worker
         run: pnpm install --frozen-lockfile
 
+      - name: Audit dependencies
+        working-directory: services/email-worker
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
       - name: Generate wrangler.jsonc
         working-directory: services/email-worker
         run: |
@@ -124,6 +129,11 @@ jobs:
       - name: Install worker deps
         working-directory: services/inbox-worker
         run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies
+        working-directory: services/inbox-worker
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
 
       - name: Generate wrangler.jsonc
         working-directory: services/inbox-worker

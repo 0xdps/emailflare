@@ -208,7 +208,9 @@ export default function InboxSettings() {
 
   async function handleRemoveMember(userId: string) {
     if (!membersInbox) return;
-    await removeInboxMember(membersInbox.id, userId).catch(() => {});
+    await removeInboxMember(membersInbox.id, userId).catch((err) => {
+      console.error('[InboxSettings] failed to remove member:', err);
+    });
     setMembers(prev => prev.filter(m => m.id !== userId));
   }
 
