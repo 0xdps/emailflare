@@ -1,0 +1,59 @@
+justfile
+  s_affb8f0309ddcc::t_f12457f1ef9461 23,25-28
+services/email-worker/package.json
+  s_affb8f0309ddcc::t_903b534baedf40 21-22
+  s_affb8f0309ddcc::t_668fce51bfb3c5 14-15
+.github/workflows/docker-publish.yml
+  s_affb8f0309ddcc::t_7b067d2c77b8e7 37,39,42-44,49-52,76,78,81-83
+services/inbox-worker/package.json
+  s_affb8f0309ddcc::t_f47772e82b2012 12-13
+  s_affb8f0309ddcc::t_c9d7eb77ef4c66 17-19
+services/email-server/package.json
+  s_affb8f0309ddcc::t_27e018f21c2c67 8
+  s_affb8f0309ddcc::t_8538b4bb0d05cd 15-16
+.github/workflows/docker-check.yml
+  s_affb8f0309ddcc::t_631f742911b57e 98,100,103-105
+.github/workflows/deploy-workers.yml
+  s_affb8f0309ddcc::t_199439e87b616e 116,118-122
+  s_affb8f0309ddcc::t_bdc7db419cf06c 177,179
+  s_affb8f0309ddcc::t_c62a67c1cf08c7 63,65-69
+packages/email-core/package.json
+  s_affb8f0309ddcc::t_79d6e0df4c6b37 28
+pnpm-workspace.yaml
+  s_affb8f0309ddcc::t_3d0b9f090d0c16 1-4
+  s_affb8f0309ddcc::t_72b0bd3a89bcc1 5-7
+  s_affb8f0309ddcc::t_5b350944aca54f 9-13
+packages/inbox-core/package.json
+  s_affb8f0309ddcc::t_397022f862ecbf 22
+packages/email-core/src/logger.ts
+  s_affb8f0309ddcc::t_f8718f169fc5e2 31-32,38-39
+  s_affb8f0309ddcc::t_573d8e9bc204d5 5
+package.json
+  s_affb8f0309ddcc::t_ba9e70fd42b494 2-18
+services/inbox-server/package.json
+  s_affb8f0309ddcc::t_c57de7b74672c2 16-18
+  s_affb8f0309ddcc::t_291bf8e87f9135 8
+pnpm-lock.yaml
+  s_affb8f0309ddcc::t_cb61609ed8e905 15-465,468-769,773-903,905-910,913-915,917,919-951,953-958,961-963,965,967-999,1001-1006,1009-1011,1013,1015-1019,1021-1023,1025,1027-1031,1033-1037,1039-1043,1045-1049,1051-1055,1057-1061,1063-1067,1069-1073,1075-1079,1081-1085,1087-1091,1093-1097,1099-1103,1105-9622
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "20a3f2cf43d9d6d90239e0a93b3880f1ee662335",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_affb8f0309ddcc": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bf34b652-ced5-46d4-9c1d-2c01d2539e2e",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
