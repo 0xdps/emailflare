@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "prebuild": "pnpm --filter @emailflare/email-core build && pnpm --filter @emailflare/inbox-core build && pnpm --filter @emailflare/emails build",
     "build": "tsc",
     "start": "node dist/index.js",
     "migrate": "node dist/migrate.js"

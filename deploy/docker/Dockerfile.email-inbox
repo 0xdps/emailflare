@@ -39,9 +39,9 @@ RUN pnpm --filter @emailflare/inbox-core build
 COPY services/emails/ ./services/emails/
 RUN pnpm --filter @emailflare/emails build
 
-# Copy source and build inbox-server (run tsc directly to skip prebuild hook)
+# Copy source and build inbox-server
 COPY services/inbox-server/ ./services/inbox-server/
-RUN pnpm --filter @emailflare/inbox-server exec tsc
+RUN pnpm --filter @emailflare/inbox-server build
 
 # ── Stage: build-inbox-ui ──────────────────────────────────────────────────────
 FROM node:22-alpine AS build-inbox-ui
