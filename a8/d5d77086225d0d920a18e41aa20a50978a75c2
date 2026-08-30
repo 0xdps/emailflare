@@ -1,0 +1,108 @@
+packages/email-core/src/logger.ts
+  s_affb8f0309ddcc::t_a89656a4dd42e7 1-89
+services/inbox-ui/src/pages/settings/Users.tsx
+  s_affb8f0309ddcc::t_27f55115b4cbcf 50
+  s_affb8f0309ddcc::t_e5ddef153329c2 65-66
+.github/workflows/deploy-workers.yml
+  s_affb8f0309ddcc::t_76cfd77f6265fa 133-136
+  s_affb8f0309ddcc::t_17198076d0c677 80-84
+  s_affb8f0309ddcc::t_38c5a2b86fbd61 137
+docs/SELF_HOSTING.md
+  s_affb8f0309ddcc::t_18c6cf64c03db1 103
+  s_affb8f0309ddcc::t_39c029300f6582 55,88,106
+services/inbox-ui/src/routes/__root.tsx
+  s_affb8f0309ddcc::t_c6797a178ae222 4,6-20,22-32,35-37,39-61
+CHANGELOG.md
+  s_affb8f0309ddcc::t_d2d4d81c1b41f2 1-31
+services/email-ui/src/components/Layout.tsx
+  s_affb8f0309ddcc::t_839f3572cc1b9f 191-193
+services/landing/src/pages/index.astro
+  s_affb8f0309ddcc::t_85798471092970 1479
+services/inbox-ui/src/pages/inbox/People.tsx
+  s_affb8f0309ddcc::t_6e15ef9e1688a8 333-335,344-346
+services/email-server/src/routes/logs.ts
+  s_affb8f0309ddcc::t_9158fb91743af8 50
+services/inbox-ui/src/components/OwnerAccessBanner.tsx
+  s_affb8f0309ddcc::t_5a8256b1f3aadf 1,3,10-11
+services/inbox-worker/src/routes/setup.ts
+  s_affb8f0309ddcc::t_9ab32a97033237 40
+services/email-server/src/env.ts
+  s_affb8f0309ddcc::t_ab3f92d98d1a4c 1-2,15-18
+services/inbox-server/src/routes/setup.ts
+  s_affb8f0309ddcc::t_6d5baaad81b19e 45
+.github/dependabot.yml
+  s_affb8f0309ddcc::t_51abd09e4b59e1 1-157
+justfile
+  s_affb8f0309ddcc::t_83c68a972beb44 47,50,53,56,89,93,97,101,105,335,339,343,347,351
+services/inbox-worker/src/routes/invites.ts
+  s_affb8f0309ddcc::t_4e42552b52b12c 97
+services/inbox-server/src/middleware/auth.ts
+  s_affb8f0309ddcc::t_7d6c173350281d 51-56
+  s_affb8f0309ddcc::t_87c5af3eef9093 33-44
+services/email-server/src/routes/send.ts
+  s_affb8f0309ddcc::t_1ed896a6e01497 68
+services/inbox-worker/src/routes/auth.ts
+  s_affb8f0309ddcc::t_5b893196ae8c54 44,54-55,60-65
+  s_affb8f0309ddcc::t_b1e12bb0451400 41-43
+services/inbox-worker/src/middleware/auth.ts
+  s_affb8f0309ddcc::t_64e52a7aeb3d5b 49-54
+  s_affb8f0309ddcc::t_7c37e8ddc62bbb 31-42
+services/inbox-server/src/routes/inbox/inboxes.ts
+  s_affb8f0309ddcc::t_763ee3c9b7b3ec 38-48,50
+.gitignore
+  s_affb8f0309ddcc::t_ceaff707e86140 10
+.github/workflows/docker-check.yml
+  s_affb8f0309ddcc::t_c480ea1bb10d0b 122-126
+  s_affb8f0309ddcc::t_bcbecf35f748ed 52
+.github/workflows/docker-publish.yml
+  s_affb8f0309ddcc::t_65f468aea1be05 89-93
+  s_affb8f0309ddcc::t_2f88d2d5451d82 208
+services/landing/src/pages/email-api.astro
+  s_affb8f0309ddcc::t_7d88c52fe5b859 489
+README.md
+  s_affb8f0309ddcc::t_43e1388b8996bb 91-93
+  s_affb8f0309ddcc::t_f2a81958628346 77
+  s_affb8f0309ddcc::t_d33ae607b9473e 100-102
+  s_affb8f0309ddcc::t_25486b2d99db1b 107
+lefthook.yml
+  s_affb8f0309ddcc::t_92cf1df5b3ca76 1-29
+services/inbox-server/src/env.ts
+  s_affb8f0309ddcc::t_4370873a64a6ab 4-5,31-34
+services/inbox-server/src/routes/invites.ts
+  s_affb8f0309ddcc::t_a4e49989cb4c22 94
+services/inbox-ui/src/components/Layout.tsx
+  s_affb8f0309ddcc::t_b8dd34238fdc8d 81,84-90,92-97,99-100,118-139
+  s_affb8f0309ddcc::t_a1eda8028d50e4 1,7-9
+  s_affb8f0309ddcc::t_76543b9842a0dd 103-105
+  s_affb8f0309ddcc::t_35e8d58f83e304 140
+services/email-server/src/routes/testEmails.ts
+  s_affb8f0309ddcc::t_d82298a4db616d 44
+services/inbox-server/src/routes/auth.ts
+  s_affb8f0309ddcc::t_d277169cb79e74 42,51-52,57-62
+  s_affb8f0309ddcc::t_43f07100909e6a 39-41
+services/inbox-ui/src/pages/inbox/InboxSettings.tsx
+  s_affb8f0309ddcc::t_68d36465d47dad 211-213
+services/inbox-ui/src/UserContext.tsx
+  s_affb8f0309ddcc::t_e01818ea5c829c 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "a8d5d77086225d0d920a18e41aa20a50978a75c2",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_affb8f0309ddcc": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bf34b652-ced5-46d4-9c1d-2c01d2539e2e",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
