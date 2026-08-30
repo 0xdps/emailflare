@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "prebuild": "pnpm install --frozen-lockfile --dir ../../packages/email-core && pnpm --dir ../../packages/email-core run build && pnpm install --frozen-lockfile --dir ../emails && pnpm --dir ../emails run build",
+    "prebuild": "pnpm --filter @emailflare/email-core build && pnpm --filter @emailflare/emails build",
     "build": "tsc",
     "start": "node dist/index.js",
     "seed": "tsx src/seed.ts",
     "backfill": "tsx src/scripts/backfill-cf.ts"
   },
   "dependencies": {
-    "@emailflare/email-core": "file:../../packages/email-core",
-    "@emailflare/emails": "file:../emails",
+    "@emailflare/email-core": "workspace:*",
+    "@emailflare/emails": "workspace:*",
     "@hono/node-server": "^1.13.7",
     "@hono/zod-validator": "^0.4.3",
     "@mesahub/client": "^0.5.1",

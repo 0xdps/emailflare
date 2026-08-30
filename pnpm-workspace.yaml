@@ -1,2 +1,13 @@
+packages:
+  - 'packages/*'
+  - 'services/*'
+  - 'scripts'
+
+allowedDeprecatedVersions:
+  '@react-email/components': '1.0.12'
 allowBuilds:
-  lefthook: set this to true or false
+  esbuild: true
+  lefthook: true
+  msgpackr-extract: true
+  sharp: true
+  workerd: true

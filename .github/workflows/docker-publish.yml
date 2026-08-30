@@ -34,15 +34,21 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: ${{ matrix.path }}/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install dependencies
-        working-directory: ${{ matrix.path }}
+      - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm run build:shared
 
       - name: Build
         working-directory: ${{ matrix.path }}
         run: pnpm run build
+
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
 
   # ── Verify: Inbox (inbox-server + inbox-ui) ─────────────────────────────────
   verify-inbox:
@@ -54,10 +60,8 @@ jobs:
         include:
           - name: inbox-ui
             path: services/inbox-ui
-            emails_path: ""
           - name: inbox-server
             path: services/inbox-server
-            emails_path: services/emails
 
     steps:
       - uses: actions/checkout@v4
@@ -69,25 +73,19 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: ${{ matrix.path }}/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Build shared emails package
-        if: matrix.emails_path != ''
-        working-directory: ${{ matrix.emails_path }}
-        run: |
-          pnpm install
-          pnpm run build
-
-      - name: Install dependencies
-        working-directory: ${{ matrix.path }}
+      - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm run build:shared
 
       - name: Build
         working-directory: ${{ matrix.path }}
         run: pnpm run build
 
       - name: Audit dependencies
-        working-directory: ${{ matrix.path }}
         run: pnpm audit --audit-level=high
         continue-on-error: true
 

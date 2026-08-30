@@ -72,23 +72,18 @@ jobs:
           - name: email-worker
             path: services/email-worker
             check: pnpm exec tsc --noEmit
-            build_shared: "true"
           - name: inbox-worker
             path: services/inbox-worker
             check: pnpm exec tsc --noEmit
-            build_shared: "true"
           - name: email-bridge
             path: services/email-bridge
             check: pnpm exec tsc --noEmit
-            build_shared: "false"
           - name: inbox-bridge
             path: services/inbox-bridge
             check: pnpm exec tsc --noEmit
-            build_shared: "false"
           - name: landing
             path: services/landing
             check: pnpm run build
-            build_shared: "false"
 
     steps:
       - uses: actions/checkout@v4
@@ -100,27 +95,18 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: ${{ matrix.path }}/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
-      # Workers import @emailflare/email-core, @emailflare/inbox-core and
-      # @emailflare/emails via file: deps — build them first so type resolution
-      # and React types are available.
-      - name: Build shared packages
-        if: matrix.build_shared == 'true'
-        run: |
-          pnpm install --frozen-lockfile --dir packages/email-core && pnpm --dir packages/email-core run build
-          pnpm install --frozen-lockfile --dir packages/inbox-core && pnpm --dir packages/inbox-core run build
-          pnpm install --frozen-lockfile --dir services/emails && pnpm --dir services/emails run build
-
-      - name: Install dependencies
-        working-directory: ${{ matrix.path }}
+      - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm run build:shared
 
       - name: Check (${{ matrix.check }})
         working-directory: ${{ matrix.path }}
         run: ${{ matrix.check }}
 
       - name: Audit dependencies
-        working-directory: ${{ matrix.path }}
         run: pnpm audit --audit-level=high
         continue-on-error: true

@@ -2,7 +2,7 @@
  * Shared structured logger for EmailFlare.
  *
  * Provides a simple, zero-dependency logger with log levels and structured
- * JSON output in production. Use this instead of raw `console.*` calls.
+ * JSON output in production. Works in both Node.js and Cloudflare Workers.
  *
  * Usage:
  *   import { createLogger } from '@emailflare/email-core/logger';
@@ -28,15 +28,15 @@ const LEVELS: Record<LogLevel, number> = {
 };
 
 function getMinLevel(): LogLevel {
-  const env = (typeof process !== 'undefined' && process.env?.LOG_LEVEL) ?? 'info';
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const env = (typeof process !== 'undefined' && process.env?.LOG_LEVEL) || 'info';
   if (env in LEVELS) return env as LogLevel;
   return 'info';
 }
 
 function isProduction(): boolean {
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'production') return true;
-  // Cloudflare Workers don't have process.env.NODE_ENV in the same way
-  return false;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  return (typeof process !== 'undefined' && process.env?.NODE_ENV) === 'production';
 }
 
 export function createLogger(name: string): Logger {

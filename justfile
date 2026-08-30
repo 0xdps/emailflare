@@ -20,21 +20,12 @@ default:
 # SHARED
 # ============================================================================
 
-# Install deps for all services (run after clone or adding a new service)
+# Install all workspace dependencies (single command — pnpm workspace)
 install:
-    pnpm install --dir packages/email-core
-    pnpm install --dir packages/inbox-core
-    pnpm install --dir scripts
-    pnpm install --dir services/emails
-    cd services/emails && pnpm run build
-    pnpm install --dir services/email-worker
-    pnpm install --dir services/email-ui
-    pnpm install --dir services/email-server
-    pnpm install --dir services/inbox-worker
-    pnpm install --dir services/inbox-ui
-    pnpm install --dir services/inbox-server
-    pnpm install --dir services/inbox-bridge
-    pnpm install --dir services/email-bridge
+    pnpm install
+    pnpm --filter @emailflare/emails run build
+    pnpm --filter @emailflare/email-core run build
+    pnpm --filter @emailflare/inbox-core run build
 
 # Rebuild the shared emails package (run after editing services/emails/src/)
 emailflare-emails-build:
