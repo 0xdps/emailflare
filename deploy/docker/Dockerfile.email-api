@@ -38,9 +38,9 @@ RUN pnpm --filter @emailflare/email-core build
 COPY services/emails/ ./services/emails/
 RUN pnpm --filter @emailflare/emails build
 
-# Copy source and build email-server
+# Copy source and build email-server (run tsc directly to skip prebuild hook)
 COPY services/email-server/ ./services/email-server/
-RUN pnpm --filter @emailflare/email-server build
+RUN pnpm --filter @emailflare/email-server exec tsc
 
 # ── Stage: build-email-ui ────────────────────────────────────────────────────
 FROM node:22-alpine AS build-email-ui
