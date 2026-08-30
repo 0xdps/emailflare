@@ -1,0 +1,26 @@
+deploy/docker/Dockerfile.email-inbox
+  s_affb8f0309ddcc::t_6c4277b67d507b 42,44
+deploy/docker/Dockerfile.email-api
+  s_affb8f0309ddcc::t_5ec367c0335198 41,43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f1a77d69abbd4fb30004242d1ac533cd6b45e432",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_affb8f0309ddcc": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bf34b652-ced5-46d4-9c1d-2c01d2539e2e",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
