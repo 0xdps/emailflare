@@ -1,0 +1,49 @@
+deploy/docker/compose.email-api.dev.yaml
+  s_affb8f0309ddcc::t_38805333c0e144 84
+  s_affb8f0309ddcc::t_1d50341742135f 60
+  s_affb8f0309ddcc::t_f3d3f49b1b45ab 56
+  s_affb8f0309ddcc::t_6ff064c28cc29a 67
+  s_affb8f0309ddcc::t_adecb1cb308340 29
+  s_affb8f0309ddcc::t_921f7d708f373b 72-75
+  s_affb8f0309ddcc::t_83481474388868 58
+deploy/docker/compose.email-inbox.deps.yaml
+  s_affb8f0309ddcc::t_c440d057d94b13 18
+deploy/docker/railway.json
+  s_affb8f0309ddcc::t_97e9ad1bd45dfe 5
+deploy/docker/compose.email-inbox.yaml
+  s_affb8f0309ddcc::t_0798b2b2c87534 5
+  s_affb8f0309ddcc::t_5a112d90be2a27 28
+  s_affb8f0309ddcc::t_a002bafc13cc4a 29
+deploy/docker/Dockerfile.email-api
+  s_affb8f0309ddcc::t_e1f8d577eef062 87
+deploy/docker/compose.email-inbox.dev.yaml
+  s_affb8f0309ddcc::t_5bbef6d1970442 88-97
+  s_affb8f0309ddcc::t_a2de5677c50534 102
+  s_affb8f0309ddcc::t_53e18a9781aa6e 107-109
+  s_affb8f0309ddcc::t_80dd229ac38019 118
+  s_affb8f0309ddcc::t_3ce84cf82e3d1c 53
+deploy/docker/compose.email-api.yaml
+  s_affb8f0309ddcc::t_9ab54ccc9e76a4 7
+  s_affb8f0309ddcc::t_f76614c5aa96cd 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ca56882cc04ae5497a7809dba98c09b9df3a0526",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_affb8f0309ddcc": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bf34b652-ced5-46d4-9c1d-2c01d2539e2e",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
