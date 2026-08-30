@@ -19,43 +19,48 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Build the shared email-core package first
-COPY packages/email-core/package.json ./packages/email-core/package.json
-COPY packages/email-core/tsconfig.json ./packages/email-core/tsconfig.json
-RUN --mount=type=cache,id=pnpm-store-backend,target=/root/.local/share/pnpm/store \
-    cd packages/email-core && pnpm install
+# Copy workspace root config so pnpm can resolve workspace:* deps
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
+# Copy all workspace package.json files (pnpm needs them for resolution)
+COPY packages/email-core/package.json packages/email-core/tsconfig.json ./packages/email-core/
+COPY services/emails/package.json ./services/emails/
+COPY services/email-server/package.json ./services/email-server/
+
+# Install all workspace deps at once
+RUN --mount=type=cache,id=pnpm-store-backend,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
+
+# Copy source and build shared packages
 COPY packages/email-core/src/ ./packages/email-core/src/
-RUN cd packages/email-core && pnpm run build
-
-# Build the shared emails package next (email-server depends on it via file:../emails)
-COPY services/emails/package.json ./services/emails/package.json
-RUN --mount=type=cache,id=pnpm-store-backend,target=/root/.local/share/pnpm/store \
-    cd services/emails && pnpm install
+RUN pnpm --filter @emailflare/email-core build
 
 COPY services/emails/ ./services/emails/
-RUN cd services/emails && pnpm run build
+RUN pnpm --filter @emailflare/emails build
 
-# Now install and build the email-server (path mirrors repo layout for file: dep resolution)
-COPY services/email-server/package.json services/email-server/pnpm-lock.yaml services/email-server/pnpm-workspace.yaml ./services/email-server/
-RUN --mount=type=cache,id=pnpm-store-backend,target=/root/.local/share/pnpm/store \
-    cd services/email-server && pnpm install --frozen-lockfile
-
+# Copy source and build email-server
 COPY services/email-server/ ./services/email-server/
-RUN cd services/email-server && pnpm run build
+RUN pnpm --filter @emailflare/email-server build
 
 # ── Stage: build-email-ui ────────────────────────────────────────────────────
 FROM node:22-alpine AS build-email-ui
-WORKDIR /app/email-ui
+WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-COPY services/email-ui/package.json services/email-ui/pnpm-lock.yaml services/email-ui/pnpm-workspace.yaml ./
+# Copy workspace root config
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+
+# Copy email-ui package.json
+COPY services/email-ui/package.json ./services/email-ui/
+
+# Install workspace deps
 RUN --mount=type=cache,id=pnpm-store-admin,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
-COPY services/email-ui/ ./
-RUN pnpm exec vite build
+# Copy source and build
+COPY services/email-ui/ ./services/email-ui/
+RUN pnpm --filter @emailflare/email-ui build
 
 # ── Stage: prod (Caddy + Node) ──────────────────────────────────────────────
 FROM caddy:2-alpine AS caddy-bin
@@ -72,17 +77,17 @@ VOLUME ["/data"]
 
 RUN mkdir -p /usr/share/caddy
 
-# Backend runtime (file: deps are resolved relative to services/email-server/, mirroring repo layout)
+# Backend runtime (workspace layout mirrors repo)
 COPY --from=build-backend /app/services/emails/dist           ./services/emails/dist
 COPY --from=build-backend /app/services/emails/package.json   ./services/emails/package.json
 COPY --from=build-backend /app/packages/email-core/dist       ./packages/email-core/dist
 COPY --from=build-backend /app/packages/email-core/package.json ./packages/email-core/package.json
-COPY --from=build-backend /app/services/email-server/node_modules ./services/email-server/node_modules
+COPY --from=build-backend /app/node_modules/.pnpm             ./node_modules/.pnpm
 COPY --from=build-backend /app/services/email-server/dist     ./services/email-server/dist
 COPY services/email-server/package.json                       ./services/email-server/
 
 # Email UI static files
-COPY --from=build-email-ui /app/email-ui/dist /usr/share/caddy
+COPY --from=build-email-ui /app/services/email-ui/dist /usr/share/caddy
 
 COPY deploy/docker/start-email-api.sh /app/start-email-api.sh
 RUN chmod +x /app/start-email-api.sh

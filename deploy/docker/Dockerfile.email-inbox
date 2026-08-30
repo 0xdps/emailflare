@@ -12,58 +12,55 @@ RUN CGO_ENABLED=1 GOOS=linux go build -o /go/bin/mesahub-server ./cmd/server
 
 # ── Stage: build-emails ────────────────────────────────────────────────────────
 FROM node:22-alpine AS build-emails
-WORKDIR /app/services/emails
-RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
-COPY services/emails/package.json ./
-RUN --mount=type=cache,id=pnpm-store-inbox,target=/root/.local/share/pnpm/store \
-    pnpm install
-COPY services/emails/ ./
-RUN pnpm run build
-
-# ── Stage: build-email-core ───────────────────────────────────────────────────
-FROM node:22-alpine AS build-email-core
-WORKDIR /app/email-core
-RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
-COPY packages/email-core/package.json packages/email-core/tsconfig.json ./
-RUN --mount=type=cache,id=pnpm-store-inbox,target=/root/.local/share/pnpm/store \
-    pnpm install
-COPY packages/email-core/src/ ./src/
-RUN pnpm run build
-
-# ── Stage: build-inbox-core ───────────────────────────────────────────────────
-FROM node:22-alpine AS build-inbox-core
-WORKDIR /app/inbox-core
-RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
-COPY packages/inbox-core/package.json packages/inbox-core/tsconfig.json ./
-RUN --mount=type=cache,id=pnpm-store-inbox,target=/root/.local/share/pnpm/store \
-    pnpm install
-COPY packages/inbox-core/src/ ./src/
-RUN pnpm run build
-
-# ── Stage: build-inbox-server ─────────────────────────────────────────────────
-FROM node:22-alpine AS build-inbox-server
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
 
-COPY services/inbox-server/package.json services/inbox-server/pnpm-lock.yaml ./services/inbox-server/
-COPY --from=build-email-core /app/email-core /app/packages/email-core
-COPY --from=build-inbox-core /app/inbox-core /app/packages/inbox-core
-COPY --from=build-emails /app/services/emails /app/services/emails
-RUN --mount=type=cache,id=pnpm-store-inbox,target=/root/.local/share/pnpm/store \
-    cd services/inbox-server && pnpm install
+# Copy workspace root config
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
+# Copy all workspace package.json files needed
+COPY packages/email-core/package.json packages/email-core/tsconfig.json ./packages/email-core/
+COPY packages/inbox-core/package.json packages/inbox-core/tsconfig.json ./packages/inbox-core/
+COPY services/emails/package.json ./services/emails/
+COPY services/inbox-server/package.json ./services/inbox-server/
+COPY services/inbox-ui/package.json ./services/inbox-ui/
+
+# Install all workspace deps at once
+RUN --mount=type=cache,id=pnpm-store-inbox,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
+
+# Copy source and build shared packages
+COPY packages/email-core/src/ ./packages/email-core/src/
+RUN pnpm --filter @emailflare/email-core build
+
+COPY packages/inbox-core/src/ ./packages/inbox-core/src/
+RUN pnpm --filter @emailflare/inbox-core build
+
+COPY services/emails/ ./services/emails/
+RUN pnpm --filter @emailflare/emails build
+
+# Copy source and build inbox-server
 COPY services/inbox-server/ ./services/inbox-server/
-RUN cd services/inbox-server && pnpm run build
+RUN pnpm --filter @emailflare/inbox-server build
 
 # ── Stage: build-inbox-ui ──────────────────────────────────────────────────────
 FROM node:22-alpine AS build-inbox-ui
-WORKDIR /app/inbox-ui
+WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
-COPY services/inbox-ui/package.json services/inbox-ui/pnpm-lock.yaml services/inbox-ui/pnpm-workspace.yaml ./
+
+# Copy workspace root config
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+
+# Copy inbox-ui package.json
+COPY services/inbox-ui/package.json ./services/inbox-ui/
+
+# Install workspace deps
 RUN --mount=type=cache,id=pnpm-store-inbox,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
-COPY services/inbox-ui/ ./
-RUN pnpm run build
+
+# Copy source and build
+COPY services/inbox-ui/ ./services/inbox-ui/
+RUN pnpm --filter @emailflare/inbox-ui build
 
 # ── Stage: caddy-bin ──────────────────────────────────────────────────────────
 FROM caddy:2-alpine AS caddy-bin
@@ -79,22 +76,22 @@ COPY --from=build-core /go/bin/mesahub-server /usr/local/bin/mesahub-server
 RUN mkdir -p /data
 VOLUME ["/data"]
 
-# inbox-server runtime (file: deps resolved relative to services/inbox-server/, mirroring repo layout)
+# inbox-server runtime (workspace layout mirrors repo)
 COPY --from=build-emails   /app/services/emails/dist           ./services/emails/dist
 COPY --from=build-emails   /app/services/emails/package.json   ./services/emails/package.json
-COPY --from=build-email-core /app/email-core/dist     ./packages/email-core/dist
-COPY --from=build-email-core /app/email-core/package.json ./packages/email-core/package.json
-COPY --from=build-inbox-core /app/inbox-core/dist     ./packages/inbox-core/dist
-COPY --from=build-inbox-core /app/inbox-core/package.json ./packages/inbox-core/package.json
-COPY --from=build-inbox-server /app/services/inbox-server/node_modules ./services/inbox-server/node_modules
-COPY --from=build-inbox-server /app/services/inbox-server/dist          ./services/inbox-server/dist
-COPY services/inbox-server/package.json                                  ./services/inbox-server/
+COPY --from=build-emails   /app/packages/email-core/dist       ./packages/email-core/dist
+COPY --from=build-emails   /app/packages/email-core/package.json ./packages/email-core/package.json
+COPY --from=build-emails   /app/packages/inbox-core/dist       ./packages/inbox-core/dist
+COPY --from=build-emails   /app/packages/inbox-core/package.json ./packages/inbox-core/package.json
+COPY --from=build-emails   /app/node_modules/.pnpm             ./node_modules/.pnpm
+COPY --from=build-emails   /app/services/inbox-server/dist     ./services/inbox-server/dist
+COPY services/inbox-server/package.json                         ./services/inbox-server/
 
 # Migration SQL files (needed at runtime for DB init)
 COPY migrations/ ./migrations/
 
 # Inbox UI static files
-COPY --from=build-inbox-ui /app/inbox-ui/dist ./inbox-ui/dist
+COPY --from=build-inbox-ui /app/services/inbox-ui/dist ./inbox-ui/dist
 
 # Caddy config
 COPY infra/Caddyfile.email-inbox /etc/caddy/Caddyfile
