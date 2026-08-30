@@ -1,0 +1,18 @@
+package.json
+  h_95aea6b4aa8772 1-5
+pnpm-lock.yaml
+  h_95aea6b4aa8772 1-114
+pnpm-workspace.yaml
+  h_95aea6b4aa8772 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "12c12e1976cde2c77b68af3edcf7dbf539200758",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
