@@ -1,6 +1,7 @@
 // Inbox compose / reply routes
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
+import { createLogger } from '@emailflare/email-core/logger';
 import { generateId, sendWithLog, resolveDomainId } from '@emailflare/email-core';
 import { composeSchema, buildReplyToAddress, threadMessageId, upsertPerson, resolveThreadId } from '@emailflare/inbox-core';
 import { sendEmail, type CFSendEmailParams } from '../../services/cloudflare.js';
@@ -8,6 +9,7 @@ import { rawDb } from '../../db.js';
 import { env } from '../../env.js';
 import type { HonoEnv } from '../../env.js';
 
+const log = createLogger('compose');
 const app = new Hono<HonoEnv>();
 
 app.post('/', zValidator('json', composeSchema), async (c) => {
@@ -72,7 +74,7 @@ app.post('/', zValidator('json', composeSchema), async (c) => {
   return c.json({ ok: true, id, threadId, personId, error: result.error });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[compose]', message, err);
+    log.error(message, err);
     return c.json({ error: message }, 500);
   }
 });

@@ -8,10 +8,13 @@
 import cron from 'node-cron';
 import { Queue, Worker } from 'bullmq';
 import { Redis } from 'ioredis';
+import { createLogger } from '@emailflare/email-core/logger';
 import { rawDb } from './db.js';
 import { sendEmail } from './services/cloudflare.js';
 import { generateId, listUnsubscribeHeaders, applyVariables } from '@emailflare/email-core';
 import { env, type SequenceJobData } from './env.js';
+
+const log = createLogger('scheduler');
 
 const QUEUE_NAME = 'sequence-steps';
 
@@ -94,7 +97,7 @@ function startSequenceWorker(): Worker<SequenceJobData> {
         [person.email.toLowerCase()],
       );
       if (suppressed) {
-        console.log(`[scheduler] Skipping suppressed recipient ${person.email} (${suppressed.reason})`);
+        log.info('Skipping suppressed recipient ' + person.email + ' (' + suppressed.reason + ')');
         await rawDb.run(
           `UPDATE sequence_enrollments SET current_step = ? WHERE id = ?`,
           [stepIndex + 1, enrollmentId],
@@ -143,11 +146,11 @@ export function startScheduler(): void {
   // Every 5 minutes — identical schedule to the CF cron trigger
   cron.schedule('*/5 * * * *', () => {
     processDueSequenceSteps().catch(err =>
-      console.error('[scheduler] processDueSequenceSteps failed:', err),
+      log.error('processDueSequenceSteps failed:', err),
     );
   });
 
-  console.log('[scheduler] Sequence scheduler and BullMQ worker started');
+  log.info('Sequence scheduler and BullMQ worker started');
 }
 
 export async function stopScheduler(): Promise<void> {

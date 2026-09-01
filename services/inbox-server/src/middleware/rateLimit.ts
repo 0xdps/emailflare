@@ -4,8 +4,11 @@
 
 import { Redis } from 'ioredis';
 import { createMiddleware } from 'hono/factory';
+import { createLogger } from '@emailflare/email-core/logger';
 import type { HonoEnv, ApiKeyContext } from '../env.js';
 import { env } from '../env.js';
+
+const log = createLogger('rateLimit');
 
 const RATE_LIMIT = 100;
 const WINDOW_TTL = 60; // seconds
@@ -15,7 +18,7 @@ let _redis: Redis | null = null;
 function getRedis(): Redis {
   if (!_redis) {
     _redis = new Redis(env.REDIS_URL);
-    _redis.on('error', (err) => console.error('[rateLimit] Redis error:', err));
+    _redis.on('error', (err) => log.error('Redis error:', err));
   }
   return _redis;
 }

@@ -13,6 +13,9 @@
 import { serve } from '@hono/node-server';
 import type { Server as HttpServer } from 'node:http';
 import { Hono } from 'hono';
+import { createLogger } from '@emailflare/email-core/logger';
+
+const log = createLogger('inbox-server');
 import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
 
@@ -128,7 +131,7 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ error: err.message }, err.status);
   }
-  console.error('[unhandled]', err);
+  log.error('unhandled', err);
   return c.json({ error: 'Internal server error' }, 500);
 });
 
@@ -137,21 +140,21 @@ app.onError((err, c) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  console.log('[startup] Running migrations…');
+  log.info('Running migrations…');
   await runMigrations();
 
-  console.log('[startup] Seeding system templates…');
+  log.info('Seeding system templates…');
   await seedSystemTemplates();
 
-  console.log('[startup] Starting sequence scheduler…');
+  log.info('Starting sequence scheduler…');
   startScheduler();
 
   const port = env.PORT;
 
-  console.log(`[startup] Starting HTTP server on port ${port}…`);
+  log.info('Starting HTTP server on port ' + String(port) + '…');
 
   const server = serve({ fetch: app.fetch, port }, (info) => {
-    console.log(`[startup] Listening on http://localhost:${info.port}`);
+    log.info('Listening on http://localhost:' + String(info.port));
   }) as unknown as HttpServer;
 
   // Attach WebSocket manager to the http.Server
@@ -207,7 +210,7 @@ async function main(): Promise<void> {
 
   // Graceful shutdown
   const shutdown = async () => {
-    console.log('[shutdown] Stopping scheduler…');
+    log.info('Stopping scheduler…');
     await stopScheduler();
     process.exit(0);
   };
@@ -216,6 +219,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(err => {
-  console.error('[startup] Fatal error:', err);
+  log.error('Fatal error:', err);
   process.exit(1);
 });

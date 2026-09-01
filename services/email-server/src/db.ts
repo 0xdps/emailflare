@@ -1,9 +1,12 @@
 import { generateId } from '@emailflare/email-core';
+import { createLogger } from '@emailflare/email-core/logger';
 import { MesahubClient } from '@mesahub/client';
 import { env } from './env.js';
 import { parseMesahubUrl } from './lib/mesahub-url.js';
 import { LAYOUTS } from '@emailflare/emails';
 import type { LayoutName } from '@emailflare/emails';
+
+const log = createLogger('db');
 export type {
   DomainRow,
   TemplateRow,
@@ -176,7 +179,7 @@ export async function bootstrapSchema(): Promise<void> {
   `);
   try { await db.exec(`CREATE INDEX IF NOT EXISTS idx_unsubscribe_tokens_email ON unsubscribe_tokens(email)`); } catch { /* ignore */ }
 
-  if (process.env.NODE_ENV !== 'production') console.log('[db] schema bootstrapped');
+  if (process.env.NODE_ENV !== 'production') log.info('schema bootstrapped');
 }
 
 // ── System template subjects ──────────────────────────────────────────────────
@@ -255,6 +258,6 @@ export async function seedSystemTemplates(): Promise<void> {
       });
     }
   }
-  if (process.env.NODE_ENV !== 'production') console.log('[db] system templates seeded');
+  if (process.env.NODE_ENV !== 'production') log.info('system templates seeded');
 }
 

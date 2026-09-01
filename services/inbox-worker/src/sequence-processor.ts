@@ -6,7 +6,10 @@
 
 import { sendEmail } from './services/cloudflare.ts';
 import { generateId, listUnsubscribeHeaders, applyVariables } from '@emailflare/email-core';
+import { createLogger } from '@emailflare/email-core/logger';
 import type { Env, SequenceQueueMessage } from './env.ts';
+
+const log = createLogger('sequence-processor');
 
 interface SequenceStep {
   delay_days: number;
@@ -101,7 +104,7 @@ export async function handleSequenceQueueMessage(
     'SELECT reason FROM suppressions WHERE email = ? LIMIT 1',
   ).bind(person.email.toLowerCase()).first<{ reason: string }>();
   if (suppressed) {
-    console.log(`[sequence] Skipping suppressed recipient ${person.email} (${suppressed.reason})`);
+    log.info('skipping suppressed recipient', { email: person.email, reason: suppressed.reason });
     // Advance so the sequence doesn't stall on this step
     await env.DB.prepare(
       `UPDATE sequence_enrollments SET current_step = ? WHERE id = ?`,
@@ -137,7 +140,7 @@ export async function handleSequenceQueueMessage(
     ).bind(msg.stepIndex + 1, enrollment.id).run();
   } catch (err) {
     // Log failure but don't crash the worker; message will be retried by queue
-    console.error('Sequence step send failed:', err);
+    log.error('sequence step send failed', err);
     throw err; // re-throw so queue retries
   }
 }

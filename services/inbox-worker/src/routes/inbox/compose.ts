@@ -5,7 +5,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { generateId, sendWithLog, resolveDomainId } from '@emailflare/email-core';
+import { createLogger } from '@emailflare/email-core/logger';
 import { sendEmail, type CFSendEmailParams } from '../../services/cloudflare.ts';
+
+const log = createLogger('inbox-compose');
 import { D1Db } from '../../db.ts';
 import type { HonoEnv } from '../../env.ts';
 import { composeSchema, buildReplyToAddress, threadMessageId, upsertPerson, resolveThreadId } from '@emailflare/inbox-core';
@@ -74,7 +77,7 @@ app.post('/', zValidator('json', composeSchema), async (c) => {
   return c.json({ ok: true, id, threadId, personId, error: result.error });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[compose]', message, err);
+    log.error('compose failed', { message, error: err instanceof Error ? err.message : String(err) });
     return c.json({ error: message }, 500);
   }
 });

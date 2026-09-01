@@ -3,8 +3,11 @@
 
 import PostalMime from 'postal-mime';
 import { generateId } from '@emailflare/email-core';
+import { createLogger } from '@emailflare/email-core/logger';
 import { D1Db } from './db.ts';
 import type { Env } from './env.ts';
+
+const log = createLogger('email-handler');
 
 
 // ── Detection helpers ──────────────────────────────────────────────────────────
@@ -136,7 +139,7 @@ export async function handleInboundEmail(
   try {
     rawBytes = await new Response(message.raw).arrayBuffer();
   } catch {
-    console.warn('[email-handler] Failed to read raw message');
+    log.warn('Failed to read raw message');
     return;
   }
 
@@ -144,7 +147,7 @@ export async function handleInboundEmail(
   try {
     email = await new PostalMime().parse(rawBytes);
   } catch {
-    console.warn('[email-handler] Failed to parse message with PostalMime');
+    log.warn('Failed to parse message with PostalMime');
     return;
   }
 
@@ -169,7 +172,7 @@ const SOFT_BOUNCE_THRESHOLD = 3;
 async function processBounce(content: string, db: D1Db, now: string): Promise<void> {
   const recipient = extractRecipient(content);
   if (!recipient) {
-    console.warn('[email-handler] Could not extract recipient from bounce, skipping');
+    log.warn('Could not extract recipient from bounce, skipping');
     return;
   }
 
@@ -200,7 +203,7 @@ async function processBounce(content: string, db: D1Db, now: string): Promise<vo
        VALUES (?, ?, 'hard_bounce', ?, ?, ?)`,
       [generateId(), recipient, logRow?.domain_id ?? null, logRow?.id ?? null, now],
     );
-    console.log(`[email-handler] Hard bounce suppressed: ${recipient} — ${reason}`);
+    log.info(`Hard bounce suppressed: ${recipient} — ${reason}`);
     return;
   }
 
@@ -212,7 +215,7 @@ async function processBounce(content: string, db: D1Db, now: string): Promise<vo
        VALUES (?, ?, 'hard_bounce', ?, ?, ?)`,
       [generateId(), recipient, logRow?.domain_id ?? null, logRow?.id ?? null, now],
     );
-    console.log(`[email-handler] Spam rejection suppressed: ${recipient} — ${reason}`);
+    log.info(`Spam rejection suppressed: ${recipient} — ${reason}`);
     return;
   }
 
@@ -232,16 +235,16 @@ async function processBounce(content: string, db: D1Db, now: string): Promise<vo
        VALUES (?, ?, 'soft_bounce', ?, ?, ?)`,
       [generateId(), recipient, logRow?.domain_id ?? null, logRow?.id ?? null, now],
     );
-    console.log(`[email-handler] Soft bounce suppressed after ${cnt} bounces: ${recipient}`);
+    log.info(`Soft bounce suppressed after ${cnt} bounces: ${recipient}`);
   } else {
-    console.log(`[email-handler] Soft bounce logged (${cnt}/${SOFT_BOUNCE_THRESHOLD}): ${recipient} — ${reason}`);
+    log.info(`Soft bounce logged (${cnt}/${SOFT_BOUNCE_THRESHOLD}): ${recipient} — ${reason}`);
   }
 }
 
 async function processComplaint(content: string, db: D1Db, now: string): Promise<void> {
   const recipient = extractRecipient(content);
   if (!recipient) {
-    console.warn('[email-handler] Could not extract recipient from complaint, skipping');
+    log.warn('Could not extract recipient from complaint, skipping');
     return;
   }
 
@@ -268,5 +271,5 @@ async function processComplaint(content: string, db: D1Db, now: string): Promise
      VALUES (?, ?, 'complaint', ?, ?, ?)`,
     [generateId(), recipient, logRow?.domain_id ?? null, logRow?.id ?? null, now],
   );
-  console.log(`[email-handler] Complaint suppressed: ${recipient}`);
+  log.info(`Complaint suppressed: ${recipient}`);
 }

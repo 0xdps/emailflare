@@ -5,9 +5,12 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { HTTPException } from 'hono/http-exception';
+import { createLogger } from '@emailflare/email-core/logger';
 
 import { bootstrapSchema, seedSystemTemplates } from './db.js';
 import { env } from './env.js';
+
+const log = createLogger('email-server');
 import { requireAdminToken } from './middleware/auth.js';
 import { requireApiKey } from './middleware/apiKey.js';
 import { checkRateLimit } from './middleware/rateLimit.js';
@@ -48,7 +51,7 @@ const ADMIN_ORIGINS = env.NODE_ENV === 'production'
   : ['http://localhost:5173', 'http://admin:5173', 'http://emailflare.localhost:1355'];
 
 if (env.NODE_ENV === 'production' && ADMIN_ORIGINS.length === 0) {
-  console.warn('[startup] WARNING: ADMIN_ORIGIN is not set. All cross-origin /api/* requests will be blocked.');
+  log.warn('ADMIN_ORIGIN is not set. All cross-origin /api/* requests will be blocked.');
 }
 
 const app = new Hono();
@@ -137,32 +140,32 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ error: err.message }, err.status);
   }
-  console.error('[error]', err);
+  log.error(err);
   return c.json({ error: 'Internal server error' }, 500);
 });
 
 // ── Startup + graceful shutdown ────────────────────────────────────────────────
 async function main() {
   if (env.NODE_ENV !== 'production') {
-    console.log('[startup] NODE_ENV:', env.NODE_ENV);
-    console.log('[startup] PORT:', env.PORT);
-    console.log('[startup] MESAHUB_URL:', env.MESAHUB_URL.replace(/mh:\/\/[^@]+@/, 'mh://***@'));
-    console.log('[startup] ADMIN_TOKEN:', env.ADMIN_TOKEN ? 'set' : '*** MISSING ***');
-    console.log('[startup] CF_API_TOKEN:', env.CF_API_TOKEN ? 'set' : 'not set');
-    console.log('[startup] bootstrapping schema...');
+    log.info('NODE_ENV: ' + env.NODE_ENV);
+    log.info('PORT: ' + String(env.PORT));
+    log.info('MESAHUB_URL: ' + env.MESAHUB_URL.replace(/mh:\/\/[^@]+@/, 'mh://***@'));
+    log.info('ADMIN_TOKEN: ' + (env.ADMIN_TOKEN ? 'set' : '*** MISSING ***'));
+    log.info('CF_API_TOKEN: ' + (env.CF_API_TOKEN ? 'set' : 'not set'));
+    log.info('bootstrapping schema...');
   }
   await bootstrapSchema();
-  if (env.NODE_ENV !== 'production') console.log('[startup] seeding system templates...');
+  if (env.NODE_ENV !== 'production') log.info('seeding system templates...');
   await seedSystemTemplates();
 
   const server: ServerType = serve({ fetch: app.fetch, port: env.PORT }, () => {
-    console.log(`[server] emailflare backend running on port ${env.PORT}`);
+    log.info('emailflare backend running on port ' + String(env.PORT));
   });
 
   function shutdown(signal: string) {
-    console.log(`[server] ${signal} received — shutting down`);
+    log.info(signal + ' received — shutting down');
     server.close(() => {
-      console.log('[server] closed');
+      log.info('closed');
       process.exit(0);
     });
   }
@@ -172,6 +175,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('[fatal]', err);
+  log.error('fatal', err);
   process.exit(1);
 });

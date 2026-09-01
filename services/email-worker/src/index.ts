@@ -12,12 +12,15 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { HTTPException } from 'hono/http-exception';
+import { createLogger } from '@emailflare/email-core/logger';
 
 import { requireAdminToken } from './middleware/auth.ts';
 import { requireApiKey } from './middleware/apiKey.ts';
 import { checkRateLimit } from './middleware/rateLimit.ts';
 import { LAYOUTS, renderLayout } from './emails.ts';
 import { seedSystemTemplates } from './seed.ts';
+
+const log = createLogger('email-worker');
 import type { LayoutName } from './emails.ts';
 import type { Env, HonoEnv } from './env.ts';
 
@@ -125,7 +128,7 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ error: err.message }, err.status);
   }
-  console.error('[error]', err);
+  log.error(err);
   return c.json({ error: 'Internal server error' }, 500);
 });
 

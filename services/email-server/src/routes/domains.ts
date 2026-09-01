@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
+import { createLogger } from '@emailflare/email-core/logger';
 import { domains, deleteDomainCascade } from '../db.js';
 import { CloudflareApiError } from '../services/cloudflare.js';
 import { createSendingSubdomain, listSendingSubdomains, getSubdomainDnsRecords, getSendingSubdomain, getZoneByHostname } from '../services/cloudflare.js';
@@ -7,6 +8,7 @@ import { getBounceWorkerInfo, enableEmailRouting, setCatchAllToWorker } from '..
 import { env } from '../env.js';
 import { domainCreateSchema, generateId } from '@emailflare/email-core';
 
+const log = createLogger('domains');
 const app = new Hono();
 
 // GET /api/domains
@@ -78,7 +80,7 @@ app.post('/', zValidator('json', domainCreateSchema), async (c) => {
       await enableEmailRouting(zoneId, env.CF_API_TOKEN);
       await setCatchAllToWorker(zoneId, env.BOUNCE_WORKER_NAME, env.CF_API_TOKEN, 'Bounce forwarding (emailflare)');
     }).catch((err) => {
-      console.warn(`[bounce] auto-setup failed for ${name}:`, err instanceof Error ? err.message : err);
+      log.warn(`bounce auto-setup failed for ${name}:`, err instanceof Error ? err.message : err);
     });
   }
 

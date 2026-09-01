@@ -2,6 +2,10 @@
 // Credentials are passed per-call (no module-level globals) so this module
 // is safe to use in both Workers and Node.js environments.
 
+import { createLogger } from './logger.js';
+
+const log = createLogger('cloudflare');
+
 const CF_BASE = 'https://api.cloudflare.com/client/v4';
 
 interface CFResponse<T> {
@@ -379,7 +383,7 @@ export default {
     });
     if (!response.ok) {
       const text = await response.text();
-      console.error('[bounce-forwarder] webhook failed:', response.status, text);
+      log.error('bounce-forwarder webhook failed', { status: response.status, text });
     }
   }
 };

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { me, type User } from '../api';
+import { me, type User } from './api';
 
 interface UserContextValue {
   user: User | null;

@@ -11,6 +11,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
+import { createLogger } from '@emailflare/email-core/logger';
+
+const log = createLogger('inbox-worker');
 
 import type { Env, SequenceQueueMessage } from './env.ts';
 import type { HonoEnv } from './env.ts';
@@ -134,7 +137,7 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ error: err.message }, err.status);
   }
-  console.error(err);
+  log.error('unhandled error', err);
   return c.json({ error: 'Internal server error' }, 500);
 });
 

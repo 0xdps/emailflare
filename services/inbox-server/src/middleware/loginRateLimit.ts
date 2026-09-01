@@ -3,7 +3,10 @@
 // Uses atomic INCR + EXPIRE (sliding 60-second window, 10 attempts max).
 
 import { Redis } from 'ioredis';
+import { createLogger } from '@emailflare/email-core/logger';
 import { env } from '../env.js';
+
+const log = createLogger('loginRateLimit');
 
 const LOGIN_LIMIT = 10;
 const WINDOW_TTL  = 60; // seconds
@@ -13,7 +16,7 @@ let _redis: Redis | null = null;
 function getRedis(): Redis {
   if (!_redis) {
     _redis = new Redis(env.REDIS_URL);
-    _redis.on('error', (err) => console.error('[loginRateLimit] Redis error:', err));
+    _redis.on('error', (err) => log.error('Redis error:', err));
   }
   return _redis;
 }

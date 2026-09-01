@@ -2,6 +2,9 @@
 // No Cloudflare bindings — everything comes from process.env.
 
 import crypto from 'node:crypto';
+import { createLogger } from '@emailflare/email-core/logger';
+
+const log = createLogger('env');
 
 const required = (name: string): string => {
   const val = process.env[name];
@@ -16,7 +19,7 @@ const optionalInDev = (name: string): string => {
     if (process.env.NODE_ENV === 'production') {
       throw new Error(`Missing required environment variable: ${name}`);
     }
-    console.warn(`[env] ${name} not set — some features will be disabled in dev mode`);
+    log.warn(`${name} not set — some features will be disabled in dev mode`);
     return '';
   }
   return val;
@@ -30,7 +33,7 @@ function sessionSecret(): string {
     }
     // Generate a random secret at startup for dev — never hardcoded.
     const generated = crypto.randomBytes(32).toString('hex');
-    console.warn('[env] SESSION_SECRET not set — generated random dev secret (sessions will reset on restart)');
+    log.warn('SESSION_SECRET not set — generated random dev secret (sessions will reset on restart)');
     return generated;
   }
   if (val.length < 32) throw new Error('SESSION_SECRET must be at least 32 characters');

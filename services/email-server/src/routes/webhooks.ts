@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { nanoid } from 'nanoid';
+import { createLogger } from '@emailflare/email-core/logger';
 import { env } from '../env.js';
 import { db } from '../db.js';
 import {
@@ -10,6 +11,8 @@ import {
   classifyBounce,
   extractReason,
 } from '../lib/bounce-parser.js';
+
+const log = createLogger('webhooks');
 
 export const webhooksRoutes = new Hono();
 
@@ -78,7 +81,7 @@ webhooksRoutes.post('/bounce', async (c) => {
   if (isComplaint(email)) {
     const recipient = extractRecipient(content);
     if (!recipient) {
-      console.warn('[webhooks/bounce] complaint: could not extract recipient');
+      log.warn('complaint: could not extract recipient');
       return c.json({ ok: true, action: 'skipped', reason: 'no_recipient' });
     }
 
@@ -117,7 +120,7 @@ webhooksRoutes.post('/bounce', async (c) => {
   if (isBounce(email)) {
     const recipient = extractRecipient(content);
     if (!recipient) {
-      console.warn('[webhooks/bounce] bounce: could not extract recipient');
+      log.warn('bounce: could not extract recipient');
       return c.json({ ok: true, action: 'skipped', reason: 'no_recipient' });
     }
 
