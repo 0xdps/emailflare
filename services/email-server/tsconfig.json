@@ -14,6 +14,7 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"baseUrl": ".",
+		"ignoreDeprecations": "6.0",
 		"paths": {
 			"@emailflare/emails": ["../emails/dist/index.d.ts"]
 		}
