@@ -1,0 +1,14 @@
+services/email-server/tsconfig.json
+  h_95aea6b4aa8772 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "aa1cad7abc63ce085fb08cbef4e6e0050e751c49",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
