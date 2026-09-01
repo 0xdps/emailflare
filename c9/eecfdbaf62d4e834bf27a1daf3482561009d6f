@@ -1,0 +1,24 @@
+services/landing/src/pages/docs.astro
+  s_b2cfdf3bbd8122::t_6ab6bfba8a2f3b 557
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "c9eecfdbaf62d4e834bf27a1daf3482561009d6f",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_b2cfdf3bbd8122": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "d20f466f-3a90-41c1-92cb-40d9e337ea4f",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
