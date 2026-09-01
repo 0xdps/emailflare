@@ -37,7 +37,7 @@ app.post("/login", zValidator("json", userLoginSchema), async (c) => {
 
 	await saveSession(c, {
 		userId: user.id,
-		role: user.role as "admin" | "member",
+		role: user.role as "super-admin" | "admin" | "member" | "tester",
 		name: user.name,
 		email: user.email,
 	});
