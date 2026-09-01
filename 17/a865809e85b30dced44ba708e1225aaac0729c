@@ -1,0 +1,26 @@
+services/email-server/src/index.ts
+  s_8ceb7288607761::t_9054a107f9f5bc 143
+services/email-worker/src/index.ts
+  s_8ceb7288607761::t_c79052c6d604b5 131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "17a865809e85b30dced44ba708e1225aaac0729c",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_8ceb7288607761": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8b9e76e9-aeaa-4166-ae50-6a6463595b94",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
