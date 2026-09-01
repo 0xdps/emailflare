@@ -65,7 +65,7 @@ app.post('/', zValidator('json', sendSchema), async (c) => {
         `SELECT id FROM domains WHERE name = ? OR name LIKE ? LIMIT 1`,
         [senderDomain, `%.${senderDomain}`],
       );
-      domainId = (result.rows[0] as DomainRow | undefined)?.id ?? null;
+      domainId = (result.rows[0] as unknown as DomainRow | undefined)?.id ?? null;
     }
   }
 

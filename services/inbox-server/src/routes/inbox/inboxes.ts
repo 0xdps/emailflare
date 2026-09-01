@@ -60,7 +60,7 @@ function toInbox(row: InboxRow) {
 
 app.get('/', async (c) => {
   const { rows } = await rawDb.query('SELECT * FROM inboxes ORDER BY created_at DESC');
-  return c.json(rows.map(toInbox));
+  return c.json((rows as InboxRow[]).map(toInbox));
 });
 
 app.post('/', requireAdmin, zValidator('json', inboxSchema), async (c) => {

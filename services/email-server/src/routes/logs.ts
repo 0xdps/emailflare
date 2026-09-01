@@ -47,7 +47,7 @@ app.get('/', async (c) => {
     db.query(`SELECT COUNT(*) as total FROM email_logs ${where}`, params),
   ]);
 
-  const total = (countResult.rows[0] as CountRow | undefined)?.total ?? 0;
+  const total = (countResult.rows[0] as unknown as CountRow | undefined)?.total ?? 0;
 
   return c.json({
     data: dataResult.rows,
