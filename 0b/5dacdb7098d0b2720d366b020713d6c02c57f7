@@ -1,0 +1,759 @@
+.prettierrc
+  s_8ceb7288607761::t_0af708af947427 1-2,4,8
+  h_95aea6b4aa8772 3,5-7
+package.json
+  h_95aea6b4aa8772 14-15
+  s_8ceb7288607761::t_a9fe6ce526cc79 19-20
+  s_8ceb7288607761::t_feaf4bd67c18a6 21
+  h_95aea6b4aa8772 2-13,16-18
+lefthook.yml
+  s_8ceb7288607761::t_51520caced1cf2 4-11,24-26,36-38
+  s_8ceb7288607761::t_c5b6c7cde98b1f 2-3
+  s_8ceb7288607761::t_807bbb89fcc492 21-23
+  s_8ceb7288607761::t_44cc0a5e9d650d 27-29,33-35
+  h_95aea6b4aa8772 13-20,30-32
+scripts/deploy-inbox-standalone.mjs
+  s_8ceb7288607761::t_982bd2dd8e0057 180
+  s_8ceb7288607761::t_5725990970824b 179
+  s_8ceb7288607761::t_0ebf7f58c50dea 181
+  h_95aea6b4aa8772 21-33,38-43,46-48,51,53-56,60,63,68-72,76-82,85-107,111-143,147-150,153,156-157,159-165,168-169,174,176-177,183-185,187-190,192-194,196-197,199-200,202,208,210-216,220,222-224,226,230,232-239,241-242,245,247-249,251,255,257-259,261,265,300-310
+.prettierignore
+  s_8ceb7288607761::t_59eba066213c73 1-6
+pnpm-lock.yaml
+  s_8ceb7288607761::t_33ecd3cf464c6e 14-16
+.github/dependabot.yml
+  h_95aea6b4aa8772 3-157
+.github/workflows/deploy-workers.yml
+  h_95aea6b4aa8772 30-41,44-45,48-184
+.github/workflows/docker-check.yml
+  h_95aea6b4aa8772 4-7,10-112
+.github/workflows/docker-publish.yml
+  h_95aea6b4aa8772 4-8,11,14-216
+CHANGELOG.md
+  h_95aea6b4aa8772 11,32
+CONTRIBUTING.md
+  h_95aea6b4aa8772 41
+README.md
+  h_95aea6b4aa8772 87,97,107,120-121,123,135-142,146-154
+SECURITY.md
+  h_95aea6b4aa8772 12
+deploy/docker/compose.email-api.dev.yaml
+  h_95aea6b4aa8772 2-24,26-62,64-78,80-89,92-96
+deploy/docker/compose.email-api.yaml
+  h_95aea6b4aa8772 4-22,25
+deploy/docker/compose.email-inbox.deps.yaml
+  h_95aea6b4aa8772 15-36,38-48,51
+deploy/docker/compose.email-inbox.dev.yaml
+  h_95aea6b4aa8772 15-36,38-48,50-97,99-112,114-123,126-131
+deploy/docker/compose.email-inbox.yaml
+  h_95aea6b4aa8772 12-24,26-51,54-55,58-59
+deploy/docker/railway.json
+  h_95aea6b4aa8772 2-12
+deploy/docker/stacklane.yaml
+  h_95aea6b4aa8772 2-3,6-13,15-20,23-24
+docs/CLOUDFLARE.md
+  h_95aea6b4aa8772 11-15,124,128,166-171,178-182,184-187,189-193,260-261
+docs/RECIPES.md
+  h_95aea6b4aa8772 17,25,33,41,55,62,65,73,81,89,97,111,119,130,138,152,160,169,179,187,201,212,226,234,242,250,268,278,286,294,302,310,318,335,343,351,359,371,383,391,400,407,413,420
+docs/SELF_HOSTING.md
+  h_95aea6b4aa8772 21-22,74,131,140,149
+docs/TEMPLATES.md
+  h_95aea6b4aa8772 20-27,47-49,63-67,69,77-83,97-98,121,128-131,145,201-205
+packages/email-core/package.json
+  h_95aea6b4aa8772 2-35
+packages/email-core/src/cloudflare.ts
+  h_95aea6b4aa8772 5,7,9,12-14,18-28,31-53,59-61,66-87,100-117,123-129,132-136,140-142,144,147-148,154-158,162-164,166,172-176,181-187,192,201-204,206-214,220-226,230,234-236,238-250,256-264,268-271,275-276,279-334,365-367,372-374,376-387,395-397,399-438,443-447,449-452
+packages/email-core/src/index.ts
+  h_95aea6b4aa8772 13-14,20-28,32-43,47-57,61-63,67-83,87-94,98-104,108-112,121-141,147-148,155-163,170-173,180-186,196,208,212,234-244,248-253,257-431,446,454-457,465-469,480-486,490-502,506-507,510-556,563-564,571-578,585-587,596-604,606-621,635-636,638-639
+packages/email-core/src/logger.ts
+  h_95aea6b4aa8772 14,17-20,24-27,31-34,38-39,43-44,46-47,49-81,83-89
+packages/email-core/tsconfig.json
+  h_95aea6b4aa8772 2-15
+packages/inbox-core/package.json
+  h_95aea6b4aa8772 2-24
+packages/inbox-core/src/index.ts
+  h_95aea6b4aa8772 13,19-25,29-37,41-45,49-54,58-60,64-78,82-91,95-102,106-112,116-121,125-133,137-143,153-158,168-169,176-178,185-188,195-196,203-208,215-223,241-245,253-264,282,286-290,295-298,303-309,314,321-322,330-333,335-349,358-360,362-371
+packages/inbox-core/tsconfig.json
+  h_95aea6b4aa8772 2-15
+pnpm-workspace.yaml
+  h_95aea6b4aa8772 2-4,7,9-13
+scripts/deploy-inbox.mjs
+  h_95aea6b4aa8772 25-38,43-48,53,56,58-61,65,69-71,76-80,84-90,93-105,108-114,118-150,155,157,159-165,170-171,174-188,199-204,206,210-219,221,230-235,237,241-250,252,259-263,265,267-270,272,277,281-285,287,289-292,294-295,300,302,304-306,309-310,314,316-317,319,324,340-350,354-377,382,384-386,388,393,395-396,398
+scripts/package.json
+  h_95aea6b4aa8772 2-8
+scripts/setup-cf-workers.mjs
+  h_95aea6b4aa8772 24-34,38-59,62-68,72,76,80-87,91-125,129-138,142-153,158,160,162-168,173-174,177-191,199,204-205,209-212,215-216,223-240,248-265,271-273,277-279,285-293,299-307,316,318-319,324,336,345,349,354,361
+scripts/setup-email-routing.mjs
+  h_95aea6b4aa8772 20-23,25-26,32-33,36-37,43-48,51-54,59-63,66,70-87,91-114,120-130,134-148,152-197,201-211,215-226,230-232,238-294,299-303,307-308
+scripts/setup.mjs
+  h_95aea6b4aa8772 20-33,38-43,48,50-53,56-57,61,64,70-74,78-84,88,92,96,100-101,105-142,147,149,151-157,159,163,166-189,204-209,211,215-223,225,234-239,241,245-259,261,266,268,270-271,274-275,279,281-282,284,289,307-316,322-343,348,350-352,354,359,361-362,364
+services/email-bridge/package.json
+  h_95aea6b4aa8772 2-14
+services/email-bridge/src/index.ts
+  h_95aea6b4aa8772 12-13,17-19,21-29,31-35
+services/email-bridge/tsconfig.json
+  h_95aea6b4aa8772 2-11
+services/email-bridge/wrangler.jsonc
+  h_95aea6b4aa8772 2-10,12-15
+services/email-server/package.json
+  h_95aea6b4aa8772 2-30
+services/email-server/src/db.ts
+  h_95aea6b4aa8772 1-7,9,11-19,21-29,32,37-44,48-49,55,68,84,99,107,127-154,156-161,163-173,175-176,186-205,207-208,218-222,224-225,233-237,239,245-294,298-321
+services/email-server/src/env.ts
+  h_95aea6b4aa8772 1-2,4,7-9,13-24,28-30,34-51
+services/email-server/src/index.ts
+  h_95aea6b4aa8772 1-32,39-46,49-54,56-57,63-64,67-74,77-85,88-94,97,100-110,112,115,119-122,125-131,133-143,147,151-155,160-185,189-190
+services/email-server/src/lib/bounce-parser.ts
+  h_95aea6b4aa8772 4,7-9,13,19-26,28,30-31,33,36-38,42-46,52-53,55-56,58-59,61-62,64,67-103,107-119,125
+services/email-server/src/lib/mesahub-url.ts
+  h_95aea6b4aa8772 14-16,20-22,24-25,27-32,34-41,43-46,48-51,53
+services/email-server/src/middleware/apiKey.ts
+  h_95aea6b4aa8772 1-4,7-10,14-15,17,19-20,22,24-28,30-31
+services/email-server/src/middleware/auth.ts
+  h_95aea6b4aa8772 1-6,9,12-13,16-17,21-27,31-38,42,46-48
+services/email-server/src/middleware/loginRateLimit.ts
+  h_95aea6b4aa8772 6-7,10-11,18-21,25-26,28-31,33,35-36
+services/email-server/src/middleware/rateLimit.ts
+  h_95aea6b4aa8772 7-8,11-12,19-22,26-29,33-34,36-40,42-44,46-47
+services/email-server/src/routes/auth.ts
+  h_95aea6b4aa8772 1-7,12-13,15-17,19,21-23,25,27-28,32-34,38-40
+services/email-server/src/routes/cloudflare.ts
+  h_95aea6b4aa8772 1-6,8-17,22-24,31-53,59-61,64-92,97-110,117-155
+services/email-server/src/routes/domains.ts
+  h_95aea6b4aa8772 1-17,21-23,27-30,34-110,114-117,119-120,124-140,144-146,148-149
+services/email-server/src/routes/keys.ts
+  h_95aea6b4aa8772 1-5,10-13,17-48,52-54,56-57
+services/email-server/src/routes/lists.ts
+  h_95aea6b4aa8772 6-9,14-16,20-32,36-39,41-42,44
+services/email-server/src/routes/logs.ts
+  h_95aea6b4aa8772 1-2,8,12-22,24-26,28-56,58,60-67,69,71-77,81-84
+services/email-server/src/routes/send.ts
+  h_95aea6b4aa8772 1-10,16,20-167
+services/email-server/src/routes/stats.ts
+  h_95aea6b4aa8772 1-2,9-22,26-33,35-54,66-70,79-81,83-115
+services/email-server/src/routes/suppressions.ts
+  h_95aea6b4aa8772 6-10,15-20,22-23,25-32,34,36-43,45,47-53,58-60,63-65,67-69,71-79,81,85-87
+services/email-server/src/routes/templates.ts
+  h_95aea6b4aa8772 1-7,12-21,25-31,35-40,44-66,70-103,107-110,112-113,117-134
+services/email-server/src/routes/testEmails.ts
+  h_95aea6b4aa8772 1-2,8,12-19,21-23,25-41,43,45-52,54,56-62,66-70,74-77,79-80
+services/email-server/src/routes/unsubscribe.ts
+  h_95aea6b4aa8772 10-12,17-18,20-21,23-25,27,31-33,35-36,38-40,44-56
+services/email-server/src/routes/webhooks.ts
+  h_95aea6b4aa8772 1-5,7-13,15,21-30,49-91,94-107,109-128,131-148,150-159,161-170,172-174,176-178,180-194
+services/email-server/src/seed.ts
+  h_95aea6b4aa8772 4
+services/email-server/src/services/cloudflare.ts
+  h_95aea6b4aa8772 3
+services/email-server/src/services/testEmail.ts
+  h_95aea6b4aa8772 1,13
+services/email-server/tsconfig.json
+  h_95aea6b4aa8772 2-22
+services/email-ui/components.json
+  h_95aea6b4aa8772 2-24
+services/email-ui/index.html
+  h_95aea6b4aa8772 3-18
+services/email-ui/package.json
+  h_95aea6b4aa8772 2-38
+services/email-ui/src/api.ts
+  h_95aea6b4aa8772 1,4-5,9-15
+services/email-ui/src/components/Layout.tsx
+  h_95aea6b4aa8772 1-2,4-20,22-31,36-49,54,57-83,89-114,118-183,185-204,210-226
+services/email-ui/src/components/ui/alert.tsx
+  h_95aea6b4aa8772 1-2,4,7-20,22-23,27-36,39-49,53,56
+services/email-ui/src/components/ui/avatar.tsx
+  h_95aea6b4aa8772 1,3-4,6,9-11,13,15-25,29-35,38-48,52-64,68-77,80-90,93
+services/email-ui/src/components/ui/badge.tsx
+  h_95aea6b4aa8772 1-3,5,8-25,28-31,33-46,49
+services/email-ui/src/components/ui/button.tsx
+  h_95aea6b4aa8772 1-2,4,7-38,41-44,46-48,51
+services/email-ui/src/components/ui/card.tsx
+  h_95aea6b4aa8772 1,3,5-16,20-29,33-42,46,50-56,60,64-73,76
+services/email-ui/src/components/ui/chart.tsx
+  h_95aea6b4aa8772 1,3-5,7,10,12-13,16-21,24-25,27,30,32-34,36,40-45,47-52,54-74,78-89,92-96,98-104,106,109-121,123-238,241,244-248,250-251,253-295,298-320,323
+services/email-ui/src/components/ui/checkbox.tsx
+  h_95aea6b4aa8772 1,3,5-6,9-25,28
+services/email-ui/src/components/ui/collapsible.tsx
+  h_95aea6b4aa8772 1,4,8,12,15
+services/email-ui/src/components/ui/dialog.tsx
+  h_95aea6b4aa8772 1,3-4,6-8,11,15,19,23,26-36,40-43,45,47-70,74,78-81,83,85-99,103-109,112-122,126-136
+services/email-ui/src/components/ui/input.tsx
+  h_95aea6b4aa8772 1-2,4,7-17,20
+services/email-ui/src/components/ui/label.tsx
+  h_95aea6b4aa8772 1,3,6-15,18
+services/email-ui/src/components/ui/progress.tsx
+  h_95aea6b4aa8772 1,3,5-18,22-28,31-38,42-48,52-58,61
+services/email-ui/src/components/ui/scroll-area.tsx
+  h_95aea6b4aa8772 1-2,4,6-18,21-38,41
+services/email-ui/src/components/ui/select.tsx
+  h_95aea6b4aa8772 1-2,4-5,7,10,14-16,20-23,25,27-42,46-53,55-81,84-91,94-115,118-125,128-140,143-155,159-169
+services/email-ui/src/components/ui/separator.tsx
+  h_95aea6b4aa8772 1,3,5,7-18,21
+services/email-ui/src/components/ui/sheet.tsx
+  h_95aea6b4aa8772 1-2,4-6,9,13,17,21,25-34,38-42,44-45,47-71,75,79,83-89,92-99,102
+services/email-ui/src/components/ui/sidebar.tsx
+  h_95aea6b4aa8772 1-21,24-31,33,36-39,41,45-51,53-55,57-134,138-144,146-148,150-233,236-255,259-280,284-293,296-304,308-315,319-326,329-337,341-351,355-362,366-368,370-386,390-392,394-410,413-421,425-432,436-443,447-466,469-475,477-514,518-521,523-544,547-558,562-564,566,568-591,595-605,608-616,620-624,626-648,652-676
+services/email-ui/src/components/ui/skeleton.tsx
+  h_95aea6b4aa8772 1,4,7
+services/email-ui/src/components/ui/table.tsx
+  h_95aea6b4aa8772 1,3,5,8-12,16,20,24-30,34-43,47-56,60-66,69-72,75
+services/email-ui/src/components/ui/tabs.tsx
+  h_95aea6b4aa8772 1-2,4,6-14,18-30,33-35,37-44,48-60,64-70,73
+services/email-ui/src/components/ui/textarea.tsx
+  h_95aea6b4aa8772 1,3,6-15,18
+services/email-ui/src/components/ui/tooltip.tsx
+  h_95aea6b4aa8772 1,3,5,7-8,12,16,20-26,28-51,54
+services/email-ui/src/hooks/use-mobile.ts
+  h_95aea6b4aa8772 1,3,6,8-16,18
+services/email-ui/src/index.css
+  h_95aea6b4aa8772 10-11,13-22,26-63,68-104,108-115,120-123,127-140,143-146,148-149,153-159
+services/email-ui/src/lib/utils.ts
+  h_95aea6b4aa8772 1-2,5
+services/email-ui/src/main.tsx
+  h_95aea6b4aa8772 1-6,10-13,16,18-22
+services/email-ui/src/pages/Dashboard.tsx
+  h_95aea6b4aa8772 1,3-19,24-27,31-33,37-46,50-58,62-68,71,77-80,84-88,92,98-104,108-110,114-273,279-302,308-622,631-702
+services/email-ui/src/pages/Domains.tsx
+  h_95aea6b4aa8772 1,3-30,33-40,44-48,52-60,62-67,69-71,73-90,92-100,102-107,109-112,114-136,138-157,159-205,207-272,274-303,307-314,318-322
+services/email-ui/src/pages/Keys.tsx
+  h_95aea6b4aa8772 1-10,12-20,23-31,35,39-41,45-49,53-65,67-72,74-77,79-82,84-104,106-111,113-117,119-140,142-156,158-190,192-334,336-391
+services/email-ui/src/pages/Lists.tsx
+  h_95aea6b4aa8772 1-10,13-18,22-28,30-35,37-39,41-56,58-66,68-88,90-135,137-180
+services/email-ui/src/pages/Login.tsx
+  h_95aea6b4aa8772 1-8,11-15,17-29,31-49,51-60,62-75,77-78,80-98,100-103,105-130,132-136,138-142,144-150
+services/email-ui/src/pages/Logs.tsx
+  h_95aea6b4aa8772 1-25,27,30-43,47-51,55-59,63-74,78-82,86-90,96-97,99-114,116-131,133-161,163-200,202-215,217-263,269-277,279-289,291-293,295-308,310-342,344-363,365-401,403-472,474-505,507-519,523-527
+services/email-ui/src/pages/Playground.tsx
+  h_95aea6b4aa8772 1-15,17-28,31-35,39-59,63-82,85-104,108-116,120-122,126-128,132-136,139,142-586,590-804
+services/email-ui/src/pages/Settings.tsx
+  h_95aea6b4aa8772 1,3-22,27-31,35-39,45-48,52-66,72-74,76-78,80-130,135,140-524
+services/email-ui/src/pages/Suppressions.tsx
+  h_95aea6b4aa8772 1-10,12,15-21,25-29,33-37,41-45,49-54,59-63,65-81,83-133,139-146,148-156,158-160,162-170,172-176,178-196,198-228,230-250,252-319,321-351,353-355
+services/email-ui/src/pages/Templates.tsx
+  h_95aea6b4aa8772 1-11,13-20,23-34,37,39,42-46,50-69,73-75,78-95,97-160,164-764,768-779
+services/email-ui/src/pages/TestMailbox.tsx
+  h_95aea6b4aa8772 1-23,26-38,42-46,52-53,55-84,86-107,109-128,130-145,147-192,198-205,207-216,218-220,222-228,230-239,241-257,259-278,280-316,318-389,391-422,424-436
+services/email-ui/src/routes/__root.tsx
+  h_95aea6b4aa8772 1-3,6-8,10-18,20-22
+services/email-ui/src/routes/domains.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/index.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/keys.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/lists.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/login.tsx
+  h_95aea6b4aa8772 1-2,4-5
+services/email-ui/src/routes/logs.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/playground.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/settings.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/suppressions.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/templates.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/routes/test-emails.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/email-ui/src/vite-env.d.ts
+  h_95aea6b4aa8772 4-6,10
+services/email-ui/tsconfig.json
+  h_95aea6b4aa8772 2-22
+services/email-ui/vite.config.ts
+  h_95aea6b4aa8772 1-5,8-22
+services/email-worker/README.md
+  h_95aea6b4aa8772 5-13
+services/email-worker/package.json
+  h_95aea6b4aa8772 2-35
+services/email-worker/src/db.ts
+  h_95aea6b4aa8772 6-14,16-24,28,33-34,38,40-69,73-162,168-185,191-202,209-211
+services/email-worker/src/email-handler.ts
+  h_95aea6b4aa8772 4-8,10,15-22,25,27,29,31-34,37-39,41-43,45,52-54,56-58,60-62,64-66,68,72-116,121-134,139-168,175-187,190-205,207-217,219-229,231-233,235-237,239-244,248-257,260-270,272-274
+services/email-worker/src/emails.ts
+  h_95aea6b4aa8772 5,7
+services/email-worker/src/env.ts
+  h_95aea6b4aa8772 5-6,8-9,11-12,14-18,20-21,23-24,30-33,37-40
+services/email-worker/src/index.ts
+  h_95aea6b4aa8772 11-38,43-50,57,60-66,69-80,84,87,90-92,95,99,102-103,107-112,115-122,124,128-132,137-139,144-152
+services/email-worker/src/middleware/apiKey.ts
+  h_95aea6b4aa8772 4-7,10-14,18-41
+services/email-worker/src/middleware/auth.ts
+  h_95aea6b4aa8772 4-9,12,15-17,20,24-31,35-49,53,57-59
+services/email-worker/src/middleware/loginRateLimit.ts
+  h_95aea6b4aa8772 9,12-14,16,18-20
+services/email-worker/src/middleware/rateLimit.ts
+  h_95aea6b4aa8772 7-8,11,13-23,25
+services/email-worker/src/routes/auth.ts
+  h_95aea6b4aa8772 1-6,12-23,27-40,44-46,50-52
+services/email-worker/src/routes/cloudflare.ts
+  h_95aea6b4aa8772 1-5,10-12,19-58
+services/email-worker/src/routes/domains.ts
+  h_95aea6b4aa8772 1-3,5-13,18-21,25-29,33-87,91-98,102-119,123-126,128-129
+services/email-worker/src/routes/keys.ts
+  h_95aea6b4aa8772 1-6,9-12,18-21,25-27,29-32,34-45,47-52,54-55,59-62,64-65
+services/email-worker/src/routes/lists.ts
+  h_95aea6b4aa8772 6-10,15-18,22-35,39-43,45-47,49
+services/email-worker/src/routes/logs.ts
+  h_95aea6b4aa8772 1-3,8-18,20-21,23-51,53-54,56-63,65,67-73,77-81
+services/email-worker/src/routes/send.ts
+  h_95aea6b4aa8772 8-15,20-169
+services/email-worker/src/routes/stats.ts
+  h_95aea6b4aa8772 1-3,10-23,27-34,36-37,39-58,67-70,79-81,83-100
+services/email-worker/src/routes/suppressions.ts
+  h_95aea6b4aa8772 6-11,16-55,60-62,65-68,70-72,74-84,88-91
+services/email-worker/src/routes/templates.ts
+  h_95aea6b4aa8772 1-8,13-23,27-33,37-43,47-69,73-106,110-117,121-138
+services/email-worker/src/routes/unsubscribe.ts
+  h_95aea6b4aa8772 10-13,17-22,25-28,30-31,33-36,38,42-44,46-47,49-51,55-62,64-65,67
+services/email-worker/src/seed.ts
+  h_95aea6b4aa8772 4-7,10-59,63-64,66-86
+services/email-worker/src/services/cloudflare.ts
+  h_95aea6b4aa8772 2
+services/email-worker/tsconfig.json
+  h_95aea6b4aa8772 2-18
+services/email-worker/wrangler.example.jsonc
+  h_95aea6b4aa8772 2-33,35-41,43-46,48-49,51-58,60-68,70-76,78-80,82-96
+services/emails/package-lock.json
+  h_95aea6b4aa8772 2-685
+services/emails/package.json
+  h_95aea6b4aa8772 2-26
+services/emails/src/ThemeContext.ts
+  h_95aea6b4aa8772 1-2,4,13,21
+services/emails/src/index.ts
+  h_95aea6b4aa8772 1-4
+services/emails/src/layouts/AccountDeleted.tsx
+  h_95aea6b4aa8772 1,3-15,18-21,25-28,30-67
+services/emails/src/layouts/AccountLocked.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-60
+services/emails/src/layouts/AccountUnlocked.tsx
+  h_95aea6b4aa8772 1-14,17-20,24-27,29-50
+services/emails/src/layouts/Alert.tsx
+  h_95aea6b4aa8772 1,3-15,18-24,28-38,42-48,50-95
+services/emails/src/layouts/Announcement.tsx
+  h_95aea6b4aa8772 1,3-15,18-24,28-34,36-70
+services/emails/src/layouts/ApiKeyCreated.tsx
+  h_95aea6b4aa8772 1,3-14,17-22,26-31,33-65
+services/emails/src/layouts/ApiKeyRevoked.tsx
+  h_95aea6b4aa8772 1,3-14,17-21,25-29,31-52
+services/emails/src/layouts/BackupReady.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-61
+services/emails/src/layouts/BillingReceipt.tsx
+  h_95aea6b4aa8772 1-14,17-23,27-33,35-65
+services/emails/src/layouts/DatabaseCreated.tsx
+  h_95aea6b4aa8772 1,3-14,17-22,26-31,33-65
+services/emails/src/layouts/DatabaseDeleted.tsx
+  h_95aea6b4aa8772 1,3-14,17-21,25-29,31-56
+services/emails/src/layouts/Digest.tsx
+  h_95aea6b4aa8772 1,3-15,18-24,28-34,36-81
+services/emails/src/layouts/EmailChangeConfirmed.tsx
+  h_95aea6b4aa8772 1-3,6-11,15-20,22-43
+services/emails/src/layouts/EmailChangeRequested.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-60
+services/emails/src/layouts/EmailVerify.tsx
+  h_95aea6b4aa8772 1,3-15,18-21,25-28,30-57
+services/emails/src/layouts/ExportReady.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-59
+services/emails/src/layouts/FeatureAccessGranted.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-55
+services/emails/src/layouts/FeatureAccessRevoked.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-57
+services/emails/src/layouts/Feedback.tsx
+  h_95aea6b4aa8772 1,3-15,18-22,26-30,32-67
+services/emails/src/layouts/ImportCompleted.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-61
+services/emails/src/layouts/IncidentUpdate.tsx
+  h_95aea6b4aa8772 1-14,17-23,27-33,35-64
+services/emails/src/layouts/Invoice.tsx
+  h_95aea6b4aa8772 1,3-15,18-25,29-36,38-150
+services/emails/src/layouts/MagicLink.tsx
+  h_95aea6b4aa8772 1,3-14,17-19,22-47
+services/emails/src/layouts/MaintenanceScheduled.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-61
+services/emails/src/layouts/NewLogin.tsx
+  h_95aea6b4aa8772 1,3-15,18-23,27-32,34-83
+services/emails/src/layouts/Notification.tsx
+  h_95aea6b4aa8772 1,3-15,18-22,26-30,32-55
+services/emails/src/layouts/OAuthLinked.tsx
+  h_95aea6b4aa8772 1,3-14,17-22,26-31,33-67
+services/emails/src/layouts/OTP.tsx
+  h_95aea6b4aa8772 1-3,6-8,11-34
+services/emails/src/layouts/OrderConfirm.tsx
+  h_95aea6b4aa8772 1,3-15,18-23,27-32,34-81
+services/emails/src/layouts/PasswordChanged.tsx
+  h_95aea6b4aa8772 1,3-15,18-21,25-28,30-64
+services/emails/src/layouts/PasswordReset.tsx
+  h_95aea6b4aa8772 1,3-15,18-21,25-28,30-57
+services/emails/src/layouts/PaymentFailed.tsx
+  h_95aea6b4aa8772 1,3-14,17-24,28-35,37-77
+services/emails/src/layouts/PaymentMethodExpiring.tsx
+  h_95aea6b4aa8772 1-14,17-23,27-33,35-61
+services/emails/src/layouts/PhoneVerify.tsx
+  h_95aea6b4aa8772 1-3,6-9,13-16,18-35
+services/emails/src/layouts/Plain.tsx
+  h_95aea6b4aa8772 1,3-15,18-24,28-34,36-64
+services/emails/src/layouts/PlanDowngraded.tsx
+  h_95aea6b4aa8772 1,3-14,17-23,27-33,35-61
+services/emails/src/layouts/PlanLimitReached.tsx
+  h_95aea6b4aa8772 1,3-14,17-22,26-31,33-59,62
+services/emails/src/layouts/PlanUpgraded.tsx
+  h_95aea6b4aa8772 1,3-14,17-23,27-33,35-61
+services/emails/src/layouts/RefundApproved.tsx
+  h_95aea6b4aa8772 1,3-14,17-22,26-31,33-65
+services/emails/src/layouts/RenewalUpcoming.tsx
+  h_95aea6b4aa8772 1,3-14,17-22,26-31,33-57
+services/emails/src/layouts/SubscriptionCancelled.tsx
+  h_95aea6b4aa8772 1,3-15,18-22,26-30,32-70
+services/emails/src/layouts/SubscriptionConfirmation.tsx
+  h_95aea6b4aa8772 1,3-14,17-24,28-35,37-72
+services/emails/src/layouts/SubscriptionResumed.tsx
+  h_95aea6b4aa8772 1,3-14,17-22,26-31,33-59
+services/emails/src/layouts/SubscriptionStarted.tsx
+  h_95aea6b4aa8772 1,3-15,18-24,28-34,36-78
+services/emails/src/layouts/SupportTicketReply.tsx
+  h_95aea6b4aa8772 1-14,17-22,26-31,33-55
+services/emails/src/layouts/TeamInvite.tsx
+  h_95aea6b4aa8772 1,3-15,18-24,28-34,36-71
+services/emails/src/layouts/TrialEnding.tsx
+  h_95aea6b4aa8772 1,3-15,18-22,26-30,32-71
+services/emails/src/layouts/UsageThreshold.tsx
+  h_95aea6b4aa8772 1,3-14,17-23,27-33,35-64
+services/emails/src/layouts/VerificationSuccess.tsx
+  h_95aea6b4aa8772 1,3-14,17-20,24-27,29-55,58
+services/emails/src/layouts/Welcome.tsx
+  h_95aea6b4aa8772 1,3-14,17-19,22-47
+services/emails/src/render.ts
+  h_95aea6b4aa8772 1-54,57-106,109-290,293-351,353-354,356-358
+services/emails/src/themes.ts
+  h_95aea6b4aa8772 2-12,16-80,84-102
+services/emails/tsconfig.json
+  h_95aea6b4aa8772 2-18
+services/inbox-bridge/package.json
+  h_95aea6b4aa8772 2-17
+services/inbox-bridge/src/index.ts
+  h_95aea6b4aa8772 12-13,17-27,31-33,35-36,38-45,47,49-57,59-63
+services/inbox-bridge/tsconfig.json
+  h_95aea6b4aa8772 2-11
+services/inbox-bridge/wrangler.jsonc
+  h_95aea6b4aa8772 2-7,9-11
+services/inbox-server/package.json
+  h_95aea6b4aa8772 2-37
+services/inbox-server/src/db.ts
+  h_95aea6b4aa8772 9-11,14,20-28,30-38,42,47-48,52,54-80,86-153,159-187,193-202,209-210
+services/inbox-server/src/email-handler.ts
+  h_95aea6b4aa8772 8-19,22-27,33-84,89-123,125-141,143-156
+services/inbox-server/src/env.ts
+  h_95aea6b4aa8772 4-5,7,10-12,17-25,29-40,44-45,47-49,51-52,54-55,57-59,61-63,65-66,68-72,74-75,77-78,80-81,83-84,89-92,97-102,107-109
+services/inbox-server/src/index.ts
+  h_95aea6b4aa8772 13-29,32-54,57-59,66-73,76,79-82,85,88-89,93,95-102,106-108,110-114,118-120,123-125,130,134-138,146-218,221-223
+services/inbox-server/src/lib/mesahub-url.ts
+  h_95aea6b4aa8772 8-10,14-16,18-19,21-26,28-32,34-37,39-42,44
+services/inbox-server/src/lib/password.ts
+  h_95aea6b4aa8772 5,11,15,19-28,32-53
+services/inbox-server/src/middleware/apiKey.ts
+  h_95aea6b4aa8772 5-8,11-15,19-21,23-26,28-32,34-40
+services/inbox-server/src/middleware/auth.ts
+  h_95aea6b4aa8772 5-11,14-17,20-22,25,29-48,52-61,63,65-71,75,80-84,89-91,96-98,103-107
+services/inbox-server/src/middleware/loginRateLimit.ts
+  h_95aea6b4aa8772 5-7,9,12,17-21,29-30,32-37
+services/inbox-server/src/middleware/rateLimit.ts
+  h_95aea6b4aa8772 5-9,11,19-23,27-29,31-32,34-36,38
+services/inbox-server/src/migrate.ts
+  h_95aea6b4aa8772 5-9,11,17-22,26-28,32-33,37-44,48-126,130-139
+services/inbox-server/src/routes/admin/users.ts
+  h_95aea6b4aa8772 2-7,11-13,16-18,20-24,26-30,32,36-54
+services/inbox-server/src/routes/auth.ts
+  h_95aea6b4aa8772 2-9,13-14,16-17,19,21-24,26-29,31-32,34-40,43-45,50-59
+services/inbox-server/src/routes/cloudflare.ts
+  h_95aea6b4aa8772 1-4,8-10
+services/inbox-server/src/routes/domains.ts
+  h_95aea6b4aa8772 1-5,7-15,19-22,25-29,33-34,37-91,94-98,100-101,104-119,122-127
+services/inbox-server/src/routes/inbox/compose.ts
+  h_95aea6b4aa8772 2-16,18,21-25,27-29,31-38,40-45,47-58,60-85,87-89,92-108,110-115
+services/inbox-server/src/routes/inbox/inbox-templates.ts
+  h_95aea6b4aa8772 2-7,11-13,16-27,30-44,47-51
+services/inbox-server/src/routes/inbox/inboxes.ts
+  h_95aea6b4aa8772 2-11,19-21,23-35,40-46,51-58,61-63,66-89,93-97,99,101-105,107,110-112,114-116,118-121,124-131,134-136,140-142,145-161
+services/inbox-server/src/routes/inbox/people.ts
+  h_95aea6b4aa8772 2-4,8-13,15,23-24,26-30,32-34,36-42,44-50,53-56,59-63,65-66,68-70,78-81,83-85,87-94,97-99
+services/inbox-server/src/routes/inbox/sequences.ts
+  h_95aea6b4aa8772 2-8,12-19,22-33,36-38,40-44,46-49,52-56,60-62,65-67,69-71,73-75,79-81,84-86
+services/inbox-server/src/routes/invites.ts
+  h_95aea6b4aa8772 6-13,18-21,26-59,63-71,75-76,80-104
+services/inbox-server/src/routes/keys.ts
+  h_95aea6b4aa8772 1-7,10-13,18-21,25-28,31-33,35-37,39-50,52-57,59-60,63-68
+services/inbox-server/src/routes/lists.ts
+  h_95aea6b4aa8772 6-9,14-17,21-34,38-42,44-45,47
+services/inbox-server/src/routes/logs.ts
+  h_95aea6b4aa8772 1-3,7-64,67-70
+services/inbox-server/src/routes/send.ts
+  h_95aea6b4aa8772 1-9,13-156
+services/inbox-server/src/routes/setup.ts
+  h_95aea6b4aa8772 4-11,15-22,26-28,31-50
+services/inbox-server/src/routes/stats.ts
+  h_95aea6b4aa8772 1-3,9-22,25-32,34,36-55,62-65,71-73,75-92
+services/inbox-server/src/routes/suppressions.ts
+  h_95aea6b4aa8772 6-10,15-20,22-23,25-32,34,36-43,45,47-53,58-60,63-65,67-69,71-79,81,85-87
+services/inbox-server/src/routes/templates.ts
+  h_95aea6b4aa8772 1-8,12-22,25-31,34-40,43-65,68-100,103-109,112-129
+services/inbox-server/src/routes/testEmails.ts
+  h_95aea6b4aa8772 6-7,12-18,20-21,23-35,37,39-46,48,50-56,60-65,69-73,75-76
+services/inbox-server/src/routes/unsubscribe.ts
+  h_95aea6b4aa8772 9-11,16-24,26-28,30,34-36,38-39,41-43,47-59
+services/inbox-server/src/routes/webhook.ts
+  h_95aea6b4aa8772 4-6,11-21,24-26,28,30,32-35,37-39,41-46,48-50,52-53
+services/inbox-server/src/scheduler.ts
+  h_95aea6b4aa8772 8-15,17,19,24,28-48,53-54,58-78,84-87,89-90,93-150,158,160-163,165,169-174
+services/inbox-server/src/seed.ts
+  h_95aea6b4aa8772 4-7,10-59,63-64,66-86
+services/inbox-server/src/services/cloudflare.ts
+  h_95aea6b4aa8772 3
+services/inbox-server/src/storage.ts
+  h_95aea6b4aa8772 4-7,10-15,20-22,24-26,28-35,39-40
+services/inbox-server/src/websocket.ts
+  h_95aea6b4aa8772 7-9,12-13,15-17,19-25,27-28,30-36,38-44,46-49,51-58,60-74,76-79
+services/inbox-server/tsconfig.json
+  h_95aea6b4aa8772 2-16
+services/inbox-ui/components.json
+  h_95aea6b4aa8772 2-24
+services/inbox-ui/index.html
+  h_95aea6b4aa8772 3-18
+services/inbox-ui/package.json
+  h_95aea6b4aa8772 2-36
+services/inbox-ui/src/UserContext.tsx
+  h_95aea6b4aa8772 1-2,5-7,17-19,21-26,28,33-34
+services/inbox-ui/src/api.ts
+  h_95aea6b4aa8772 1,4-5,9-21,29-30,34,38,42,46-50,54-55,60-65,69-70,74,80-81,85,88-89,95-98,102-103,109-114,118-130,134-139,143-144,148-152,156-159,163-165,169-174,180-182,184-185,189-190,194,200-204,206-207,211-217,219-227,233-234,237-239,242-244,248-249,253,257-258,262,266,272-273,276-278,281-283,287,290-298,302,308-309,312-316,319-324,328
+services/inbox-ui/src/components/Layout.tsx
+  h_95aea6b4aa8772 1-2,4-22,25,27,32-45,51-55,57-61,63-67,70-79,83,87-91,97-98,100-117,119-124,126-138,140-161,163-174,176-186,188-194,196-202,204-219,221-242,244,246-270,272-274,276-281,283-286
+services/inbox-ui/src/components/OwnerAccessBanner.tsx
+  h_95aea6b4aa8772 1-3,10-11,13,15-23
+services/inbox-ui/src/components/ui/alert.tsx
+  h_95aea6b4aa8772 1-2,4,7-20,22-23,27-36,39-49,53,56
+services/inbox-ui/src/components/ui/avatar.tsx
+  h_95aea6b4aa8772 1,3-4,6,9-11,13,15-25,29-35,38-48,52-64,68-77,80-90,93
+services/inbox-ui/src/components/ui/badge.tsx
+  h_95aea6b4aa8772 1-3,5,8-25,28-31,33-46,49
+services/inbox-ui/src/components/ui/button.tsx
+  h_95aea6b4aa8772 1-2,4,7-38,41-44,46-48,51
+services/inbox-ui/src/components/ui/card.tsx
+  h_95aea6b4aa8772 1,3,5-16,20-29,33-42,46,50-56,60,64-73,76
+services/inbox-ui/src/components/ui/chart.tsx
+  h_95aea6b4aa8772 1,3-5,7,10,12-13,16-21,24-25,27,30,32-34,36,40-45,47-52,54-74,78-89,92-96,98-104,106,109-121,123-238,241,244-248,250-251,253-295,298-320,323
+services/inbox-ui/src/components/ui/checkbox.tsx
+  h_95aea6b4aa8772 1,3,5-6,9-25,28
+services/inbox-ui/src/components/ui/collapsible.tsx
+  h_95aea6b4aa8772 1,4,8,12,15
+services/inbox-ui/src/components/ui/dialog.tsx
+  h_95aea6b4aa8772 1,3-4,6-8,11,15,19,23,26-36,40-43,45,47-70,74,78-81,83,85-99,103-109,112-122,126-136
+services/inbox-ui/src/components/ui/input.tsx
+  h_95aea6b4aa8772 1-2,4,7-17,20
+services/inbox-ui/src/components/ui/label.tsx
+  h_95aea6b4aa8772 1,3,6-15,18
+services/inbox-ui/src/components/ui/progress.tsx
+  h_95aea6b4aa8772 1,3,5-18,22-28,31-38,42-48,52-58,61
+services/inbox-ui/src/components/ui/scroll-area.tsx
+  h_95aea6b4aa8772 1-2,4,6-18,21-38,41
+services/inbox-ui/src/components/ui/select.tsx
+  h_95aea6b4aa8772 1-2,4-5,7,10,14-16,20-23,25,27-42,46-53,55-81,84-91,94-115,118-125,128-140,143-155,159-169
+services/inbox-ui/src/components/ui/separator.tsx
+  h_95aea6b4aa8772 1,3,5,7-18,21
+services/inbox-ui/src/components/ui/sheet.tsx
+  h_95aea6b4aa8772 1-2,4-6,9,13,17,21,25-34,38-42,44-45,47-71,75,79,83-89,92-99,102
+services/inbox-ui/src/components/ui/sidebar.tsx
+  h_95aea6b4aa8772 1-21,24-31,33,36-39,41,45-51,53-55,57-134,138-144,146-148,150-233,236-255,259-280,284-293,296-304,308-315,319-326,329-337,341-351,355-362,366-368,370-386,390-392,394-410,413-421,425-432,436-443,447-466,469-475,477-514,518-521,523-544,547-558,562-564,566,568-591,595-605,608-616,620-624,626-648,652-676
+services/inbox-ui/src/components/ui/skeleton.tsx
+  h_95aea6b4aa8772 1,4,7
+services/inbox-ui/src/components/ui/table.tsx
+  h_95aea6b4aa8772 1,3,5,8-12,16,20,24-30,34-43,47-56,60-66,69-72,75
+services/inbox-ui/src/components/ui/tabs.tsx
+  h_95aea6b4aa8772 1-2,4,6-14,18-30,33-35,37-44,48-60,64-70,73
+services/inbox-ui/src/components/ui/textarea.tsx
+  h_95aea6b4aa8772 1,3,6-15,18
+services/inbox-ui/src/components/ui/tooltip.tsx
+  h_95aea6b4aa8772 1,3,5,7-8,12,16,20-26,28-51,54
+services/inbox-ui/src/hooks/use-mobile.ts
+  h_95aea6b4aa8772 1,3,6,8-16,18
+services/inbox-ui/src/index.css
+  h_95aea6b4aa8772 10-11,13-22,26-63,68-104,108-115,120-123,127-140,143-146,148-149,153-159
+services/inbox-ui/src/lib/threading.ts
+  h_95aea6b4aa8772 1,11-13,17-18,22-23,27,31-35,39,41-42,44-67,69-74,79-116,121-122
+services/inbox-ui/src/lib/utils.ts
+  h_95aea6b4aa8772 1-2,5
+services/inbox-ui/src/main.tsx
+  h_95aea6b4aa8772 1-6,10-13,16,18-22
+services/inbox-ui/src/pages/AcceptInvite.tsx
+  h_95aea6b4aa8772 1-8,11-24,28-29,31-38,40-45,47-70,72-82,84-90,92-98,100-106,108-119,121-124,126-149,151-162,164-168,170-181
+services/inbox-ui/src/pages/Dashboard.tsx
+  h_95aea6b4aa8772 1,3-19,24-29,33-35,39-48,52-60,64-70,73,78-85,87-93,97-100,104-108,112,118-124,128-130,134-293,299-322,328-721
+services/inbox-ui/src/pages/Domains.tsx
+  h_95aea6b4aa8772 1,3-30,33-40,44-48,52-60,62-67,69-71,73-90,92-100,102-107,109-112,114-136,138-157,159-205,207-272,274-303,307-314,318-322
+services/inbox-ui/src/pages/Keys.tsx
+  h_95aea6b4aa8772 1-10,12-19,22-30,34,38-42,46-52,54-59,61-63,65-72,74-79,81-85,87-108,110-124,126-158,160-229,231-286
+services/inbox-ui/src/pages/Lists.tsx
+  h_95aea6b4aa8772 1-9,12-17,21-27,29-34,36-38,40-55,57-65,67-87,89-133,135-175
+services/inbox-ui/src/pages/Login.tsx
+  h_95aea6b4aa8772 1-4,7-20,24-29,31-43,45-52,54-80,82-83,85-92,94-97,99-113,116-117,119-132,135-146,148-152,154-157,160-168
+services/inbox-ui/src/pages/Logs.tsx
+  h_95aea6b4aa8772 1-23,26-36,40-44,48-50,56-57,59-78,80-95,97-125,127-142,144-157,159-204,210-218,220-230,232-234,236-249,251-283,285-304,306-342,344-417,419-450,452-464,468-478,482-486
+services/inbox-ui/src/pages/Playground.tsx
+  h_95aea6b4aa8772 1-15,17-28,31-35,39-59,63-82,85-104,108-116,120-122,126-128,132-136,139,142-586,590-804
+services/inbox-ui/src/pages/Setup.tsx
+  h_95aea6b4aa8772 1-4,7-20,24-109,112-127,130-147,150-175,178-190,193-201
+services/inbox-ui/src/pages/Suppressions.tsx
+  h_95aea6b4aa8772 1-10,12,15-21,25-29,33-37,41-45,49-54,59-63,65-81,83-133,139-146,148-156,158-160,162-170,172-176,178-196,198-228,230-250,252-319,321-351,353-355
+services/inbox-ui/src/pages/Templates.tsx
+  h_95aea6b4aa8772 1-11,13-20,23-34,37,39,42-46,50-69,73-75,78-95,97-160,164-764,768-779
+services/inbox-ui/src/pages/TestMailbox.tsx
+  h_95aea6b4aa8772 1-23,26-38,42-46,52-53,55-84,86-107,109-128,130-145,147-192,198-205,207-216,218-220,222-228,230-239,241-257,259-278,280-316,318-389,391-422,424-436
+services/inbox-ui/src/pages/inbox/InboxSettings.tsx
+  h_95aea6b4aa8772 1-3,5-27,32-784
+services/inbox-ui/src/pages/inbox/People.tsx
+  h_95aea6b4aa8772 1-2,4-18,23-30,34-42,51-64,69-115,120-127,129-208,213-220,222-299,305-310,316-461,464-597
+services/inbox-ui/src/pages/inbox/Sequences.tsx
+  h_95aea6b4aa8772 1-2,4-20,24-33,35-85,90-108,110-127,129-133,138,141-149,151-155,157-162,164-169,171-187,189-199,201-203,205-219,221-244,246-251,253-262,264,266-278,280-284,286-298,300-310,312-334
+services/inbox-ui/src/pages/settings/Users.tsx
+  h_95aea6b4aa8772 1-12,14-40,44-56,58-62,64-77,79-86,88-92,94-104,106-116,118,120-132,134-208,210-215,217-289,291-312
+services/inbox-ui/src/routes/__root.tsx
+  h_95aea6b4aa8772 1-4,7-8,10-16,18-32,34-44,46,50-56
+services/inbox-ui/src/routes/domains.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/inbox/index.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/inbox/sequences.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/inbox/settings.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/index.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/invite.$token.tsx
+  h_95aea6b4aa8772 1-2,4-5
+services/inbox-ui/src/routes/keys.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/lists.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/login.tsx
+  h_95aea6b4aa8772 1-2,4-5
+services/inbox-ui/src/routes/logs.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/playground.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/settings/users.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/setup.tsx
+  h_95aea6b4aa8772 1-2,4-5
+services/inbox-ui/src/routes/suppressions.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/templates.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/src/routes/test-emails.tsx
+  h_95aea6b4aa8772 1-3,5-10
+services/inbox-ui/tsconfig.json
+  h_95aea6b4aa8772 2-17
+services/inbox-ui/vite.config.ts
+  h_95aea6b4aa8772 1-5,8-21
+services/inbox-worker/package.json
+  h_95aea6b4aa8772 2-32
+services/inbox-worker/src/db.ts
+  h_95aea6b4aa8772 8-16,18-26,30,35-36,40,42-71,75-164,170-187,193-204,211-213
+services/inbox-worker/src/do/NotificationsHub.ts
+  h_95aea6b4aa8772 5-6,9-10,14-58
+services/inbox-worker/src/email-handler.ts
+  h_95aea6b4aa8772 7-17,22-79,84-121,123-140,142-157
+services/inbox-worker/src/emails.ts
+  h_95aea6b4aa8772 5,7
+services/inbox-worker/src/env.ts
+  h_95aea6b4aa8772 5-8,12-13,15-16,18-19,21-22,24-25,27-28,30-31,33-38,40-41,43-44,49-54,59-61
+services/inbox-worker/src/index.ts
+  h_95aea6b4aa8772 11-14,16,18-19,22-24,27-37,40-44,47,50-53,56-57,60,68-75,78-81,84,87-88,92,94-101,105-107,110-114,118-120,123-127,131-133,136,140-144,148-154,160-185
+services/inbox-worker/src/lib/password.ts
+  h_95aea6b4aa8772 11-19,23,27,31-33,37-51
+services/inbox-worker/src/middleware/apiKey.ts
+  h_95aea6b4aa8772 4-7,10-14,18-41
+services/inbox-worker/src/middleware/auth.ts
+  h_95aea6b4aa8772 4-9,12-15,18-20,23,27-46,50-59,61,63-69,73,78-82,87-89,94-96,101-105
+services/inbox-worker/src/middleware/loginRateLimit.ts
+  h_95aea6b4aa8772 9,12-14,16,18-20
+services/inbox-worker/src/middleware/rateLimit.ts
+  h_95aea6b4aa8772 7-8,11,13-23,25
+services/inbox-worker/src/routes/admin/users.ts
+  h_95aea6b4aa8772 6-10,15-19,23-24,26,28-32,34-38,40,45-62
+services/inbox-worker/src/routes/auth.ts
+  h_95aea6b4aa8772 4-10,15-16,18-19,21,23-27,29-33,35-36,38-44,48-50,55-57,59-64
+services/inbox-worker/src/routes/cloudflare.ts
+  h_95aea6b4aa8772 1-3,8-10
+services/inbox-worker/src/routes/domains.ts
+  h_95aea6b4aa8772 1-3,5-13,18-21,25-29,33-87,91-98,102-119,123-126,128-129
+services/inbox-worker/src/routes/inbox/compose.ts
+  h_95aea6b4aa8772 5-9,11-20,25-29,31,33-40,42-44,46-51,53-64,66-92,94-96,98-115,117-122
+services/inbox-worker/src/routes/inbox/inbox-templates.ts
+  h_95aea6b4aa8772 7-11,16-18,22-37,41-59,63-69
+services/inbox-worker/src/routes/inbox/inboxes.ts
+  h_95aea6b4aa8772 11-18,26-28,30-42,47-54,58-60,64-89,93-97,99,101-103,105,109-111,113-115,117-118,120-123,127-135,139-141,145-148,152-160,164-168
+services/inbox-worker/src/routes/inbox/people.ts
+  h_95aea6b4aa8772 7-8,13-20,28-58,62-65,69-80,89-109,113-116
+services/inbox-worker/src/routes/inbox/sequences.ts
+  h_95aea6b4aa8772 9-14,19-21,25-32,36-38,40-44,46-51,55-59,63-65,69-71,73-75,77-79,82-84,86,90-94
+services/inbox-worker/src/routes/invites.ts
+  h_95aea6b4aa8772 6-12,18-21,25-61,64-66,68-72,74-76,78,82-83,87-115
+services/inbox-worker/src/routes/keys.ts
+  h_95aea6b4aa8772 1-6,9-12,18-21,25-27,29-32,34-45,47-52,54-55,59-62,64-65
+services/inbox-worker/src/routes/lists.ts
+  h_95aea6b4aa8772 6-10,15-18,22-35,39-43,45-46,48
+services/inbox-worker/src/routes/logs.ts
+  h_95aea6b4aa8772 1-3,8-18,20-21,23-51,53-54,56-63,65,67-73,77-81
+services/inbox-worker/src/routes/send.ts
+  h_95aea6b4aa8772 6-13,18-167
+services/inbox-worker/src/routes/setup.ts
+  h_95aea6b4aa8772 4-10,15-17,21-23,27-43
+services/inbox-worker/src/routes/stats.ts
+  h_95aea6b4aa8772 1-3,10-23,27-34,36-37,39-58,67-70,78-80,82-99
+services/inbox-worker/src/routes/suppressions.ts
+  h_95aea6b4aa8772 6-11,16-55,60-62,65-68,70-72,74-84,88-91
+services/inbox-worker/src/routes/templates.ts
+  h_95aea6b4aa8772 1-8,13-23,27-33,37-43,47-69,73-106,110-117,121-138
+services/inbox-worker/src/routes/testEmails.ts
+  h_95aea6b4aa8772 6-8,13-19,21-22,24-36,38-39,41-48,50,52-58,62-67,71-75,77-78
+services/inbox-worker/src/routes/unsubscribe.ts
+  h_95aea6b4aa8772 9-12,16-24,26-27,29-31,33,37-39,41-42,44-46,50-57,59-60,62
+services/inbox-worker/src/seed.ts
+  h_95aea6b4aa8772 4-7,10-59,63-64,66-86
+services/inbox-worker/src/sequence-processor.ts
+  h_95aea6b4aa8772 7-10,12,15-18,22-29,33-34,38-39,44-45,49-73,77-81,84-144
+services/inbox-worker/src/services/cloudflare.ts
+  h_95aea6b4aa8772 2
+services/inbox-worker/tsconfig.json
+  h_95aea6b4aa8772 2-18
+services/inbox-worker/wrangler.example.jsonc
+  h_95aea6b4aa8772 2-26,28-34,36-39,41,43-48,50-58,60-66,68-74,76-84,86-94,96-111,113-115,117-130,132-135
+services/landing/astro.config.mjs
+  h_95aea6b4aa8772 1-2,5-7
+services/landing/package.json
+  h_95aea6b4aa8772 2-16
+services/landing/src/styles/global.css
+  h_95aea6b4aa8772 2-7,12-60,63-68,73-75,79-81,85-87,91-102,105,108,113-123,128-133,137-140,144-148,152-181,185-188,192-203,206-210,212-215,218-222,226-227,231-233,237-248,251-255,257-260,263-274,277-281,283-286,290-314,317-323,327-329,332-333,337-339,342-343,348-354,358-364,368-371,374-376,378-380,384-389,393-407,411-412,416-420,423-426,429-431,435-437,440-442,446-448,453-457,461-468,472-491,493-494,497-498
+services/landing/wrangler.jsonc
+  h_95aea6b4aa8772 2-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0b5dacdb7098d0b2720d366b020713d6c02c57f7",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_8ceb7288607761": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8b9e76e9-aeaa-4166-ae50-6a6463595b94",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
