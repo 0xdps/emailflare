@@ -1,0 +1,97 @@
+services/inbox-server/src/routes/inbox/compose.ts
+  s_affb8f0309ddcc::t_7cfda8a29c09a6 4,12
+  s_affb8f0309ddcc::t_99f5b3dc488b78 77
+services/email-server/src/routes/domains.ts
+  s_affb8f0309ddcc::t_d919b9dbdd0eff 3,11
+  s_affb8f0309ddcc::t_be4e31141206f7 83
+services/inbox-worker/src/sequence-processor.ts
+  s_8ceb7288607761::t_6ec27946818fa9 107,143
+  s_8ceb7288607761::t_ab06f2673ba60d 9,12
+  s_8ceb7288607761::t_cc7eb9f87ff357 13
+services/inbox-worker/src/routes/inbox/compose.ts
+  s_8ceb7288607761::t_6ec27946818fa9 80
+  s_8ceb7288607761::t_5b97704b24f0da 8,10-11
+services/email-server/src/db.ts
+  s_affb8f0309ddcc::t_be4e31141206f7 182,261
+  s_affb8f0309ddcc::t_b01679fd98c4e4 2,8-9
+services/email-worker/src/email-handler.ts
+  s_affb8f0309ddcc::t_174437115f725e 10
+  s_affb8f0309ddcc::t_c2f04ca665f4f0 6
+  s_affb8f0309ddcc::t_1d88dec83294b3 142,150,175,206,218,238,240,247,274
+  s_affb8f0309ddcc::t_f17b96d877dfdd 11
+services/inbox-ui/src/UserContext.tsx
+  s_8ceb7288607761::t_b200449bbab33c 2
+services/email-worker/src/index.ts
+  s_affb8f0309ddcc::t_8c9d8715137c02 15,22-23,131
+services/inbox-server/src/env.ts
+  s_affb8f0309ddcc::t_d485ff2c04326e 5-7
+  s_affb8f0309ddcc::t_99f5b3dc488b78 22,36
+services/inbox-server/src/index.ts
+  s_affb8f0309ddcc::t_535a87da270bf7 16-18
+  s_affb8f0309ddcc::t_0d9b26c58830c8 134,143,146,149,154,157,213,222
+services/inbox-server/src/migrate.ts
+  s_affb8f0309ddcc::t_cae6cba81e755f 26,43,45,52,58,60-61,72,77,83,88,93,97-98,109,113,118,120,127-128
+  s_affb8f0309ddcc::t_e7a75fae22f8a3 7,11
+  s_affb8f0309ddcc::t_b76d9d0edd1ec9 12
+services/inbox-server/src/middleware/rateLimit.ts
+  s_affb8f0309ddcc::t_1b879692064fb0 7,11
+  s_affb8f0309ddcc::t_99f5b3dc488b78 21
+  s_affb8f0309ddcc::t_4a45c7b8a8e0b3 12
+packages/email-core/package.json
+  s_affb8f0309ddcc::t_426c62b38378e5 17-21
+services/email-server/src/env.ts
+  s_affb8f0309ddcc::t_ad5f7ddaefa2fc 2-4
+  s_affb8f0309ddcc::t_be4e31141206f7 20
+services/email-server/src/index.ts
+  s_affb8f0309ddcc::t_8c6a2211916e5e 8,12-13
+  s_affb8f0309ddcc::t_49dfb5dd922c49 54,143,150-155,158,162,166,168,178
+services/email-server/src/routes/webhooks.ts
+  s_affb8f0309ddcc::t_cca5cf20a2ce47 15-16
+  s_affb8f0309ddcc::t_e89d8f9c4cd9fe 3
+  s_affb8f0309ddcc::t_be4e31141206f7 84,123
+packages/email-core/src/cloudflare.ts
+  s_8ceb7288607761::t_04310e66dea9a0 5
+  s_8ceb7288607761::t_39ed3ac79bc59d 6-8
+  s_8ceb7288607761::t_6ec27946818fa9 386
+services/inbox-server/src/scheduler.ts
+  s_affb8f0309ddcc::t_11f32371b48cfc 11,17
+  s_affb8f0309ddcc::t_8575c7f128c861 149
+  s_affb8f0309ddcc::t_4d4c44e83e5f2a 153
+  s_affb8f0309ddcc::t_47bb198e6e4324 18
+services/inbox-server/src/middleware/loginRateLimit.ts
+  s_affb8f0309ddcc::t_99f5b3dc488b78 19
+  s_affb8f0309ddcc::t_ecab46cd6cf803 6,9
+  s_affb8f0309ddcc::t_bf6c8f8852f87f 10
+services/inbox-worker/src/index.ts
+  s_8ceb7288607761::t_91c17f8bf7bdce 14-16
+  s_8ceb7288607761::t_6ec27946818fa9 140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "fdc831bd17deda9f9c984183b6aa05d3c5ea254f",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_8ceb7288607761": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8b9e76e9-aeaa-4166-ae50-6a6463595b94",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_affb8f0309ddcc": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bf34b652-ced5-46d4-9c1d-2c01d2539e2e",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
