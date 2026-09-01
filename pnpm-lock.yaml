@@ -11,6 +11,9 @@ importers:
       lefthook:
         specifier: ^2.1.12
         version: 2.1.12
+      prettier:
+        specifier: ^3.9.6
+        version: 3.9.6
 
   packages/email-core:
     dependencies:

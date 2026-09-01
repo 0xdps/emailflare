@@ -1,112 +1,112 @@
 name: Docker Build Check
 
 on:
-  push:
-    branches:
-      - trunk
-      - staging
+    push:
+        branches:
+            - trunk
+            - staging
 
 jobs:
-  # ── Check: emailflare-api image ──────────────────────────────────────────────
-  check-api:
-    name: Check emailflare-api Dockerfile
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    # ── Check: emailflare-api image ──────────────────────────────────────────────
+    check-api:
+        name: Check emailflare-api Dockerfile
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+            - uses: docker/setup-buildx-action@v3
 
-      - name: Build (no push)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./deploy/docker/Dockerfile.email-api
-          platforms: linux/amd64
-          push: false
-          build-args: |
-            MESAHUB_CORE_VERSION=trunk
-          cache-from: type=gha,scope=check-api
-          cache-to: type=gha,mode=max,scope=check-api
-          secrets: |
-            "gh_token=${{ secrets.GH_PAT }}"
+            - name: Build (no push)
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: ./deploy/docker/Dockerfile.email-api
+                  platforms: linux/amd64
+                  push: false
+                  build-args: |
+                      MESAHUB_CORE_VERSION=trunk
+                  cache-from: type=gha,scope=check-api
+                  cache-to: type=gha,mode=max,scope=check-api
+                  secrets: |
+                      "gh_token=${{ secrets.GH_PAT }}"
 
-  # ── Check: emailflare-inbox image ────────────────────────────────────────────
-  check-inbox:
-    name: Check emailflare-inbox Dockerfile
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    # ── Check: emailflare-inbox image ────────────────────────────────────────────
+    check-inbox:
+        name: Check emailflare-inbox Dockerfile
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+            - uses: docker/setup-buildx-action@v3
 
-      - name: Build (no push)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./deploy/docker/Dockerfile.email-inbox
-          platforms: linux/amd64
-          push: false
-          build-args: |
-            MESAHUB_CORE_VERSION=trunk
-          cache-from: type=gha,scope=check-inbox
-          cache-to: type=gha,mode=max,scope=check-inbox
-          secrets: |
-            "gh_token=${{ secrets.GH_PAT }}"
+            - name: Build (no push)
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: ./deploy/docker/Dockerfile.email-inbox
+                  platforms: linux/amd64
+                  push: false
+                  build-args: |
+                      MESAHUB_CORE_VERSION=trunk
+                  cache-from: type=gha,scope=check-inbox
+                  cache-to: type=gha,mode=max,scope=check-inbox
+                  secrets: |
+                      "gh_token=${{ secrets.GH_PAT }}"
 
-  # ── Check: Cloudflare Workers + bridges + landing (compile gate) ────────────
-  # These are NOT built by the Docker jobs above (Workers deploy via wrangler),
-  # so we typecheck/build them here to catch broken code before merge.
-  verify-workers:
-    name: Verify ${{ matrix.name }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: email-worker
-            path: services/email-worker
-            check: pnpm exec tsc --noEmit
-          - name: inbox-worker
-            path: services/inbox-worker
-            check: pnpm exec tsc --noEmit
-          - name: email-bridge
-            path: services/email-bridge
-            check: pnpm exec tsc --noEmit
-          - name: inbox-bridge
-            path: services/inbox-bridge
-            check: pnpm exec tsc --noEmit
-          - name: landing
-            path: services/landing
-            check: pnpm run build
+    # ── Check: Cloudflare Workers + bridges + landing (compile gate) ────────────
+    # These are NOT built by the Docker jobs above (Workers deploy via wrangler),
+    # so we typecheck/build them here to catch broken code before merge.
+    verify-workers:
+        name: Verify ${{ matrix.name }}
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: email-worker
+                      path: services/email-worker
+                      check: pnpm exec tsc --noEmit
+                    - name: inbox-worker
+                      path: services/inbox-worker
+                      check: pnpm exec tsc --noEmit
+                    - name: email-bridge
+                      path: services/email-bridge
+                      check: pnpm exec tsc --noEmit
+                    - name: inbox-bridge
+                      path: services/inbox-bridge
+                      check: pnpm exec tsc --noEmit
+                    - name: landing
+                      path: services/landing
+                      check: pnpm run build
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Enable Corepack
-        run: corepack enable
+            - name: Enable Corepack
+              run: corepack enable
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+                  cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install workspace dependencies
-        run: pnpm install --frozen-lockfile
+            - name: Install workspace dependencies
+              run: pnpm install --frozen-lockfile
 
-      - name: Build shared packages
-        run: pnpm run build:shared
+            - name: Build shared packages
+              run: pnpm run build:shared
 
-      - name: Check (${{ matrix.check }})
-        working-directory: ${{ matrix.path }}
-        run: ${{ matrix.check }}
+            - name: Check (${{ matrix.check }})
+              working-directory: ${{ matrix.path }}
+              run: ${{ matrix.check }}
 
-      - name: Audit dependencies
-        run: pnpm audit --audit-level=high
-        continue-on-error: true
+            - name: Audit dependencies
+              run: pnpm audit --audit-level=high
+              continue-on-error: true

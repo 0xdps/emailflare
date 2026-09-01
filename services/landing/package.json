@@ -1,17 +1,17 @@
 {
-  "name": "emailflare-landing",
-  "private": true,
-  "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "deploy": "pnpm build && wrangler deploy"
-  },
-  "dependencies": {
-    "@iconify-json/lucide": "^1.2.105",
-    "@iconify-json/simple-icons": "^1.2.80",
-    "astro": "^7.2.9",
-    "astro-icon": "^1.1.5"
-  }
+	"name": "emailflare-landing",
+	"private": true,
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"deploy": "pnpm build && wrangler deploy"
+	},
+	"dependencies": {
+		"@iconify-json/lucide": "^1.2.105",
+		"@iconify-json/simple-icons": "^1.2.80",
+		"astro": "^7.2.9",
+		"astro-icon": "^1.1.5"
+	}
 }

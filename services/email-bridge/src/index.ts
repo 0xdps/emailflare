@@ -9,28 +9,28 @@
 //   WEBHOOK_SECRET   — shared Bearer token (matches email-server's WEBHOOK_SECRET env var)
 
 interface Env {
-  EMAIL_SERVER_URL: string;
-  WEBHOOK_SECRET: string;
+	EMAIL_SERVER_URL: string;
+	WEBHOOK_SECRET: string;
 }
 
 export default {
-  async email(message: ForwardableEmailMessage, env: Env): Promise<void> {
-    // Read the raw email bytes once — streams can only be consumed once
-    const rawBytes = await new Response(message.raw).arrayBuffer();
+	async email(message: ForwardableEmailMessage, env: Env): Promise<void> {
+		// Read the raw email bytes once — streams can only be consumed once
+		const rawBytes = await new Response(message.raw).arrayBuffer();
 
-    const serverUrl = env.EMAIL_SERVER_URL.replace(/\/$/, '');
-    const res = await fetch(`${serverUrl}/api/webhooks/bounce`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'message/rfc822',
-        'Authorization': `Bearer ${env.WEBHOOK_SECRET}`,
-      },
-      body: rawBytes,
-    });
+		const serverUrl = env.EMAIL_SERVER_URL.replace(/\/$/, "");
+		const res = await fetch(`${serverUrl}/api/webhooks/bounce`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "message/rfc822",
+				Authorization: `Bearer ${env.WEBHOOK_SECRET}`,
+			},
+			body: rawBytes,
+		});
 
-    if (!res.ok) {
-      // Throw so CF Email Workers retries the delivery
-      throw new Error(`email-server webhook returned ${res.status}`);
-    }
-  },
+		if (!res.ok) {
+			// Throw so CF Email Workers retries the delivery
+			throw new Error(`email-server webhook returned ${res.status}`);
+		}
+	},
 } satisfies ExportedHandler<Env>;

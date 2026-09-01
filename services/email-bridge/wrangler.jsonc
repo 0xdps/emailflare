@@ -1,16 +1,16 @@
 {
-  // emailflare-api-bridge
-  //
-  // Thin bridge worker — receives inbound email from Cloudflare Email Routing
-  // and forwards raw bytes to the Node.js email-server for bounce/complaint
-  // processing. No bindings needed — just two secrets.
-  //
-  // Secrets (set via `wrangler secret put` or `just cf-workers-setup`):
-  //   EMAIL_SERVER_URL — base URL of your email-server  (e.g. https://api.example.com)
-  //   WEBHOOK_SECRET   — Bearer token matching email-server's WEBHOOK_SECRET env var
+	// emailflare-api-bridge
+	//
+	// Thin bridge worker — receives inbound email from Cloudflare Email Routing
+	// and forwards raw bytes to the Node.js email-server for bounce/complaint
+	// processing. No bindings needed — just two secrets.
+	//
+	// Secrets (set via `wrangler secret put` or `just cf-workers-setup`):
+	//   EMAIL_SERVER_URL — base URL of your email-server  (e.g. https://api.example.com)
+	//   WEBHOOK_SECRET   — Bearer token matching email-server's WEBHOOK_SECRET env var
 
-  "name": "emailflare-api-bridge",
-  "main": "src/index.ts",
-  "compatibility_date": "2025-05-01",
-  "compatibility_flags": ["nodejs_compat"]
+	"name": "emailflare-api-bridge",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-05-01",
+	"compatibility_flags": ["nodejs_compat"],
 }

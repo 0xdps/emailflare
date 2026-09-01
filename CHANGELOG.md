@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial release of emailflare-api (transactional email sending + admin dashboard)
 - Initial release of emailflare-inbox (team inbox + lightweight CRM)
 - Cloudflare Workers deployment path (D1, KV, R2, Durable Objects, Queues)

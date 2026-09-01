@@ -1,25 +1,25 @@
 {
-  "name": "@emailflare/inbox-core",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "description": "Shared types, Zod schemas, and pure helpers for inbox-worker (CF) and inbox-server (Node.js)",
-  "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
-  },
-  "dependencies": {
-    "zod": "^3.24.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.3",
-    "typescript": "^5.8.3"
-  }
+	"name": "@emailflare/inbox-core",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Shared types, Zod schemas, and pure helpers for inbox-worker (CF) and inbox-server (Node.js)",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch"
+	},
+	"dependencies": {
+		"zod": "^3.24.3"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.3",
+		"typescript": "^5.8.3"
+	}
 }

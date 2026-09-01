@@ -1,12 +1,12 @@
 {
-  // Thin bridge worker — only handles inbound email forwarding to inbox-server.
-  // No D1 / KV / R2 / Queue / DO bindings needed.
-  "name": "emailflare-inbox-bridge",
-  "main": "src/index.ts",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"],
+	// Thin bridge worker — only handles inbound email forwarding to inbox-server.
+	// No D1 / KV / R2 / Queue / DO bindings needed.
+	"name": "emailflare-inbox-bridge",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-01-01",
+	"compatibility_flags": ["nodejs_compat"],
 
-  // Secrets (set via `wrangler secret put` or deploy-inbox-standalone.mjs):
-  //   INBOX_SERVER_URL     — base URL of your inbox-server (e.g. https://inbox.yourdomain.com)
-  //   INBOX_WEBHOOK_SECRET — shared HMAC-SHA256 secret for webhook signature verification
+	// Secrets (set via `wrangler secret put` or deploy-inbox-standalone.mjs):
+	//   INBOX_SERVER_URL     — base URL of your inbox-server (e.g. https://inbox.yourdomain.com)
+	//   INBOX_WEBHOOK_SECRET — shared HMAC-SHA256 secret for webhook signature verification
 }

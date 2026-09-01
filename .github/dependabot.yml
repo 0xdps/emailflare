@@ -1,157 +1,157 @@
 version: 2
 updates:
-  # ── npm (pnpm) dependencies ──────────────────────────────────────────────
-  - package-ecosystem: "npm"
-    directory: "/packages/email-core"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    # ── npm (pnpm) dependencies ──────────────────────────────────────────────
+    - package-ecosystem: "npm"
+      directory: "/packages/email-core"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/packages/inbox-core"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/packages/inbox-core"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/emails"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/emails"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/email-server"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/email-server"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/email-worker"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/email-worker"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/email-ui"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/email-ui"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/email-bridge"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/email-bridge"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/inbox-server"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/inbox-server"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/inbox-worker"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/inbox-worker"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/inbox-ui"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/inbox-ui"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/inbox-bridge"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/inbox-bridge"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/services/landing"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/services/landing"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  - package-ecosystem: "npm"
-    directory: "/scripts"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: "increase"
+    - package-ecosystem: "npm"
+      directory: "/scripts"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 10
+      versioning-strategy: "increase"
 
-  # ── Docker images ─────────────────────────────────────────────────────────
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+    # ── Docker images ─────────────────────────────────────────────────────────
+    - package-ecosystem: "docker"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5
 
-  - package-ecosystem: "docker"
-    directory: "/services/email-server"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+    - package-ecosystem: "docker"
+      directory: "/services/email-server"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5
 
-  - package-ecosystem: "docker"
-    directory: "/services/inbox-server"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+    - package-ecosystem: "docker"
+      directory: "/services/inbox-server"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5
 
-  - package-ecosystem: "docker"
-    directory: "/services/email-ui"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+    - package-ecosystem: "docker"
+      directory: "/services/email-ui"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5
 
-  - package-ecosystem: "docker"
-    directory: "/services/inbox-ui"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+    - package-ecosystem: "docker"
+      directory: "/services/inbox-ui"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5
 
-  - package-ecosystem: "docker"
-    directory: "/infra"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+    - package-ecosystem: "docker"
+      directory: "/infra"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5
 
-  # ── GitHub Actions ────────────────────────────────────────────────────────
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+    # ── GitHub Actions ────────────────────────────────────────────────────────
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+      open-pull-requests-limit: 5

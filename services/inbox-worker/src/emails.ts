@@ -2,11 +2,6 @@
 // Wrangler (esbuild) bundles these at deploy time.
 // Requires the `nodejs_compat` compatibility flag for AsyncLocalStorage + React SSR.
 
-export {
-  renderLayout,
-  LAYOUTS,
-  THEMES,
-  themeToTailwindConfig,
-} from '@emailflare/emails';
+export { renderLayout, LAYOUTS, THEMES, themeToTailwindConfig } from "@emailflare/emails";
 
-export type { LayoutName } from '@emailflare/emails';
+export type { LayoutName } from "@emailflare/emails";

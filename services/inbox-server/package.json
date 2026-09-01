@@ -1,38 +1,38 @@
 {
-  "name": "@emailflare/inbox-server",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "migrate": "node dist/migrate.js"
-  },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.744.0",
-    "@aws-sdk/s3-request-presigner": "^3.744.0",
-    "@emailflare/email-core": "workspace:*",
-    "@emailflare/inbox-core": "workspace:*",
-    "@emailflare/emails": "workspace:*",
-    "@hono/node-server": "^1.13.7",
-    "@hono/zod-validator": "^0.4.3",
-    "@mesahub/client": "^0.5.1",
-    "bullmq": "^5.34.8",
-    "hono": "^4.7.5",
-    "ioredis": "^5.6.0",
-    "jose": "^5.10.0",
-    "nanoid": "^5.1.5",
-    "node-cron": "^3.0.3",
-    "postal-mime": "^2.3.0",
-    "ws": "^8.18.2",
-    "zod": "^3.24.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.3",
-    "@types/node-cron": "^3.0.11",
-    "@types/ws": "^8.5.14",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
-  }
+	"name": "@emailflare/inbox-server",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "tsx watch src/index.ts",
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"migrate": "node dist/migrate.js"
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.744.0",
+		"@aws-sdk/s3-request-presigner": "^3.744.0",
+		"@emailflare/email-core": "workspace:*",
+		"@emailflare/inbox-core": "workspace:*",
+		"@emailflare/emails": "workspace:*",
+		"@hono/node-server": "^1.13.7",
+		"@hono/zod-validator": "^0.4.3",
+		"@mesahub/client": "^0.5.1",
+		"bullmq": "^5.34.8",
+		"hono": "^4.7.5",
+		"ioredis": "^5.6.0",
+		"jose": "^5.10.0",
+		"nanoid": "^5.1.5",
+		"node-cron": "^3.0.3",
+		"postal-mime": "^2.3.0",
+		"ws": "^8.18.2",
+		"zod": "^3.24.3"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.3",
+		"@types/node-cron": "^3.0.11",
+		"@types/ws": "^8.5.14",
+		"tsx": "^4.19.3",
+		"typescript": "^5.8.3"
+	}
 }

@@ -1,26 +1,25 @@
 name: emailflare
 
 services:
-  app:
-    build:
-      context: ../..
-      dockerfile: deploy/docker/Dockerfile.email-api
-    ports:
-      - "${PORT:-8090}:80"
-    env_file:
-      - .env.local
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - app-data:/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    app:
+        build:
+            context: ../..
+            dockerfile: deploy/docker/Dockerfile.email-api
+        ports:
+            - "${PORT:-8090}:80"
+        env_file:
+            - .env.local
+        environment:
+            - NODE_ENV=production
+        volumes:
+            - app-data:/data
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "curl", "-sf", "http://localhost/health"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
 
 volumes:
-  app-data:
-
+    app-data:

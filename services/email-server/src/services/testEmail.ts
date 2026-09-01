@@ -1,4 +1,4 @@
-import type { CFSendEmailParams, CFSendEmailResult } from './cloudflare.js';
+import type { CFSendEmailParams, CFSendEmailResult } from "./cloudflare.js";
 
 /**
  * storeTestEmail — in-house test mailbox.
@@ -10,5 +10,5 @@ import type { CFSendEmailParams, CFSendEmailResult } from './cloudflare.js';
  * We return a synthetic message id so the send flow is unchanged.
  */
 export async function storeTestEmail(_params: CFSendEmailParams): Promise<CFSendEmailResult> {
-  return { id: crypto.randomUUID() };
+	return { id: crypto.randomUUID() };
 }

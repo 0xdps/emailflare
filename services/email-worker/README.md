@@ -2,15 +2,15 @@
 
 Cloudflare-native parallel deployment of the emailflare backend.
 
-| Layer | Node.js backend | This worker |
-|-------|----------------|-------------|
-| Runtime | Node.js + `@hono/node-server` | Cloudflare Workers |
-| Database | MesaHub (remote SQLite) | **Cloudflare D1** (SQLite at the edge) |
-| Sessions | `iron-session` (Node.js crypto) | `jose` SignJWT (Web Crypto) |
-| API rate limiting | In-memory sliding window | **Workers Rate Limiting** binding |
-| Login rate limiting | In-memory | **Workers KV** |
-| Email sending | CF REST API + in-house test mailbox | CF REST API + in-house test mailbox |
-| Secrets | `.env` file / Docker env vars | `wrangler secret put` |
+| Layer               | Node.js backend                     | This worker                            |
+| ------------------- | ----------------------------------- | -------------------------------------- |
+| Runtime             | Node.js + `@hono/node-server`       | Cloudflare Workers                     |
+| Database            | MesaHub (remote SQLite)             | **Cloudflare D1** (SQLite at the edge) |
+| Sessions            | `iron-session` (Node.js crypto)     | `jose` SignJWT (Web Crypto)            |
+| API rate limiting   | In-memory sliding window            | **Workers Rate Limiting** binding      |
+| Login rate limiting | In-memory                           | **Workers KV**                         |
+| Email sending       | CF REST API + in-house test mailbox | CF REST API + in-house test mailbox    |
+| Secrets             | `.env` file / Docker env vars       | `wrangler secret put`                  |
 
 Both deployments share the same API surface (`/v1/send`, `/api/*`) and the same admin UI.
 

@@ -1,7 +1,7 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-import { THEMES, themeToTailwindConfig } from './themes.js';
+import { AsyncLocalStorage } from "node:async_hooks";
+import { THEMES, themeToTailwindConfig } from "./themes.js";
 
-const DEFAULT_CONFIG = themeToTailwindConfig(THEMES['default']);
+const DEFAULT_CONFIG = themeToTailwindConfig(THEMES["default"]);
 
 const storage = new AsyncLocalStorage<object>();
 
@@ -10,7 +10,7 @@ const storage = new AsyncLocalStorage<object>();
  * All layout components rendered within `fn` will pick up the theme automatically.
  */
 export function runWithTheme(config: object, fn: () => Promise<string>): Promise<string> {
-  return storage.run(config, fn);
+	return storage.run(config, fn);
 }
 
 /**
@@ -18,5 +18,5 @@ export function runWithTheme(config: object, fn: () => Promise<string>): Promise
  * Falls back to the default (orange) theme when called outside a runWithTheme context.
  */
 export function getThemeConfig(): object {
-  return storage.getStore() ?? DEFAULT_CONFIG;
+	return storage.getStore() ?? DEFAULT_CONFIG;
 }

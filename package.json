@@ -1,19 +1,22 @@
 {
-  "name": "emailflare",
-  "private": true,
-  "scripts": {
-    "build:email-core": "pnpm --filter @emailflare/email-core build",
-    "build:inbox-core": "pnpm --filter @emailflare/inbox-core build",
-    "build:emails": "pnpm --filter @emailflare/emails build",
-    "build:shared": "pnpm run build:email-core && pnpm run build:inbox-core && pnpm run build:emails",
-    "build:email-server": "pnpm --filter @emailflare/email-server build",
-    "build:inbox-server": "pnpm --filter @emailflare/inbox-server build",
-    "build:email-ui": "pnpm --filter @emailflare/email-ui build",
-    "build:inbox-ui": "pnpm --filter @emailflare/inbox-ui build",
-    "typecheck": "pnpm -r exec tsc --noEmit",
-    "audit": "pnpm audit --audit-level=high"
-  },
-  "devDependencies": {
-    "lefthook": "^2.1.12"
-  }
+	"name": "emailflare",
+	"private": true,
+	"scripts": {
+		"build:email-core": "pnpm --filter @emailflare/email-core build",
+		"build:inbox-core": "pnpm --filter @emailflare/inbox-core build",
+		"build:emails": "pnpm --filter @emailflare/emails build",
+		"build:shared": "pnpm run build:email-core && pnpm run build:inbox-core && pnpm run build:emails",
+		"build:email-server": "pnpm --filter @emailflare/email-server build",
+		"build:inbox-server": "pnpm --filter @emailflare/inbox-server build",
+		"build:email-ui": "pnpm --filter @emailflare/email-ui build",
+		"build:inbox-ui": "pnpm --filter @emailflare/inbox-ui build",
+		"typecheck": "pnpm -r exec tsc --noEmit",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"audit": "pnpm audit --audit-level=high"
+	},
+	"devDependencies": {
+		"lefthook": "^2.1.12",
+		"prettier": "^3.9.6"
+	}
 }

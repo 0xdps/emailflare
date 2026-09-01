@@ -9,51 +9,51 @@
 #   redis — Redis 7 for rate limiting + BullMQ job queue
 
 services:
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    volumes:
-      - inbox-redis:/data
-    command: redis-server --save 60 1 --loglevel warning
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - inbox-net
+    redis:
+        image: redis:7-alpine
+        restart: unless-stopped
+        volumes:
+            - inbox-redis:/data
+        command: redis-server --save 60 1 --loglevel warning
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - inbox-net
 
-  inbox:
-    build:
-      context: ../..
-      dockerfile: deploy/docker/Dockerfile.email-inbox
-    restart: unless-stopped
-    ports:
-      - "${INBOX_PORT:-8091}:80"
-    volumes:
-      - inbox-data:/data
-    env_file:
-      - .env.inbox
-    environment:
-      - PORT=80
-      - INBOX_NODE_PORT=3002
-      - MIGRATIONS_DIR=/app/migrations
-    depends_on:
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:80/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    networks:
-      - inbox-net
+    inbox:
+        build:
+            context: ../..
+            dockerfile: deploy/docker/Dockerfile.email-inbox
+        restart: unless-stopped
+        ports:
+            - "${INBOX_PORT:-8091}:80"
+        volumes:
+            - inbox-data:/data
+        env_file:
+            - .env.inbox
+        environment:
+            - PORT=80
+            - INBOX_NODE_PORT=3002
+            - MIGRATIONS_DIR=/app/migrations
+        depends_on:
+            redis:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "curl", "-sf", "http://localhost:80/health"]
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+        networks:
+            - inbox-net
 
 volumes:
-  inbox-data:
-  inbox-redis:
+    inbox-data:
+    inbox-redis:
 
 networks:
-  inbox-net:
-    driver: bridge
+    inbox-net:
+        driver: bridge

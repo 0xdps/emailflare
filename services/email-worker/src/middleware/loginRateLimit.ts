@@ -6,16 +6,16 @@
 // itself is always timing-safe).
 
 const LOGIN_LIMIT = 10;
-const WINDOW_TTL  = 60; // seconds
+const WINDOW_TTL = 60; // seconds
 
 export async function checkLoginRateLimit(ip: string, kv: KVNamespace): Promise<boolean> {
-  const key = `login_rl:${ip}`;
-  const raw = await kv.get(key);
-  const count = raw ? parseInt(raw, 10) : 0;
+	const key = `login_rl:${ip}`;
+	const raw = await kv.get(key);
+	const count = raw ? parseInt(raw, 10) : 0;
 
-  if (count >= LOGIN_LIMIT) return false;
+	if (count >= LOGIN_LIMIT) return false;
 
-  // Increment — preserve remaining TTL if already set, else start a new window
-  await kv.put(key, String(count + 1), { expirationTtl: WINDOW_TTL });
-  return true;
+	// Increment — preserve remaining TTL if already set, else start a new window
+	await kv.put(key, String(count + 1), { expirationTtl: WINDOW_TTL });
+	return true;
 }

@@ -84,6 +84,7 @@ Open `http://localhost:8091`. Read the full guide: [docs/SELF_HOSTING.md](./docs
 ## What ships in this repo
 
 **Email API**
+
 - `services/email-worker` — Cloudflare Worker bundling API + admin UI (D1 + KV) — **primary deploy**
 - `services/email-server` — Hono API (Node.js): domains, templates, keys, stats, send — for Docker
 - `services/email-ui` — React admin panel (Vite + TanStack Router)
@@ -93,6 +94,7 @@ Open `http://localhost:8091`. Read the full guide: [docs/SELF_HOSTING.md](./docs
 - `deploy/docker/compose.email-api.dev.yaml` — local dev stack with hot reload
 
 **Inbox**
+
 - `services/inbox-worker` — Cloudflare Worker variant of the inbox (D1 + R2 + KV + DO + Queues) — **primary deploy**
 - `services/inbox-server` — Hono inbox API (Node.js): inboxes, people, threads, sequences, templates — for Docker
 - `services/inbox-ui` — React inbox dashboard (Vite + TanStack Router)
@@ -102,6 +104,7 @@ Open `http://localhost:8091`. Read the full guide: [docs/SELF_HOSTING.md](./docs
 - `deploy/docker/compose.email-inbox.dev.yaml` — local dev stack with hot reload
 
 **Shared**
+
 - `services/emails` — shared email layouts and rendering used by both servers
 - `scripts/` — setup tooling for CF Worker deployments (`setup.mjs`, `config.example.toml`)
 - `justfile` — task runner for dev, prod, and Cloudflare Worker operations ([docs/RECIPES.md](./docs/RECIPES.md))
@@ -114,10 +117,10 @@ Open `http://localhost:8091`. Read the full guide: [docs/SELF_HOSTING.md](./docs
 
 EmailFlare supports two deployment modes for each product:
 
-| Mode | Products | Stack | When to use |
-|---|---|---|---|
+| Mode                             | Products                         | Stack                                | When to use                     |
+| -------------------------------- | -------------------------------- | ------------------------------------ | ------------------------------- |
 | **Cloudflare Workers** (primary) | emailflare-api, emailflare-inbox | D1 + KV (+ R2, Queues, DO for inbox) | Default — zero-ops, edge-native |
-| **Docker** (secondary) | emailflare-api, emailflare-inbox | single container + embedded SQLite | Self-hosting on your own VPS/VM |
+| **Docker** (secondary)           | emailflare-api, emailflare-inbox | single container + embedded SQLite   | Self-hosting on your own VPS/VM |
 
 The Docker path uses SQLite via embedded mesahub-core (one image, one volume at `/data`).
 
@@ -129,26 +132,26 @@ Read the full guides: [docs/CLOUDFLARE.md](./docs/CLOUDFLARE.md) · [docs/SELF_H
 
 **emailflare-api** (`.env.local`):
 
-| Variable | Description |
-|---|---|
-| `ADMIN_TOKEN` | Admin API token (32+ chars) |
-| `SESSION_SECRET` | Session signing secret (32+ chars) |
-| `MESAHUB_URL` | `mh://local/emailflare` for embedded SQLite |
-| `CF_API_TOKEN` | Cloudflare token with Email Sending + Zone permissions |
-| `CF_ACCOUNT_ID` | Cloudflare account ID |
-| `PUBLIC_URL` | Public base URL, used for one-click unsubscribe links (optional) |
+| Variable         | Description                                                      |
+| ---------------- | ---------------------------------------------------------------- |
+| `ADMIN_TOKEN`    | Admin API token (32+ chars)                                      |
+| `SESSION_SECRET` | Session signing secret (32+ chars)                               |
+| `MESAHUB_URL`    | `mh://local/emailflare` for embedded SQLite                      |
+| `CF_API_TOKEN`   | Cloudflare token with Email Sending + Zone permissions           |
+| `CF_ACCOUNT_ID`  | Cloudflare account ID                                            |
+| `PUBLIC_URL`     | Public base URL, used for one-click unsubscribe links (optional) |
 
 **emailflare-inbox** (`.env.inbox.local`):
 
-| Variable | Description |
-|---|---|
-| `SESSION_SECRET` | Session signing secret (32+ chars) |
-| `WEBHOOK_SECRET` | Shared secret for inbox-bridge webhook auth |
-| `MESAHUB_URL` | `mh://local/inbox-db` for embedded SQLite |
-| `REDIS_URL` | Redis connection string (rate limiting + BullMQ) |
-| `CF_API_TOKEN` | Cloudflare token for sending replies |
-| `CF_ACCOUNT_ID` | Cloudflare account ID |
-| `PUBLIC_URL` | Public base URL, used for one-click unsubscribe links in sequences (optional) |
+| Variable         | Description                                                                   |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `SESSION_SECRET` | Session signing secret (32+ chars)                                            |
+| `WEBHOOK_SECRET` | Shared secret for inbox-bridge webhook auth                                   |
+| `MESAHUB_URL`    | `mh://local/inbox-db` for embedded SQLite                                     |
+| `REDIS_URL`      | Redis connection string (rate limiting + BullMQ)                              |
+| `CF_API_TOKEN`   | Cloudflare token for sending replies                                          |
+| `CF_ACCOUNT_ID`  | Cloudflare account ID                                                         |
+| `PUBLIC_URL`     | Public base URL, used for one-click unsubscribe links in sequences (optional) |
 
 ---
 

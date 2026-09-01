@@ -12,120 +12,120 @@
 # Accessible at: http://localhost:${INBOX_PORT:-8091}
 
 services:
-  mesahub-inbox:
-    container_name: emailflare-inbox-mesahub
-    build:
-      context: ../../infra
-      dockerfile: Dockerfile.mesahub
-    environment:
-      - PORT=3002
-      - ADMIN_TOKEN=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}
-      - SESSION_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-session
-      - FILE_TOKEN_SIGNING_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-files
-      - DATA_PATH=/data
-      - DB_NAME=inbox-db
-    ports:
-      - "3003:3002"
-    volumes:
-      - mesahub-inbox-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3002/api/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 15
-      start_period: 30s
+    mesahub-inbox:
+        container_name: emailflare-inbox-mesahub
+        build:
+            context: ../../infra
+            dockerfile: Dockerfile.mesahub
+        environment:
+            - PORT=3002
+            - ADMIN_TOKEN=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}
+            - SESSION_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-session
+            - FILE_TOKEN_SIGNING_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-files
+            - DATA_PATH=/data
+            - DB_NAME=inbox-db
+        ports:
+            - "3003:3002"
+        volumes:
+            - mesahub-inbox-data:/data
+        healthcheck:
+            test: ["CMD", "curl", "-sf", "http://localhost:3002/api/health"]
+            interval: 5s
+            timeout: 3s
+            retries: 15
+            start_period: 30s
 
-  redis-inbox:
-    container_name: emailflare-inbox-redis
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    command: redis-server --save 60 1 --loglevel warning
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+    redis-inbox:
+        container_name: emailflare-inbox-redis
+        image: redis:7-alpine
+        ports:
+            - "6379:6379"
+        command: redis-server --save 60 1 --loglevel warning
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
 
-  inbox-server:
-    container_name: emailflare-inbox-server
-    build:
-      context: ../..
-      dockerfile: services/inbox-server/Dockerfile
-      target: dev
-    # On first start (or after wipe), builds email-core + inbox-core + emails before starting.
-    # node_modules volumes persist across restarts so subsequent starts are fast.
-    command: >
-      sh -c "
-        cd /app/packages/email-core && pnpm install && pnpm run build &&
-        cd /app/packages/inbox-core && pnpm install && pnpm run build &&
-        cd /app/services/emails && pnpm install --prefer-offline && pnpm run build &&
-        cd /app/services/inbox-server && pnpm install &&
-        pnpm exec tsx watch src/index.ts
-      "
-    env_file:
-      - .env.inbox.local
-    environment:
-      - NODE_ENV=development
-      - PORT=3002
-      # MESAHUB_URL is intentionally NOT set here — use .env.inbox.local to
-      # point at either the local mesahub-inbox container or an external instance.
-      # Local:    mh://inbox-dev-token@mesahub-inbox:3002/inbox-db
-      # External: mh://<api_key>@smh-api.mesahub.app/<db_name>
-      - REDIS_URL=redis://redis-inbox:6379
-      # Always use the container-internal migrations path regardless of env_file.
-      - MIGRATIONS_DIR=/app/migrations
-    depends_on:
-      mesahub-inbox:
-        # service_started (not service_healthy) so external-MesaHub users
-        # aren't blocked waiting for the local container's health check.
-        condition: service_started
-      redis-inbox:
-        condition: service_healthy
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    volumes:
-      - ../../packages/email-core:/app/packages/email-core
-      - email-core-node-modules:/app/packages/email-core/node_modules
-      - ../../packages/inbox-core:/app/packages/inbox-core
-      - inbox-core-node-modules:/app/packages/inbox-core/node_modules
-      - ../../services/emails:/app/services/emails
-      - emails-node-modules-inbox:/app/services/emails/node_modules
-      - ../../services/inbox-server/src:/app/services/inbox-server/src
-      - ../../services/inbox-server/package.json:/app/services/inbox-server/package.json
-      - inbox-server-node-modules:/app/services/inbox-server/node_modules
-      - ../../migrations:/app/migrations:ro
+    inbox-server:
+        container_name: emailflare-inbox-server
+        build:
+            context: ../..
+            dockerfile: services/inbox-server/Dockerfile
+            target: dev
+        # On first start (or after wipe), builds email-core + inbox-core + emails before starting.
+        # node_modules volumes persist across restarts so subsequent starts are fast.
+        command: >
+            sh -c "
+              cd /app/packages/email-core && pnpm install && pnpm run build &&
+              cd /app/packages/inbox-core && pnpm install && pnpm run build &&
+              cd /app/services/emails && pnpm install --prefer-offline && pnpm run build &&
+              cd /app/services/inbox-server && pnpm install &&
+              pnpm exec tsx watch src/index.ts
+            "
+        env_file:
+            - .env.inbox.local
+        environment:
+            - NODE_ENV=development
+            - PORT=3002
+            # MESAHUB_URL is intentionally NOT set here — use .env.inbox.local to
+            # point at either the local mesahub-inbox container or an external instance.
+            # Local:    mh://inbox-dev-token@mesahub-inbox:3002/inbox-db
+            # External: mh://<api_key>@smh-api.mesahub.app/<db_name>
+            - REDIS_URL=redis://redis-inbox:6379
+            # Always use the container-internal migrations path regardless of env_file.
+            - MIGRATIONS_DIR=/app/migrations
+        depends_on:
+            mesahub-inbox:
+                # service_started (not service_healthy) so external-MesaHub users
+                # aren't blocked waiting for the local container's health check.
+                condition: service_started
+            redis-inbox:
+                condition: service_healthy
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        volumes:
+            - ../../packages/email-core:/app/packages/email-core
+            - email-core-node-modules:/app/packages/email-core/node_modules
+            - ../../packages/inbox-core:/app/packages/inbox-core
+            - inbox-core-node-modules:/app/packages/inbox-core/node_modules
+            - ../../services/emails:/app/services/emails
+            - emails-node-modules-inbox:/app/services/emails/node_modules
+            - ../../services/inbox-server/src:/app/services/inbox-server/src
+            - ../../services/inbox-server/package.json:/app/services/inbox-server/package.json
+            - inbox-server-node-modules:/app/services/inbox-server/node_modules
+            - ../../migrations:/app/migrations:ro
 
-  inbox-ui:
-    container_name: emailflare-inbox-ui
-    build:
-      context: ../../services/inbox-ui
-      dockerfile: Dockerfile
-      target: dev
-    command: sh -c "pnpm install && pnpm run dev"
-    volumes:
-      - ../../services/inbox-ui/src:/app/src
-      - ../../services/inbox-ui/index.html:/app/index.html:ro
-      - ../../services/inbox-ui/package.json:/app/package.json
-      - inbox-ui-node-modules:/app/node_modules
-    expose:
-      - "5174"
+    inbox-ui:
+        container_name: emailflare-inbox-ui
+        build:
+            context: ../../services/inbox-ui
+            dockerfile: Dockerfile
+            target: dev
+        command: sh -c "pnpm install && pnpm run dev"
+        volumes:
+            - ../../services/inbox-ui/src:/app/src
+            - ../../services/inbox-ui/index.html:/app/index.html:ro
+            - ../../services/inbox-ui/package.json:/app/package.json
+            - inbox-ui-node-modules:/app/node_modules
+        expose:
+            - "5174"
 
-  edge:
-    container_name: emailflare-inbox-edge
-    image: caddy:2-alpine
-    volumes:
-      - ../../infra/Caddyfile.email-inbox.dev:/etc/caddy/Caddyfile:ro
-    ports:
-      - "${INBOX_PORT:-8091}:80"
-    depends_on:
-      - inbox-server
-      - inbox-ui
+    edge:
+        container_name: emailflare-inbox-edge
+        image: caddy:2-alpine
+        volumes:
+            - ../../infra/Caddyfile.email-inbox.dev:/etc/caddy/Caddyfile:ro
+        ports:
+            - "${INBOX_PORT:-8091}:80"
+        depends_on:
+            - inbox-server
+            - inbox-ui
 
 volumes:
-  mesahub-inbox-data:
-  email-core-node-modules:
-  inbox-core-node-modules:
-  emails-node-modules-inbox:
-  inbox-server-node-modules:
-  inbox-ui-node-modules:
+    mesahub-inbox-data:
+    email-core-node-modules:
+    inbox-core-node-modules:
+    emails-node-modules-inbox:
+    inbox-server-node-modules:
+    inbox-ui-node-modules:

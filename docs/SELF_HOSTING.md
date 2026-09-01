@@ -18,8 +18,8 @@ You do not need Postgres, Redis, or a separate database service for the default 
 ## Requirements
 
 - Docker with Compose support
-- a Cloudflare account with Email Sending enabled *(not required if using test API keys only)*
-- a Cloudflare API token with the required email sending permissions *(not required if using test API keys only)*
+- a Cloudflare account with Email Sending enabled _(not required if using test API keys only)_
+- a Cloudflare API token with the required email sending permissions _(not required if using test API keys only)_
 
 ## 1. Create your environment file
 
@@ -71,7 +71,7 @@ Then open:
 
 - app: `http://localhost:8090`
 
-> **Note:** Test API keys capture email content into the in-house **Test Mailbox** (available in the admin UI under *Monitor → Test Mailbox*). No SMTP server or Mailpit is required.
+> **Note:** Test API keys capture email content into the in-house **Test Mailbox** (available in the admin UI under _Monitor → Test Mailbox_). No SMTP server or Mailpit is required.
 
 ## 4. Persist data
 
@@ -128,7 +128,7 @@ To use test mode on any deployment:
 
 1. Create a **test** API key from the admin UI (Keys page)
 2. Send using that key — the email body is stored in `email_logs` and appears in the Test Mailbox page
-3. Inspect or delete test emails from *Monitor → Test Mailbox*
+3. Inspect or delete test emails from _Monitor → Test Mailbox_
 
 ---
 
@@ -137,7 +137,7 @@ To use test mode on any deployment:
 EmailFlare ships audience **lists** with RFC 8058 one-click unsubscribe support, available
 on both the Email API and Inbox products.
 
-- Create a list from the admin UI (*Send → Lists* for Email API; *Email API → Lists* for Inbox)
+- Create a list from the admin UI (_Send → Lists_ for Email API; _Email API → Lists_ for Inbox)
   or `POST /api/lists`.
 - When a `POST /v1/send` request includes a `listId`, EmailFlare attaches a
   `List-Unsubscribe` header with a per-recipient, one-time token.

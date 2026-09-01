@@ -1,14 +1,14 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "emailflare-landing",
-  "compatibility_date": "2026-04-28",
-  "workers_dev": true,
-  "preview_urls": true,
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "404-page"
-  },
-  "observability": {
-    "enabled": true
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "emailflare-landing",
+	"compatibility_date": "2026-04-28",
+	"workers_dev": true,
+	"preview_urls": true,
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "404-page",
+	},
+	"observability": {
+		"enabled": true,
+	},
 }

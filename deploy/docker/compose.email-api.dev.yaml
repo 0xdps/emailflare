@@ -1,97 +1,96 @@
 services:
-  mesahub:
-    container_name: emailflare-api-mesahub
-    build:
-      context: ../../infra
-      dockerfile: Dockerfile.mesahub
-    env_file:
-      - .env.api.local
-    environment:
-      - PORT=3002
-      - ADMIN_TOKEN=${ADMIN_TOKEN}
-      - SESSION_SECRET=${SESSION_SECRET}
-      - FILE_TOKEN_SIGNING_SECRET=${SESSION_SECRET}
-      - DATA_PATH=/data
-      - DB_NAME=emailflare
-      - ENABLE_TEST_MODE=true
-    volumes:
-      - mesahub-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3002/api/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 30s
+    mesahub:
+        container_name: emailflare-api-mesahub
+        build:
+            context: ../../infra
+            dockerfile: Dockerfile.mesahub
+        env_file:
+            - .env.api.local
+        environment:
+            - PORT=3002
+            - ADMIN_TOKEN=${ADMIN_TOKEN}
+            - SESSION_SECRET=${SESSION_SECRET}
+            - FILE_TOKEN_SIGNING_SECRET=${SESSION_SECRET}
+            - DATA_PATH=/data
+            - DB_NAME=emailflare
+            - ENABLE_TEST_MODE=true
+        volumes:
+            - mesahub-data:/data
+        healthcheck:
+            test: ["CMD", "curl", "-sf", "http://localhost:3002/api/health"]
+            interval: 5s
+            timeout: 3s
+            retries: 12
+            start_period: 30s
 
-  email-server:
-    container_name: emailflare-api-server
-    build:
-      context: ../..
-      dockerfile: services/email-server/Dockerfile
-      target: dev
-    # On first start (or after wipe), builds email-core + emails before starting the server.
-    # node_modules volumes persist across restarts so subsequent starts are fast.
-    command: >
-      sh -c "
-        cd /app/packages/email-core && pnpm install && pnpm run build &&
-        cd /app/services/emails && pnpm install --prefer-offline && pnpm run build &&
-        cd /app/services/email-server && pnpm install &&
-        pnpm exec tsx watch src/index.ts
-      "
-    env_file:
-      - .env.api.local
-    environment:
-      - NODE_ENV=development
-      # Keep email-server internal port stable for Caddy upstream.
-      - PORT=3000
-      # Embedded mesahub running in the mesahub service above.
-      # Override MESAHUB_URL to point to an external instance if needed.
-      - MESAHUB_URL=mh://${ADMIN_TOKEN}@mesahub:3002/emailflare
-    depends_on:
-      mesahub:
-        condition: service_healthy
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    volumes:
-      - ../../packages/email-core:/app/packages/email-core
-      - email-core-node-modules:/app/packages/email-core/node_modules
-      - ../../services/emails:/app/services/emails
-      - emails-node-modules:/app/services/emails/node_modules
-      - ../../services/email-server/src:/app/services/email-server/src
-      - ../../services/email-server/package.json:/app/services/email-server/package.json
-      - backend-node-modules:/app/services/email-server/node_modules
+    email-server:
+        container_name: emailflare-api-server
+        build:
+            context: ../..
+            dockerfile: services/email-server/Dockerfile
+            target: dev
+        # On first start (or after wipe), builds email-core + emails before starting the server.
+        # node_modules volumes persist across restarts so subsequent starts are fast.
+        command: >
+            sh -c "
+              cd /app/packages/email-core && pnpm install && pnpm run build &&
+              cd /app/services/emails && pnpm install --prefer-offline && pnpm run build &&
+              cd /app/services/email-server && pnpm install &&
+              pnpm exec tsx watch src/index.ts
+            "
+        env_file:
+            - .env.api.local
+        environment:
+            - NODE_ENV=development
+            # Keep email-server internal port stable for Caddy upstream.
+            - PORT=3000
+            # Embedded mesahub running in the mesahub service above.
+            # Override MESAHUB_URL to point to an external instance if needed.
+            - MESAHUB_URL=mh://${ADMIN_TOKEN}@mesahub:3002/emailflare
+        depends_on:
+            mesahub:
+                condition: service_healthy
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        volumes:
+            - ../../packages/email-core:/app/packages/email-core
+            - email-core-node-modules:/app/packages/email-core/node_modules
+            - ../../services/emails:/app/services/emails
+            - emails-node-modules:/app/services/emails/node_modules
+            - ../../services/email-server/src:/app/services/email-server/src
+            - ../../services/email-server/package.json:/app/services/email-server/package.json
+            - backend-node-modules:/app/services/email-server/node_modules
 
-  email-ui:
-    container_name: emailflare-api-admin
-    build:
-      context: ../../services/email-ui
-      dockerfile: Dockerfile
-      target: dev
-    command: sh -c "pnpm install && pnpm run dev"
-    volumes:
-      - ../../services/email-ui/src:/app/src
-      - ../../services/email-ui/.tanstack:/app/.tanstack
-      - ../../services/email-ui/index.html:/app/index.html:ro
-      - ../../services/email-ui/package.json:/app/package.json
-      - admin-node-modules:/app/node_modules
-    expose:
-      - "5173"
+    email-ui:
+        container_name: emailflare-api-admin
+        build:
+            context: ../../services/email-ui
+            dockerfile: Dockerfile
+            target: dev
+        command: sh -c "pnpm install && pnpm run dev"
+        volumes:
+            - ../../services/email-ui/src:/app/src
+            - ../../services/email-ui/.tanstack:/app/.tanstack
+            - ../../services/email-ui/index.html:/app/index.html:ro
+            - ../../services/email-ui/package.json:/app/package.json
+            - admin-node-modules:/app/node_modules
+        expose:
+            - "5173"
 
-  edge:
-    container_name: emailflare-api-caddy
-    image: caddy:2-alpine
-    volumes:
-      - ../../infra/Caddyfile.email-api.dev:/etc/caddy/Caddyfile:ro
-    ports:
-      - "${PORT:-8090}:80"
-    depends_on:
-      - email-server
-      - email-ui
+    edge:
+        container_name: emailflare-api-caddy
+        image: caddy:2-alpine
+        volumes:
+            - ../../infra/Caddyfile.email-api.dev:/etc/caddy/Caddyfile:ro
+        ports:
+            - "${PORT:-8090}:80"
+        depends_on:
+            - email-server
+            - email-ui
 
 volumes:
-  backend-node-modules:
-  email-core-node-modules:
-  emails-node-modules:
-  admin-node-modules:
-  mesahub-data:
-
+    backend-node-modules:
+    email-core-node-modules:
+    emails-node-modules:
+    admin-node-modules:
+    mesahub-data:

@@ -1,136 +1,136 @@
 {
-  // ── Cloudflare Workers config template for emailflare-inbox ──────────────────
-  //
-  // ⚠ This is a TEMPLATE. It is tracked in git and contains REPLACE_WITH_*
-  //   placeholders. Do NOT put real resource IDs here.
-  //
-  // The deploy script (scripts/deploy-inbox.mjs / `just emailflare-inbox-deploy`)
-  // generates the gitignored `wrangler.jsonc` from this template with your real IDs.
-  //
-  // ★ FIRST-TIME SETUP:
-  //       just emailflare-inbox-deploy
-  //   (creates D1, KV, R2, Queue, generates wrangler.jsonc, applies migrations,
-  //    sets secrets, builds inbox-ui, deploys)
-  //
-  // Manual setup (if needed):
-  //   1. Create D1:   wrangler d1 create emailflare-inbox   → fill in database_id
-  //   2. Create KV:   wrangler kv namespace create emailflare-inbox-rate-limit   → fill in id
-  //   3. Create R2:   wrangler r2 bucket create emailflare-inbox-attachments
-  //   4. Apply migrations:  pnpm migrations:apply:local
-  //   5. Set secrets:
-  //        wrangler secret put SESSION_SECRET     (min 32 chars, random)
-  //        wrangler secret put CF_API_TOKEN       (CF token: Email Send + Zone + DNS)
-  //        wrangler secret put CF_ACCOUNT_ID      (your CF account ID)
-  //        wrangler secret put VAPID_PRIVATE_KEY  (VAPID private key for web push)
-  //   6. Build dashboard: pnpm build:dashboard
-  //   7. Deploy: wrangler deploy
+	// ── Cloudflare Workers config template for emailflare-inbox ──────────────────
+	//
+	// ⚠ This is a TEMPLATE. It is tracked in git and contains REPLACE_WITH_*
+	//   placeholders. Do NOT put real resource IDs here.
+	//
+	// The deploy script (scripts/deploy-inbox.mjs / `just emailflare-inbox-deploy`)
+	// generates the gitignored `wrangler.jsonc` from this template with your real IDs.
+	//
+	// ★ FIRST-TIME SETUP:
+	//       just emailflare-inbox-deploy
+	//   (creates D1, KV, R2, Queue, generates wrangler.jsonc, applies migrations,
+	//    sets secrets, builds inbox-ui, deploys)
+	//
+	// Manual setup (if needed):
+	//   1. Create D1:   wrangler d1 create emailflare-inbox   → fill in database_id
+	//   2. Create KV:   wrangler kv namespace create emailflare-inbox-rate-limit   → fill in id
+	//   3. Create R2:   wrangler r2 bucket create emailflare-inbox-attachments
+	//   4. Apply migrations:  pnpm migrations:apply:local
+	//   5. Set secrets:
+	//        wrangler secret put SESSION_SECRET     (min 32 chars, random)
+	//        wrangler secret put CF_API_TOKEN       (CF token: Email Send + Zone + DNS)
+	//        wrangler secret put CF_ACCOUNT_ID      (your CF account ID)
+	//        wrangler secret put VAPID_PRIVATE_KEY  (VAPID private key for web push)
+	//   6. Build dashboard: pnpm build:dashboard
+	//   7. Deploy: wrangler deploy
 
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "emailflare-inbox-worker",
-  "main": "src/index.ts",
-  "compatibility_date": "2025-05-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": true,
-  "preview_urls": false,
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "emailflare-inbox-worker",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-05-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": true,
+	"preview_urls": false,
 
-  "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1
-  },
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1,
+	},
 
-  "upload_source_maps": true,
+	"upload_source_maps": true,
 
-  // Inbox UI SPA — build with: cd services/inbox-ui && pnpm build
-  "assets": {
-    "directory": "../inbox-ui/dist",
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
-  },
+	// Inbox UI SPA — build with: cd services/inbox-ui && pnpm build
+	"assets": {
+		"directory": "../inbox-ui/dist",
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application",
+	},
 
-  // D1 SQLite database
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "emailflare",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
-      "migrations_dir": "../../migrations"
-    }
-  ],
+	// D1 SQLite database
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "emailflare",
+			"database_id": "REPLACE_WITH_D1_DATABASE_ID",
+			"migrations_dir": "../../migrations",
+		},
+	],
 
-  // KV for login rate limiting
-  "kv_namespaces": [
-    {
-      "binding": "RATE_LIMIT_KV",
-      "id": "REPLACE_WITH_KV_NAMESPACE_ID"
-    }
-  ],
+	// KV for login rate limiting
+	"kv_namespaces": [
+		{
+			"binding": "RATE_LIMIT_KV",
+			"id": "REPLACE_WITH_KV_NAMESPACE_ID",
+		},
+	],
 
-  // R2 for email attachments
-  "r2_buckets": [
-    {
-      "binding": "ATTACHMENTS",
-      "bucket_name": "emailflare-inbox-attachments"
-    }
-  ],
+	// R2 for email attachments
+	"r2_buckets": [
+		{
+			"binding": "ATTACHMENTS",
+			"bucket_name": "emailflare-inbox-attachments",
+		},
+	],
 
-  // Durable Object for real-time push notifications
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "NOTIFICATIONS",
-        "class_name": "NotificationsHub"
-      }
-    ]
-  },
+	// Durable Object for real-time push notifications
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "NOTIFICATIONS",
+				"class_name": "NotificationsHub",
+			},
+		],
+	},
 
-  // DO class migrations — required so Cloudflare tracks the class on first deploy.
-  // SQLite-backed DOs are the only supported kind now (KV-backed namespaces are
-  // deprecated — Cloudflare error 10099).
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["NotificationsHub"]
-    }
-  ],
+	// DO class migrations — required so Cloudflare tracks the class on first deploy.
+	// SQLite-backed DOs are the only supported kind now (KV-backed namespaces are
+	// deprecated — Cloudflare error 10099).
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["NotificationsHub"],
+		},
+	],
 
-  // Queue for sequence email delivery
-  "queues": {
-    "producers": [
-      {
-        "binding": "EMAIL_QUEUE",
-        "queue": "emailflare-inbox-sequences"
-      }
-    ],
-    "consumers": [
-      {
-        "queue": "emailflare-inbox-sequences",
-        "max_batch_size": 10,
-        "max_batch_timeout": 30
-      }
-    ]
-  },
+	// Queue for sequence email delivery
+	"queues": {
+		"producers": [
+			{
+				"binding": "EMAIL_QUEUE",
+				"queue": "emailflare-inbox-sequences",
+			},
+		],
+		"consumers": [
+			{
+				"queue": "emailflare-inbox-sequences",
+				"max_batch_size": 10,
+				"max_batch_timeout": 30,
+			},
+		],
+	},
 
-  // No hardcoded env vars here — all account/deployment-specific values are set
-  // via `wrangler secret put` (see scripts/deploy-inbox.mjs + scripts/config.toml).
-  // For local `wrangler dev`, copy .dev.vars.example → .dev.vars and fill in.
+	// No hardcoded env vars here — all account/deployment-specific values are set
+	// via `wrangler secret put` (see scripts/deploy-inbox.mjs + scripts/config.toml).
+	// For local `wrangler dev`, copy .dev.vars.example → .dev.vars and fill in.
 
-  // Workers Rate Limiting for API key calls (100 req / 60s per key)
-  "unsafe": {
-    "bindings": [
-      {
-        "name": "RATE_LIMITER",
-        "type": "ratelimit",
-        "namespace_id": "1002",
-        "simple": {
-          "limit": 100,
-          "period": 60
-        }
-      }
-    ]
-  },
+	// Workers Rate Limiting for API key calls (100 req / 60s per key)
+	"unsafe": {
+		"bindings": [
+			{
+				"name": "RATE_LIMITER",
+				"type": "ratelimit",
+				"namespace_id": "1002",
+				"simple": {
+					"limit": 100,
+					"period": 60,
+				},
+			},
+		],
+	},
 
-  // Cron trigger for sequence processing (every 5 minutes)
-  "triggers": {
-    "crons": ["*/5 * * * *"]
-  }
+	// Cron trigger for sequence processing (every 5 minutes)
+	"triggers": {
+		"crons": ["*/5 * * * *"],
+	},
 }

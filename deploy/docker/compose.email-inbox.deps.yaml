@@ -12,40 +12,40 @@
 #   just inbox-server-deps-reset  # wipe volumes + stop
 
 services:
-  mesahub-inbox:
-    container_name: emailflare-inbox-mesahub
-    build:
-      context: ../../infra
-      dockerfile: Dockerfile.mesahub
-    environment:
-      - PORT=3002
-      - ADMIN_TOKEN=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}
-      - SESSION_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-session
-      - FILE_TOKEN_SIGNING_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-files
-      - DATA_PATH=/data
-      - DB_NAME=inbox-db
-    ports:
-      - "3003:3002"
-    volumes:
-      - mesahub-inbox-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3002/api/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 15
-      start_period: 30s
+    mesahub-inbox:
+        container_name: emailflare-inbox-mesahub
+        build:
+            context: ../../infra
+            dockerfile: Dockerfile.mesahub
+        environment:
+            - PORT=3002
+            - ADMIN_TOKEN=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}
+            - SESSION_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-session
+            - FILE_TOKEN_SIGNING_SECRET=${MESAHUB_ADMIN_TOKEN:-inbox-dev-token}-files
+            - DATA_PATH=/data
+            - DB_NAME=inbox-db
+        ports:
+            - "3003:3002"
+        volumes:
+            - mesahub-inbox-data:/data
+        healthcheck:
+            test: ["CMD", "curl", "-sf", "http://localhost:3002/api/health"]
+            interval: 5s
+            timeout: 3s
+            retries: 15
+            start_period: 30s
 
-  redis-inbox:
-    container_name: emailflare-inbox-redis
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    command: redis-server --save 60 1 --loglevel warning
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+    redis-inbox:
+        container_name: emailflare-inbox-redis
+        image: redis:7-alpine
+        ports:
+            - "6379:6379"
+        command: redis-server --save 60 1 --loglevel warning
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
 
 volumes:
-  mesahub-inbox-data:
+    mesahub-inbox-data:

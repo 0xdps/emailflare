@@ -8,11 +8,11 @@ EmailFlare deploys as Cloudflare Workers — no Docker, no servers. The Worker b
 
 ## What gets deployed
 
-| Resource | Purpose |
-|---|---|
-| **Worker** | Hono API + React admin SPA (static assets) |
-| **D1 database** | Domains, templates, API keys, email logs |
-| **KV namespace** | Rate limiting |
+| Resource           | Purpose                                     |
+| ------------------ | ------------------------------------------- |
+| **Worker**         | Hono API + React admin SPA (static assets)  |
+| **D1 database**    | Domains, templates, API keys, email logs    |
+| **KV namespace**   | Rate limiting                               |
 | **Worker Secrets** | Admin token, session secret, CF credentials |
 
 ## Requirements
@@ -121,11 +121,11 @@ correctly, and the `PUBLIC_URL` secret so one-click unsubscribe links resolve to
 
 EmailFlare ships audience **lists** with RFC 8058 one-click unsubscribe support.
 
-- Create a list from the admin UI (*Send → Lists*) or `POST /api/lists`.
+- Create a list from the admin UI (_Send → Lists_) or `POST /api/lists`.
 - When a `POST /v1/send` request includes a `listId`, EmailFlare attaches a
   `List-Unsubscribe` header with a per-recipient, one-time token.
 - A recipient who unsubscribes is **suppressed globally** (no further sends), and
-  the suppression is visible under *Monitor → Suppressions*.
+  the suppression is visible under _Monitor → Suppressions_.
 - The public `GET/POST /v1/unsubscribe?token=…` endpoint resolves the token — no
   API key required.
 
@@ -163,34 +163,34 @@ EmailFlare ships a GitHub Actions workflow (`.github/workflows/deploy-workers.ym
 
 The workflow is triggered manually and lets you pick a target:
 
-| Target | Deploys | Worker(s) |
-|---|---|---|
-| `cf-api` | Email API edge deployment | `emailflare-api-worker` (email-worker + email-ui) |
-| `cf-inbox` | Inbox edge deployment | `emailflare-inbox-worker` (inbox-worker + inbox-ui) |
-| `cf-worker` | Thin inbound-email forwarders | `email-bridge` + `inbox-bridge` |
-| `all` | Everything above | — |
+| Target      | Deploys                       | Worker(s)                                           |
+| ----------- | ----------------------------- | --------------------------------------------------- |
+| `cf-api`    | Email API edge deployment     | `emailflare-api-worker` (email-worker + email-ui)   |
+| `cf-inbox`  | Inbox edge deployment         | `emailflare-inbox-worker` (inbox-worker + inbox-ui) |
+| `cf-worker` | Thin inbound-email forwarders | `email-bridge` + `inbox-bridge`                     |
+| `all`       | Everything above              | —                                                   |
 
 The `cf-worker` bridges are only needed for **Docker/VPS deployments** — they forward inbound email from Cloudflare Email Routing to your self-hosted servers. Native Worker deployments (`cf-api` / `cf-inbox`) handle inbound email themselves and don't need bridges.
 
 ### Prerequisites
 
 1. **One-time local provisioning first.** The workflow updates existing Workers — it does not create D1/KV/R2/Queue or set Worker secrets. Run the local setup once before using CI:
-   ```bash
-   just emailflare-api-worker-setup      # cf-api
-   just emailflare-inbox-deploy          # cf-inbox
-   just emailflare-bridge-setup          # cf-worker (bridges)
-   ```
+    ```bash
+    just emailflare-api-worker-setup      # cf-api
+    just emailflare-inbox-deploy          # cf-inbox
+    just emailflare-bridge-setup          # cf-worker (bridges)
+    ```
 2. **Add repository secrets** (Settings → Secrets and variables → Actions):
-   | Secret | Value |
-   |---|---|
-   | `CLOUDFLARE_API_TOKEN` | Scoped token: Workers Scripts (Edit), D1 (Edit), KV (Edit) |
-   | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+    | Secret                  | Value                                                      |
+    | ----------------------- | ---------------------------------------------------------- |
+    | `CLOUDFLARE_API_TOKEN`  | Scoped token: Workers Scripts (Edit), D1 (Edit), KV (Edit) |
+    | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID                                 |
 3. **Add repository variables** (Settings → Secrets and variables → Actions → Variables) so CI can generate the gitignored `wrangler.jsonc` from the tracked template:
-   | Variable | Value |
-   |---|---|
-   | `EMAIL_WORKER_D1_ID` | D1 `database_id` (shared by both workers) |
-   | `EMAIL_WORKER_KV_ID` | KV namespace id for `emailflare-api-worker` |
-   | `INBOX_WORKER_KV_ID` | KV namespace id for `emailflare-inbox-worker` |
+    | Variable             | Value                                         |
+    | -------------------- | --------------------------------------------- |
+    | `EMAIL_WORKER_D1_ID` | D1 `database_id` (shared by both workers)     |
+    | `EMAIL_WORKER_KV_ID` | KV namespace id for `emailflare-api-worker`   |
+    | `INBOX_WORKER_KV_ID` | KV namespace id for `emailflare-inbox-worker` |
 
 ### Running the workflow
 
@@ -257,8 +257,8 @@ This command is destructive and intended for teardown/cleanup. It is safe to re-
 
 ## API token permissions reference
 
-| Token | Required permissions |
-|---|---|
+| Token                                  | Required permissions                                                  |
+| -------------------------------------- | --------------------------------------------------------------------- |
 | Runtime token (`secrets.cf_api_token`) | Zone: Read, Zone Settings: Edit, DNS: Edit, Email Routing Rules: Edit |
 
 > **Email Routing (inbound) note:** enabling Email Routing on a zone

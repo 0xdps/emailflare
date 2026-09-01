@@ -17,14 +17,14 @@ variables and themes.
 
 A custom template has:
 
-| Field | Required | Notes |
-|---|---|---|
-| `name` | ✅ | Human-readable label shown in the UI. |
-| `slug` | ✅ | Stable identifier used by `templateSlug`. Lowercase letters, numbers, and hyphens only. |
-| `subject` | ✅ | Subject line. May contain Handlebars placeholders. |
-| `htmlBody` | ✅ | The HTML body. Handlebars placeholders. |
-| `textBody` | — | Optional plain-text fallback body. |
-| `domainId` | — | Optionally scope the template to a sending domain. |
+| Field      | Required | Notes                                                                                   |
+| ---------- | -------- | --------------------------------------------------------------------------------------- |
+| `name`     | ✅       | Human-readable label shown in the UI.                                                   |
+| `slug`     | ✅       | Stable identifier used by `templateSlug`. Lowercase letters, numbers, and hyphens only. |
+| `subject`  | ✅       | Subject line. May contain Handlebars placeholders.                                      |
+| `htmlBody` | ✅       | The HTML body. Handlebars placeholders.                                                 |
+| `textBody` | —        | Optional plain-text fallback body.                                                      |
+| `domainId` | —        | Optionally scope the template to a sending domain.                                      |
 
 > **Slugs are mandatory.** When creating a template, you must provide a slug.
 > If you pick a slug that already exists, EmailFlare appends a short suffix
@@ -44,9 +44,9 @@ Pass values via the `variables` object on `/v1/send`:
 
 ```json
 {
-  "to": "alex@example.com",
-  "templateSlug": "order-confirmation",
-  "variables": { "name": "Alex", "orderId": "ORD-1042" }
+	"to": "alex@example.com",
+	"templateSlug": "order-confirmation",
+	"variables": { "name": "Alex", "orderId": "ORD-1042" }
 }
 ```
 
@@ -60,13 +60,13 @@ you get the full block syntax — loops, conditionals, and helpers:
 
 ```html
 {{#if items}}
-  <ul>
-    {{#each items}}
-      <li>{{name}} — {{price}}</li>
-    {{/each}}
-  </ul>
+<ul>
+	{{#each items}}
+	<li>{{name}} — {{price}}</li>
+	{{/each}}
+</ul>
 {{else}}
-  <p>Your cart is empty.</p>
+<p>Your cart is empty.</p>
 {{/if}}
 ```
 
@@ -74,13 +74,13 @@ you get the full block syntax — loops, conditionals, and helpers:
 
 ```json
 {
-  "templateSlug": "cart-summary",
-  "variables": {
-    "items": [
-      { "name": "Widget", "price": "$9.00" },
-      { "name": "Gadget", "price": "$14.50" }
-    ]
-  }
+	"templateSlug": "cart-summary",
+	"variables": {
+		"items": [
+			{ "name": "Widget", "price": "$9.00" },
+			{ "name": "Gadget", "price": "$14.50" }
+		]
+	}
 }
 ```
 
@@ -94,8 +94,8 @@ clients:
 
 ```html
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #f97316;">Hello {{name}}</h1>
-  <p style="color: #333; line-height: 1.6;">Your order {{orderId}} is confirmed.</p>
+	<h1 style="color: #f97316;">Hello {{name}}</h1>
+	<p style="color: #333; line-height: 1.6;">Your order {{orderId}} is confirmed.</p>
 </div>
 ```
 
@@ -118,17 +118,17 @@ few options:
 ```html
 {{#with theme}}
 <div style="background: {{bg}}; color: {{text}};">
-  <h1 style="color: {{primary}};">Hello {{../name}}</h1>
+	<h1 style="color: {{primary}};">Hello {{../name}}</h1>
 </div>
 {{/with}}
 ```
 
 ```json
 {
-  "variables": {
-    "name": "Alex",
-    "theme": { "primary": "#f97316", "bg": "#fafafa", "text": "#333" }
-  }
+	"variables": {
+		"name": "Alex",
+		"theme": { "primary": "#f97316", "bg": "#fafafa", "text": "#333" }
+	}
 }
 ```
 
@@ -142,7 +142,7 @@ you can copy-paste a consistent base layout across templates.
 
 EmailFlare seeds 50 system templates (one per React Email layout) on first run.
 These have a `layout` column set, so they are rendered by the React Email
-renderer rather than Handlebars. Their HTML body is empty — the layout *is* the
+renderer rather than Handlebars. Their HTML body is empty — the layout _is_ the
 content.
 
 Reference them by slug just like custom templates:
@@ -198,11 +198,11 @@ Create example:
 
 ```json
 {
-  "name": "Order confirmation",
-  "slug": "order-confirmation",
-  "subject": "Your order {{orderId}} is confirmed",
-  "htmlBody": "<p>Hi {{name}},</p><p>Order <strong>{{orderId}}</strong> is confirmed.</p>",
-  "textBody": "Hi {{name}}, your order {{orderId}} is confirmed."
+	"name": "Order confirmation",
+	"slug": "order-confirmation",
+	"subject": "Your order {{orderId}} is confirmed",
+	"htmlBody": "<p>Hi {{name}},</p><p>Order <strong>{{orderId}}</strong> is confirmed.</p>",
+	"textBody": "Hi {{name}}, your order {{orderId}} is confirmed."
 }
 ```
 

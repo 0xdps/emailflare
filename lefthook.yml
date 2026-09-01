@@ -1,29 +1,38 @@
 pre-commit:
-  parallel: true
-  commands:
-    # Type-check changed packages (fast path — only if tsconfig exists)
-    typecheck:
-      glob: "*.{ts,tsx}"
-      run: |
-        for dir in packages/email-core packages/inbox-core services/emails services/email-server services/email-worker services/inbox-server services/inbox-worker; do
-          if [ -f "$dir/tsconfig.json" ]; then
-            echo "→ typecheck $dir"
-            cd "$dir" && pnpm exec tsc --noEmit --pretty 2>&1 | head -20 || true
-            cd - > /dev/null
-          fi
-        done
-      skip:
-        - merge
-        - rebase
+    parallel: true
+    commands:
+        # Format staged files with Prettier
+        prettier:
+            glob: "*.{ts,tsx,js,jsx,json,yaml,yml,md,css,html,astro,mjs,cjs}"
+            run: pnpm exec prettier --write {staged_files} && git add {staged_files}
+            stage_fixed: true
+            skip:
+                - merge
+                - rebase
 
-    # Prevent accidental commit of secrets
-    secrets:
-      glob: "*.{ts,tsx,js,jsx,json,yaml,yml,toml,env,sh}"
-      run: |
-        if git diff --cached --name-only | xargs grep -nE '(AKIA[0-9A-Z]{16}|ghp_[0-9a-zA-Z]{36}|sk-[0-9a-zA-Z]{48}|xox[baprs]-[0-9a-zA-Z-]+)' 2>/dev/null; then
-          echo "⚠️  Possible secrets detected in staged files. Aborting commit."
-          exit 1
-        fi
-      skip:
-        - merge
-        - rebase
+        # Type-check changed packages (fast path — only if tsconfig exists)
+        typecheck:
+            glob: "*.{ts,tsx}"
+            run: |
+                for dir in packages/email-core packages/inbox-core services/emails services/email-server services/email-worker services/inbox-server services/inbox-worker; do
+                  if [ -f "$dir/tsconfig.json" ]; then
+                    echo "→ typecheck $dir"
+                    cd "$dir" && pnpm exec tsc --noEmit --pretty 2>&1 | head -20 || true
+                    cd - > /dev/null
+                  fi
+                done
+            skip:
+                - merge
+                - rebase
+
+        # Prevent accidental commit of secrets
+        secrets:
+            glob: "*.{ts,tsx,js,jsx,json,yaml,yml,toml,env,sh}"
+            run: |
+                if git diff --cached --name-only | xargs grep -nE '(AKIA[0-9A-Z]{16}|ghp_[0-9a-zA-Z]{36}|sk-[0-9a-zA-Z]{48}|xox[baprs]-[0-9a-zA-Z-]+)' 2>/dev/null; then
+                  echo "⚠️  Possible secrets detected in staged files. Aborting commit."
+                  exit 1
+                fi
+            skip:
+                - merge
+                - rebase

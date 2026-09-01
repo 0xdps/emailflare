@@ -1,36 +1,36 @@
 {
-  "name": "@emailflare/email-core",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "description": "Shared types, Zod schemas, and pure helpers for email-worker (CF) and email-server (Node.js)",
-  "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./cloudflare": {
-      "types": "./src/cloudflare.ts",
-      "import": "./dist/cloudflare.js",
-      "default": "./dist/cloudflare.js"
-    },
-    "./logger": {
-      "types": "./src/logger.ts",
-      "import": "./dist/logger.js",
-      "default": "./dist/logger.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
-  },
-  "dependencies": {
-    "nanoid": "^5.1.5",
-    "zod": "^3.24.3"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.3",
-    "typescript": "^5.8.3"
-  }
+	"name": "@emailflare/email-core",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Shared types, Zod schemas, and pure helpers for email-worker (CF) and email-server (Node.js)",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./cloudflare": {
+			"types": "./src/cloudflare.ts",
+			"import": "./dist/cloudflare.js",
+			"default": "./dist/cloudflare.js"
+		},
+		"./logger": {
+			"types": "./src/logger.ts",
+			"import": "./dist/logger.js",
+			"default": "./dist/logger.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch"
+	},
+	"dependencies": {
+		"nanoid": "^5.1.5",
+		"zod": "^3.24.3"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.3",
+		"typescript": "^5.8.3"
+	}
 }

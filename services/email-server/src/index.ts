@@ -1,180 +1,191 @@
-import { serve } from '@hono/node-server';
-import type { ServerType } from '@hono/node-server';
-import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { logger } from 'hono/logger';
-import { secureHeaders } from 'hono/secure-headers';
-import { HTTPException } from 'hono/http-exception';
-import { createLogger } from '@emailflare/email-core/logger';
+import { serve } from "@hono/node-server";
+import type { ServerType } from "@hono/node-server";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
+import { secureHeaders } from "hono/secure-headers";
+import { HTTPException } from "hono/http-exception";
+import { createLogger } from "@emailflare/email-core/logger";
 
-import { bootstrapSchema, seedSystemTemplates } from './db.js';
-import { env } from './env.js';
+import { bootstrapSchema, seedSystemTemplates } from "./db.js";
+import { env } from "./env.js";
 
-const log = createLogger('email-server');
-import { requireAdminToken } from './middleware/auth.js';
-import { requireApiKey } from './middleware/apiKey.js';
-import { checkRateLimit } from './middleware/rateLimit.js';
+const log = createLogger("email-server");
+import { requireAdminToken } from "./middleware/auth.js";
+import { requireApiKey } from "./middleware/apiKey.js";
+import { checkRateLimit } from "./middleware/rateLimit.js";
 
-import authRoutes          from './routes/auth.js';
-import domainsRoutes       from './routes/domains.js';
-import templatesRoutes     from './routes/templates.js';
-import keysRoutes          from './routes/keys.js';
-import logsRoutes          from './routes/logs.js';
-import testEmailsRoutes    from './routes/testEmails.js';
-import statsRoutes         from './routes/stats.js';
-import cloudflareRoutes    from './routes/cloudflare.js';
-import sendRoutes          from './routes/send.js';
-import { suppressionsRoutes } from './routes/suppressions.js';
-import { webhooksRoutes }     from './routes/webhooks.js';
-import listsRoutes         from './routes/lists.js';
-import unsubscribeRoutes   from './routes/unsubscribe.js';
-import { LAYOUTS, renderLayout } from '@emailflare/emails';
-import type { LayoutName } from '@emailflare/emails';
+import authRoutes from "./routes/auth.js";
+import domainsRoutes from "./routes/domains.js";
+import templatesRoutes from "./routes/templates.js";
+import keysRoutes from "./routes/keys.js";
+import logsRoutes from "./routes/logs.js";
+import testEmailsRoutes from "./routes/testEmails.js";
+import statsRoutes from "./routes/stats.js";
+import cloudflareRoutes from "./routes/cloudflare.js";
+import sendRoutes from "./routes/send.js";
+import { suppressionsRoutes } from "./routes/suppressions.js";
+import { webhooksRoutes } from "./routes/webhooks.js";
+import listsRoutes from "./routes/lists.js";
+import unsubscribeRoutes from "./routes/unsubscribe.js";
+import { LAYOUTS, renderLayout } from "@emailflare/emails";
+import type { LayoutName } from "@emailflare/emails";
 
 // Allowed origins for the admin UI.
 // ADMIN_ORIGIN accepts comma-separated bare domains (no scheme needed).
 // e.g. "admin.example.com" or "admin.example.com,admin2.example.com"
 // localhost / 127.0.0.1 get http://, everything else gets https://.
 function parseAdminOrigins(raw: string): string[] {
-  return raw
-    .split(',')
-    .map(d => d.trim())
-    .filter(Boolean)
-    .map(d => {
-      const isLocal = d.startsWith('localhost') || d.startsWith('127.0.0.1');
-      return `${isLocal ? 'http' : 'https'}://${d}`;
-    });
+	return raw
+		.split(",")
+		.map((d) => d.trim())
+		.filter(Boolean)
+		.map((d) => {
+			const isLocal = d.startsWith("localhost") || d.startsWith("127.0.0.1");
+			return `${isLocal ? "http" : "https"}://${d}`;
+		});
 }
 
-const ADMIN_ORIGINS = env.NODE_ENV === 'production'
-  ? (process.env.ADMIN_ORIGIN ? parseAdminOrigins(process.env.ADMIN_ORIGIN) : [])
-  : ['http://localhost:5173', 'http://admin:5173', 'http://emailflare.localhost:1355'];
+const ADMIN_ORIGINS =
+	env.NODE_ENV === "production"
+		? process.env.ADMIN_ORIGIN
+			? parseAdminOrigins(process.env.ADMIN_ORIGIN)
+			: []
+		: ["http://localhost:5173", "http://admin:5173", "http://emailflare.localhost:1355"];
 
-if (env.NODE_ENV === 'production' && ADMIN_ORIGINS.length === 0) {
-  log.warn('ADMIN_ORIGIN is not set. All cross-origin /api/* requests will be blocked.');
+if (env.NODE_ENV === "production" && ADMIN_ORIGINS.length === 0) {
+	log.warn("ADMIN_ORIGIN is not set. All cross-origin /api/* requests will be blocked.");
 }
 
 const app = new Hono();
 
 // ── Global middleware ─────────────────────────────────────────────────────────
-if (env.NODE_ENV !== 'production') app.use('*', logger());
-app.use('*', secureHeaders());
+if (env.NODE_ENV !== "production") app.use("*", logger());
+app.use("*", secureHeaders());
 
 // Public API: wide-open CORS (callers send from any origin)
-app.use('/v1/*', cors({
-  origin: '*',
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(
+	"/v1/*",
+	cors({
+		origin: "*",
+		allowMethods: ["GET", "POST", "OPTIONS"],
+		allowHeaders: ["Content-Type", "Authorization"],
+	}),
+);
 
 // Admin UI: origin-restricted + credentials (for session cookie)
-app.use('/api/*', cors({
-  origin: ADMIN_ORIGINS,
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type'],
-  credentials: true,
-}));
+app.use(
+	"/api/*",
+	cors({
+		origin: ADMIN_ORIGINS,
+		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowHeaders: ["Content-Type"],
+		credentials: true,
+	}),
+);
 
 // ── Health ────────────────────────────────────────────────────────────────────
-app.get('/health', (c) => c.json({
-  ok: true,
-  service: 'emailflare',
-  ts: Date.now(),
-}));
+app.get("/health", (c) =>
+	c.json({
+		ok: true,
+		service: "emailflare",
+		ts: Date.now(),
+	}),
+);
 
 // ── Public: unsubscribe (token-authenticated, no API key) ─────────────────────
-app.route('/v1/unsubscribe', unsubscribeRoutes);
+app.route("/v1/unsubscribe", unsubscribeRoutes);
 
 // ── Public: send (API key protected + rate limited) ───────────────────────────
-app.use('/v1/send', requireApiKey);
-app.use('/v1/send', async (c, next) => {
-  const apiKey = c.get('apiKey' as never) as { keyId: string };
-  const rl = checkRateLimit(apiKey.keyId);
-  c.header('X-RateLimit-Limit',     String(rl.limit));
-  c.header('X-RateLimit-Remaining', String(rl.remaining));
-  c.header('X-RateLimit-Reset',     String(Math.ceil(rl.resetAt / 1000)));
-  if (!rl.allowed) {
-    return c.json({ error: 'Rate limit exceeded' }, 429);
-  }
-  await next();
+app.use("/v1/send", requireApiKey);
+app.use("/v1/send", async (c, next) => {
+	const apiKey = c.get("apiKey" as never) as { keyId: string };
+	const rl = checkRateLimit(apiKey.keyId);
+	c.header("X-RateLimit-Limit", String(rl.limit));
+	c.header("X-RateLimit-Remaining", String(rl.remaining));
+	c.header("X-RateLimit-Reset", String(Math.ceil(rl.resetAt / 1000)));
+	if (!rl.allowed) {
+		return c.json({ error: "Rate limit exceeded" }, 429);
+	}
+	await next();
 });
-app.route('/v1/send', sendRoutes);
+app.route("/v1/send", sendRoutes);
 
 // ── Auth routes (public — login/logout/me) ───────────────────────────────────
-app.route('/api/auth', authRoutes);
+app.route("/api/auth", authRoutes);
 
 // ── Admin API (session protected) ────────────────────────────────────────────
 const admin = new Hono();
-admin.use('*', requireAdminToken);
-admin.get('/layouts', (c) => c.json(
-  Object.entries(LAYOUTS).map(([id, { label, variables }]) => ({ id, label, variables }))
-));
+admin.use("*", requireAdminToken);
+admin.get("/layouts", (c) =>
+	c.json(Object.entries(LAYOUTS).map(([id, { label, variables }]) => ({ id, label, variables }))),
+);
 
 // POST /api/layouts/:id/preview — render a built-in layout with variables
-admin.post('/layouts/:id/preview', async (c) => {
-  const id = c.req.param('id') as LayoutName;
-  if (!LAYOUTS[id]) return c.json({ error: 'Layout not found' }, 404);
-  const body = await c.req.json().catch(() => ({}));
-  const variables: Record<string, string> = body.variables ?? {};
-  const html = await renderLayout(id, variables);
-  return c.json({ html });
+admin.post("/layouts/:id/preview", async (c) => {
+	const id = c.req.param("id") as LayoutName;
+	if (!LAYOUTS[id]) return c.json({ error: "Layout not found" }, 404);
+	const body = await c.req.json().catch(() => ({}));
+	const variables: Record<string, string> = body.variables ?? {};
+	const html = await renderLayout(id, variables);
+	return c.json({ html });
 });
-admin.route('/domains',      domainsRoutes);
-admin.route('/templates',    templatesRoutes);
-admin.route('/keys',         keysRoutes);
-admin.route('/logs',         logsRoutes);
-admin.route('/test-emails',  testEmailsRoutes);
-admin.route('/stats',        statsRoutes);
-admin.route('/cloudflare',   cloudflareRoutes);
-admin.route('/suppressions', suppressionsRoutes);
-admin.route('/lists',        listsRoutes);
+admin.route("/domains", domainsRoutes);
+admin.route("/templates", templatesRoutes);
+admin.route("/keys", keysRoutes);
+admin.route("/logs", logsRoutes);
+admin.route("/test-emails", testEmailsRoutes);
+admin.route("/stats", statsRoutes);
+admin.route("/cloudflare", cloudflareRoutes);
+admin.route("/suppressions", suppressionsRoutes);
+admin.route("/lists", listsRoutes);
 
-app.route('/api', admin);
+app.route("/api", admin);
 
 // ── Bounce/complaint webhook (protected by WEBHOOK_SECRET bearer token) ────────
 // Public endpoint — auth is handled inside webhooksRoutes middleware.
-app.route('/api/webhooks', webhooksRoutes);
+app.route("/api/webhooks", webhooksRoutes);
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.onError((err, c) => {
-  if (err instanceof HTTPException) {
-    return c.json({ error: err.message }, err.status);
-  }
-  log.error('unhandled error', err);
-  return c.json({ error: 'Internal server error' }, 500);
+	if (err instanceof HTTPException) {
+		return c.json({ error: err.message }, err.status);
+	}
+	log.error("unhandled error", err);
+	return c.json({ error: "Internal server error" }, 500);
 });
 
 // ── Startup + graceful shutdown ────────────────────────────────────────────────
 async function main() {
-  if (env.NODE_ENV !== 'production') {
-    log.info('NODE_ENV: ' + env.NODE_ENV);
-    log.info('PORT: ' + String(env.PORT));
-    log.info('MESAHUB_URL: ' + env.MESAHUB_URL.replace(/mh:\/\/[^@]+@/, 'mh://***@'));
-    log.info('ADMIN_TOKEN: ' + (env.ADMIN_TOKEN ? 'set' : '*** MISSING ***'));
-    log.info('CF_API_TOKEN: ' + (env.CF_API_TOKEN ? 'set' : 'not set'));
-    log.info('bootstrapping schema...');
-  }
-  await bootstrapSchema();
-  if (env.NODE_ENV !== 'production') log.info('seeding system templates...');
-  await seedSystemTemplates();
+	if (env.NODE_ENV !== "production") {
+		log.info("NODE_ENV: " + env.NODE_ENV);
+		log.info("PORT: " + String(env.PORT));
+		log.info("MESAHUB_URL: " + env.MESAHUB_URL.replace(/mh:\/\/[^@]+@/, "mh://***@"));
+		log.info("ADMIN_TOKEN: " + (env.ADMIN_TOKEN ? "set" : "*** MISSING ***"));
+		log.info("CF_API_TOKEN: " + (env.CF_API_TOKEN ? "set" : "not set"));
+		log.info("bootstrapping schema...");
+	}
+	await bootstrapSchema();
+	if (env.NODE_ENV !== "production") log.info("seeding system templates...");
+	await seedSystemTemplates();
 
-  const server: ServerType = serve({ fetch: app.fetch, port: env.PORT }, () => {
-    log.info('emailflare backend running on port ' + String(env.PORT));
-  });
+	const server: ServerType = serve({ fetch: app.fetch, port: env.PORT }, () => {
+		log.info("emailflare backend running on port " + String(env.PORT));
+	});
 
-  function shutdown(signal: string) {
-    log.info(signal + ' received — shutting down');
-    server.close(() => {
-      log.info('closed');
-      process.exit(0);
-    });
-  }
+	function shutdown(signal: string) {
+		log.info(signal + " received — shutting down");
+		server.close(() => {
+			log.info("closed");
+			process.exit(0);
+		});
+	}
 
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT',  () => shutdown('SIGINT'));
+	process.on("SIGTERM", () => shutdown("SIGTERM"));
+	process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 main().catch((err) => {
-  log.error('fatal', err);
-  process.exit(1);
+	log.error("fatal", err);
+	process.exit(1);
 });

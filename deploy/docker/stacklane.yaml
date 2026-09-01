@@ -1,24 +1,24 @@
 project:
-  name: emailflare
-  edgePort: 8090
+    name: emailflare
+    edgePort: 8090
 
 services:
-  backend:
-    enabled: true
-    buildContext: ./services/email-server
-    dockerfile: Dockerfile
-    devTarget: dev
-    prodTarget: prod
-    internalPort: 3000
-    healthPath: /health
+    backend:
+        enabled: true
+        buildContext: ./services/email-server
+        dockerfile: Dockerfile
+        devTarget: dev
+        prodTarget: prod
+        internalPort: 3000
+        healthPath: /health
 
-  admin:
-    enabled: true
-    buildContext: ./services/email-ui
-    dockerfile: Dockerfile
-    routePrefix: /
-    internalPort: 80
+    admin:
+        enabled: true
+        buildContext: ./services/email-ui
+        dockerfile: Dockerfile
+        routePrefix: /
+        internalPort: 80
 
 routing:
-  apiPrefix: /api
-  healthPath: /health
+    apiPrefix: /api
+    healthPath: /health

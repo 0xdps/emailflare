@@ -1,33 +1,33 @@
 {
-  "name": "@emailflare/inbox-worker",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "types": "wrangler types",
-    "migrations:apply:local": "wrangler d1 migrations apply emailflare --local",
-    "migrations:apply": "wrangler d1 migrations apply emailflare --remote",
-    "build:packages": "pnpm --filter @emailflare/email-core build && pnpm --filter @emailflare/inbox-core build",
-    "build:ui": "pnpm --filter @emailflare/inbox-ui build",
-    "deploy:full": "pnpm run build:packages && pnpm run build:ui && wrangler d1 migrations apply emailflare --remote && wrangler deploy"
-  },
-  "dependencies": {
-    "@emailflare/email-core": "workspace:*",
-    "@emailflare/inbox-core": "workspace:*",
-    "@emailflare/emails": "workspace:*",
-    "@hono/zod-validator": "^0.4.3",
-    "hono": "^4.7.5",
-    "jose": "^5.10.0",
-    "nanoid": "^5.1.5",
-    "postal-mime": "^2.3.0",
-    "zod": "^3.24.3"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250501.0",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.8.3",
-    "wrangler": "^4.0.0"
-  }
+	"name": "@emailflare/inbox-worker",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"types": "wrangler types",
+		"migrations:apply:local": "wrangler d1 migrations apply emailflare --local",
+		"migrations:apply": "wrangler d1 migrations apply emailflare --remote",
+		"build:packages": "pnpm --filter @emailflare/email-core build && pnpm --filter @emailflare/inbox-core build",
+		"build:ui": "pnpm --filter @emailflare/inbox-ui build",
+		"deploy:full": "pnpm run build:packages && pnpm run build:ui && wrangler d1 migrations apply emailflare --remote && wrangler deploy"
+	},
+	"dependencies": {
+		"@emailflare/email-core": "workspace:*",
+		"@emailflare/inbox-core": "workspace:*",
+		"@emailflare/emails": "workspace:*",
+		"@hono/zod-validator": "^0.4.3",
+		"hono": "^4.7.5",
+		"jose": "^5.10.0",
+		"nanoid": "^5.1.5",
+		"postal-mime": "^2.3.0",
+		"zod": "^3.24.3"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20250501.0",
+		"@types/node": "^22.0.0",
+		"typescript": "^5.8.3",
+		"wrangler": "^4.0.0"
+	}
 }
