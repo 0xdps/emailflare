@@ -17,7 +17,7 @@
 		"@emailflare/emails": "workspace:*",
 		"@hono/node-server": "^1.13.7",
 		"@hono/zod-validator": "^0.4.3",
-		"@mesahub/client": "^0.5.1",
+		"@mesahub/client": "^1.0.2",
 		"bullmq": "^5.34.8",
 		"hono": "^4.7.5",
 		"ioredis": "^5.6.0",
