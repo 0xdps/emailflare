@@ -11,7 +11,9 @@
 		"migrations:apply": "wrangler d1 migrations apply emailflare --remote",
 		"build:packages": "pnpm --filter @emailflare/email-core build && pnpm --filter @emailflare/inbox-core build",
 		"build:ui": "pnpm --filter @emailflare/inbox-ui build",
-		"deploy:full": "pnpm run build:packages && pnpm run build:ui && wrangler d1 migrations apply emailflare --remote && wrangler deploy"
+		"deploy:full": "pnpm run build:packages && pnpm run build:ui && wrangler d1 migrations apply emailflare --remote && wrangler deploy",
+		"rollout:upload": "pnpm run build:packages && pnpm run build:ui && wrangler d1 migrations apply emailflare --remote && wrangler versions upload",
+		"rollout:deploy": "wrangler versions deploy --yes"
 	},
 	"dependencies": {
 		"@emailflare/email-core": "workspace:*",
