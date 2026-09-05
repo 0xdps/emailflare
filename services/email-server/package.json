@@ -13,7 +13,7 @@
 	"dependencies": {
 		"@emailflare/email-core": "workspace:*",
 		"@emailflare/emails": "workspace:*",
-		"@hono/node-server": "^1.13.7",
+		"@hono/node-server": "^2.1.1",
 		"@hono/zod-validator": "^0.4.3",
 		"@mesahub/client": "^0.5.1",
 		"hono": "^4.7.5",
