@@ -51,7 +51,7 @@ jobs:
         if: ${{ github.event.inputs.target == 'cf-api' || github.event.inputs.target == 'all' }}
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Enable Corepack
               run: corepack enable
@@ -104,7 +104,7 @@ jobs:
         if: ${{ github.event.inputs.target == 'cf-inbox' || github.event.inputs.target == 'all' }}
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Enable Corepack
               run: corepack enable
@@ -165,7 +165,7 @@ jobs:
                     - name: inbox-bridge
                       path: services/inbox-bridge
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Enable Corepack
               run: corepack enable

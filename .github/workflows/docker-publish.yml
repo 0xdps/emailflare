@@ -25,7 +25,7 @@ jobs:
                       path: services/email-ui
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Enable Corepack
               run: corepack enable
@@ -64,7 +64,7 @@ jobs:
                       path: services/inbox-server
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Enable Corepack
               run: corepack enable
@@ -99,7 +99,7 @@ jobs:
             packages: write
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             # s* tags → private staging package; v* tags → public production package
             - name: Resolve image name
@@ -162,7 +162,7 @@ jobs:
             packages: write
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             # s* tags → private staging package; v* tags → public production package
             - name: Resolve image name
