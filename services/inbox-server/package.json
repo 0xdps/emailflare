@@ -18,7 +18,7 @@
 		"@hono/node-server": "^1.13.7",
 		"@hono/zod-validator": "^0.4.3",
 		"@mesahub/client": "^0.5.1",
-		"bullmq": "^5.34.8",
+		"bullmq": "^6.3.4",
 		"hono": "^4.7.5",
 		"ioredis": "^5.6.0",
 		"jose": "^5.10.0",
