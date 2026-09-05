@@ -16,7 +16,7 @@
 		"dev": "tsc --watch"
 	},
 	"dependencies": {
-		"zod": "^3.24.3"
+		"zod": "^4.5.4"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.3",
