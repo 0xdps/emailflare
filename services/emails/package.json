@@ -16,12 +16,12 @@
 		"@react-email/components": "^1.0.12",
 		"@react-email/render": "^2.0.8",
 		"react": "^19.1.0",
-		"react-dom": "^19.1.0"
+		"react-dom": "^19.2.8"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.3",
 		"@types/react": "^19.1.2",
-		"@types/react-dom": "^19.1.2",
+		"@types/react-dom": "^19.2.5",
 		"typescript": "^5.8.3"
 	}
 }
