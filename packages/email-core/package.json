@@ -27,7 +27,7 @@
 	},
 	"dependencies": {
 		"nanoid": "^5.1.5",
-		"zod": "^3.24.3"
+		"zod": "^4.5.4"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.3",
