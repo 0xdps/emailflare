@@ -24,7 +24,7 @@
 		"hono": "^4.7.5",
 		"jose": "^5.10.0",
 		"nanoid": "^5.1.5",
-		"postal-mime": "^2.7.4",
+		"postal-mime": "^3.0.0",
 		"zod": "^3.24.3"
 	},
 	"devDependencies": {
