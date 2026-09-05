@@ -1,0 +1,24 @@
+services/inbox-worker/package.json
+  s_8ceb7288607761::t_ce9fa3947eb40a 14-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "6c372e2aefd21545aecb787a55db56a2fc59349a",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_8ceb7288607761": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "8b9e76e9-aeaa-4166-ae50-6a6463595b94",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
