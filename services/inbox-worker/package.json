@@ -22,7 +22,7 @@
 		"@hono/zod-validator": "^0.4.3",
 		"hono": "^4.7.5",
 		"jose": "^5.10.0",
-		"nanoid": "^5.1.5",
+		"nanoid": "^6.0.1",
 		"postal-mime": "^2.3.0",
 		"zod": "^3.24.3"
 	},
