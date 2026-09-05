@@ -1,5 +1,5 @@
 # ── Stage: dev ────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS dev
+FROM node:26-alpine AS dev
 WORKDIR /app
 
 COPY package.json ./
@@ -11,7 +11,7 @@ EXPOSE 5174
 CMD ["npm", "run", "dev"]
 
 # ── Stage: builder ────────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /app
 
 COPY package.json ./
