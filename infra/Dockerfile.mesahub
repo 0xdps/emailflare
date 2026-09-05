@@ -11,7 +11,7 @@ RUN git clone --depth 1 --branch ${MESAHUB_CORE_VERSION} \
 WORKDIR /mesahub-core/server
 RUN CGO_ENABLED=1 GOOS=linux go build -o /usr/local/bin/mesahub-server ./cmd/server
 
-FROM alpine:3.21
+FROM alpine:3.24
 RUN apk add --no-cache ca-certificates curl sqlite-libs
 
 COPY --from=build /usr/local/bin/mesahub-server /usr/local/bin/mesahub-server
