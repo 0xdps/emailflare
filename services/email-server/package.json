@@ -17,7 +17,7 @@
 		"@hono/zod-validator": "^0.4.3",
 		"@mesahub/client": "^0.5.1",
 		"hono": "^4.7.5",
-		"iron-session": "^8.0.3",
+		"iron-session": "^9.0.1",
 		"jose": "^5.10.0",
 		"nanoid": "^5.1.5",
 		"postal-mime": "^2.7.4",
