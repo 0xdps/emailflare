@@ -2,7 +2,7 @@
 # The start-mesahub.sh wrapper starts the server, waits for it, then creates
 # the application database before signalling ready.
 
-FROM golang:1.24-alpine AS build
+FROM golang:1.27-alpine AS build
 RUN apk add --no-cache gcc musl-dev sqlite-dev git
 
 ARG MESAHUB_CORE_VERSION=trunk
