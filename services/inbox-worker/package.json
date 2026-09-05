@@ -21,7 +21,7 @@
 		"@emailflare/emails": "workspace:*",
 		"@hono/zod-validator": "^0.4.3",
 		"hono": "^4.7.5",
-		"jose": "^5.10.0",
+		"jose": "^6.2.10",
 		"nanoid": "^5.1.5",
 		"postal-mime": "^2.3.0",
 		"zod": "^3.24.3"
