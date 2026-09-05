@@ -21,7 +21,7 @@ COPY . .
 RUN npm run build
 
 # ── Stage: prod (nginx static + proxy) ────────────────────────────────────────
-FROM nginx:1.27-alpine AS prod
+FROM nginx:1.31-alpine AS prod
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 # nginx auto-runs envsubst on *.template files → resolves $BACKEND_URL
