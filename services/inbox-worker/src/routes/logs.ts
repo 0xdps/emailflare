@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { parsePagination } from "@emailflare/email-core";
 import { D1Db } from "../db.ts";
 import type { HonoEnv } from "../env.ts";
 
@@ -6,9 +7,7 @@ const app = new Hono<HonoEnv>();
 
 // GET /api/logs?page=1&limit=50&domainId=&status=&templateId=&apiKeyId=&search=&from=&to=
 app.get("/", async (c) => {
-	const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10));
-	const limit = Math.min(100, parseInt(c.req.query("limit") ?? "50", 10));
-	const offset = (page - 1) * limit;
+	const { page, limit, offset } = parsePagination({ page: c.req.query("page"), limit: c.req.query("limit") });
 	const domainId = c.req.query("domainId");
 	const status = c.req.query("status");
 	const templateId = c.req.query("templateId");
