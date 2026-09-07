@@ -18,7 +18,7 @@
 		"@mesahub/client": "^0.5.1",
 		"hono": "^4.7.5",
 		"iron-session": "^8.0.3",
-		"jose": "^5.10.0",
+		"jose": "^6.2.11",
 		"nanoid": "^5.1.5",
 		"postal-mime": "^2.7.4",
 		"zod": "^3.24.3"
