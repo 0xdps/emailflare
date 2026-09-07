@@ -9,7 +9,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@base-ui/react": "^1.4.1",
+		"@base-ui/react": "^1.8.0",
 		"@fontsource-variable/geist": "^5.2.8",
 		"@tanstack/react-router": "^1.114.22",
 		"axios": "^1.9.0",
