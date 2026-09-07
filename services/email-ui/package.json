@@ -29,7 +29,7 @@
 		"@tanstack/router-plugin": "^1.114.22",
 		"@types/node": "^25.6.0",
 		"@types/react": "^19.1.2",
-		"@types/react-dom": "^19.1.2",
+		"@types/react-dom": "^19.2.7",
 		"@vitejs/plugin-react": "^4.4.1",
 		"postcss": "^8.5.3",
 		"tailwindcss": "^4.2.2",
