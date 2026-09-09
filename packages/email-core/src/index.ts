@@ -212,6 +212,38 @@ export function shortId(n = 4): string {
 	return generateId().slice(0, n);
 }
 
+// ── Pagination ────────────────────────────────────────────────────────────────
+
+export interface Pagination {
+	page: number;
+	limit: number;
+	offset: number;
+}
+
+/**
+ * Parse `?page=&limit=` query params into clamped, always-valid pagination.
+ *
+ * - non-numeric or missing values fall back to the defaults
+ * - `page` is clamped to >= 1
+ * - `limit` is clamped to 1..maxLimit (SQLite treats LIMIT 0/negative as
+ *   "no limit", which would let `?limit=-1` dump an entire table)
+ */
+export function parsePagination(
+	query: { page?: string; limit?: string },
+	opts: { defaultLimit?: number; maxLimit?: number } = {},
+): Pagination {
+	const defaultLimit = opts.defaultLimit ?? 50;
+	const maxLimit = opts.maxLimit ?? 100;
+
+	const rawPage = parseInt(query.page ?? "", 10);
+	const rawLimit = parseInt(query.limit ?? "", 10);
+
+	const page = Number.isFinite(rawPage) ? Math.max(1, rawPage) : 1;
+	const limit = Number.isFinite(rawLimit) ? Math.min(maxLimit, Math.max(1, rawLimit)) : defaultLimit;
+
+	return { page, limit, offset: (page - 1) * limit };
+}
+
 // ── CSP-safe Handlebars-compatible template renderer ──────────────────────
 //
 // Cloudflare Workers block `new Function()` / `eval()` (CSP), so Handlebars

@@ -1,13 +1,12 @@
 import { Hono } from "hono";
+import { parsePagination } from "@emailflare/email-core";
 import { rawDb } from "../db.js";
 import type { HonoEnv } from "../env.js";
 
 const app = new Hono<HonoEnv>();
 
 app.get("/", async (c) => {
-	const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10));
-	const limit = Math.min(100, parseInt(c.req.query("limit") ?? "50", 10));
-	const offset = (page - 1) * limit;
+	const { page, limit, offset } = parsePagination({ page: c.req.query("page"), limit: c.req.query("limit") });
 	const domainId = c.req.query("domainId");
 	const status = c.req.query("status");
 	const templateId = c.req.query("templateId");
