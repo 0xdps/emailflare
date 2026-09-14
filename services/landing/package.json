@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"@iconify-json/lucide": "^1.2.105",
-		"@iconify-json/simple-icons": "^1.2.80",
+		"@iconify-json/simple-icons": "^1.2.95",
 		"astro": "^7.2.9",
 		"astro-icon": "^1.1.5"
 	}
