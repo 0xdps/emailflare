@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "emailflare-landing",
+	"name": "emailflare",
 	"compatibility_date": "2026-04-28",
 	"workers_dev": true,
 	"preview_urls": true,
