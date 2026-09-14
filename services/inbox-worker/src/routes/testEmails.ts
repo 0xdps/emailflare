@@ -4,6 +4,7 @@
 // DELETE /api/test-emails/:id
 
 import { Hono } from "hono";
+import { parsePagination } from "@emailflare/email-core";
 import { makeDb } from "../db.ts";
 import type { HonoEnv } from "../env.ts";
 
@@ -11,9 +12,7 @@ const app = new Hono<HonoEnv>();
 
 // GET /api/test-emails — paginated test emails only (is_test = 1)
 app.get("/", async (c) => {
-	const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10));
-	const limit = Math.min(100, parseInt(c.req.query("limit") ?? "50", 10));
-	const offset = (page - 1) * limit;
+	const { page, limit, offset } = parsePagination({ page: c.req.query("page"), limit: c.req.query("limit") });
 	const search = c.req.query("search");
 	const from = c.req.query("from");
 	const to = c.req.query("to");

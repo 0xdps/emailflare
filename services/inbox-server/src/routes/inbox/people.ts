@@ -1,14 +1,13 @@
 // People CRM routes
 import { Hono } from "hono";
+import { parsePagination } from "@emailflare/email-core";
 import { rawDb } from "../../db.js";
 import type { HonoEnv } from "../../env.js";
 
 const app = new Hono<HonoEnv>();
 
 app.get("/", async (c) => {
-	const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10));
-	const limit = Math.min(100, parseInt(c.req.query("limit") ?? "50", 10));
-	const offset = (page - 1) * limit;
+	const { page, limit, offset } = parsePagination({ page: c.req.query("page"), limit: c.req.query("limit") });
 	const search = c.req.query("search");
 	const unread = c.req.query("unread") === "1";
 
@@ -58,9 +57,7 @@ app.get("/:id", async (c) => {
 
 app.get("/:id/thread", async (c) => {
 	const personId = c.req.param("id");
-	const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10));
-	const limit = Math.min(100, parseInt(c.req.query("limit") ?? "50", 10));
-	const offset = (page - 1) * limit;
+	const { page, limit, offset } = parsePagination({ page: c.req.query("page"), limit: c.req.query("limit") });
 
 	const person = await rawDb.first("SELECT * FROM people WHERE id = ? LIMIT 1", [personId]);
 	if (!person) return c.json({ error: "Person not found" }, 404);
