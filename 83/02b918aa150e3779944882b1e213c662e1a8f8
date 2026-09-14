@@ -1,0 +1,14 @@
+services/landing/wrangler.jsonc
+  h_95aea6b4aa8772 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8302b918aa150e3779944882b1e213c662e1a8f8",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
