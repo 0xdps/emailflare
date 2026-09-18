@@ -1,152 +1,65 @@
+# Dependabot opens one PR per dependency per directory by default. With 13
+# workspace packages that turned one weekly run into ~46 PRs for a dozen
+# distinct bumps (see #187). Each ecosystem below is a single entry covering
+# all its directories, minor/patch bumps are grouped per dependency across
+# directories, and majors that need a real migration are ignored so they can
+# be upgraded deliberately instead of reappearing every Monday.
 version: 2
 updates:
-    # ── npm (pnpm) dependencies ──────────────────────────────────────────────
+    # ── npm (pnpm workspace) ─────────────────────────────────────────────────
     - package-ecosystem: "npm"
-      directory: "/packages/email-core"
+      directories:
+          - "/"
+          - "/packages/*"
+          - "/services/*"
+          - "/scripts"
       schedule:
           interval: "weekly"
           day: "monday"
-      open-pull-requests-limit: 10
+      open-pull-requests-limit: 5
       versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/packages/inbox-core"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/emails"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/email-server"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/email-worker"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/email-ui"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/email-bridge"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/inbox-server"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/inbox-worker"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/inbox-ui"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/inbox-bridge"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/services/landing"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
-
-    - package-ecosystem: "npm"
-      directory: "/scripts"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 10
-      versioning-strategy: "increase"
+      cooldown:
+          default-days: 7
+      groups:
+          # One PR per dependency across every workspace directory, for
+          # minor and patch bumps. Majors fall through to individual PRs.
+          npm-minor-patch:
+              patterns: ["*"]
+              update-types: ["minor", "patch"]
+              group-by: "dependency-name"
+      ignore:
+          # Majors that require code changes, not just a version bump.
+          # Upgrade these on purpose, one at a time.
+          - dependency-name: "zod"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "@types/node"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "typescript"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "vite"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "lucide-react"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "jose"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "@cloudflare/workers-types"
+            update-types: ["version-update:semver-major"]
 
     # ── Docker images ─────────────────────────────────────────────────────────
     - package-ecosystem: "docker"
-      directory: "/"
+      directories:
+          - "/deploy/docker"
+          - "/infra"
+          - "/services/*"
       schedule:
           interval: "weekly"
           day: "monday"
       open-pull-requests-limit: 5
-
-    - package-ecosystem: "docker"
-      directory: "/services/email-server"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 5
-
-    - package-ecosystem: "docker"
-      directory: "/services/inbox-server"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 5
-
-    - package-ecosystem: "docker"
-      directory: "/services/email-ui"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 5
-
-    - package-ecosystem: "docker"
-      directory: "/services/inbox-ui"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 5
-
-    - package-ecosystem: "docker"
-      directory: "/infra"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 5
+      cooldown:
+          default-days: 7
+      groups:
+          docker-all:
+              patterns: ["*"]
 
     # ── GitHub Actions ────────────────────────────────────────────────────────
     - package-ecosystem: "github-actions"
@@ -155,3 +68,6 @@ updates:
           interval: "weekly"
           day: "monday"
       open-pull-requests-limit: 5
+      groups:
+          actions-all:
+              patterns: ["*"]
