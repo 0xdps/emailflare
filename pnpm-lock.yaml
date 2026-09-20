@@ -72,16 +72,16 @@ importers:
         version: link:../emails
       '@hono/node-server':
         specifier: ^1.13.7
-        version: 1.19.17(hono@4.13.5)
+        version: 1.19.17(hono@4.13.7)
       '@hono/zod-validator':
         specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        version: 0.4.3(hono@4.13.7)(zod@3.25.76)
       '@mesahub/client':
         specifier: ^0.5.1
         version: 0.5.1
       hono:
-        specifier: ^4.7.5
-        version: 4.13.5
+        specifier: ^4.13.7
+        version: 4.13.7
       iron-session:
         specifier: ^8.0.3
         version: 8.0.4
@@ -194,10 +194,10 @@ importers:
         version: link:../emails
       '@hono/zod-validator':
         specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        version: 0.4.3(hono@4.13.7)(zod@3.25.76)
       hono:
-        specifier: ^4.7.5
-        version: 4.13.5
+        specifier: ^4.13.7
+        version: 4.13.7
       jose:
         specifier: ^5.10.0
         version: 5.10.0
@@ -287,10 +287,10 @@ importers:
         version: link:../../packages/inbox-core
       '@hono/node-server':
         specifier: ^1.13.7
-        version: 1.19.17(hono@4.13.5)
+        version: 1.19.17(hono@4.13.7)
       '@hono/zod-validator':
         specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        version: 0.4.3(hono@4.13.7)(zod@3.25.76)
       '@mesahub/client':
         specifier: ^0.5.1
         version: 0.5.1
@@ -298,8 +298,8 @@ importers:
         specifier: ^5.34.8
         version: 5.81.4(supports-color@10.2.2)
       hono:
-        specifier: ^4.7.5
-        version: 4.13.5
+        specifier: ^4.13.7
+        version: 4.13.7
       ioredis:
         specifier: ^5.6.0
         version: 5.11.1(supports-color@10.2.2)
@@ -421,10 +421,10 @@ importers:
         version: link:../../packages/inbox-core
       '@hono/zod-validator':
         specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        version: 0.4.3(hono@4.13.7)(zod@3.25.76)
       hono:
-        specifier: ^4.7.5
-        version: 4.13.5
+        specifier: ^4.13.7
+        version: 4.13.7
       jose:
         specifier: ^5.10.0
         version: 5.10.0
@@ -3410,8 +3410,8 @@ packages:
     resolution: {integrity: sha512-nbfWpyRMcMrPMmDwJB+dhX/eiaPKtc2RB+0QZskqJ3WjRA/FDS0e9hZrx8EC/lbEv8gXy98FcDbNa/dspAaJMg==}
     engines: {node: '>=12.0.0'}
 
-  hono@4.13.5:
-    resolution: {integrity: sha512-O6+/eCYRkzzzy0rPWwKLiGBR1nFuUPZynnwjxN1MBA62NNqbT0wQEzQyK2gSO5yDIDB336sXQleAhOHrzlYyKw==}
+  hono@4.13.7:
+    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
     engines: {node: '>=16.9.0'}
 
   html-escaper@3.0.3:
@@ -5882,13 +5882,13 @@ snapshots:
 
   '@fontsource-variable/geist@5.3.0': {}
 
-  '@hono/node-server@1.19.17(hono@4.13.5)':
+  '@hono/node-server@1.19.17(hono@4.13.7)':
     dependencies:
-      hono: 4.13.5
+      hono: 4.13.7
 
-  '@hono/zod-validator@0.4.3(hono@4.13.5)(zod@3.25.76)':
+  '@hono/zod-validator@0.4.3(hono@4.13.7)(zod@3.25.76)':
     dependencies:
-      hono: 4.13.5
+      hono: 4.13.7
       zod: 3.25.76
 
   '@iconify-json/lucide@1.2.127':
@@ -6159,7 +6159,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@3.25.76)':
     dependencies:
-      '@hono/node-server': 1.19.17(hono@4.13.5)
+      '@hono/node-server': 1.19.17(hono@4.13.7)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -6169,7 +6169,7 @@ snapshots:
       eventsource-parser: 3.1.1
       express: 5.2.1(supports-color@10.2.2)
       express-rate-limit: 8.7.0(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2)
-      hono: 4.13.5
+      hono: 4.13.7
       jose: 6.2.10
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -7772,7 +7772,7 @@ snapshots:
 
   highlight.js@11.12.0: {}
 
-  hono@4.13.5: {}
+  hono@4.13.7: {}
 
   html-escaper@3.0.3: {}
 
