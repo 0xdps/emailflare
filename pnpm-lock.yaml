@@ -74,8 +74,8 @@ importers:
         specifier: ^1.13.7
         version: 1.19.17(hono@4.13.5)
       '@hono/zod-validator':
-        specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        specifier: ^0.9.1
+        version: 0.9.1(hono@4.13.5)(zod@3.25.76)
       '@mesahub/client':
         specifier: ^0.5.1
         version: 0.5.1
@@ -193,8 +193,8 @@ importers:
         specifier: workspace:*
         version: link:../emails
       '@hono/zod-validator':
-        specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        specifier: ^0.9.1
+        version: 0.9.1(hono@4.13.5)(zod@3.25.76)
       hono:
         specifier: ^4.7.5
         version: 4.13.5
@@ -289,8 +289,8 @@ importers:
         specifier: ^1.13.7
         version: 1.19.17(hono@4.13.5)
       '@hono/zod-validator':
-        specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        specifier: ^0.9.1
+        version: 0.9.1(hono@4.13.5)(zod@3.25.76)
       '@mesahub/client':
         specifier: ^0.5.1
         version: 0.5.1
@@ -420,8 +420,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/inbox-core
       '@hono/zod-validator':
-        specifier: ^0.4.3
-        version: 0.4.3(hono@4.13.5)(zod@3.25.76)
+        specifier: ^0.9.1
+        version: 0.9.1(hono@4.13.5)(zod@3.25.76)
       hono:
         specifier: ^4.7.5
         version: 4.13.5
@@ -1423,11 +1423,11 @@ packages:
     peerDependencies:
       hono: ^4
 
-  '@hono/zod-validator@0.4.3':
-    resolution: {integrity: sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ==}
+  '@hono/zod-validator@0.9.1':
+    resolution: {integrity: sha512-iiv6w0qrIc0arfvCtUqBWsvl4fXjzaTcQcCJTTtCnkawF9HHGE+KjEl0ox3gQJ6rKZEgE3mLExlQCF72M+mNuw==}
     peerDependencies:
-      hono: '>=3.9.0'
-      zod: ^3.19.1
+      hono: '>=4.11.2'
+      zod: ^3.25.0 || ^4.0.0
 
   '@iconify-json/lucide@1.2.127':
     resolution: {integrity: sha512-7KuCCpkly00kefna4wEnCr8l2HFRkbn4mD4zRib8wCSbrBmnR/l57ExpU6j5jv/Bo+qHpWuHpDtcqceQ0ptArw==}
@@ -5886,7 +5886,7 @@ snapshots:
     dependencies:
       hono: 4.13.5
 
-  '@hono/zod-validator@0.4.3(hono@4.13.5)(zod@3.25.76)':
+  '@hono/zod-validator@0.9.1(hono@4.13.5)(zod@3.25.76)':
     dependencies:
       hono: 4.13.5
       zod: 3.25.76
