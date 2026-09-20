@@ -501,6 +501,46 @@ export function listUnsubscribeHeaders(origin: string, token: string, post: bool
 	return headers;
 }
 
+/** Escape a string for safe interpolation into HTML text or attribute values. */
+export function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+function unsubscribePage(title: string, body: string): string {
+	return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title></head><body style="font-family:system-ui;text-align:center;padding:4rem;">${body}</body></html>`;
+}
+
+/**
+ * GET confirmation page for /v1/unsubscribe. Renders a form that POSTs the
+ * token back; nothing is changed until the recipient clicks. Mail clients,
+ * link scanners and prefetchers issue GETs on every URL in a message, so a
+ * GET must never perform the unsubscribe (RFC 8058 puts the action on POST).
+ */
+export function unsubscribeConfirmPage(token: string): string {
+	return unsubscribePage(
+		"Unsubscribe",
+		`<h1>Unsubscribe?</h1><p>Click below to stop receiving email from us.</p><form method="post"><input type="hidden" name="token" value="${escapeHtml(token)}"><button type="submit" style="font:inherit;padding:.6rem 1.4rem;cursor:pointer;">Unsubscribe</button></form>`,
+	);
+}
+
+/** Page shown after a successful POST unsubscribe. */
+export function unsubscribeDonePage(email: string): string {
+	return unsubscribePage(
+		"Unsubscribed",
+		`<h1>You've been unsubscribed</h1><p>${escapeHtml(email)} will no longer receive email from us.</p>`,
+	);
+}
+
+/** Page shown when the token is missing, already used, or unknown. */
+export function unsubscribeInvalidPage(): string {
+	return unsubscribePage("Unsubscribe", `<h1>Invalid or expired unsubscribe link</h1>`);
+}
+
 // ── sendWithLog — shared "deliver + record" orchestration ────────────────────
 //
 // The single seam both the transactional API (`/v1/send`) and the inbox compose

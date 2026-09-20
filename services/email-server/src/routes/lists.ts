@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { lists, suppressions } from "../db.js";
+import { db, lists, unsubscribeTokens } from "../db.js";
 import { generateId, listCreateSchema } from "@emailflare/email-core";
 
 const app = new Hono();
@@ -38,7 +38,12 @@ app.delete("/:id", async (c) => {
 	const row = await lists.findOne({ where: { id } });
 	if (!row) return c.json({ error: "List not found" }, 404);
 
-	await suppressions.delete({ where: { list_id: id } });
+	// Keep the opt-outs: a list unsubscribe is the address's only suppression
+	// row (suppressions are unique per email), so deleting it would make the
+	// recipient mailable again. Detach it from the list instead. Pending
+	// tokens for this list are dropped so they can't resolve to a phantom list.
+	await db.exec("UPDATE suppressions SET list_id = NULL WHERE list_id = ?", [id]);
+	await unsubscribeTokens.delete({ where: { list_id: id } });
 	await lists.delete({ where: { id } });
 
 	return c.json({ ok: true });

@@ -45,6 +45,12 @@
 		"directory": "../inbox-ui/dist",
 		"binding": "ASSETS",
 		"not_found_handling": "single-page-application",
+		// Browser navigations (Sec-Fetch-Mode: navigate) are otherwise answered by
+		// the SPA fallback before the Worker runs, so a recipient opening the
+		// unsubscribe link from their mail client would land on the admin app's
+		// "Not Found" instead of the confirmation page. API and one-click
+		// clients never hit this because they don't send navigation requests.
+		"run_worker_first": ["/v1/*", "/api/*"],
 	},
 
 	// D1 SQLite database
