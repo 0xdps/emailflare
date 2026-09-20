@@ -304,7 +304,7 @@ emailflare-inbox-update:
 # Usage: just emailflare-inbox-routing              (prompts for domain)
 #        just emailflare-inbox-routing example.com  (optional domain arg)
 emailflare-inbox-routing domain='':
-    node scripts/setup-email-routing.mjs {{if domain != '' { '--domain ' + domain } else { '' }}}
+    node scripts/setup-email-routing.mjs {{ if domain != '' { '--domain ' + domain } else { '' } }}
 
 # Build inbox-ui only (without deploying)
 emailflare-inbox-build-ui:
