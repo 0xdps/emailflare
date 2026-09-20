@@ -19,7 +19,7 @@
 		"@emailflare/email-core": "workspace:*",
 		"@emailflare/inbox-core": "workspace:*",
 		"@emailflare/emails": "workspace:*",
-		"@hono/zod-validator": "^0.4.3",
+		"@hono/zod-validator": "^0.9.1",
 		"hono": "^4.7.5",
 		"jose": "^5.10.0",
 		"nanoid": "^5.1.5",
