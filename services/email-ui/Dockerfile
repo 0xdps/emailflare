@@ -1,5 +1,5 @@
 # ── Stage: dev ────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS dev
+FROM node:25-alpine AS dev
 WORKDIR /app
 
 COPY package.json ./
@@ -11,7 +11,7 @@ EXPOSE 5173
 CMD ["npm", "run", "dev"]
 
 # ── Stage: builder ─────────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 
 COPY package.json ./
@@ -21,7 +21,7 @@ COPY . .
 RUN npm run build
 
 # ── Stage: prod (nginx static + proxy) ────────────────────────────────────────
-FROM nginx:1.27-alpine AS prod
+FROM nginx:1.29-alpine AS prod
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 # nginx auto-runs envsubst on *.template files → resolves $BACKEND_URL
