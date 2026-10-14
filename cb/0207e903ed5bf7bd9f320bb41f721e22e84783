@@ -1,0 +1,91 @@
+services/email-server/src/lib/bounce-parser.ts
+  s_5969c9c76ed076::t_40118faed8bbbd 1-2,6-14
+services/email-server/package.json
+  s_5969c9c76ed076::t_5c4985b8e616a2 10
+packages/inbox-core/package.json
+  s_5969c9c76ed076::t_25d92e3d2ec469 16-17
+  s_5969c9c76ed076::t_84b20d32c893f3 24
+services/email-server/src/migrate.ts
+  s_5969c9c76ed076::t_1e0826f7f7b2e9 1-136
+migrations/0001_schema.sql
+  s_5969c9c76ed076::t_e83a8903b86104 98-102
+migrations/0003_suppression_identity.sql
+  s_5969c9c76ed076::t_1f5df7388fb894 1-21
+packages/email-core/test/send.test.ts
+  s_5969c9c76ed076::t_e87c994d06a441 1-81,83-84,86,88-210
+  s_5969c9c76ed076::t_08a1b5f8d555d3 82,85,87
+justfile
+  s_5969c9c76ed076::t_5ba8e2e9be5609 137-141,145-146,149-166
+  s_5969c9c76ed076::t_9d9b9588326312 135-136,142-144,147-148
+services/inbox-server/src/routes/send.ts
+  s_5969c9c76ed076::t_4796930293693b 3,18-46
+  s_5969c9c76ed076::t_9b2204403e157b 47-48
+services/inbox-worker/src/lib/password.ts
+  s_5969c9c76ed076::t_32a0fc22813ea8 1
+services/email-server/src/routes/send.ts
+  s_5969c9c76ed076::t_cc29cda655be79 3,8-9,15-18,24-52
+packages/email-core/package.json
+  s_5969c9c76ed076::t_b0856e791daa0c 35
+  s_5969c9c76ed076::t_cba4d4ca20ef71 26-27
+services/email-server/src/env.ts
+  s_5969c9c76ed076::t_4d473ccdc0d831 60-62
+  s_5969c9c76ed076::t_35379f3dd17f5e 2-3
+  s_5969c9c76ed076::t_d4c1fb210827a0 29-34
+packages/inbox-core/src/index.ts
+  s_5969c9c76ed076::t_6b40af1f56bcdf 16-17
+  s_5969c9c76ed076::t_41ae570d6ac045 9-10
+packages/email-core/test/bounce.test.ts
+  s_5969c9c76ed076::t_2532813890a57a 1-40
+package.json
+  s_5969c9c76ed076::t_835702c2dfe668 13
+deploy/docker/Dockerfile.email-api
+  s_5969c9c76ed076::t_d792d88c306bd7 89-92
+packages/inbox-core/test/inbox.test.ts
+  s_5969c9c76ed076::t_125e8c92439919 1-41
+services/email-ui/vite.config.ts
+  s_5969c9c76ed076::t_7720f1e6e4edbb 7-10,22-24
+services/inbox-server/src/lib/password.ts
+  s_5969c9c76ed076::t_11e4e28d9ab2ba 1
+services/inbox-worker/src/routes/send.ts
+  s_5969c9c76ed076::t_6a8bad2240ab8e 4,13,23-51
+  s_5969c9c76ed076::t_016db2b35244ea 52-53
+services/email-worker/src/email-handler.ts
+  s_5969c9c76ed076::t_4a0e1793674c84 5-12
+services/email-worker/src/routes/send.ts
+  s_5969c9c76ed076::t_a0aa1147cd8510 3-5,14,24-51
+packages/email-core/src/bounce.ts
+  s_5969c9c76ed076::t_556b05c3b1df6a 1-113
+packages/email-core/src/index.ts
+  s_5969c9c76ed076::t_7083cc22b9c89f 16-25
+  s_5969c9c76ed076::t_e491165754450f 628
+  s_5969c9c76ed076::t_5c634398407435 667-837
+services/email-server/src/index.ts
+  s_5969c9c76ed076::t_9f47943b27bc67 167,169
+  s_5969c9c76ed076::t_0ef63b9d2e8edd 10-11
+deploy/docker/compose.email-api.yaml
+  s_5969c9c76ed076::t_434d58146b3a98 14
+packages/inbox-core/src/password.ts
+  s_5969c9c76ed076::t_23c69db24db8d3 23-28
+  s_5969c9c76ed076::t_731707c899ef36 1-22,29-55
+deploy/docker/compose.email-api.dev.yaml
+  s_5969c9c76ed076::t_5bd2d6a734e806 63
+  s_5969c9c76ed076::t_2e7293d12f3202 50-51
+pnpm-lock.yaml
+  s_5969c9c76ed076::t_92dc7799d4822e 30-32,46-48,130,167,179,305,357,394,406,470,5303,5308,5312,5343,5345,5347,5349-5351,5358,5360,5365,5367,5372,5374-5375,5377,5387,5389-5390,5392,5396,5398,5418,5420,5423,5425,5428,5430-5431,5436,5438,5441,5443,5446,5448,5450,5452-5453,5457,5459,5462-5464,5476,6710,6714,6723,6725,6729-6730,6747,6753,6868,6870-6872,6937,6986,7032,7034,7044,7046,7048,7095,7589,7657,8711,8724,8726-8727,9078
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb0207e903ed5bf7bd9f320bb41f721e22e84783",
+  "prompts": {},
+  "sessions": {
+    "s_5969c9c76ed076": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e1e80a71-ef28-428d-8a16-741788bc1041",
+        "model": "grok-4.7"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
