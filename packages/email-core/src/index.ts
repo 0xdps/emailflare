@@ -13,6 +13,16 @@
 import { z } from "zod";
 import { customAlphabet } from "nanoid";
 
+export {
+	isBounce,
+	isComplaint,
+	extractRecipient,
+	classifyBounce,
+	extractReason,
+	type BounceMessageView,
+	type BounceClass,
+} from "./bounce.js";
+
 // ── Row interfaces ─────────────────────────────────────────────────────────────
 // SQLite columns use INTEGER for booleans (0 | 1) and TEXT for dates (ISO 8601).
 
@@ -615,6 +625,7 @@ export async function resolveDomainId(db: Pick<DbQueryHandle, "query">, fromAddr
  * null if the address is safe to send to.
  */
 export async function checkSuppressed(db: Pick<DbQueryHandle, "query">, email: string): Promise<string | null> {
+	// Addresses are stored lowercase (see migrations/0003_suppression_identity.sql).
 	const result = await db.query("SELECT reason FROM suppressions WHERE email = ? LIMIT 1", [email.toLowerCase()]);
 	return (result.rows[0]?.reason as string | undefined) ?? null;
 }
@@ -651,6 +662,177 @@ export async function issueUnsubscribeToken(
 		return headers;
 	}
 	return undefined;
+}
+
+// ── executeSend — the /v1/send decision tree ──────────────────────────────────
+//
+// Template resolution, domain scope, suppression, unsubscribe headers, delivery,
+// and the email_logs write. Delivery and persistence stay injected so the four
+// runtimes (email/inbox × worker/server) only differ in how a test key is sent.
+
+export interface SendApiKeyContext {
+	keyId: string;
+	scope: string;
+	allowedDomainIds: string[];
+	isTest: boolean;
+}
+
+export interface SendTemplateRecord {
+	id: string;
+	subject: string;
+	html_body: string;
+	text_body: string | null;
+	layout: string | null;
+	domain_id: string | null;
+}
+
+export interface ExecuteSendDeps {
+	db: DbQueryHandle;
+	findTemplate: (ref: { templateId?: string; templateSlug?: string }) => Promise<SendTemplateRecord | null>;
+	renderLayout: (layout: string, vars: Record<string, unknown>, themeId?: string) => Promise<string>;
+	findIdempotentLog: (
+		idempotencyKey: string,
+		apiKeyId: string,
+	) => Promise<{ to_address: string; cf_message_id: string | null } | null>;
+	deliver: (msg: SendWithLogMessage) => Promise<{ id: string }>;
+	insertLog: (row: EmailLogRow) => Promise<unknown>;
+	now?: () => string;
+	generateToken?: () => string;
+}
+
+export interface ExecuteSendInput {
+	body: SendInput;
+	apiKey: SendApiKeyContext;
+	idempotencyKey: string | null;
+	publicOrigin: string;
+}
+
+export type SendResultRow = { to: string; cfId?: string; error?: string };
+
+export type ExecuteSendResult =
+	| { status: 200; body: { cached: true; results: SendResultRow[] } }
+	| { status: 404; body: { error: string } }
+	| { status: 403; body: { error: string } }
+	| { status: 200 | 502; body: { results: SendResultRow[] } };
+
+export async function executeSend(deps: ExecuteSendDeps, input: ExecuteSendInput): Promise<ExecuteSendResult> {
+	const { body, apiKey } = input;
+	const now = (deps.now ?? (() => new Date().toISOString()))();
+	const generateToken = deps.generateToken ?? generateId;
+
+	if (input.idempotencyKey) {
+		const existing = await deps.findIdempotentLog(input.idempotencyKey, apiKey.keyId);
+		if (existing) {
+			return {
+				status: 200,
+				body: {
+					cached: true,
+					results: [{ to: existing.to_address, cfId: existing.cf_message_id ?? undefined }],
+				},
+			};
+		}
+	}
+
+	let html = body.html;
+	let text = body.text;
+	let subject = body.subject ?? "";
+	let templateId: string | null = null;
+	let domainId: string | null = null;
+
+	if (body.templateSlug || body.templateId) {
+		const template = await deps.findTemplate({
+			templateId: body.templateId,
+			templateSlug: body.templateSlug,
+		});
+		if (!template) return { status: 404, body: { error: "Template not found" } };
+
+		const vars = (body.variables ?? {}) as Record<string, unknown>;
+		subject = applyVariables(body.subject ?? template.subject, vars);
+		if (template.layout) {
+			html = await deps.renderLayout(template.layout, vars, body.themeId);
+		} else {
+			html = applyVariables(template.html_body, vars);
+			text = template.text_body ? applyVariables(template.text_body, vars) : undefined;
+		}
+		templateId = template.id;
+		domainId = template.domain_id;
+	}
+
+	if (!domainId) {
+		domainId = await resolveDomainId(deps.db, body.from);
+	}
+
+	if (apiKey.scope !== "global") {
+		if (!domainId || !apiKey.allowedDomainIds.includes(domainId)) {
+			return { status: 403, body: { error: "API key not authorized for this domain" } };
+		}
+	}
+
+	const toList = [...new Set(Array.isArray(body.to) ? body.to : [body.to])];
+	const results: SendResultRow[] = [];
+	let successCount = 0;
+	const publicOrigin = input.publicOrigin.replace(/\/$/, "");
+
+	for (const recipient of toList) {
+		const reason = await checkSuppressed(deps.db, recipient);
+		if (reason) {
+			results.push({ to: recipient, error: `Suppressed: ${reason}` });
+			continue;
+		}
+
+		const unsubscribeHeaders = await issueUnsubscribeToken(deps.db, {
+			publicOrigin,
+			email: recipient,
+			listId: body.listId,
+			listUnsubscribe: body.listUnsubscribe,
+			listUnsubscribePost: body.listUnsubscribePost,
+			generateToken,
+		});
+
+		try {
+			const out = await sendWithLog(
+				{
+					deliver: deps.deliver,
+					resolveDomainId: async () => domainId,
+					insertLog: deps.insertLog,
+					templateId,
+					apiKeyId: apiKey.keyId,
+					idempotencyKey: input.idempotencyKey,
+					isTest: apiKey.isTest,
+					storeBodies: apiKey.isTest,
+				},
+				{
+					from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
+					to: recipient,
+					subject,
+					html,
+					text,
+					replyTo: body.replyTo,
+					...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
+				},
+			);
+			if (out.error) {
+				results.push({ to: recipient, error: out.error });
+				continue;
+			}
+			results.push({ to: recipient, cfId: out.cfId });
+			successCount++;
+		} catch (err) {
+			const message = err instanceof Error ? err.message : "Unknown error";
+			results.push({ to: recipient, error: message });
+		}
+	}
+
+	if (successCount > 0) {
+		await deps.db.run(`UPDATE api_keys SET last_used_at = ?, send_count = send_count + ? WHERE id = ?`, [
+			now,
+			successCount,
+			apiKey.keyId,
+		]);
+	}
+
+	const allFailed = results.every((r) => r.error);
+	return { status: allFailed ? 502 : 200, body: { results } };
 }
 
 /**

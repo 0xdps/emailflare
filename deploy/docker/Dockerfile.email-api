@@ -86,6 +86,10 @@ COPY --from=build-backend /app/node_modules/.pnpm             ./node_modules/.pn
 COPY --from=build-backend /app/services/email-server/dist     ./services/email-server/dist
 COPY services/email-server/package.json                       ./services/email-server/
 
+# Same SQL the Workers apply. email-server runs these on startup.
+COPY migrations/ ./migrations/
+ENV MIGRATIONS_DIR=/app/migrations
+
 # Email UI static files
 COPY --from=build-email-ui /app/services/email-ui/dist /usr/share/caddy
 
