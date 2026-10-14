@@ -3,7 +3,7 @@
 # The Go module lives in server/ subdirectory — go install doesn't work.
 # Override MESAHUB_CORE_VERSION at build time to pin a specific commit/tag:
 #   docker build --build-arg MESAHUB_CORE_VERSION=main .
-FROM golang:1.24-alpine AS build-core
+FROM golang:1.25-alpine AS build-core
 RUN apk add --no-cache gcc musl-dev sqlite-dev git
 ARG MESAHUB_CORE_VERSION=trunk
 RUN --mount=type=secret,id=gh_token \
@@ -14,7 +14,7 @@ WORKDIR /mesahub-core/server
 RUN CGO_ENABLED=1 GOOS=linux go build -o /go/bin/mesahub-server ./cmd/server
 
 # ── Stage: build-backend ──────────────────────────────────────────────────────
-FROM node:22-alpine AS build-backend
+FROM node:25-alpine AS build-backend
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -43,7 +43,7 @@ COPY services/email-server/ ./services/email-server/
 RUN pnpm --filter @emailflare/email-server build
 
 # ── Stage: build-email-ui ────────────────────────────────────────────────────
-FROM node:22-alpine AS build-email-ui
+FROM node:25-alpine AS build-email-ui
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -65,7 +65,7 @@ RUN pnpm --filter @emailflare/email-ui build
 # ── Stage: prod (Caddy + Node) ──────────────────────────────────────────────
 FROM caddy:2-alpine AS caddy-bin
 
-FROM node:22-alpine AS prod
+FROM node:25-alpine AS prod
 COPY --from=caddy-bin /usr/bin/caddy /usr/bin/caddy
 RUN apk add --no-cache curl openssl
 WORKDIR /app
