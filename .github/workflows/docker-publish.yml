@@ -25,12 +25,12 @@ jobs:
                       path: services/email-ui
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Enable Corepack
               run: corepack enable
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v7
               with:
                   node-version: 22
                   cache: pnpm
@@ -64,12 +64,12 @@ jobs:
                       path: services/inbox-server
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             - name: Enable Corepack
               run: corepack enable
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v7
               with:
                   node-version: 22
                   cache: pnpm
@@ -99,7 +99,7 @@ jobs:
             packages: write
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             # s* tags → private staging package; v* tags → public production package
             - name: Resolve image name
@@ -113,13 +113,13 @@ jobs:
                     echo "is_staging=false" >> $GITHUB_OUTPUT
                   fi
 
-            - uses: docker/setup-qemu-action@v3
+            - uses: docker/setup-qemu-action@v4
 
-            - uses: docker/setup-buildx-action@v3
+            - uses: docker/setup-buildx-action@v4
 
             - name: Log in to GitHub Container Registry
               if: github.event_name != 'pull_request'
-              uses: docker/login-action@v3
+              uses: docker/login-action@v4
               with:
                   registry: ${{ env.REGISTRY }}
                   username: ${{ github.actor }}
@@ -127,7 +127,7 @@ jobs:
 
             - name: Extract Docker metadata
               id: meta
-              uses: docker/metadata-action@v5
+              uses: docker/metadata-action@v6
               with:
                   images: ${{ steps.resolve.outputs.image }}
                   tags: |
@@ -137,7 +137,7 @@ jobs:
                       type=raw,value=${{ github.ref_name }},enable=${{ steps.resolve.outputs.is_staging == 'true' }}
 
             - name: Build and push
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@v7
               with:
                   context: .
                   file: ./deploy/docker/Dockerfile.email-api
@@ -162,7 +162,7 @@ jobs:
             packages: write
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
 
             # s* tags → private staging package; v* tags → public production package
             - name: Resolve image name
@@ -176,13 +176,13 @@ jobs:
                     echo "is_staging=false" >> $GITHUB_OUTPUT
                   fi
 
-            - uses: docker/setup-qemu-action@v3
+            - uses: docker/setup-qemu-action@v4
 
-            - uses: docker/setup-buildx-action@v3
+            - uses: docker/setup-buildx-action@v4
 
             - name: Log in to GitHub Container Registry
               if: github.event_name != 'pull_request'
-              uses: docker/login-action@v3
+              uses: docker/login-action@v4
               with:
                   registry: ${{ env.REGISTRY }}
                   username: ${{ github.actor }}
@@ -190,7 +190,7 @@ jobs:
 
             - name: Extract Docker metadata
               id: meta
-              uses: docker/metadata-action@v5
+              uses: docker/metadata-action@v6
               with:
                   images: ${{ steps.resolve.outputs.image }}
                   tags: |
@@ -200,7 +200,7 @@ jobs:
                       type=raw,value=${{ github.ref_name }},enable=${{ steps.resolve.outputs.is_staging == 'true' }}
 
             - name: Build and push
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@v7
               with:
                   context: .
                   file: ./deploy/docker/Dockerfile.email-inbox
