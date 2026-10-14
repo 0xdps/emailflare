@@ -7,7 +7,8 @@ import { secureHeaders } from "hono/secure-headers";
 import { HTTPException } from "hono/http-exception";
 import { createLogger } from "@emailflare/email-core/logger";
 
-import { bootstrapSchema, seedSystemTemplates } from "./db.js";
+import { seedSystemTemplates } from "./db.js";
+import { runMigrations } from "./migrate.js";
 import { env } from "./env.js";
 
 const log = createLogger("email-server");
@@ -163,9 +164,9 @@ async function main() {
 		log.info("MESAHUB_URL: " + env.MESAHUB_URL.replace(/mh:\/\/[^@]+@/, "mh://***@"));
 		log.info("ADMIN_TOKEN: " + (env.ADMIN_TOKEN ? "set" : "*** MISSING ***"));
 		log.info("CF_API_TOKEN: " + (env.CF_API_TOKEN ? "set" : "not set"));
-		log.info("bootstrapping schema...");
+		log.info("running migrations...");
 	}
-	await bootstrapSchema();
+	await runMigrations();
 	if (env.NODE_ENV !== "production") log.info("seeding system templates...");
 	await seedSystemTemplates();
 

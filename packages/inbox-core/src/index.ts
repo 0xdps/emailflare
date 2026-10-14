@@ -6,11 +6,14 @@
  *   - services/inbox-server  (Node.js — MesaHub, Redis)
  *
  * Rules for this package:
- *   - NO runtime-specific code (no D1, no MesaHub, no Node.js APIs, no Web Crypto)
+ *   - NO runtime-specific code (no D1, no MesaHub, no Node.js APIs)
+ *   - Web Crypto is allowed: Workers and Node both provide it
  *   - Only types, Zod schemas, and pure functions (no side effects)
  */
 
 import { z } from "zod";
+
+export { hashPassword, verifyPassword } from "./password.js";
 
 // ── Row interfaces ─────────────────────────────────────────────────────────────
 // SQLite columns use INTEGER for booleans (0 | 1) and TEXT for dates (ISO 8601).

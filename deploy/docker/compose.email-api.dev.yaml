@@ -47,6 +47,8 @@ services:
             # Embedded mesahub running in the mesahub service above.
             # Override MESAHUB_URL to point to an external instance if needed.
             - MESAHUB_URL=mh://${ADMIN_TOKEN}@mesahub:3002/emailflare
+            # Always use the container-internal migrations path regardless of env_file.
+            - MIGRATIONS_DIR=/app/migrations
         depends_on:
             mesahub:
                 condition: service_healthy
@@ -58,6 +60,7 @@ services:
             - ../../services/emails:/app/services/emails
             - emails-node-modules:/app/services/emails/node_modules
             - ../../services/email-server/src:/app/services/email-server/src
+            - ../../migrations:/app/migrations:ro
             - ../../services/email-server/package.json:/app/services/email-server/package.json
             - backend-node-modules:/app/services/email-server/node_modules
 

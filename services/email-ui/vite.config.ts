@@ -4,6 +4,10 @@ import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
+// Docker dev uses the compose service name. Override to point this UI at
+// wrangler (`http://127.0.0.1:8787`) or the deployed Worker (https://….workers.dev).
+const apiProxy = process.env.API_PROXY ?? "http://backend:3000";
+
 export default defineConfig({
 	plugins: [TanStackRouterVite({ target: "react", autoCodeSplitting: true }), react(), tailwindcss()],
 	resolve: {
@@ -15,9 +19,9 @@ export default defineConfig({
 		host: "0.0.0.0",
 		port: 5173,
 		proxy: {
-			"/api": "http://backend:3000",
-			"/v1": "http://backend:3000",
-			"/auth": "http://backend:3000",
+			"/api": { target: apiProxy, changeOrigin: true },
+			"/v1": { target: apiProxy, changeOrigin: true },
+			"/auth": { target: apiProxy, changeOrigin: true },
 		},
 	},
 });

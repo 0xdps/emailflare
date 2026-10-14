@@ -10,6 +10,7 @@
 		"build:inbox-server": "pnpm --filter @emailflare/inbox-server build",
 		"build:email-ui": "pnpm --filter @emailflare/email-ui build",
 		"build:inbox-ui": "pnpm --filter @emailflare/inbox-ui build",
+		"test": "pnpm --filter @emailflare/email-core test && pnpm --filter @emailflare/inbox-core test",
 		"typecheck": "pnpm -r exec tsc --noEmit",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",

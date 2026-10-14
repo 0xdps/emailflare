@@ -11,6 +11,7 @@ services:
             - .env.local
         environment:
             - NODE_ENV=production
+            - MIGRATIONS_DIR=/app/migrations
         volumes:
             - app-data:/data
         restart: unless-stopped

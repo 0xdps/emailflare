@@ -132,7 +132,38 @@ emailflare-api-worker-dev:
 
 # Start email-ui Vite dev server (proxies /api to wrangler dev on :8787)
 emailflare-api-worker-dev-ui:
-    cd services/email-ui && pnpm dev
+    cd services/email-ui && API_PROXY=http://127.0.0.1:8787 pnpm dev
+
+# Admin UI on :5173, Worker preview on Cloudflare (:8787) using the live D1 + KV.
+# Requires `wrangler login`, services/email-worker/.dev.vars, and a wrangler.jsonc
+# whose D1 database_id is the live `emailflare` database.
+# There is no deployed emailflare-api-worker on this account; `wrangler dev --remote`
+# runs the Worker on Cloudflare's network against production resources.
+emailflare-api-admin-remote:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -f services/email-worker/.dev.vars ]; then
+        echo "services/email-worker/.dev.vars missing — copy .dev.vars.example and fill it from scripts/config.toml"
+        exit 1
+    fi
+    if [ ! -d services/email-ui/dist ]; then
+        echo "email-ui/dist missing — building first…"
+        (cd services/email-ui && pnpm build)
+    fi
+    cd services/email-worker
+    npx wrangler dev --remote --port 8787 &
+    worker_pid=$!
+    trap 'kill "$worker_pid" 2>/dev/null || true' EXIT
+    for _ in $(seq 1 60); do
+        if curl -sf http://127.0.0.1:8787/health >/dev/null; then
+            break
+        fi
+        sleep 1
+    done
+    curl -sf http://127.0.0.1:8787/health >/dev/null || { echo "worker preview did not become ready"; exit 1; }
+    cd ../email-ui
+    echo "Admin UI → http://localhost:5173  (API is the Cloudflare remote preview)"
+    API_PROXY=http://127.0.0.1:8787 pnpm dev
 
 # Start Localflare sidecar for local Cloudflare bindings.
 # Defaults to port 8790 to avoid colliding with wrangler dev on 8787.
