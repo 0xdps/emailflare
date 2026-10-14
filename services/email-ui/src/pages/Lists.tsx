@@ -7,7 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
 
 interface List {
 	id: string;
@@ -26,6 +33,7 @@ export default function ListsPage() {
 	const [saving, setSaving] = useState(false);
 	const [err, setErr] = useState("");
 	const [deleting, setDeleting] = useState<string | null>(null);
+	const [deleteTarget, setDeleteTarget] = useState<List | null>(null);
 
 	async function load() {
 		setLoading(true);
@@ -55,7 +63,10 @@ export default function ListsPage() {
 		}
 	}
 
-	async function handleDelete(id: string) {
+	async function confirmDelete() {
+		if (!deleteTarget) return;
+		const id = deleteTarget.id;
+		setDeleteTarget(null);
 		setDeleting(id);
 		try {
 			await api.delete(`/api/lists/${id}`);
@@ -67,6 +78,25 @@ export default function ListsPage() {
 
 	return (
 		<div className="p-6">
+			<Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Delete list "{deleteTarget?.name}"?</DialogTitle>
+						<DialogDescription>
+							The list and its pending unsubscribe links will be removed. Recipients who already
+							unsubscribed stay unsubscribed.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setDeleteTarget(null)}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={confirmDelete}>
+							Delete
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 			<div className="max-w-[680px]">
 				<div className="flex items-center justify-between mb-6">
 					<div>
@@ -165,7 +195,7 @@ export default function ListsPage() {
 								<Button
 									variant="ghost"
 									size="sm"
-									onClick={() => handleDelete(l.id)}
+									onClick={() => setDeleteTarget(l)}
 									disabled={deleting === l.id}
 									className="text-xs gap-1.5 h-7 px-2.5 text-muted-foreground hover:text-destructive"
 								>
