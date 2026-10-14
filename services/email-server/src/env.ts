@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { createLogger } from "@emailflare/email-core/logger";
 
 const log = createLogger("env");
@@ -22,6 +24,12 @@ function sessionSecret(): string {
 	}
 	if (val.length < 32) throw new Error("SESSION_SECRET must be at least 32 characters");
 	return val;
+}
+
+function migrationsDir(): string {
+	if (process.env.MIGRATIONS_DIR) return process.env.MIGRATIONS_DIR;
+	if (existsSync("/app/migrations")) return "/app/migrations";
+	return fileURLToPath(new URL("../../../migrations", import.meta.url));
 }
 
 function adminToken(): string {
@@ -49,4 +57,7 @@ export const env = {
 	PUBLIC_URL:
 		process.env.PUBLIC_URL ??
 		(process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : ""),
+	// SQL files shared with the Workers. Docker sets this to /app/migrations.
+	// A local `tsx` run falls back to the repo migrations/ directory.
+	MIGRATIONS_DIR: migrationsDir(),
 } as const;

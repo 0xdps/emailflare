@@ -95,7 +95,11 @@ CREATE TABLE IF NOT EXISTS suppressions (
   created_at   TEXT NOT NULL
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_suppressions_email  ON suppressions(email);
+-- One row per address + reason + list. list_id is NULL for bounces and manual
+-- suppressions; IFNULL makes those rows unique too (SQLite treats NULLs as distinct).
+-- Send still blocks on any row for the address. Emails are stored lowercase.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_suppressions_identity
+  ON suppressions(email, reason, IFNULL(list_id, ''));
 CREATE INDEX        IF NOT EXISTS idx_suppressions_domain ON suppressions(domain_id);
 CREATE INDEX        IF NOT EXISTS idx_suppressions_list   ON suppressions(list_id);
 
