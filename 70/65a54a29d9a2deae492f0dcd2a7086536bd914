@@ -1,0 +1,41 @@
+docs/RECIPES.md
+  s_7de6d13b97251b::t_a2bb29d8cc699c 249-274
+services/inbox-ui/src/pages/AcceptInvite.tsx
+  s_7de6d13b97251b::t_935fe6775cdea9 5,31,63
+services/inbox-ui/src/pages/inbox/People.tsx
+  s_7de6d13b97251b::t_2da1113d92c856 262-266
+  s_7de6d13b97251b::t_e64317a77d0726 73-120
+  s_7de6d13b97251b::t_24fc2df8d17fd5 33-38
+  s_7de6d13b97251b::t_d04c85e89b7638 121-123
+  s_7de6d13b97251b::t_05bd5e6020707d 267
+services/inbox-worker/src/email-handler.ts
+  s_7de6d13b97251b::t_4238b2fa930f3c 26-28
+services/inbox-ui/src/pages/Setup.tsx
+  s_7de6d13b97251b::t_29b3ba5e2f982f 5,26,49
+justfile
+  s_7de6d13b97251b::t_65a08ad35bd5a4 344-358
+scripts/reset-inbox-password.mjs
+  s_7de6d13b97251b::t_a4a1d35a6eb43c 1-71,74-75,77-78,86,88-122,124-127,129-138
+  s_7de6d13b97251b::t_dc3f8a849988f3 72-73,76,79-85,87,123,128
+  s_7de6d13b97251b::t_1deef3bca60bb2 139-141
+services/inbox-ui/src/pages/Login.tsx
+  s_7de6d13b97251b::t_090f07314206c5 5,26,39-41
+services/inbox-ui/src/UserContext.tsx
+  s_7de6d13b97251b::t_cd22e750938cdf 8,11-16,27-39,42-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7065a54a29d9a2deae492f0dcd2a7086536bd914",
+  "prompts": {},
+  "sessions": {
+    "s_7de6d13b97251b": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "8a9b6868-c7de-48fd-a82d-66b455668664",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
