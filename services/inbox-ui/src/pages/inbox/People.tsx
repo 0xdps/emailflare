@@ -30,6 +30,12 @@ function initials(name: string | null, email: string) {
 	return email[0].toUpperCase();
 }
 
+/** Hide VERP bounce envelope addresses when a display name is already shown. */
+function senderAddress(email: string): string | null {
+	if (/^bounces?\+[^@]*@/i.test(email)) return null;
+	return email;
+}
+
 function relativeTime(dateStr: string) {
 	const diff = Date.now() - new Date(dateStr).getTime();
 	const mins = Math.floor(diff / 60000);
@@ -62,6 +68,59 @@ function stripQuotedReply(body: string | null | undefined): string {
 		return lines.slice(0, firstQuote).join("\n").trim();
 	}
 	return body.trim();
+}
+
+const NAMED_ENTITIES: Record<string, string> = {
+	nbsp: " ",
+	amp: "&",
+	lt: "<",
+	gt: ">",
+	quot: '"',
+	apos: "'",
+};
+
+function decodeEntities(value: string): string {
+	return value.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (entity, code: string) => {
+		if (code[0] === "#") {
+			const parsed =
+				code[1] === "x" || code[1] === "X" ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
+			return Number.isFinite(parsed) ? String.fromCodePoint(parsed) : entity;
+		}
+		return NAMED_ENTITIES[code.toLowerCase()] ?? entity;
+	});
+}
+
+/** Lemon Squeezy puts an HTML fragment in text/plain and appends a text footer. */
+function plainTextLooksLikeHtml(value: string): boolean {
+	return /^<(?:!doctype|html|body|div|table|p|a|span|td|tr)\b/i.test(value.trimStart().slice(0, 2000));
+}
+
+function readablePlainText(value: string): string {
+	if (!plainTextLooksLikeHtml(value)) return value.trim();
+	const withoutTags = value
+		.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+		.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+		.replace(/<br\s*\/?>/gi, "\n")
+		.replace(/<\/(?:p|div|tr|h[1-6]|li|table)>/gi, "\n")
+		.replace(/<[^>]+>/g, "");
+	return decodeEntities(withoutTags)
+		.replace(/[ \t]+\n/g, "\n")
+		.replace(/\n{3,}/g, "\n\n")
+		.trim();
+}
+
+function sanitizeEmailHtml(html: string): string {
+	return html
+		.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+		.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+		.replace(/<(?:iframe|object|embed|form|link|meta|base)[^>]*>[\s\S]*?<\/(?:iframe|object|embed|form)>/gi, "")
+		.replace(/<(?:iframe|object|embed|form|link|meta|base)\b[^>]*\/?>/gi, "")
+		.replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+		.replace(
+			/\s+(?:href|src|action)\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]+)/gi,
+			"",
+		)
+		.replace(/\s+src\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
 }
 
 // ── Contact row ───────────────────────────────────────────────────────────────
@@ -99,7 +158,9 @@ function ContactRow({ person, selected, onClick }: { person: Person; selected: b
 						{person.last_email_at ? relativeTime(person.last_email_at) : ""}
 					</span>
 				</div>
-				{person.name && <p className="text-[11.5px] text-zinc-400 truncate mt-0.5">{person.email}</p>}
+				{person.name && senderAddress(person.email) && (
+					<p className="text-[11.5px] text-zinc-400 truncate mt-0.5">{person.email}</p>
+				)}
 				<div className="flex items-center gap-2 mt-1">
 					<span className="text-[11px] text-zinc-400">
 						{person.total_count} msg{person.total_count !== 1 ? "s" : ""}
@@ -130,8 +191,9 @@ function EmailCard({
 	const isSent = item.direction === "outbound";
 	const date = new Date(item.timestamp);
 	const subject = item.subject;
-	const body = stripQuotedReply(item.body_text);
-	const preview = body?.replace(/\s+/g, " ").trim().slice(0, 120);
+	const html = item.body_html ? sanitizeEmailHtml(item.body_html) : "";
+	const body = readablePlainText(stripQuotedReply(item.body_text));
+	const preview = (html ? readablePlainText(html) : body).replace(/\s+/g, " ").trim().slice(0, 120);
 
 	return (
 		<div
@@ -197,10 +259,15 @@ function EmailCard({
 
 			{open && (
 				<div className="px-4 pb-4 pt-1 border-t border-zinc-100">
-					{body ? (
+					{html ? (
+						<div
+							className="email-html text-[13px] text-zinc-700 leading-relaxed overflow-x-auto [&_a]:text-orange-700 [&_a]:underline [&_img]:max-w-full [&_table]:max-w-full"
+							dangerouslySetInnerHTML={{ __html: html }}
+						/>
+					) : body ? (
 						<p className="text-[13px] text-zinc-700 leading-relaxed whitespace-pre-wrap">{body}</p>
 					) : (
-						<p className="text-[13px] text-zinc-400 italic">No plain-text content</p>
+						<p className="text-[13px] text-zinc-400 italic">No message content</p>
 					)}
 				</div>
 			)}
@@ -245,7 +312,9 @@ function ThreadPanel({
 				</div>
 				<div className="flex-1 min-w-0 leading-none">
 					<p className="text-[13.5px] font-semibold text-zinc-900">{person.name ?? person.email}</p>
-					{person.name && <p className="text-[11.5px] text-zinc-400 mt-[3px]">{person.email}</p>}
+					{person.name && senderAddress(person.email) && (
+						<p className="text-[11.5px] text-zinc-400 mt-[3px]">{person.email}</p>
+					)}
 				</div>
 				<span className="text-[11.5px] text-zinc-400 shrink-0">
 					{groups.length} conversation{groups.length !== 1 ? "s" : ""}

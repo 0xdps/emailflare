@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { login } from "../api";
+import { useUser } from "../UserContext";
 
 function AppLogo({ size = 28 }: { size?: number }) {
 	return (
@@ -22,6 +23,7 @@ function AppLogo({ size = 28 }: { size?: number }) {
 
 export default function Login() {
 	const navigate = useNavigate();
+	const { refresh } = useUser();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
@@ -34,6 +36,9 @@ export default function Login() {
 		setLoading(true);
 		try {
 			await login(email, password);
+			// The session cookie is new. UserProvider loaded before login, so
+			// refresh before navigating or the sidebar keeps the logged-out role.
+			await refresh();
 			navigate({ to: "/inbox" });
 		} catch {
 			setError("Invalid email or password.");

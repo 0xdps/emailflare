@@ -5,9 +5,15 @@ interface UserContextValue {
 	user: User | null;
 	loading: boolean;
 	error: Error | null;
+	refresh: () => Promise<User | null>;
 }
 
-const UserContext = createContext<UserContextValue>({ user: null, loading: true, error: null });
+const UserContext = createContext<UserContextValue>({
+	user: null,
+	loading: true,
+	error: null,
+	refresh: async () => null,
+});
 
 /**
  * Fetches the current user once and provides it to the entire component tree.
@@ -18,14 +24,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);
 
-	useEffect(() => {
-		me()
-			.then(setUser)
-			.catch(setError)
-			.finally(() => setLoading(false));
+	const refresh = React.useCallback(async () => {
+		try {
+			const next = await me();
+			setUser(next);
+			setError(null);
+			return next;
+		} catch (err) {
+			setUser(null);
+			setError(err instanceof Error ? err : new Error("Failed to load user"));
+			return null;
+		} finally {
+			setLoading(false);
+		}
 	}, []);
 
-	return <UserContext.Provider value={{ user, loading, error }}>{children}</UserContext.Provider>;
+	useEffect(() => {
+		void refresh();
+	}, [refresh]);
+
+	return <UserContext.Provider value={{ user, loading, error, refresh }}>{children}</UserContext.Provider>;
 }
 
 /** Read the current user from context. Never re-fetches. */

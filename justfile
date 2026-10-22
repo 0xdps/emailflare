@@ -341,6 +341,21 @@ emailflare-inbox-routing domain='':
 emailflare-inbox-build-ui:
     cd services/inbox-ui && pnpm install --frozen-lockfile && pnpm build
 
+# List inbox login accounts in the remote D1 database (no password hashes).
+# Pass --local to query the wrangler dev database instead.
+# Usage: just emailflare-inbox-users
+#        just emailflare-inbox-users --local
+emailflare-inbox-users *args:
+    cd services/inbox-worker && npx wrangler d1 execute emailflare {{ if args == '' { '--remote' } else { args } }} --command "SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC;"
+
+# Set a new inbox login password for an existing user. The old password cannot
+# be recovered (PBKDF2 hash). Prompts for the new password; it is not echoed
+# into the recipe args and is not printed.
+# Usage: just emailflare-inbox-reset-password you@example.com
+#        just emailflare-inbox-reset-password you@example.com --local
+emailflare-inbox-reset-password email *args:
+    node scripts/reset-inbox-password.mjs {{email}} {{args}}
+
 # Update an inbox Worker secret interactively.
 # Usage: just emailflare-inbox-secret SESSION_SECRET
 emailflare-inbox-secret name:

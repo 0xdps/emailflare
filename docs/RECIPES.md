@@ -246,6 +246,32 @@ Build `inbox-ui` without deploying (useful to pre-build before `emailflare-inbox
 just emailflare-inbox-build-ui
 ```
 
+### `just emailflare-inbox-users [--local]`
+
+List inbox login accounts (id, name, email, role). Does not print password hashes. Defaults to the remote D1 database.
+
+```sh
+just emailflare-inbox-users
+just emailflare-inbox-users --local
+```
+
+### `just emailflare-inbox-reset-password <email> [--local]`
+
+Set a new login password for an existing inbox user. The stored password is a one-way PBKDF2 hash, so a forgotten password cannot be recovered — this replaces it.
+
+Requires `wrangler login` (or `CLOUDFLARE_API_TOKEN`) for the remote database. The new password is prompted and is not printed.
+
+```sh
+just emailflare-inbox-reset-password you@example.com
+just emailflare-inbox-reset-password you@example.com --local
+```
+
+This is an operator recovery path, not a self-service "forgot password" email. There is no in-app reset flow. Other options:
+
+- **Email API dashboard** (`email-worker`) does not use this password. Its login is the `ADMIN_TOKEN` Worker secret. Rotate it with `just emailflare-api-worker-secret ADMIN_TOKEN` (the old token cannot be read back).
+- **Another super-admin** can invite a new user, but cannot change the owner's password. Use this recipe for that.
+- **Wiping D1** and running setup again creates a new owner, and deletes every domain, inbox, and log. Do not do that just to recover a password.
+
 ### `just emailflare-inbox-secret <NAME>`
 
 Set or rotate an inbox Worker secret interactively.

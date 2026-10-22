@@ -23,7 +23,9 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
 	const email = await PostalMime.parse(raw);
 	const db = new D1Db(env.DB);
 
-	const fromAddress = message.from.toLowerCase();
+	// message.from is the SMTP envelope sender. Marketing mail often uses a
+	// bounces+... address there while the visible From header is the brand.
+	const fromAddress = (email.from?.address ?? message.from).toLowerCase();
 	const toAddress = message.to.toLowerCase();
 	const now = new Date().toISOString();
 

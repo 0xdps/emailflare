@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { getInvite, acceptInvite } from "../api";
+import { useUser } from "../UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,7 @@ function AppLogo({ size = 30 }: { size?: number }) {
 export default function AcceptInvite() {
 	const { token } = useParams({ from: "/invite/$token" });
 	const navigate = useNavigate();
+	const { refresh } = useUser();
 
 	const [inviteEmail, setInviteEmail] = useState("");
 	const [name, setName] = useState("");
@@ -58,6 +60,7 @@ export default function AcceptInvite() {
 		setLoading(true);
 		try {
 			await acceptInvite(token, name.trim(), password);
+			await refresh();
 			navigate({ to: "/inbox" });
 		} catch (err: any) {
 			const msg = err?.response?.data?.error;

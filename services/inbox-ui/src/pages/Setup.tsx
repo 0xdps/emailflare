@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { setup } from "../api";
+import { useUser } from "../UserContext";
 
 function AppLogo({ size = 28 }: { size?: number }) {
 	return (
@@ -22,6 +23,7 @@ function AppLogo({ size = 28 }: { size?: number }) {
 
 export default function Setup() {
 	const navigate = useNavigate();
+	const { refresh } = useUser();
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -44,6 +46,7 @@ export default function Setup() {
 		setLoading(true);
 		try {
 			await setup(name.trim(), email.trim(), password);
+			await refresh();
 			navigate({ to: "/inbox" });
 		} catch (err: any) {
 			const msg = err?.response?.data?.error;
