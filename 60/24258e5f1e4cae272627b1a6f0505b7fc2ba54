@@ -1,0 +1,16 @@
+services/emails/src/layouts/EmailVerify.tsx
+  h_95aea6b4aa8772 47,50,58,60,67
+services/emails/src/render.ts
+  h_95aea6b4aa8772 115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6024258e5f1e4cae272627b1a6f0505b7fc2ba54",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
