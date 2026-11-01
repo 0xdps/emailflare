@@ -18,9 +18,7 @@ interface EmailVerifyProps {
 	name?: string;
 	appName?: string;
 	verifyUrl?: string;
-	magicUrl?: string;
 	code?: string;
-	otp?: string;
 	expiresIn?: string;
 }
 
@@ -28,14 +26,9 @@ export const EmailVerify: React.FC<EmailVerifyProps> = ({
 	name = "there",
 	appName = "our app",
 	verifyUrl,
-	magicUrl,
 	code,
-	otp,
 	expiresIn = "10 minutes",
 }) => {
-	const actionUrl = magicUrl || verifyUrl;
-	const displayCode = code || otp;
-
 	return (
 		<Html>
 			<Head />
@@ -51,10 +44,10 @@ export const EmailVerify: React.FC<EmailVerifyProps> = ({
 							code will expire in <strong>{expiresIn}</strong>.
 						</Text>
 
-						{actionUrl && (
+						{verifyUrl && (
 							<Section className="my-8 text-center">
 								<Button
-									href={actionUrl}
+									href={verifyUrl}
 									className="bg-email-primary text-email-primary-fg font-semibold rounded-lg px-6 py-3 no-underline inline-block"
 								>
 									Sign in with one click →
@@ -62,16 +55,16 @@ export const EmailVerify: React.FC<EmailVerifyProps> = ({
 							</Section>
 						)}
 
-						{displayCode && (
+						{code && (
 							<Section className="my-6">
-								{actionUrl && (
+								{verifyUrl && (
 									<Text className="text-email-body text-sm font-medium mb-3 text-center">
 										Or enter this code manually:
 									</Text>
 								)}
 								<div className="text-center">
 									<Text className="text-3xl font-bold tracking-[0.25em] text-email-primary bg-email-primary-subtle rounded-xl px-6 py-4 font-mono inline-block m-0">
-										{displayCode}
+										{code}
 									</Text>
 								</div>
 							</Section>

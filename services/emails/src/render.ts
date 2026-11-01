@@ -112,7 +112,7 @@ export const LAYOUTS: Record<LayoutName, { label: string; variables: string[] }>
 	otp: { label: "OTP Code", variables: ["name", "code", "expiresIn"] },
 	"email-verify": {
 		label: "Email Verification",
-		variables: ["name", "appName", "verifyUrl", "magicUrl", "code", "otp", "expiresIn"],
+		variables: ["name", "appName", "verifyUrl", "code", "expiresIn"],
 	},
 	"password-reset": { label: "Password Reset", variables: ["name", "appName", "resetUrl", "expiresIn"] },
 	"password-changed": { label: "Password Changed", variables: ["name", "appName", "changedAt", "supportUrl"] },
