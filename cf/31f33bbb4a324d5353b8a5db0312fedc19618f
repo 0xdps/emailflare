@@ -1,0 +1,34 @@
+package.json
+  h_95aea6b4aa8772 13
+packages/email-core/src/index.ts
+  h_95aea6b4aa8772 182
+packages/email-core/test/keys.test.ts
+  h_95aea6b4aa8772 1-36
+packages/inbox-core/src/index.ts
+  h_95aea6b4aa8772 376-426
+packages/inbox-core/test/sender.test.ts
+  h_95aea6b4aa8772 1-105
+services/inbox-server/package.json
+  h_95aea6b4aa8772 10-11
+services/inbox-server/src/routes/inbox/compose.ts
+  h_95aea6b4aa8772 12,25-36
+services/inbox-server/src/routes/keys.ts
+  h_95aea6b4aa8772 3,7,18-20,26,58
+services/inbox-server/test/keys-auth.test.ts
+  h_95aea6b4aa8772 1-70
+services/inbox-worker/src/routes/inbox/compose.ts
+  h_95aea6b4aa8772 20,29-35,37-42
+services/inbox-worker/src/routes/keys.ts
+  h_95aea6b4aa8772 7,18-19,21,28,62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cf31f33bbb4a324d5353b8a5db0312fedc19618f",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
