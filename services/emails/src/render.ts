@@ -110,7 +110,10 @@ export const LAYOUTS: Record<LayoutName, { label: string; variables: string[] }>
 	"magic-link": { label: "Magic Link", variables: ["name", "magicUrl", "expiresIn"] },
 	notification: { label: "Notification", variables: ["name", "title", "message", "actionUrl", "actionLabel"] },
 	otp: { label: "OTP Code", variables: ["name", "code", "expiresIn"] },
-	"email-verify": { label: "Email Verification", variables: ["name", "appName", "verifyUrl", "expiresIn"] },
+	"email-verify": {
+		label: "Email Verification",
+		variables: ["name", "appName", "verifyUrl", "magicUrl", "code", "otp", "expiresIn"],
+	},
 	"password-reset": { label: "Password Reset", variables: ["name", "appName", "resetUrl", "expiresIn"] },
 	"password-changed": { label: "Password Changed", variables: ["name", "appName", "changedAt", "supportUrl"] },
 	"new-login": {
