@@ -7,7 +7,8 @@
 		"dev": "tsx watch src/index.ts",
 		"build": "tsc",
 		"start": "node dist/index.js",
-		"migrate": "node dist/migrate.js"
+		"migrate": "node dist/migrate.js",
+		"test": "MESAHUB_URL=mh://dummy@localhost:8080/db REDIS_URL=redis://localhost:6379 tsx --test test/*.test.ts"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.744.0",

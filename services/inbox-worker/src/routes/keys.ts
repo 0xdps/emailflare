@@ -4,6 +4,7 @@ import { sha256Hex } from "../middleware/apiKey.ts";
 import { makeDb } from "../db.ts";
 import type { HonoEnv } from "../env.ts";
 import { keyCreateSchema, generateId } from "@emailflare/email-core";
+import { requireAdmin } from "../middleware/auth.ts";
 
 function randomHex(bytes: number): string {
 	const arr = crypto.getRandomValues(new Uint8Array(bytes));
@@ -14,15 +15,17 @@ function randomHex(bytes: number): string {
 
 const app = new Hono<HonoEnv>();
 
+app.use("*", requireAdmin);
+
 // GET /api/keys
-app.get("/", async (c) => {
+app.get("/", requireAdmin, async (c) => {
 	const { apiKeys } = makeDb(c.env.DB);
 	const rows = await apiKeys.find({ orderBy: [{ column: "created_at", direction: "desc" }] });
 	return c.json(rows.map(({ key_hash: _, ...r }) => r));
 });
 
 // POST /api/keys
-app.post("/", zValidator("json", keyCreateSchema), async (c) => {
+app.post("/", requireAdmin, zValidator("json", keyCreateSchema), async (c) => {
 	const { name, type, scope, domainIds } = c.req.valid("json");
 	const { apiKeys, apiKeyDomains } = makeDb(c.env.DB);
 
@@ -56,7 +59,7 @@ app.post("/", zValidator("json", keyCreateSchema), async (c) => {
 });
 
 // DELETE /api/keys/:id  (revoke)
-app.delete("/:id", async (c) => {
+app.delete("/:id", requireAdmin, async (c) => {
 	const { apiKeys } = makeDb(c.env.DB);
 	const row = await apiKeys.findOne({ where: { id: c.req.param("id") } });
 	if (!row) return c.json({ error: "API key not found" }, 404);

@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
-import { generateId } from "@emailflare/email-core";
+import { generateId, keyCreateSchema } from "@emailflare/email-core";
 import { sha256Hex } from "../middleware/apiKey.js";
 import { makeDb } from "../db.js";
 import type { HonoEnv } from "../env.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 function randomHex(bytes: number): string {
 	const arr = crypto.getRandomValues(new Uint8Array(bytes));
@@ -15,20 +15,15 @@ function randomHex(bytes: number): string {
 
 const app = new Hono<HonoEnv>();
 
-app.get("/", async (c) => {
+app.use("*", requireAdmin);
+
+app.get("/", requireAdmin, async (c) => {
 	const { apiKeys } = makeDb();
 	const rows = await apiKeys.find({ orderBy: [{ column: "created_at", direction: "desc" }] });
 	return c.json(rows.map(({ key_hash: _, ...r }) => r));
 });
 
-const createSchema = z.object({
-	name: z.string().min(1),
-	type: z.enum(["test", "live"]).default("live"),
-	scope: z.enum(["global", "domain", "multi"]).default("global"),
-	domainIds: z.array(z.string()).optional(),
-});
-
-app.post("/", zValidator("json", createSchema), async (c) => {
+app.post("/", requireAdmin, zValidator("json", keyCreateSchema), async (c) => {
 	const { name, type, scope, domainIds } = c.req.valid("json");
 	const { apiKeys, apiKeyDomains } = makeDb();
 
@@ -60,7 +55,7 @@ app.post("/", zValidator("json", createSchema), async (c) => {
 	return c.json({ ...safeRow, key: rawKey }, 201);
 });
 
-app.delete("/:id", async (c) => {
+app.delete("/:id", requireAdmin, async (c) => {
 	const { apiKeys } = makeDb();
 	const row = await apiKeys.findOne({ where: { id: c.req.param("id") } });
 	if (!row) return c.json({ error: "API key not found" }, 404);

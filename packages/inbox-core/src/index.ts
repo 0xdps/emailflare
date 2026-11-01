@@ -373,3 +373,54 @@ export async function resolveThreadId(
 	}
 	return opts.generateId();
 }
+
+export interface VerifyInboxSenderResult {
+	allowed: boolean;
+	status: 200 | 400 | 403;
+	error?: string;
+	inboxId?: string;
+}
+
+/**
+ * Verify whether an authenticated caller can send mail from the specified inbox address:
+ * - Admin and super-admin roles can send from any configured inbox.
+ * - Member and tester roles can only send from inboxes they belong to in inbox_members.
+ * - Senders not matching any configured inbox are rejected.
+ */
+export async function verifyInboxSender(
+	db: InboxDbHandle,
+	fromAddress: string,
+	user: { id: string; role: string },
+): Promise<VerifyInboxSenderResult> {
+	const { email } = parseEmailAddress(fromAddress);
+
+	const inbox = await db.query("SELECT id FROM inboxes WHERE LOWER(email) = ? LIMIT 1", [email]);
+	const inboxRow = inbox.rows[0];
+	if (!inboxRow) {
+		return {
+			allowed: false,
+			status: 400,
+			error: `Sender address "${fromAddress}" is not a configured inbox`,
+		};
+	}
+
+	const inboxId = inboxRow.id as string;
+	if (user.role === "admin" || user.role === "super-admin") {
+		return { allowed: true, status: 200, inboxId };
+	}
+
+	const member = await db.query("SELECT 1 FROM inbox_members WHERE inbox_id = ? AND user_id = ? LIMIT 1", [
+		inboxId,
+		user.id,
+	]);
+	if (!member.rows[0]) {
+		return {
+			allowed: false,
+			status: 403,
+			error: "Forbidden: You are not authorized to send from this inbox",
+			inboxId,
+		};
+	}
+
+	return { allowed: true, status: 200, inboxId };
+}

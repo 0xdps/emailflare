@@ -179,7 +179,7 @@ export type TemplateInput = z.infer<typeof templateSchema>;
 export const keyCreateSchema = z.object({
 	name: z.string().min(1),
 	type: z.enum(["test", "live"]).default("live"),
-	scope: z.enum(["global", "domain", "multi"]).default("global"),
+	scope: z.enum(["global", "domain", "multi"]).default("domain"),
 	domainIds: z.array(z.string()).optional(),
 });
 

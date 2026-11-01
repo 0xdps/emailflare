@@ -17,6 +17,7 @@ import {
 	threadMessageId,
 	upsertPerson,
 	resolveThreadId,
+	verifyInboxSender,
 } from "@emailflare/inbox-core";
 
 const app = new Hono<HonoEnv>();
@@ -25,8 +26,20 @@ const app = new Hono<HonoEnv>();
 app.post("/", zValidator("json", composeSchema), async (c) => {
 	try {
 		const body = c.req.valid("json");
-		const now = new Date().toISOString();
+		const userId = c.get("userId");
+		const userRole = c.get("userRole");
+
+		if (!userId || !userRole) {
+			return c.json({ error: "Unauthorized" }, 401);
+		}
+
 		const db = new D1Db(c.env.DB);
+		const auth = await verifyInboxSender(db, body.from, { id: userId, role: userRole });
+		if (!auth.allowed) {
+			return c.json({ error: auth.error }, auth.status);
+		}
+
+		const now = new Date().toISOString();
 
 		const personId = body.personId ?? (await upsertPerson(db, body.to, body.from, { generateId }));
 

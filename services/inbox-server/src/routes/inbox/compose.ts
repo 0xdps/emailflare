@@ -9,6 +9,7 @@ import {
 	threadMessageId,
 	upsertPerson,
 	resolveThreadId,
+	verifyInboxSender,
 } from "@emailflare/inbox-core";
 import { sendEmail, type CFSendEmailParams } from "../../services/cloudflare.js";
 import { rawDb } from "../../db.js";
@@ -21,6 +22,18 @@ const app = new Hono<HonoEnv>();
 app.post("/", zValidator("json", composeSchema), async (c) => {
 	try {
 		const body = c.req.valid("json");
+		const userId = c.get("userId");
+		const userRole = c.get("userRole");
+
+		if (!userId || !userRole) {
+			return c.json({ error: "Unauthorized" }, 401);
+		}
+
+		const auth = await verifyInboxSender(rawDb, body.from, { id: userId, role: userRole });
+		if (!auth.allowed) {
+			return c.json({ error: auth.error }, auth.status);
+		}
+
 		const now = new Date().toISOString();
 		const personId = body.personId ?? (await upsertPerson(rawDb, body.to, body.from, { generateId }));
 
