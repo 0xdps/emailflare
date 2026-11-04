@@ -1,0 +1,91 @@
+{
+	"name": "@emailflare/web",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"@emailflare/email-core": "workspace:*",
+		"@emailflare/emails": "workspace:*",
+		"@base-ui/react": "^1.4.1",
+		"@emailflare/inbox-core": "workspace:*",
+		"@hono/zod-validator": "^0.4.3",
+		"@vinext/cloudflare": "^1.3.2",
+		"axios": "^1.9.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"hono": "^4.7.5",
+		"highlight.js": "^11.11.1",
+		"jose": "^5.10.0",
+		"lucide-react": "^0.503.0",
+		"nanoid": "^5.1.5",
+		"postal-mime": "^2.3.0",
+		"react": "^19.3.1",
+		"react-dom": "^19.3.1",
+		"react-server-dom-webpack": "^19.3.1",
+		"recharts": "3.8.0",
+		"shadcn": "^4.3.1",
+		"tailwind-merge": "^3.2.0",
+		"tw-animate-css": "^1.4.0",
+		"vinext": "^1.4.2",
+		"zod": "^3.24.3"
+	},
+	"devDependencies": {
+		"@cloudflare/vite-plugin": "^1.67.0",
+		"@tailwindcss/postcss": "latest",
+		"@cloudflare/workers-types": "^4.20260702.1",
+		"@types/node": "^22.15.3",
+		"@types/react": "^19.1.2",
+		"@types/react-dom": "^19.1.2",
+		"@vitejs/plugin-react": "^6.0.0",
+		"@vitejs/plugin-rsc": "^0.5.38",
+		"tailwindcss": "^4.2.2",
+		"typescript": "^5.8.3",
+		"vite": "^8.0.0",
+		"wrangler": "^4.156.1"
+	},
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"start": "wrangler dev --config dist/server/wrangler.json",
+		"predeploy": "pnpm --dir ../.. run build:shared && pnpm run build",
+		"deploy": "wrangler d1 migrations apply DB --remote && vinext-cloudflare deploy --config dist/server/wrangler.json",
+		"preview": "pnpm run build && wrangler preview --config dist/server/wrangler.json",
+		"types": "wrangler types",
+		"migrations:apply:local": "wrangler d1 migrations apply DB --local",
+		"migrations:apply": "wrangler d1 migrations apply DB --remote"
+	},
+	"cloudflare": {
+		"bindings": {
+			"DB": {
+				"description": "Application database. A new D1 database is created on deploy; schema is applied by the deploy script."
+			},
+			"RATE_LIMIT_KV": {
+				"description": "Login and API rate-limit counters."
+			},
+			"ATTACHMENTS": {
+				"description": "Raw inbound message bodies and attachments."
+			},
+			"EMAIL_QUEUE": {
+				"description": "Outbound sequence delivery jobs."
+			},
+			"NOTIFICATIONS": {
+				"description": "Live inbox notifications. One Durable Object namespace, created with the Worker."
+			},
+			"SESSION_SECRET": {
+				"description": "Signs dashboard sessions. Generate with `openssl rand -hex 32`."
+			},
+			"CF_API_TOKEN": {
+				"description": "Cloudflare API token used to create sending domains and Email Routing rules. Needs Email Sending and Email Routing edit on this account."
+			},
+			"CF_ACCOUNT_ID": {
+				"description": "Cloudflare account ID. Dashboard → Workers & Pages → Account ID."
+			},
+			"PUBLIC_URL": {
+				"description": "Public origin used in unsubscribe links. Change this after you attach a custom domain."
+			},
+			"INBOX_WORKER_NAME": {
+				"description": "Worker name Email Routing should deliver to. Must match the Worker name (`emailflare`)."
+			}
+		}
+	}
+}

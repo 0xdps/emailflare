@@ -45,22 +45,6 @@ updates:
           - dependency-name: "@cloudflare/workers-types"
             update-types: ["version-update:semver-major"]
 
-    # ── Docker images ─────────────────────────────────────────────────────────
-    - package-ecosystem: "docker"
-      directories:
-          - "/deploy/docker"
-          - "/infra"
-          - "/services/*"
-      schedule:
-          interval: "weekly"
-          day: "monday"
-      open-pull-requests-limit: 5
-      cooldown:
-          default-days: 7
-      groups:
-          docker-all:
-              patterns: ["*"]
-
     # ── GitHub Actions ────────────────────────────────────────────────────────
     - package-ecosystem: "github-actions"
       directory: "/"

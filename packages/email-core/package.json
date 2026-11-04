@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
-	"description": "Shared types, Zod schemas, and pure helpers for email-worker (CF) and email-server (Node.js)",
+	"description": "Shared types, Zod schemas, and pure helpers for the EmailFlare Worker",
 	"exports": {
 		".": {
 			"types": "./src/index.ts",

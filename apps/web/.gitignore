@@ -1,0 +1,11 @@
+node_modules
+.env*
+!.env.example
+.dev.vars
+!.dev.vars.example
+.next
+next-env.d.ts
+/dist/
+.vinext/
+.wrangler/
+worker-configuration.d.ts
