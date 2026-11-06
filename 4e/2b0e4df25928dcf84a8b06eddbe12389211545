@@ -1,0 +1,26 @@
+apps/web/app/actions/lists.ts
+  h_95aea6b4aa8772 1-45
+apps/web/app/actions/suppressions.ts
+  h_95aea6b4aa8772 1-59
+apps/web/app/lists/page.tsx
+  h_95aea6b4aa8772 3-8,12
+apps/web/app/suppressions/page.tsx
+  h_95aea6b4aa8772 3-14,18
+apps/web/components/pages/Lists.tsx
+  h_95aea6b4aa8772 6,14,23-25,40-43,50-57,62,72-76,78-80
+apps/web/components/pages/Suppressions.tsx
+  h_95aea6b4aa8772 6,15,17,27,73-77,83,145-146,151,166-169,174-177,179-180
+apps/web/lib/server/queries.ts
+  h_95aea6b4aa8772 253-322
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4e2b0e4df25928dcf84a8b06eddbe12389211545",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
