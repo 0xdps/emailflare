@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { ShieldOff, Search, X, Trash2, Plus, ChevronLeft, ChevronRight, MailX } from "lucide-react";
 import api from "@/lib/api";
+import { createSuppressionAction, deleteSuppressionAction } from "@/app/actions/suppressions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +12,9 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type SuppressionReason = "hard_bounce" | "soft_bounce" | "complaint" | "manual" | "unsubscribed";
+export type SuppressionReason = "hard_bounce" | "soft_bounce" | "complaint" | "manual" | "unsubscribed";
 
-interface SuppressionRow {
+export interface SuppressionRow {
 	id: string;
 	email: string;
 	reason: SuppressionReason;
@@ -23,7 +24,7 @@ interface SuppressionRow {
 	created_at: string;
 }
 
-interface PagedSuppressions {
+export interface PagedSuppressions {
 	data: SuppressionRow[];
 	total: number;
 	page: number;
@@ -69,13 +70,17 @@ function AddDialog({ open, onClose, onAdded }: { open: boolean; onClose: () => v
 		setErr("");
 		setSaving(true);
 		try {
-			await api.post("/api/suppressions", { email, reason });
+			const res = await createSuppressionAction({ email, reason });
+			if (res.error) {
+				setErr(res.error);
+				return;
+			}
 			onAdded();
 			onClose();
 			setEmail("");
 			setReason("manual");
 		} catch (error: unknown) {
-			const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
+			const msg = (error as { message?: string })?.message;
 			setErr(msg ?? "Failed to add suppression");
 		} finally {
 			setSaving(false);
@@ -137,13 +142,13 @@ function AddDialog({ open, onClose, onAdded }: { open: boolean; onClose: () => v
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export default function SuppressionsPage() {
-	const [result, setResult] = useState<PagedSuppressions | null>(null);
+export default function SuppressionsPage({ initialResult }: { initialResult?: PagedSuppressions }) {
+	const [result, setResult] = useState<PagedSuppressions | null>(initialResult ?? null);
 	const [page, setPage] = useState(1);
 	const [reason, setReason] = useState("");
 	const [search, setSearch] = useState("");
 	const [searchInput, setSearchInput] = useState("");
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(initialResult === undefined);
 	const [addOpen, setAddOpen] = useState(false);
 	const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -158,14 +163,21 @@ export default function SuppressionsPage() {
 	}, [page, reason, search]);
 
 	useEffect(() => {
-		load();
-	}, [load]);
+		if (initialResult === undefined || page !== 1 || reason !== "" || search !== "") {
+			load();
+		}
+	}, [load, initialResult, page, reason, search]);
 
 	async function handleDelete(id: string) {
 		setDeleting(id);
 		try {
-			await api.delete(`/api/suppressions/${id}`);
+			const res = await deleteSuppressionAction(id);
+			if (res.error) {
+				return;
+			}
 			await load();
+		} catch (error: unknown) {
+			console.error("Failed to delete suppression", error);
 		} finally {
 			setDeleting(null);
 		}

@@ -250,3 +250,73 @@ export async function getInboxesList() {
 	const rows = await workerEnv.DB.prepare("SELECT * FROM inboxes ORDER BY created_at DESC").all();
 	return (rows.results ?? []).map(toInbox);
 }
+
+export async function getListsList() {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.DB) return [];
+	const { lists } = makeDb(workerEnv.DB);
+	return await lists.find({ orderBy: [{ column: "created_at", direction: "asc" }] });
+}
+
+export interface PagedSuppressions {
+	data: Array<{
+		id: string;
+		email: string;
+		reason: "hard_bounce" | "soft_bounce" | "complaint" | "manual" | "unsubscribed";
+		domain_id: string | null;
+		email_log_id: string | null;
+		list_id: string | null;
+		created_at: string;
+	}>;
+	total: number;
+	page: number;
+	limit: number;
+	pages: number;
+}
+
+export async function getSuppressionsList(
+	page = 1,
+	limit = 50,
+	reason?: string,
+	search?: string,
+): Promise<PagedSuppressions> {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.DB) {
+		return { data: [], total: 0, page: 1, limit, pages: 0 };
+	}
+
+	const offset = (page - 1) * limit;
+	const conditions: string[] = [];
+	const params: unknown[] = [];
+
+	if (reason) {
+		conditions.push("reason = ?");
+		params.push(reason);
+	}
+	if (search) {
+		conditions.push("email LIKE ?");
+		params.push(`%${search}%`);
+	}
+
+	const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+	const { db } = makeDb(workerEnv.DB);
+
+	const [dataResult, countResult] = await Promise.all([
+		db.query(`SELECT * FROM suppressions ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [
+			...params,
+			limit,
+			offset,
+		]),
+		db.query<{ total: number }>(`SELECT COUNT(*) as total FROM suppressions ${where}`, params),
+	]);
+
+	const total = countResult.rows[0]?.total ?? 0;
+
+	return {
+		data: dataResult.rows as any,
+		total,
+		page,
+		limit,
+		pages: Math.ceil(total / limit),
+	};
+}

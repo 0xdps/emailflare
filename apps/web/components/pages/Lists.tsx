@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Users, X } from "lucide-react";
 import api from "@/lib/api";
+import { createListAction, deleteListAction } from "@/app/actions/lists";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface List {
+export interface List {
 	id: string;
 	name: string;
 	slug: string | null;
@@ -19,9 +20,9 @@ interface List {
 	created_at: string;
 }
 
-export default function ListsPage() {
-	const [lists, setLists] = useState<List[]>([]);
-	const [loading, setLoading] = useState(true);
+export default function ListsPage({ initialLists }: { initialLists?: List[] }) {
+	const [lists, setLists] = useState<List[]>(initialLists ?? []);
+	const [loading, setLoading] = useState(initialLists === undefined);
 	const [creating, setCreating] = useState(false);
 	const [form, setForm] = useState({ name: "", description: "" });
 	const [saving, setSaving] = useState(false);
@@ -36,20 +37,29 @@ export default function ListsPage() {
 	}
 
 	useEffect(() => {
-		load();
-	}, []);
+		if (initialLists === undefined) {
+			load();
+		}
+	}, [initialLists]);
 
 	async function handleCreate(e: React.FormEvent) {
 		e.preventDefault();
 		setErr("");
 		setSaving(true);
 		try {
-			await api.post("/api/lists", { name: form.name, description: form.description || undefined });
+			const res = await createListAction({
+				name: form.name,
+				description: form.description || undefined,
+			});
+			if (res.error) {
+				setErr(res.error);
+				return;
+			}
 			setForm({ name: "", description: "" });
 			setCreating(false);
 			load();
 		} catch (error: unknown) {
-			const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error;
+			const msg = (error as { message?: string })?.message;
 			setErr(msg ?? "Failed to create list");
 		} finally {
 			setSaving(false);
@@ -59,8 +69,15 @@ export default function ListsPage() {
 	async function handleDelete(id: string) {
 		setDeleting(id);
 		try {
-			await api.delete(`/api/lists/${id}`);
+			const res = await deleteListAction(id);
+			if (res.error) {
+				setErr(res.error);
+				return;
+			}
 			load();
+		} catch (error: unknown) {
+			const msg = (error as { message?: string })?.message;
+			setErr(msg ?? "Failed to delete list");
 		} finally {
 			setDeleting(null);
 		}
