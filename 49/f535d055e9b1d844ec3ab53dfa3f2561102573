@@ -1,0 +1,16 @@
+apps/web/lib/server/queries.ts
+  h_95aea6b4aa8772 119
+apps/web/worker/inbox/routes/stats.ts
+  h_95aea6b4aa8772 54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "49f535d055e9b1d844ec3ab53dfa3f2561102573",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
