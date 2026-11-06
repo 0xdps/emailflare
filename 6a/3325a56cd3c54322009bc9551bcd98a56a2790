@@ -1,0 +1,30 @@
+apps/web/app/actions/inbox.ts
+  h_95aea6b4aa8772 1-12
+apps/web/app/actions/sequences.ts
+  h_95aea6b4aa8772 1-113
+apps/web/app/inbox/page.tsx
+  h_95aea6b4aa8772 3-11,15
+apps/web/app/inbox/sequences/page.tsx
+  h_95aea6b4aa8772 3-8,12
+apps/web/app/logs/page.tsx
+  h_95aea6b4aa8772 3-14,18
+apps/web/components/pages/Logs.tsx
+  h_95aea6b4aa8772 27,41,211-212,219-220,235-238,471,485
+apps/web/components/pages/inbox/People.tsx
+  h_95aea6b4aa8772 16,318-325,330,332,362-365,368-375,383
+apps/web/components/pages/inbox/Sequences.tsx
+  h_95aea6b4aa8772 5-6,135-137,147-152,174-179,181-184,196-199
+apps/web/lib/server/queries.ts
+  h_95aea6b4aa8772 189-268,334-386
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6a3325a56cd3c54322009bc9551bcd98a56a2790",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
