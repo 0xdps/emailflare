@@ -5,7 +5,7 @@ import { Icon } from "astro-icon/components";
 
 <Base
 	title="Deploy to Cloudflare Workers — EmailFlare"
-	description="Run EmailFlare on Cloudflare Workers with D1 SQLite, KV caching, and the full React admin UI — no servers, no Docker, no volumes. One command setup."
+	description="Deploy EmailFlare as a unified Cloudflare Worker with D1 SQLite, R2 storage, Durable Objects, and a full Next.js dashboard. Edge-native transactional email and collaborative team inbox."
 	keywords="emailflare cloudflare workers, deploy email api cloudflare, cloudflare d1 email, wrangler deploy email, serverless email api"
 	canonical="https://emailflare.dev/cloudflare"
 	ogUrl="https://emailflare.dev/cloudflare"
@@ -264,11 +264,6 @@ import { Icon } from "astro-icon/components";
 			margin-bottom: 8px;
 		}
 
-		.badge-docker {
-			background: oklch(93% 0.004 58);
-			color: var(--text-muted);
-			border: 1px solid var(--border-strong);
-		}
 		.badge-cf {
 			background: var(--blue-light);
 			color: var(--blue-dark);
@@ -503,12 +498,12 @@ import { Icon } from "astro-icon/components";
 				<div>
 					<div class="cf-badge">⚡ Deploy · Cloudflare Workers</div>
 					<h1>
-						Your email API on the <em>edge</em>. No servers, no Docker.
+						Your email engine on the <em>edge</em>. Zero ops, edge native.
 					</h1>
 					<p class="cf-hero-sub">
-						EmailFlare runs as a Cloudflare Worker — with D1 for storage, KV for caching, and the React
-						admin UI served as a static asset. No Docker, no volumes, no servers to manage. One command sets
-						everything up.
+						EmailFlare runs as a single unified Cloudflare Worker — with D1 SQLite, R2 storage, Durable
+						Objects, and a full Next.js dashboard. No infrastructure to maintain, no servers to manage. One
+						command deploys everything.
 					</p>
 					<div class="cf-actions">
 						<a class="btn btn-primary" href="#setup">
@@ -584,8 +579,8 @@ import { Icon } from "astro-icon/components";
 					Zero infrastructure overhead.
 				</h2>
 				<p class="section-sub">
-					Cloudflare Workers bring EmailFlare closer to your users and further from your ops burden — no
-					servers to provision, no containers to run, no volumes to back up.
+					Cloudflare Workers bring EmailFlare closer to your users and eliminate operational overhead — no
+					servers to provision, no complex orchestration, no databases to maintain.
 				</p>
 			</div>
 			<div class="why-grid">
@@ -595,8 +590,8 @@ import { Icon } from "astro-icon/components";
 					</span>
 					<h3>Zero cold starts, global edge</h3>
 					<p>
-						Cloudflare Workers run on V8 isolates — no containers, no boot time. Your email API responds in
-						milliseconds from data centres in 300+ cities worldwide.
+						Cloudflare Workers run on lightweight V8 isolates with instant startup. Your email API responds
+						in milliseconds from data centres in 300+ cities worldwide.
 					</p>
 				</div>
 				<div class="why-card">
@@ -657,74 +652,81 @@ import { Icon } from "astro-icon/components";
 	<section class="cmp-section">
 		<div class="container">
 			<div class="section-head">
-				<div class="section-eyebrow">Comparison</div>
-				<h2 class="section-title">Cloudflare Workers vs. Docker self-host</h2>
+				<div class="section-eyebrow">Deployment Methods</div>
+				<h2 class="section-title">Automated CI/CD or Terminal CLI</h2>
 				<p class="section-sub">
-					Cloudflare Workers is the primary deploy path — zero-ops, edge-native. Docker self-hosting is the
-					secondary option for teams that want full control over their own servers.
+					Deploy automatically from GitHub via Cloudflare Workers Builds, or ship directly from your local
+					terminal with full workflow control.
 				</p>
 			</div>
 			<div class="cmp-grid">
 				<div class="cmp-col highlighted">
 					<div class="cmp-header">
-						<span class="badge badge-cf">Cloudflare Workers · Primary</span>
-						<h3>wrangler deploy</h3>
+						<span class="badge badge-cf">Workers Builds · Continuous</span>
+						<h3>Deploy to Cloudflare Button</h3>
 						<p>
-							Serverless edge deployment — no containers, no servers, no volumes. D1 + R2 + Durable
-							Objects.
+							Zero-friction Git integration — pushes trigger automatic builds, migrations, and
+							deployments.
 						</p>
 					</div>
 					<ul class="cmp-list">
 						<li>
-							<span class="ci ci-ok">✓</span> No servers to provision or manage
+							<span class="ci ci-ok">✓</span> Automatic deployments on Git push
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> Global edge — 300+ Cloudflare locations
+							<span class="ci ci-ok">✓</span> Auto-provisions D1, KV, R2, and Queue bindings
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> D1 SQLite — managed, no backup config needed
+							<span class="ci ci-ok">✓</span> Zero local tooling or Node.js setup required
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> Built-in Cloudflare edge logs and telemetry
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> Preview and production branch environments
 						</li>
 						<li>
 							<span class="ci ci-ok">✓</span> Unified Next.js UI + Sending API + Team Inbox
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> Real-time updates via Durable Object WebSockets
-						</li>
-						<li>
-							<span class="ci ci-ok">✓</span> Zero cost on Workers free tier for most teams
-						</li>
-						<li>
-							<span class="ci ci-ok">✓</span> One command to update: <code>just web-deploy</code>
+							<span class="ci ci-ok">✓</span> Fast zero-downtime atomic rollouts
 						</li>
 					</ul>
 				</div>
 				<div class="cmp-col">
 					<div class="cmp-header">
-						<span class="badge badge-docker">Docker self-host · Secondary</span>
-						<h3>compose.yaml + .env.local</h3>
-						<p>Full container stack — Hono API, React admin UI, SQLite storage on a server you control.</p>
+						<span
+							class="badge badge-cf"
+							style="background:oklch(22% 0.05 48 / 0.5);border-color:oklch(34% 0.08 48 / 0.5);"
+						>
+							Wrangler CLI · Developer Control
+						</span>
+						<h3>just web-deploy</h3>
+						<p>Command-line precision with offline Miniflare emulation and full scriptable access.</p>
 					</div>
 					<ul class="cmp-list">
 						<li>
-							<span class="ci ci-ok">✓</span> Full control over your infrastructure
+							<span class="ci ci-ok">✓</span> Offline local development with <code>just web-dev</code>
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> On-premises or private cloud friendly
+							<span class="ci ci-ok">✓</span> Local D1 database migrations via{" "}
+							<code>just web-migrate</code>
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> Railway, Fly, VPS, Docker Swarm — works anywhere
+							<span class="ci ci-ok">✓</span> Direct secret management via{" "}
+							<code>wrangler secret put</code>
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> In-house test mailbox — no external service
+							<span class="ci ci-ok">✓</span> Live edge log streaming with <code>wrangler tail</code>
 						</li>
 						<li>
-							<span class="ci ci-warn">⚠</span> Requires a server or PaaS platform
+							<span class="ci ci-ok">✓</span> Custom deployment scripts and pipeline automation
 						</li>
 						<li>
-							<span class="ci ci-warn">⚠</span> Volume management and backups on you
+							<span class="ci ci-ok">✓</span> Multi-account and custom domain routing support
 						</li>
 						<li>
-							<span class="ci ci-warn">⚠</span> Container restarts required for updates
+							<span class="ci ci-ok">✓</span> One-command production push: <code>just web-deploy</code>
 						</li>
 					</ul>
 				</div>
@@ -994,17 +996,12 @@ import { Icon } from "astro-icon/components";
 						options.
 					</p>
 				</a>
-				<a
-					class="next-card"
-					href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md"
-					target="_blank"
-					rel="noopener"
-				>
-					<span class="nc-label">Alternative</span>
-					<h3>Docker self-hosting guide</h3>
+				<a class="next-card" href="/templates">
+					<span class="nc-label">Templates</span>
+					<h3>50 React Email layouts</h3>
 					<p>
-						Prefer a container? The Docker Compose stack is the other deploy path — full control, your
-						server.
+						Browse built-in production templates for auth, billing, alerts, notifications, and welcome
+						emails.
 					</p>
 				</a>
 			</div>

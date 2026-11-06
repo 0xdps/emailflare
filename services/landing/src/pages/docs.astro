@@ -605,19 +605,10 @@ import Base from "../layouts/Base.astro";
 							<div class="qs-step">
 								<div class="qs-num">1</div>
 								<div class="qs-body">
-									<strong>Deploy EmailFlare</strong> — on Cloudflare Workers (primary) or Docker
-									Compose (secondary). See the{" "}
+									<strong>Deploy EmailFlare</strong> — deploy the single unified worker on Cloudflare
+									Workers in one command. See the{" "}
 									<a href="/cloudflare" style="color:var(--orange);text-decoration:none;">
 										Cloudflare Workers guide
-									</a>{" "}
-									or the{" "}
-									<a
-										href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md"
-										target="_blank"
-										rel="noopener"
-										style="color:var(--orange);text-decoration:none;"
-									>
-										self-hosting docs
 									</a>
 									.
 								</div>
@@ -657,15 +648,10 @@ import Base from "../layouts/Base.astro";
 								<h4>Cloudflare API token guide</h4>
 								<p>Exact permissions needed for Email Sending, DNS, and routing rules.</p>
 							</a>
-							<a
-								class="guide-card"
-								href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md"
-								target="_blank"
-								rel="noopener"
-							>
-								<div class="gc-label">Secondary</div>
-								<h4>Docker self-hosting guide</h4>
-								<p>Full Compose stack — container, volumes, environment variables.</p>
+							<a class="guide-card" href="/templates">
+								<div class="gc-label">Templates</div>
+								<h4>50 React Email layouts</h4>
+								<p>Production-ready templates for auth, billing, notifications, and onboarding.</p>
 							</a>
 						</div>
 					</div>
@@ -1224,7 +1210,10 @@ import Base from "../layouts/Base.astro";
 											<span class="status-err">500</span>
 										</td>
 										<td>Server error</td>
-										<td>Unexpected backend error — check container logs.</td>
+										<td>
+											Unexpected backend error — check Worker logs with <code>wrangler tail</code>
+											.
+										</td>
 									</tr>
 								</tbody>
 							</table>
@@ -1294,16 +1283,16 @@ import Base from "../layouts/Base.astro";
 							service needed.
 						</p>
 
-						<h3>Database errors in logs</h3>
+						<h3>Database migrations</h3>
 						<p>
-							If you see <em>"This SQL statement is not allowed on /query endpoint"</em>, upgrade to the
-							latest EmailFlare image — this was a bug fixed in the backend send route.
+							Ensure all D1 migrations are applied. Run <code>just web-migrate</code> for local
+							development or <code>just web-migrate-remote</code> for your production database.
 						</p>
 
 						<div class="callout callout-orange">
 							<span class="callout-icon">📋</span>
-							Always check container logs first: <code>docker compose logs -f emailflare</code>. Most
-							issues are visible in the startup or request output.
+							Check real-time Worker logs using <code>pnpm exec wrangler tail</code> or in the Cloudflare
+							Workers dashboard under Logs. Most issues will show clear error traces there.
 						</div>
 					</div>
 				</section>

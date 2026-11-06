@@ -10,7 +10,7 @@ const structuredData = {
 	description:
 		"EmailFlare is an open-source, edge-native email engine on Cloudflare: transactional email sending API, collaborative team inbox with email routing, 50 React Email templates, and a Next.js admin dashboard in a single unified worker bundle.",
 	applicationCategory: "DeveloperApplication",
-	operatingSystem: "Cloudflare Workers, Docker",
+	operatingSystem: "Cloudflare Workers",
 	license: "https://github.com/0xdps/emailflare/blob/trunk/LICENSE",
 	codeRepository: "https://github.com/0xdps/emailflare",
 	offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -660,12 +660,6 @@ const structuredData = {
 			margin-bottom: 14px;
 		}
 
-		.do-badge-docker {
-			background: oklch(22% 0.04 230 / 0.5);
-			color: oklch(68% 0.12 230);
-			border: 1px solid oklch(34% 0.08 230 / 0.5);
-		}
-
 		.do-badge-worker {
 			background: oklch(22% 0.06 48 / 0.5);
 			color: var(--orange);
@@ -749,9 +743,6 @@ const structuredData = {
 			white-space: nowrap;
 		}
 
-		.do-footer-docker a {
-			color: oklch(62% 0.12 230);
-		}
 		.do-footer-worker a {
 			color: var(--orange);
 		}
@@ -1106,11 +1097,6 @@ const structuredData = {
 			text-transform: uppercase;
 			padding: 2px 9px;
 			border-radius: 99px;
-		}
-		.product-badge-docker {
-			background: oklch(93% 0.02 230);
-			color: oklch(40% 0.12 230);
-			border: 1px solid oklch(80% 0.1 230 / 0.4);
 		}
 		.product-badge-worker {
 			background: var(--orange-light);
@@ -2248,31 +2234,31 @@ const structuredData = {
 				</p>
 			</div>
 			<div class="deploy-cta-grid" style="grid-template-columns: 1fr 1fr;">
-				<a href="/cloudflare" class="deploy-cta-card deploy-cta-email">
-					<div class="dcc-eyebrow">Cloudflare Workers</div>
-					<div class="dcc-title">Edge-Native Single Worker</div>
-					<p class="dcc-sub">
-						Zero-ops deployment on Cloudflare Workers with D1, R2, and Durable Objects. Run{" "}
-						<code>just web-deploy</code> or <code>wrangler deploy</code> to ship to 300+ edge locations.
-					</p>
-					<div class="dcc-cta">View Cloudflare deploy guide →</div>
-				</a>
 				<a
-					href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md"
+					href="https://deploy.workers.cloudflare.com/?url=https://github.com/0xdps/emailflare"
 					target="_blank"
 					rel="noopener"
-					class="deploy-cta-card deploy-cta-inbox"
+					class="deploy-cta-card deploy-cta-email"
 				>
-					<div class="dcc-eyebrow" style="color:var(--green)">
-						Self-Host / Docker
-					</div>
-					<div class="dcc-title">Docker Single Container</div>
+					<div class="dcc-eyebrow">Workers Builds</div>
+					<div class="dcc-title">One-Click Deploy</div>
 					<p class="dcc-sub">
-						Prefer running on your own VPS or server? Run the unified Docker image with embedded SQLite. No
-						extra services, one container setup.
+						Connect your GitHub repository to Cloudflare Workers. Automatically provisions D1, KV, R2, and
+						Queue, then deploys to 300+ edge locations on every push.
 					</p>
-					<div class="dcc-cta" style="color:var(--green)">
-						Self-hosting guide →
+					<div class="dcc-cta">Deploy to Cloudflare →</div>
+				</a>
+				<a href="/cloudflare" class="deploy-cta-card deploy-cta-inbox">
+					<div class="dcc-eyebrow" style="color:var(--orange)">
+						Wrangler &amp; CLI
+					</div>
+					<div class="dcc-title">Command-Line Deploy</div>
+					<p class="dcc-sub">
+						Prefer the terminal? Run <code>just install</code>, configure secrets, and ship with{" "}
+						<code>just web-deploy</code>. Supports full local offline development with Miniflare.
+					</p>
+					<div class="dcc-cta" style="color:var(--orange)">
+						Workers deploy guide →
 					</div>
 				</a>
 			</div>
@@ -2371,10 +2357,10 @@ const structuredData = {
 					<li>
 						<span class="ab-check">✓</span>
 						<div class="ab-text">
-							<strong>Docker single container</strong>
+							<strong>Local Miniflare development</strong>
 							<span>
-								Prefer self-hosting? The unified bundle also runs in a single Docker image with embedded
-								SQLite for any VPS or cloud host.
+								Develop and test offline with zero cloud friction using <code>just web-dev</code>.
+								Miniflare simulates D1, KV, R2, and queues locally on your machine.
 							</span>
 						</div>
 					</li>

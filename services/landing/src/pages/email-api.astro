@@ -495,11 +495,6 @@ import { Icon } from "astro-icon/components";
 			border-radius: 99px;
 			margin-bottom: 14px;
 		}
-		.do-badge-docker {
-			background: oklch(22% 0.04 230 / 0.5);
-			color: oklch(68% 0.12 230);
-			border: 1px solid oklch(34% 0.08 230 / 0.5);
-		}
 		.do-badge-worker {
 			background: oklch(22% 0.06 48 / 0.5);
 			color: var(--orange);
@@ -571,9 +566,6 @@ import { Icon } from "astro-icon/components";
 			font-weight: 600;
 			text-decoration: none;
 			white-space: nowrap;
-		}
-		.do-footer-docker a {
-			color: oklch(62% 0.12 230);
 		}
 		.do-footer-worker a {
 			color: var(--orange);
@@ -919,8 +911,8 @@ import { Icon } from "astro-icon/components";
 					</span>
 					<h3>One Worker, not an ops project</h3>
 					<p>
-						Backend, admin UI, and D1 SQLite storage are bundled in one Cloudflare Worker — no servers, no
-						containers. A Docker image ships too for self-hosting: one volume, no Postgres, no Redis.
+						Backend, Next.js admin dashboard, collaborative team inbox, and D1 SQLite storage are bundled in
+						one Cloudflare Worker — no servers to maintain, no external databases, and zero ops overhead.
 					</p>
 				</div>
 			</div>
@@ -1073,7 +1065,7 @@ import { Icon } from "astro-icon/components";
 						</div>
 						<div class="vs-row">
 							<span class="vs-icon">✓</span>
-							<span class="vs-row-label">Full React admin UI — self-hosted, one container</span>
+							<span class="vs-row-label">Full Next.js admin dashboard &amp; team inbox on the edge</span>
 						</div>
 					</div>
 				</div>
@@ -1179,10 +1171,10 @@ import { Icon } from "astro-icon/components";
 					<span class="card-icon">
 						<Icon name="lucide:database" />
 					</span>
-					<h3>Embedded SQLite Storage</h3>
+					<h3>Serverless D1 SQLite Storage</h3>
 					<p>
-						Powered by mesahub-core — embedded SQLite runs inside the container, no external database. Mount
-						a volume at <code>/data</code> and persistence is handled.
+						Powered by Cloudflare D1 — serverless SQLite at the edge. Automatic replication, zero
+						maintenance, and instant query execution across 300+ locations.
 					</p>
 					<span class="feature-tag">Zero Ops</span>
 				</div>
@@ -1190,10 +1182,10 @@ import { Icon } from "astro-icon/components";
 					<span class="card-icon">
 						<Icon name="lucide:zap" />
 					</span>
-					<h3>Railway &amp; Docker Ready</h3>
+					<h3>Workers Builds &amp; 1-Click Deploy</h3>
 					<p>
-						Ships with a <code>deploy/docker/railway.json</code> for GitHub-connected Railway deploys, and a
-						published image at <code>ghcr.io/0xdps/emailflare:latest</code> for image-based deploys.
+						Connect your GitHub repository to Cloudflare Workers Builds for automated continuous deployments
+						on push, with all bindings provisioned automatically.
 					</p>
 					<span class="feature-tag">Deploy</span>
 				</div>
@@ -1286,21 +1278,21 @@ import { Icon } from "astro-icon/components";
 				<div class="section-eyebrow">Deploy</div>
 				<h2 class="section-title">Deploy Email API.</h2>
 				<p class="section-sub">
-					Cloudflare Workers is the primary path — zero-ops, edge-native. Docker self-hosting is available for
-					teams that want their own servers.
+					Deploy the unified EmailFlare worker in seconds via the Cloudflare Deploy button or via the Wrangler
+					CLI.
 				</p>
 			</div>
 			<div class="deploy-options">
-				<!-- ── Workers (primary) ── -->
+				<!-- ── Workers CLI ── -->
 				<div class="deploy-option" style="border-color: oklch(28% 0.08 48 / 0.7);">
 					<div class="do-header" style="border-bottom-color: oklch(22% 0.06 48 / 0.5);">
 						<div class="do-badge do-badge-worker">
-							<Icon name="lucide:zap" /> Serverless · Primary
+							<Icon name="lucide:terminal" /> CLI · Developer Control
 						</div>
-						<div class="do-title">Cloudflare Workers</div>
+						<div class="do-title">Wrangler &amp; Justfile</div>
 						<p class="do-sub">
-							No servers, no containers, no volumes. D1 database + Next.js Server Actions + REST API all
-							on the edge in one unified bundle.
+							Unified edge deployment. Next.js dashboard, REST sending API, D1 database, and team inbox
+							all running on Cloudflare Workers.
 						</p>
 					</div>
 					<div class="do-steps">
@@ -1360,46 +1352,29 @@ import { Icon } from "astro-icon/components";
 					</div>
 				</div>
 
-				<!-- ── Docker (secondary) ── -->
-				<div class="deploy-option">
-					<div class="do-header">
-						<div class="do-badge do-badge-docker">
-							<Icon name="simple-icons:docker" /> Container · Secondary
+				<!-- ── Workers Builds (1-click) ── -->
+				<div class="deploy-option" style="border-color: oklch(28% 0.08 48 / 0.7);">
+					<div class="do-header" style="border-bottom-color: oklch(22% 0.06 48 / 0.5);">
+						<div class="do-badge do-badge-worker">
+							<Icon name="lucide:sparkles" /> One-Click · Workers Builds
 						</div>
-						<div class="do-title">Docker Compose</div>
+						<div class="do-title">Deploy to Cloudflare</div>
 						<p class="do-sub">
-							Self-host on any VPS, server, or cloud VM. One image, one volume, full control. Published to
-							GHCR — no local build needed.
+							Continuous deployment from Git. Cloudflare automatically sets up D1, KV, R2, and queues,
+							then builds and deploys on every push.
 						</p>
 					</div>
 					<div class="do-steps">
 						<div class="do-step">
 							<div class="do-step-num">1</div>
 							<div>
-								<div class="do-step-label">Configure environment</div>
+								<div class="do-step-label">Click Deploy Button</div>
 								<p class="do-step-desc">
-									Copy the example file and fill in credentials. Test API keys capture email into the
-									in-house Test Mailbox — no extra services needed.
+									Fork and clone the repository directly into your Cloudflare Workers account.
 								</p>
 								<div class="code-block">
 									<span>
-										<span class="cb-cmd">cp .env.example .env.local</span>
-									</span>
-									<span>
-										<span class="cb-kw">CF_API_TOKEN</span>=
-										<span class="cb-val">your_cf_token</span>
-									</span>
-									<span>
-										<span class="cb-kw">CF_ACCOUNT_ID</span>=
-										<span class="cb-val">your_account_id</span>
-									</span>
-									<span>
-										<span class="cb-kw">ADMIN_TOKEN</span>=
-										<span class="cb-val">$(openssl rand -hex 32)</span>
-									</span>
-									<span>
-										<span class="cb-kw">SESSION_SECRET</span>=
-										<span class="cb-val">$(openssl rand -hex 32)</span>
+										<span class="cb-url">deploy.workers.cloudflare.com/?url=...</span>
 									</span>
 								</div>
 							</div>
@@ -1407,17 +1382,14 @@ import { Icon } from "astro-icon/components";
 						<div class="do-step">
 							<div class="do-step-num">2</div>
 							<div>
-								<div class="do-step-label">Pull &amp; start</div>
-								<p class="do-step-desc">Uses the published GHCR image — no local build needed.</p>
+								<div class="do-step-label">Configure Secrets</div>
+								<p class="do-step-desc">
+									Set <code>CF_API_TOKEN</code> and <code>CF_ACCOUNT_ID</code> in the Workers
+									dashboard.
+								</p>
 								<div class="code-block">
 									<span>
-										<span class="cb-cmd">docker pull ghcr.io/0xdps/emailflare:latest</span>
-									</span>
-									<span>
-										<span class="cb-cmd">docker compose --env-file .env.local \</span>
-									</span>
-									<span>
-										<span class="cb-cmd">&nbsp;&nbsp;-f compose.yaml up -d</span>
+										<span class="cb-cmt"># Workers &gt; emailflare &gt; Settings &gt; Secrets</span>
 									</span>
 								</div>
 							</div>
@@ -1425,25 +1397,25 @@ import { Icon } from "astro-icon/components";
 						<div class="do-step">
 							<div class="do-step-num">3</div>
 							<div>
-								<div class="do-step-label">Open the dashboard</div>
-								<p class="do-step-desc">Admin UI on port 8090.</p>
+								<div class="do-step-label">Live at your subdomain</div>
+								<p class="do-step-desc">Access the Next.js admin dashboard and REST API immediately.</p>
 								<div class="code-block">
 									<span>
-										<span class="cb-cmd">curl http://localhost:8090/health</span>
-									</span>
-									<span>
-										<span class="cb-url">http://localhost:8090</span>
-										<span class="cb-cmt">&nbsp;&nbsp;# admin UI</span>
+										<span class="cb-url">https://emailflare.your-subdomain.workers.dev</span>
 									</span>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class="do-footer do-footer-docker">
-						<span class="do-footer-note">
-							Image: <code style="font-size:11px;">ghcr.io/0xdps/emailflare:latest</code>
-						</span>
-						<a href="/docs">Full Docker guide →</a>
+					<div class="do-footer do-footer-worker" style="border-top-color: oklch(22% 0.06 48 / 0.5);">
+						<span class="do-footer-note">Automatic Git CI/CD</span>
+						<a
+							href="https://deploy.workers.cloudflare.com/?url=https://github.com/0xdps/emailflare"
+							target="_blank"
+							rel="noopener"
+						>
+							Deploy button →
+						</a>
 					</div>
 				</div>
 			</div>
@@ -1459,23 +1431,23 @@ import { Icon } from "astro-icon/components";
 					</div>
 					<span class="de-arrow">→</span>
 				</a>
-				<a href="https://railway.com/deploy/emailflare" target="_blank" rel="noopener" class="deploy-extra">
+				<a href="/templates" class="deploy-extra">
 					<span class="de-icon">
-						<Icon name="lucide:train-front" />
+						<Icon name="lucide:layout" />
 					</span>
 					<div>
-						<div class="de-title">One-click Railway deploy</div>
-						<div class="de-sub">Pre-configured template — just add CF credentials.</div>
+						<div class="de-title">50 React Email layouts</div>
+						<div class="de-sub">Production-ready templates for auth, billing, and alerts.</div>
 					</div>
 					<span class="de-arrow">→</span>
 				</a>
-				<a href="/mesahub" class="deploy-extra">
+				<a href="/docs" class="deploy-extra">
 					<span class="de-icon">
-						<Icon name="lucide:database" />
+						<Icon name="lucide:book-open" />
 					</span>
 					<div>
-						<div class="de-title">Skip volume management</div>
-						<div class="de-sub">One-line switch to cloud-hosted SQLite via mesahub.</div>
+						<div class="de-title">EmailFlare API Documentation</div>
+						<div class="de-sub">Complete REST API reference, variables, and examples.</div>
 					</div>
 					<span class="de-arrow">→</span>
 				</a>

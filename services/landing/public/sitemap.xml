@@ -12,8 +12,13 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://emailflare.dev/mesahub</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://emailflare.dev/inbox</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emailflare.dev/email-api</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
