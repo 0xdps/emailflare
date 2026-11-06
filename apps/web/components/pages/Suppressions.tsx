@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState, useCallback } from "react";
 import { ShieldOff, Search, X, Trash2, Plus, ChevronLeft, ChevronRight, MailX } from "lucide-react";
 import api from "@/lib/api";

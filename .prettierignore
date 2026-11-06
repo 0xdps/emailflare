@@ -1,6 +1,9 @@
 node_modules
 dist
 .tanstack
+.next
+.vinext
+.wrangler
 pnpm-lock.yaml
 routeTree.gen.ts
 *.gen.ts

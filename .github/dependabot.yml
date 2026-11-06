@@ -10,9 +10,9 @@ updates:
     - package-ecosystem: "npm"
       directories:
           - "/"
+          - "/apps/*"
           - "/packages/*"
           - "/services/*"
-          - "/scripts"
       schedule:
           interval: "weekly"
           day: "monday"

@@ -2,7 +2,6 @@ packages:
     - "apps/*"
     - "packages/*"
     - "services/*"
-    - "scripts"
 
 allowedDeprecatedVersions:
     "@react-email/components": "1.0.12"

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { me, type User } from "./api";
 

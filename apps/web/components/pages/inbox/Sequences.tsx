@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, Loader2, ListOrdered, GripVertical, X } from "lucide-react";
 import {

@@ -40,9 +40,13 @@ web-migrate-remote:
 web-deploy:
     pnpm --filter @emailflare/web deploy
 
-# Build shared packages, apply remote migrations, and deploy
-web-deploy:
-    pnpm --filter @emailflare/web deploy
+# Run test suite
+test:
+    pnpm test
+
+# Type-check all packages
+typecheck:
+    pnpm typecheck
 
 # Marketing site
 landing-dev:

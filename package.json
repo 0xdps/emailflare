@@ -9,7 +9,7 @@
 		"build:shared": "pnpm run build:email-core && pnpm run build:inbox-core && pnpm run build:emails",
 		"build:web": "pnpm --filter @emailflare/web build",
 		"test": "pnpm --filter @emailflare/email-core test && pnpm --filter @emailflare/inbox-core test",
-		"typecheck": "pnpm -r exec tsc --noEmit",
+		"typecheck": "pnpm --filter '@emailflare/*' exec tsc --noEmit",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"audit": "pnpm audit --audit-level=high"

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { Send, CheckCircle2, XCircle, Mail, Code2, BookOpen, Eye } from "lucide-react";
 import hljs from "highlight.js/lib/core";

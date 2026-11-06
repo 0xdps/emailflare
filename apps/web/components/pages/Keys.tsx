@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Copy, CheckCheck, Key, X } from "lucide-react";
 import api from "@/lib/api";

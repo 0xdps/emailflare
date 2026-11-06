@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { Loader2, Search, Send, MailOpen, ChevronDown, ChevronRight, Reply, PenLine } from "lucide-react";
 import {
