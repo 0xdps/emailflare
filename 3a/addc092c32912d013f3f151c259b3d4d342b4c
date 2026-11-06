@@ -1,0 +1,64 @@
+.github/dependabot.yml
+  h_95aea6b4aa8772 13
+.prettierignore
+  h_95aea6b4aa8772 4-6,9
+apps/web/components/Layout.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/AcceptInvite.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Dashboard.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Domains.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Keys.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Lists.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Login.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Logs.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Playground.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Setup.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Suppressions.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/Templates.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/TestMailbox.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/inbox/InboxSettings.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/inbox/People.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/inbox/Sequences.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/pages/settings/Users.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/components/ui/sidebar.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/hooks/use-mobile.ts
+  h_95aea6b4aa8772 1-2
+apps/web/lib/UserContext.tsx
+  h_95aea6b4aa8772 1-2
+apps/web/wrangler.jsonc
+  h_95aea6b4aa8772 2-15,17-25,27-36,38-43,45-50,52-59,61-66,68-82,84-86,88-91,93-106
+justfile
+  h_95aea6b4aa8772 43-49
+package.json
+  h_95aea6b4aa8772 12
+services/landing/wrangler.jsonc
+  h_95aea6b4aa8772 9,12-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3aaddc092c32912d013f3f151c259b3d4d342b4c",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
