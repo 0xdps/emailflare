@@ -1,0 +1,44 @@
+apps/web/app/domains/page.tsx
+  h_95aea6b4aa8772 2-8,12
+apps/web/app/inbox/settings/page.tsx
+  h_95aea6b4aa8772 2-8,12
+apps/web/app/keys/page.tsx
+  h_95aea6b4aa8772 2-8,12
+apps/web/app/page.tsx
+  h_95aea6b4aa8772 2-12,16
+apps/web/app/settings/users/page.tsx
+  h_95aea6b4aa8772 2-8,12
+apps/web/app/templates/page.tsx
+  h_95aea6b4aa8772 2-8,12
+apps/web/components/Layout.tsx
+  h_95aea6b4aa8772 25,134,179-188
+apps/web/components/pages/Dashboard.tsx
+  h_95aea6b4aa8772 329-338,341,360-363
+apps/web/components/pages/Domains.tsx
+  h_95aea6b4aa8772 54-60,77-79
+apps/web/components/pages/Keys.tsx
+  h_95aea6b4aa8772 32-38,53-55
+apps/web/components/pages/Templates.tsx
+  h_95aea6b4aa8772 166-172,195-197
+apps/web/components/pages/inbox/InboxSettings.tsx
+  h_95aea6b4aa8772 35-43,73-80
+apps/web/components/pages/inbox/People.tsx
+  h_95aea6b4aa8772 19,337-347
+apps/web/components/pages/settings/Users.tsx
+  h_95aea6b4aa8772 46-50,52-53,66-70
+apps/web/hooks/useNotifications.ts
+  h_95aea6b4aa8772 1-84
+apps/web/lib/server/queries.ts
+  h_95aea6b4aa8772 1-252
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "106b919dc395e32419fff50d64153ee9b41509c1",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
