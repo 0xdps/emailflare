@@ -1080,42 +1080,15 @@ const structuredData = {
 			gap: 14px;
 			flex-wrap: wrap;
 		}
-		.product-deploy-row {
-			display: flex;
-			align-items: center;
-			gap: 7px;
-			flex-wrap: wrap;
+		.product-detail-link {
+			font-size: 13px;
+			font-weight: 500;
+			color: var(--text-muted);
+			text-decoration: none;
+			transition: color 0.15s;
 		}
-		.product-deploy-label {
-			font-size: 11.5px;
-			color: var(--text-faint);
-		}
-		.product-badge {
-			font-size: 11px;
-			font-weight: 600;
-			letter-spacing: 0.04em;
-			text-transform: uppercase;
-			padding: 2px 9px;
-			border-radius: 99px;
-		}
-		.product-badge-worker {
-			background: var(--orange-light);
-			color: var(--orange-hover);
-			border: 1px solid var(--orange-mid);
-		}
-		.product-badge-inbox-worker {
-			background: oklch(95% 0.04 150);
-			color: oklch(34% 0.12 150);
-			border: 1px solid oklch(82% 0.09 150 / 0.5);
-		}
-		.product-badge-node {
-			background: oklch(94% 0.03 80);
-			color: oklch(38% 0.12 80);
-			border: 1px solid oklch(80% 0.1 80 / 0.4);
-		}
-		.product-sep {
-			font-size: 11px;
-			color: var(--text-faint);
+		.product-detail-link:hover {
+			color: var(--text);
 		}
 
 		.btn-orange-sm {
@@ -2126,10 +2099,9 @@ const structuredData = {
 						</li>
 					</ul>
 					<div class="product-card-foot">
-						<div class="product-deploy-row">
-							<span class="product-deploy-label">Included in</span>
-							<span class="product-badge product-badge-worker">Single Worker Bundle</span>
-						</div>
+						<a href="/email-api" class="product-detail-link">
+							Learn more →
+						</a>
 						<a href="/docs" class="btn-orange-sm">
 							API Docs →
 						</a>
@@ -2164,10 +2136,9 @@ const structuredData = {
 						</li>
 					</ul>
 					<div class="product-card-foot">
-						<div class="product-deploy-row">
-							<span class="product-deploy-label">Included in</span>
-							<span class="product-badge product-badge-inbox-worker">Single Worker Bundle</span>
-						</div>
+						<a href="/inbox" class="product-detail-link">
+							Learn more →
+						</a>
 						<a href="/#deploy" class="btn-green-sm">
 							Deploy Guide →
 						</a>
