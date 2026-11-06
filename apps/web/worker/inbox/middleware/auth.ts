@@ -58,12 +58,13 @@ export async function saveSession(c: Context<HonoEnv>, data: SessionPayload): Pr
 		.setExpirationTime(`${SESSION_TTL}s`)
 		.sign(secretKey(c.env.SESSION_SECRET));
 
-	const isLocalDev = new URL(c.req.url).hostname === "localhost";
+	const hostname = new URL(c.req.url).hostname;
+	const isLocalDev = hostname === "localhost" || hostname === "127.0.0.1";
 
 	setCookie(c, SESSION_COOKIE, token, {
 		httpOnly: true,
 		secure: !isLocalDev,
-		sameSite: "Strict",
+		sameSite: "Lax",
 		path: "/",
 		maxAge: SESSION_TTL,
 	});

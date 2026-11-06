@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { login } from "@/lib/api";
+import { login, getSetupStatus } from "@/lib/api";
 
 function AppLogo({ size = 28 }: { size?: number }) {
 	return (
@@ -30,13 +31,23 @@ export default function Login() {
 	const [loading, setLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 
+	useEffect(() => {
+		getSetupStatus()
+			.then(({ initialized }) => {
+				if (!initialized) {
+					router.replace("/setup");
+				}
+			})
+			.catch(() => {});
+	}, [router]);
+
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		setError("");
 		setLoading(true);
 		try {
 			await login(email, password);
-			router.replace("/inbox");
+			window.location.href = "/inbox";
 		} catch {
 			setError("Invalid email or password.");
 		} finally {
@@ -163,6 +174,13 @@ export default function Login() {
 							{loading && <Loader2 size={13} className="animate-spin" />}
 							{loading ? "Signing in…" : "Sign in"}
 						</button>
+
+						<p className="text-[12px] text-zinc-400 text-center mt-3">
+							First time here?{" "}
+							<Link href="/setup" className="text-orange-500 hover:text-orange-600 font-medium">
+								Set up workspace
+							</Link>
+						</p>
 					</form>
 				</div>
 			</div>
