@@ -51,7 +51,7 @@ app.get("/", async (c) => {
            COALESCE(SUM(CASE WHEN status = 'failed' AND sent_at >= ? THEN 1 ELSE 0 END), 0) AS failed_today
          FROM email_logs`,
 			)
-				.bind(todayIso)
+				.bind(todayIso, todayIso)
 				.first<{ total: number; sent_today: number; failed_today: number }>(),
 			templates.count(),
 			apiKeys.count({ where: { active: 1 } }),
