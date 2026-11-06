@@ -2,15 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, Loader2, ListOrdered, GripVertical, X } from "lucide-react";
-import {
-	getSequences,
-	createSequence,
-	updateSequence,
-	deleteSequence,
-	enrollInSequence,
-	Sequence,
-	SequenceStep,
-} from "@/lib/api";
+import { getSequences, Sequence, SequenceStep } from "@/lib/api";
+import { createSequenceAction, updateSequenceAction, deleteSequenceAction } from "@/app/actions/sequences";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -139,9 +132,9 @@ function SequenceCard({ seq, onEdit, onDelete }: { seq: Sequence; onEdit: () => 
 
 const emptyStep = (): SequenceStep => ({ templateSlug: "", delayDays: 0, delayAfter: "enrollment" });
 
-export default function Sequences() {
-	const [sequences, setSequences] = useState<Sequence[]>([]);
-	const [loading, setLoading] = useState(true);
+export default function Sequences({ initialSequences }: { initialSequences?: Sequence[] }) {
+	const [sequences, setSequences] = useState<Sequence[]>(initialSequences ?? []);
+	const [loading, setLoading] = useState(initialSequences === undefined);
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editing, setEditing] = useState<Sequence | null>(null);
 	const [name, setName] = useState("");
@@ -151,10 +144,12 @@ export default function Sequences() {
 	const [deleting, setDeleting] = useState(false);
 
 	useEffect(() => {
-		getSequences()
-			.then(setSequences)
-			.finally(() => setLoading(false));
-	}, []);
+		if (initialSequences === undefined) {
+			getSequences()
+				.then(setSequences)
+				.finally(() => setLoading(false));
+		}
+	}, [initialSequences]);
 
 	function openCreate() {
 		setEditing(null);
@@ -176,11 +171,17 @@ export default function Sequences() {
 		try {
 			const validSteps = steps.filter((s) => s.templateSlug.trim());
 			if (editing) {
-				const updated = await updateSequence(editing.id, { name: name.trim(), steps: validSteps });
-				setSequences((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+				const res = await updateSequenceAction(editing.id, { name: name.trim(), steps: validSteps });
+				if (!res.error) {
+					setSequences((prev) =>
+						prev.map((s) => (s.id === editing.id ? { ...s, name: name.trim(), steps: validSteps } : s)),
+					);
+				}
 			} else {
-				const created = await createSequence({ name: name.trim(), steps: validSteps });
-				setSequences((prev) => [...prev, created]);
+				const res = await createSequenceAction({ name: name.trim(), steps: validSteps });
+				if (res.data) {
+					setSequences((prev) => [...prev, res.data as any]);
+				}
 			}
 			setSheetOpen(false);
 		} finally {
@@ -192,8 +193,10 @@ export default function Sequences() {
 		if (!deleteId) return;
 		setDeleting(true);
 		try {
-			await deleteSequence(deleteId);
-			setSequences((prev) => prev.filter((s) => s.id !== deleteId));
+			const res = await deleteSequenceAction(deleteId);
+			if (!res.error) {
+				setSequences((prev) => prev.filter((s) => s.id !== deleteId));
+			}
 			setDeleteId(null);
 		} finally {
 			setDeleting(false);

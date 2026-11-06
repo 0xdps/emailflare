@@ -57,14 +57,6 @@ export async function me(): Promise<User> {
 
 // ── Invites ───────────────────────────────────────────────────────────────────
 
-export async function createInvite(
-	email: string,
-	role: "admin" | "member" | "tester" = "member",
-): Promise<{ inviteUrl: string }> {
-	const { data } = await api.post("/api/admin/invites", { email, role });
-	return data;
-}
-
 export async function getInvite(token: string): Promise<{ email: string }> {
 	const { data } = await api.get(`/api/invites/${token}`);
 	return data;
@@ -79,14 +71,6 @@ export async function acceptInvite(token: string, name: string, password: string
 export async function getUsers(): Promise<User[]> {
 	const { data } = await api.get<User[]>("/api/admin/users");
 	return data;
-}
-
-export async function revokeUser(id: string): Promise<void> {
-	await api.delete(`/api/admin/users/${id}`);
-}
-
-export async function changeUserRole(id: string, role: "admin" | "member" | "tester"): Promise<void> {
-	await api.patch(`/api/admin/users/${id}/role`, { role });
 }
 
 // ── Domains ───────────────────────────────────────────────────────────────────
@@ -234,36 +218,9 @@ export async function getInboxes(): Promise<Inbox[]> {
 	return data;
 }
 
-export async function createInbox(d: Pick<Inbox, "email" | "display_name" | "mode">): Promise<Inbox> {
-	const { data } = await api.post<Inbox>("/api/inbox/inboxes", d);
-	return data;
-}
-
-export async function updateInbox(id: string, d: Partial<Pick<Inbox, "display_name" | "mode">>): Promise<Inbox> {
-	const { data } = await api.put<Inbox>(`/api/inbox/inboxes/${id}`, d);
-	return data;
-}
-
-export async function setupInboxRouting(id: string): Promise<Inbox & { routing: InboxRouting }> {
-	const { data } = await api.post<Inbox & { routing: InboxRouting }>(`/api/inbox/inboxes/${id}/routing`);
-	return data;
-}
-
-export async function deleteInbox(id: string): Promise<void> {
-	await api.delete(`/api/inbox/inboxes/${id}`);
-}
-
 export async function getInboxMembers(id: string): Promise<User[]> {
 	const { data } = await api.get<User[]>(`/api/inbox/inboxes/${id}/members`);
 	return data;
-}
-
-export async function addInboxMember(id: string, userId: string): Promise<void> {
-	await api.post(`/api/inbox/inboxes/${id}/members`, { userId });
-}
-
-export async function removeInboxMember(id: string, userId: string): Promise<void> {
-	await api.delete(`/api/inbox/inboxes/${id}/members/${userId}`);
 }
 
 // ── Sequences ─────────────────────────────────────────────────────────────────
@@ -271,20 +228,6 @@ export async function removeInboxMember(id: string, userId: string): Promise<voi
 export async function getSequences(): Promise<Sequence[]> {
 	const { data } = await api.get<Sequence[]>("/api/inbox/sequences");
 	return data;
-}
-
-export async function createSequence(d: Pick<Sequence, "name" | "steps">): Promise<Sequence> {
-	const { data } = await api.post<Sequence>("/api/inbox/sequences", d);
-	return data;
-}
-
-export async function updateSequence(id: string, d: Partial<Pick<Sequence, "name" | "steps">>): Promise<Sequence> {
-	const { data } = await api.put<Sequence>(`/api/inbox/sequences/${id}`, d);
-	return data;
-}
-
-export async function deleteSequence(id: string): Promise<void> {
-	await api.delete(`/api/inbox/sequences/${id}`);
 }
 
 export async function enrollInSequence(

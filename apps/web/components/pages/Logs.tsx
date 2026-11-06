@@ -24,7 +24,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-interface LogRow {
+export interface LogRow {
 	id: string;
 	to_address: string;
 	from_address: string;
@@ -38,7 +38,7 @@ interface LogRow {
 	sent_at: string;
 }
 
-interface PagedLogs {
+export interface PagedLogs {
 	data: LogRow[];
 	total: number;
 	page: number;
@@ -208,16 +208,16 @@ function DetailPanel({ log }: { log: LogRow }) {
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-export default function LogsPage() {
-	const [result, setResult] = useState<PagedLogs | null>(null);
+export default function LogsPage({ initialResult }: { initialResult?: PagedLogs }) {
+	const [result, setResult] = useState<PagedLogs | null>(initialResult ?? null);
 	const [page, setPage] = useState(1);
 	const [status, setStatus] = useState("");
 	const [search, setSearch] = useState("");
 	const [searchInput, setSearchInput] = useState("");
 	const [from, setFrom] = useState("");
 	const [to, setTo] = useState("");
-	const [selected, setSelected] = useState<LogRow | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [selected, setSelected] = useState<LogRow | null>(initialResult?.data?.[0] ?? null);
+	const [loading, setLoading] = useState(initialResult === undefined);
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -232,8 +232,10 @@ export default function LogsPage() {
 	}, [page, status, search, from, to]);
 
 	useEffect(() => {
-		load();
-	}, [load]);
+		if (initialResult === undefined || page !== 1 || status !== "" || search !== "" || from !== "" || to !== "") {
+			load();
+		}
+	}, [load, initialResult, page, status, search, from, to]);
 
 	function handleStatus(val: string) {
 		setStatus(val);
@@ -466,7 +468,7 @@ export default function LogsPage() {
 	);
 }
 
-interface LogRow {
+export interface LogRow {
 	id: string;
 	to_address: string;
 	from_address: string;
@@ -480,7 +482,7 @@ interface LogRow {
 	sent_at: string;
 }
 
-interface PagedLogs {
+export interface PagedLogs {
 	data: LogRow[];
 	total: number;
 	page: number;

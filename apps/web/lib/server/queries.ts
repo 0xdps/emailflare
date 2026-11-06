@@ -186,6 +186,86 @@ export async function getDashboardLogs(limit = 10): Promise<DashboardLogRow[]> {
 	return rows.results ?? [];
 }
 
+export interface LogRow {
+	id: string;
+	to_address: string;
+	from_address: string;
+	subject: string;
+	status: "sent" | "failed";
+	cf_message_id: string | null;
+	domain_id: string | null;
+	template_id: string | null;
+	error: string | null;
+	is_test: number;
+	sent_at: string;
+}
+
+export interface PagedLogs {
+	data: LogRow[];
+	total: number;
+	page: number;
+	limit: number;
+	pages: number;
+}
+
+export async function getLogsList(
+	page = 1,
+	limit = 50,
+	status?: string,
+	search?: string,
+	from?: string,
+	to?: string,
+): Promise<PagedLogs> {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.DB) {
+		return { data: [], total: 0, page: 1, limit, pages: 0 };
+	}
+
+	const offset = (page - 1) * limit;
+	const conditions: string[] = [];
+	const params: unknown[] = [];
+
+	if (status) {
+		conditions.push("status = ?");
+		params.push(status);
+	}
+	if (from) {
+		conditions.push("sent_at >= ?");
+		params.push(from);
+	}
+	if (to) {
+		conditions.push("sent_at <= ?");
+		params.push(to);
+	}
+	if (search) {
+		conditions.push("(to_address LIKE ? OR from_address LIKE ? OR subject LIKE ?)");
+		const like = `%${search}%`;
+		params.push(like, like, like);
+	}
+
+	const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+	const db = new D1Db(workerEnv.DB);
+
+	const [dataResult, countResult] = await Promise.all([
+		db.query<LogRow>(
+			`SELECT id, to_address, from_address, subject, status, cf_message_id, domain_id, template_id, error, is_test, sent_at
+       FROM email_logs ${where} ORDER BY sent_at DESC LIMIT ? OFFSET ?`,
+			[...params, limit, offset],
+		),
+		db.query<{ total: number }>(`SELECT COUNT(*) as total FROM email_logs ${where}`, params),
+	]);
+
+	const total = countResult.rows[0]?.total ?? 0;
+
+	return {
+		data: dataResult.rows,
+		total,
+		page,
+		limit,
+		pages: Math.ceil(total / limit),
+	};
+}
+
 export async function getCloudflareStatus(): Promise<CFTokenStatus | null> {
 	const workerEnv = env as unknown as Env;
 	if (!workerEnv?.CF_API_TOKEN) return null;
@@ -249,6 +329,59 @@ export async function getInboxesList() {
 	if (!workerEnv?.DB) return [];
 	const rows = await workerEnv.DB.prepare("SELECT * FROM inboxes ORDER BY created_at DESC").all();
 	return (rows.results ?? []).map(toInbox);
+}
+
+export async function getSequencesList() {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.DB) return [];
+	const rows = await workerEnv.DB.prepare("SELECT * FROM sequences ORDER BY created_at DESC").all();
+	return (rows.results ?? []).map((r: any) => ({
+		...r,
+		steps: typeof r.steps === "string" ? JSON.parse(r.steps) : (r.steps ?? []),
+	}));
+}
+
+export interface Person {
+	id: string;
+	email: string;
+	name: string | null;
+	unread_count: number;
+	total_count: number;
+	last_email_at: string | null;
+}
+
+export async function getPeopleList(search?: string, unread?: boolean): Promise<Person[]> {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.DB) return [];
+
+	let sql = `
+    SELECT p.id, p.email, p.name, p.created_at,
+           COUNT(DISTINCT ie.id) AS total_count,
+           SUM(CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END) AS unread_count,
+           MAX(ie.received_at) AS last_email_at
+    FROM people p
+    LEFT JOIN inbox_emails ie ON ie.person_id = p.id
+  `;
+	const params: unknown[] = [];
+	const conditions: string[] = [];
+
+	if (search) {
+		conditions.push("(p.email LIKE ? OR p.name LIKE ?)");
+		params.push(`%${search}%`, `%${search}%`);
+	}
+	if (unread) conditions.push("ie.is_read = 0");
+
+	if (conditions.length) sql += ` WHERE ${conditions.join(" AND ")}`;
+	sql += " GROUP BY p.id ORDER BY last_email_at DESC NULLS LAST LIMIT 50";
+
+	const data = await workerEnv.DB.prepare(sql)
+		.bind(...params)
+		.all<Person>();
+	return (data.results ?? []).map((r) => ({
+		...r,
+		unread_count: Number(r.unread_count ?? 0),
+		total_count: Number(r.total_count ?? 0),
+	}));
 }
 
 export async function getListsList() {

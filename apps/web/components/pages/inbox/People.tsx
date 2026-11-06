@@ -5,7 +5,6 @@ import { Loader2, Search, Send, MailOpen, ChevronDown, ChevronRight, Reply, PenL
 import {
 	getPeople,
 	getThread,
-	markRead,
 	replyTo,
 	composeSend,
 	getInboxes,
@@ -14,6 +13,7 @@ import {
 	ThreadItem,
 	Inbox as InboxType,
 } from "@/lib/api";
+import { markReadAction } from "@/app/actions/inbox";
 import { cn } from "@/lib/utils";
 import { groupThread, replyReferences, ThreadGroup } from "@/lib/threading";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -315,15 +315,21 @@ function EmptyState({ message }: { message: string }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function People() {
-	const [people, setPeople] = useState<Person[]>([]);
+export default function People({
+	initialPeople,
+	initialInboxes,
+}: {
+	initialPeople?: Person[];
+	initialInboxes?: InboxType[];
+}) {
+	const [people, setPeople] = useState<Person[]>(initialPeople ?? []);
 	const [search, setSearch] = useState("");
 	const [filter, setFilter] = useState<"all" | "unread">("all");
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [thread, setThread] = useState<Thread | null>(null);
-	const [loadingPeople, setLoadingPeople] = useState(true);
+	const [loadingPeople, setLoadingPeople] = useState(initialPeople === undefined);
 	const [loadingThread, setLoadingThread] = useState(false);
-	const [inboxes, setInboxes] = useState<InboxType[]>([]);
+	const [inboxes, setInboxes] = useState<InboxType[]>(initialInboxes ?? []);
 
 	// Compose dialog state
 	const [composeOpen, setComposeOpen] = useState(false);
@@ -353,16 +359,20 @@ export default function People() {
 	}
 
 	useEffect(() => {
-		loadPeople();
-	}, [search]);
+		if (initialPeople === undefined || search !== "") {
+			loadPeople();
+		}
+	}, [search, initialPeople]);
 
 	useEffect(() => {
-		getInboxes()
-			.then(setInboxes)
-			.catch((err) => {
-				console.error("[People] failed to fetch inboxes:", err);
-			});
-	}, []);
+		if (initialInboxes === undefined) {
+			getInboxes()
+				.then(setInboxes)
+				.catch((err) => {
+					console.error("[People] failed to fetch inboxes:", err);
+				});
+		}
+	}, [initialInboxes]);
 
 	async function selectPerson(id: string) {
 		setSelectedId(id);
@@ -370,7 +380,7 @@ export default function People() {
 		try {
 			const t = await getThread(id);
 			setThread(t);
-			await markRead(id).catch((err) => {
+			await markReadAction(id).catch((err) => {
 				console.error("[People] failed to mark thread as read:", err);
 			});
 			setPeople((prev) => prev.map((p) => (p.id === id ? { ...p, unread_count: 0 } : p)));
