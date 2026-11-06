@@ -1,0 +1,20 @@
+apps/web/worker/inbox/routes/inbox/people.ts
+  h_95aea6b4aa8772 40-43,48
+apps/web/worker/inbox/routes/logs.ts
+  h_95aea6b4aa8772 56-60
+apps/web/worker/inbox/routes/stats.ts
+  h_95aea6b4aa8772 36,39-81,85-86,89-91
+migrations/0004_perf_indexes.sql
+  h_95aea6b4aa8772 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6b8c8a8f83ca8993f80f94b190252cc9669632f7",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
