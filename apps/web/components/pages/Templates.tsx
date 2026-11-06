@@ -163,9 +163,13 @@ function TemplateCard({
 	);
 }
 
-export default function TemplatesPage() {
-	const [templates, setTemplates] = useState<Template[]>([]);
-	const [loading, setLoading] = useState(true);
+export interface TemplatesPageProps {
+	initialTemplates?: Template[];
+}
+
+export default function TemplatesPage({ initialTemplates }: TemplatesPageProps = {}) {
+	const [templates, setTemplates] = useState<Template[]>(initialTemplates ?? []);
+	const [loading, setLoading] = useState(!initialTemplates);
 	const [search, setSearch] = useState("");
 	const [mode, setMode] = useState<Mode>("list");
 	const [editing, setEditing] = useState<Template | null>(null);
@@ -188,7 +192,9 @@ export default function TemplatesPage() {
 	}
 
 	useEffect(() => {
-		load();
+		if (!initialTemplates) {
+			load();
+		}
 	}, []);
 
 	function openCreate() {

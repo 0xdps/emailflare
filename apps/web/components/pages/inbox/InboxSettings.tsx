@@ -32,10 +32,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function InboxSettings() {
-	const [inboxes, setInboxes] = useState<InboxType[]>([]);
-	const [domains, setDomains] = useState<DomainType[]>([]);
-	const [loading, setLoading] = useState(true);
+export interface InboxSettingsProps {
+	initialInboxes?: InboxType[];
+	initialDomains?: DomainType[];
+}
+
+export default function InboxSettings({ initialInboxes, initialDomains }: InboxSettingsProps = {}) {
+	const [inboxes, setInboxes] = useState<InboxType[]>(initialInboxes ?? []);
+	const [domains, setDomains] = useState<DomainType[]>(initialDomains ?? []);
+	const [loading, setLoading] = useState(!initialInboxes);
 	const [createOpen, setCreateOpen] = useState(false);
 	const [createStep, setCreateStep] = useState<1 | 2 | 3>(1);
 	const [createdInbox, setCreatedInbox] = useState<InboxType | null>(null);
@@ -65,12 +70,14 @@ export default function InboxSettings() {
 	const [addingMember, setAddingMember] = useState(false);
 
 	useEffect(() => {
-		Promise.all([getInboxes(), getDomains()])
-			.then(([inboxList, domainList]) => {
-				setInboxes(inboxList);
-				setDomains(domainList);
-			})
-			.finally(() => setLoading(false));
+		if (!initialInboxes) {
+			Promise.all([getInboxes(), getDomains()])
+				.then(([inboxList, domainList]) => {
+					setInboxes(inboxList);
+					setDomains(domainList);
+				})
+				.finally(() => setLoading(false));
+		}
 	}, []);
 
 	function openCreate() {

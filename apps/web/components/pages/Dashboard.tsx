@@ -326,12 +326,19 @@ function DashboardSkeleton() {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export default function Dashboard() {
-	const [stats, setStats] = useState<Stats | null>(null);
-	const [logs, setLogs] = useState<LogRow[]>([]);
-	const [cfStatus, setCfStatus] = useState<CFTokenStatus | null>(null);
+export interface DashboardProps {
+	initialStats?: Stats | null;
+	initialLogs?: LogRow[];
+	initialCfStatus?: CFTokenStatus | null;
+}
+
+export default function Dashboard({ initialStats, initialLogs = [], initialCfStatus }: DashboardProps = {}) {
+	const [stats, setStats] = useState<Stats | null>(initialStats ?? null);
+	const [logs, setLogs] = useState<LogRow[]>(initialLogs);
+	const [cfStatus, setCfStatus] = useState<CFTokenStatus | null>(initialCfStatus ?? null);
 	const [refreshing, setRefreshing] = useState(false);
 	const [range, setRange] = useState<Range>("7d");
+	const isFirstMount = useRef(true);
 
 	async function load(r: Range = range) {
 		setRefreshing(true);
@@ -350,6 +357,10 @@ export default function Dashboard() {
 	}
 
 	useEffect(() => {
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (initialStats) return;
+		}
 		load(range);
 	}, [range]); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -16,6 +16,7 @@ import {
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { groupThread, replyReferences, ThreadGroup } from "@/lib/threading";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import OwnerAccessBanner from "@/components/OwnerAccessBanner";
 
@@ -332,6 +333,17 @@ export default function People() {
 	const [composeBody, setComposeBody] = useState("");
 	const [composeSending, setComposeSending] = useState(false);
 	const [replyTarget, setReplyTarget] = useState<ThreadItem | null>(null);
+
+	useNotifications((msg) => {
+		if (msg.type === "new_email") {
+			loadPeople();
+			if (selectedId && msg.personId === selectedId) {
+				getThread(selectedId)
+					.then(setThread)
+					.catch(() => {});
+			}
+		}
+	});
 
 	function loadPeople() {
 		setLoadingPeople(true);

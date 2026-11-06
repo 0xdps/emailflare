@@ -1,12 +1,15 @@
-"use client";
-
 import Layout from "@/components/Layout";
-import Page from "@/components/pages/inbox/InboxSettings";
+import InboxSettings from "@/components/pages/inbox/InboxSettings";
+import { getInboxesList, getDomainsList } from "@/lib/server/queries";
 
-export default function RoutePage() {
+export const dynamic = "force-dynamic";
+
+export default async function RoutePage() {
+	const [inboxes, domains] = await Promise.all([getInboxesList(), getDomainsList()]);
+
 	return (
 		<Layout>
-			<Page />
+			<InboxSettings initialInboxes={inboxes as any} initialDomains={domains as any} />
 		</Layout>
 	);
 }

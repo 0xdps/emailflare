@@ -1,12 +1,15 @@
-"use client";
-
 import Layout from "@/components/Layout";
-import Page from "@/components/pages/Templates";
+import TemplatesPage from "@/components/pages/Templates";
+import { getTemplatesList } from "@/lib/server/queries";
 
-export default function RoutePage() {
+export const dynamic = "force-dynamic";
+
+export default async function RoutePage() {
+	const initialTemplates = await getTemplatesList();
+
 	return (
 		<Layout>
-			<Page />
+			<TemplatesPage initialTemplates={initialTemplates as any} />
 		</Layout>
 	);
 }

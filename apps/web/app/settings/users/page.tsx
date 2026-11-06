@@ -1,12 +1,15 @@
-"use client";
-
 import Layout from "@/components/Layout";
-import Page from "@/components/pages/settings/Users";
+import UsersPage from "@/components/pages/settings/Users";
+import { getUsersList } from "@/lib/server/queries";
 
-export default function RoutePage() {
+export const dynamic = "force-dynamic";
+
+export default async function RoutePage() {
+	const initialUsers = await getUsersList();
+
 	return (
 		<Layout>
-			<Page />
+			<UsersPage initialUsers={initialUsers as any} />
 		</Layout>
 	);
 }

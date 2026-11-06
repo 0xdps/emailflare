@@ -1,12 +1,15 @@
-"use client";
-
 import Layout from "@/components/Layout";
-import Page from "@/components/pages/Keys";
+import KeysPage from "@/components/pages/Keys";
+import { getApiKeysList } from "@/lib/server/queries";
 
-export default function RoutePage() {
+export const dynamic = "force-dynamic";
+
+export default async function RoutePage() {
+	const initialKeys = await getApiKeysList();
+
 	return (
 		<Layout>
-			<Page />
+			<KeysPage initialKeys={initialKeys as any} />
 		</Layout>
 	);
 }

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { useUser } from "@/lib/UserContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import type { User } from "@/lib/api";
 
 // Paths accessible to all roles (member, admin, super-admin)
@@ -130,6 +131,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 		router.replace("/login");
 	}
 
+	const { connected } = useNotifications();
 	const role = user?.role;
 	const isAdmin = role === "admin" || role === "super-admin";
 	const isSuperAdmin = role === "super-admin";
@@ -174,8 +176,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				{/* Brand */}
 				<div className="h-14 flex items-center gap-2.5 px-4 border-b border-border shrink-0">
 					<AppLogo size={28} />
-					<div className="leading-none">
-						<p className="text-[13.5px] font-bold text-foreground tracking-tight">EmailFlare</p>
+					<div className="leading-none flex-1">
+						<div className="flex items-center gap-1.5">
+							<p className="text-[13.5px] font-bold text-foreground tracking-tight">EmailFlare</p>
+							{connected && (
+								<span
+									className="size-1.5 rounded-full bg-emerald-500 animate-pulse"
+									title="Live WebSocket connected"
+								/>
+							)}
+						</div>
 						<p className="text-[10.5px] text-muted-foreground mt-[3px]">Inbox</p>
 					</div>
 				</div>

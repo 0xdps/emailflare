@@ -43,10 +43,14 @@ function RoleBadge({ role }: { role: User["role"] }) {
 	);
 }
 
-export default function UsersPage() {
+export interface UsersPageProps {
+	initialUsers?: User[];
+}
+
+export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 	const { user: currentUser } = useUser();
-	const [users, setUsers] = useState<User[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [users, setUsers] = useState<User[]>(initialUsers ?? []);
+	const [loading, setLoading] = useState(!initialUsers);
 	const [inviteOpen, setInviteOpen] = useState(false);
 	const [inviteEmail, setInviteEmail] = useState("");
 	const [inviteRole, setInviteRole] = useState<"admin" | "member" | "tester">("member");
@@ -59,9 +63,11 @@ export default function UsersPage() {
 	const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
 	useEffect(() => {
-		getUsers()
-			.then(setUsers)
-			.finally(() => setLoading(false));
+		if (!initialUsers) {
+			getUsers()
+				.then(setUsers)
+				.finally(() => setLoading(false));
+		}
 	}, []);
 
 	async function handleInvite() {

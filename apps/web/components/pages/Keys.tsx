@@ -29,9 +29,13 @@ function timeAgo(iso: string) {
 	return `${Math.floor(secs / 86400)}d ago`;
 }
 
-export default function KeysPage() {
-	const [keys, setKeys] = useState<ApiKey[]>([]);
-	const [loading, setLoading] = useState(true);
+export interface KeysPageProps {
+	initialKeys?: ApiKey[];
+}
+
+export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
+	const [keys, setKeys] = useState<ApiKey[]>(initialKeys ? initialKeys.filter((k) => k.active) : []);
+	const [loading, setLoading] = useState(!initialKeys);
 	const [creating, setCreating] = useState(false);
 	const [newKey, setNewKey] = useState<NewKey | null>(null);
 	const [copied, setCopied] = useState(false);
@@ -46,7 +50,9 @@ export default function KeysPage() {
 	}
 
 	useEffect(() => {
-		load();
+		if (!initialKeys) {
+			load();
+		}
 	}, []);
 
 	async function handleCreate(e: React.FormEvent) {

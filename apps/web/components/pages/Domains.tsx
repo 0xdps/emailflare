@@ -51,9 +51,13 @@ interface DnsRecord {
 	required: boolean;
 }
 
-export default function DomainsPage() {
-	const [domains, setDomains] = useState<Domain[]>([]);
-	const [loading, setLoading] = useState(true);
+export interface DomainsPageProps {
+	initialDomains?: Domain[];
+}
+
+export default function DomainsPage({ initialDomains }: DomainsPageProps = {}) {
+	const [domains, setDomains] = useState<Domain[]>(initialDomains ?? []);
+	const [loading, setLoading] = useState(!initialDomains);
 	const [creating, setCreating] = useState(false);
 	const [form, setForm] = useState({ name: "" });
 	const [formError, setFormError] = useState<string | null>(null);
@@ -70,7 +74,9 @@ export default function DomainsPage() {
 	}
 
 	useEffect(() => {
-		load();
+		if (!initialDomains) {
+			load();
+		}
 	}, []);
 
 	async function handleCreate(e: React.FormEvent) {

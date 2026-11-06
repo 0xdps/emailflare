@@ -1,12 +1,15 @@
-"use client";
-
 import Layout from "@/components/Layout";
-import Page from "@/components/pages/Domains";
+import DomainsPage from "@/components/pages/Domains";
+import { getDomainsList } from "@/lib/server/queries";
 
-export default function RoutePage() {
+export const dynamic = "force-dynamic";
+
+export default async function RoutePage() {
+	const initialDomains = await getDomainsList();
+
 	return (
 		<Layout>
-			<Page />
+			<DomainsPage initialDomains={initialDomains as any} />
 		</Layout>
 	);
 }
