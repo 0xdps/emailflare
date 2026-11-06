@@ -1,0 +1,20 @@
+apps/web/components/pages/Login.tsx
+  h_95aea6b4aa8772 3-4,7,34-43,50,177-183
+apps/web/components/pages/Setup.tsx
+  h_95aea6b4aa8772 49
+apps/web/lib/UserContext.tsx
+  h_95aea6b4aa8772 10,13-18,29-44,51,54
+apps/web/worker/inbox/middleware/auth.ts
+  h_95aea6b4aa8772 61-62,67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c0bcfa93b25dedd6803a20a7f6c8b2d48d514846",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
