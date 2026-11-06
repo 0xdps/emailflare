@@ -1,0 +1,14 @@
+services/landing/src/pages/index.astro
+  h_95aea6b4aa8772 1083-1088,1090-1091,2102-2104,2139-2141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "06dac807beb54efea9e89e5a2925b0b6eb3edf70",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
