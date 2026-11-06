@@ -33,61 +33,62 @@ app.get("/", async (c) => {
 		return d.toISOString();
 	})();
 
-	const { domains, templates, apiKeys, emailLogs } = makeDb(c.env.DB);
+	const { templates, apiKeys } = makeDb(c.env.DB);
 	const db = new D1Db(c.env.DB);
 
-	const [
-		totalDomains,
-		verifiedDomains,
-		totalTemplates,
-		totalKeys,
-		totalEmails,
-		sentToday,
-		failedToday,
-		domainBreakdownResult,
-		dailyResult,
-	] = await Promise.all([
-		domains.count(),
-		domains.count({ where: { verified: 1 } }),
-		templates.count(),
-		apiKeys.count({ where: { active: 1 } }),
-		emailLogs.count(),
-		emailLogs.count({ where: { status: "sent", sent_at: { gte: todayIso } } }),
-		emailLogs.count({ where: { status: "failed", sent_at: { gte: todayIso } } }),
-		db.query<{ domain_name: string; verified: number; sent: number; failed: number }>(
-			`SELECT
-         d.name AS domain_name,
-         d.verified,
-         COALESCE(SUM(CASE WHEN el.status = 'sent'   AND el.sent_at >= ? THEN 1 ELSE 0 END), 0) AS sent,
-         COALESCE(SUM(CASE WHEN el.status = 'failed' AND el.sent_at >= ? THEN 1 ELSE 0 END), 0) AS failed
-       FROM domains d
-       LEFT JOIN email_logs el ON el.domain_id = d.id
-       GROUP BY d.id, d.name, d.verified
-       ORDER BY sent DESC, d.name ASC`,
-			[fromIso, fromIso],
-		),
-		db.query<{ date: string; sent: number; failed: number }>(
-			`SELECT
-         strftime('%Y-%m-%d', sent_at) AS date,
-         SUM(CASE WHEN status = 'sent'   THEN 1 ELSE 0 END) AS sent,
-         SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
-       FROM email_logs
-       WHERE sent_at >= ?
-       GROUP BY strftime('%Y-%m-%d', sent_at)
-       ORDER BY date ASC`,
-			[fromIso],
-		),
-	]);
+	const [domainCounts, emailCounts, totalTemplates, totalKeys, domainBreakdownResult, dailyResult] =
+		await Promise.all([
+			c.env.DB.prepare(
+				`SELECT
+           COUNT(*) AS total,
+           COALESCE(SUM(CASE WHEN verified = 1 THEN 1 ELSE 0 END), 0) AS verified
+         FROM domains`,
+			).first<{ total: number; verified: number }>(),
+			c.env.DB.prepare(
+				`SELECT
+           COUNT(*) AS total,
+           COALESCE(SUM(CASE WHEN status = 'sent'   AND sent_at >= ? THEN 1 ELSE 0 END), 0) AS sent_today,
+           COALESCE(SUM(CASE WHEN status = 'failed' AND sent_at >= ? THEN 1 ELSE 0 END), 0) AS failed_today
+         FROM email_logs`,
+			)
+				.bind(todayIso)
+				.first<{ total: number; sent_today: number; failed_today: number }>(),
+			templates.count(),
+			apiKeys.count({ where: { active: 1 } }),
+			db.query<{ domain_name: string; verified: number; sent: number; failed: number }>(
+				`SELECT
+           d.name AS domain_name,
+           d.verified,
+           COALESCE(SUM(CASE WHEN el.status = 'sent'   AND el.sent_at >= ? THEN 1 ELSE 0 END), 0) AS sent,
+           COALESCE(SUM(CASE WHEN el.status = 'failed' AND el.sent_at >= ? THEN 1 ELSE 0 END), 0) AS failed
+         FROM domains d
+         LEFT JOIN email_logs el ON el.domain_id = d.id
+         GROUP BY d.id, d.name, d.verified
+         ORDER BY sent DESC, d.name ASC`,
+				[fromIso, fromIso],
+			),
+			db.query<{ date: string; sent: number; failed: number }>(
+				`SELECT
+           strftime('%Y-%m-%d', sent_at) AS date,
+           SUM(CASE WHEN status = 'sent'   THEN 1 ELSE 0 END) AS sent,
+           SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
+         FROM email_logs
+         WHERE sent_at >= ?
+         GROUP BY strftime('%Y-%m-%d', sent_at)
+         ORDER BY date ASC`,
+				[fromIso],
+			),
+		]);
 
 	return c.json({
 		range,
-		totalDomains,
-		verifiedDomains,
+		totalDomains: domainCounts?.total ?? 0,
+		verifiedDomains: domainCounts?.verified ?? 0,
 		totalTemplates,
 		totalKeys,
-		totalEmails,
-		sentToday,
-		failedToday,
+		totalEmails: emailCounts?.total ?? 0,
+		sentToday: emailCounts?.sent_today ?? 0,
+		failedToday: emailCounts?.failed_today ?? 0,
 		cfDailyLimit: CF_DAILY_LIMIT,
 		domainBreakdown: domainBreakdownResult.rows.map((r) => ({
 			name: r.domain_name,

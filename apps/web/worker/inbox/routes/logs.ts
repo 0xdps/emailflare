@@ -53,11 +53,11 @@ app.get("/", async (c) => {
 	const db = new D1Db(c.env.DB);
 
 	const [dataResult, countResult] = await Promise.all([
-		db.query(`SELECT * FROM email_logs ${where} ORDER BY sent_at DESC LIMIT ? OFFSET ?`, [
-			...params,
-			limit,
-			offset,
-		]),
+		db.query(
+			`SELECT id, to_address, from_address, subject, status, cf_message_id, domain_id, template_id, error, is_test, sent_at
+       FROM email_logs ${where} ORDER BY sent_at DESC LIMIT ? OFFSET ?`,
+			[...params, limit, offset],
+		),
 		db.query<{ total: number }>(`SELECT COUNT(*) as total FROM email_logs ${where}`, params),
 	]);
 

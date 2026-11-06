@@ -37,13 +37,15 @@ app.get("/", async (c) => {
 	sql += " GROUP BY p.id ORDER BY last_activity_at DESC NULLS LAST LIMIT ? OFFSET ?";
 	params.push(limit, offset);
 
+	const countSql = conditions.length
+		? `SELECT COUNT(DISTINCT p.id) as total FROM people p LEFT JOIN inbox_emails ie ON ie.person_id = p.id WHERE ${conditions.join(" AND ")}`
+		: `SELECT COUNT(*) as total FROM people`;
+
 	const [data, count] = await Promise.all([
 		c.env.DB.prepare(sql)
 			.bind(...params)
 			.all(),
-		c.env.DB.prepare(
-			`SELECT COUNT(*) as total FROM people p ${conditions.length ? "LEFT JOIN inbox_emails ie ON ie.person_id = p.id WHERE " + conditions.join(" AND ") : ""}`,
-		)
+		c.env.DB.prepare(countSql)
 			.bind(...params.slice(0, -2))
 			.first<{ total: number }>(),
 	]);
