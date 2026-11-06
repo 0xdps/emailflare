@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Plus, Loader2, Users, Trash2, Copy, Check } from "lucide-react";
-import { getUsers, createInvite, revokeUser, changeUserRole, User } from "@/lib/api";
+import { getUsers, User } from "@/lib/api";
+import { createInviteAction, revokeUserAction, changeUserRoleAction } from "@/app/actions/users";
 import { useUser } from "@/lib/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,10 +68,10 @@ export default function UsersPage() {
 		setInviteError("");
 		setInviting(true);
 		try {
-			const { inviteUrl: url } = await createInvite(inviteEmail.trim(), inviteRole);
+			const { inviteUrl: url } = await createInviteAction(inviteEmail.trim(), inviteRole);
 			setInviteUrl(url);
 		} catch (err: any) {
-			const msg = err?.response?.data?.error;
+			const msg = err?.message;
 			if (msg === "already_exists") setInviteError("A user with that email already exists.");
 			else setInviteError("Failed to create invite. Please try again.");
 		} finally {
@@ -97,7 +98,7 @@ export default function UsersPage() {
 		if (!revokeId) return;
 		setRevoking(true);
 		try {
-			await revokeUser(revokeId);
+			await revokeUserAction(revokeId);
 			setUsers((prev) => prev.filter((u) => u.id !== revokeId));
 			setRevokeId(null);
 		} finally {
@@ -108,7 +109,7 @@ export default function UsersPage() {
 	async function handleRoleChange(userId: string, newRole: "admin" | "member" | "tester") {
 		setChangingRoleId(userId);
 		try {
-			await changeUserRole(userId, newRole);
+			await changeUserRoleAction(userId, newRole);
 			setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
 		} catch {
 			// revert is implicit — state unchanged on error

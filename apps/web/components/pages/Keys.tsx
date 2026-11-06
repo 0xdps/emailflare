@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Copy, CheckCheck, Key, X } from "lucide-react";
 import api from "@/lib/api";
+import { createApiKeyAction, revokeApiKeyAction, type ApiKey, type CreatedApiKey as NewKey } from "@/app/actions/keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,22 +20,6 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface ApiKey {
-	id: string;
-	name: string;
-	key_prefix: string;
-	key_type: "test" | "live";
-	scope: "global" | "domain" | "multi";
-	active: number;
-	last_used_at: string | null;
-	send_count: number;
-	created_at: string;
-}
-
-interface NewKey extends ApiKey {
-	key: string;
-}
 
 function timeAgo(iso: string) {
 	const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -66,7 +51,7 @@ export default function KeysPage() {
 
 	async function handleCreate(e: React.FormEvent) {
 		e.preventDefault();
-		const { data } = await api.post<NewKey>("/api/keys", form);
+		const data = await createApiKeyAction(form);
 		setNewKey(data);
 		setCreating(false);
 		setForm({ name: "", type: "live", scope: "global" });
@@ -75,7 +60,7 @@ export default function KeysPage() {
 
 	async function confirmRevoke() {
 		if (!revokeId) return;
-		await api.delete(`/api/keys/${revokeId}`);
+		await revokeApiKeyAction(revokeId);
 		setRevokeId(null);
 		load();
 	}

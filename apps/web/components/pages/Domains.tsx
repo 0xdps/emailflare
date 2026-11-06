@@ -15,6 +15,7 @@ import {
 	Loader2,
 } from "lucide-react";
 import api from "@/lib/api";
+import { createDomainAction, verifyDomainAction, deleteDomainAction } from "@/app/actions/domains";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,14 +78,12 @@ export default function DomainsPage() {
 		setFormError(null);
 		setSubmitting(true);
 		try {
-			await api.post("/api/domains", { name: form.name });
+			await createDomainAction({ name: form.name });
 			setForm({ name: "" });
 			setCreating(false);
 			load();
 		} catch (err: unknown) {
-			const msg =
-				(err as { response?: { data?: { error?: string } } }).response?.data?.error ??
-				"Failed to create domain";
+			const msg = err instanceof Error ? err.message : "Failed to create domain";
 			setFormError(msg);
 		} finally {
 			setSubmitting(false);
@@ -94,7 +93,7 @@ export default function DomainsPage() {
 	async function handleVerify(domain: Domain) {
 		setVerifying(domain.id);
 		try {
-			await api.post(`/api/domains/${domain.id}/verify`);
+			await verifyDomainAction(domain.id);
 			load();
 		} finally {
 			setVerifying(null);
@@ -103,7 +102,7 @@ export default function DomainsPage() {
 
 	async function confirmDelete() {
 		if (!deleteId) return;
-		await api.delete(`/api/domains/${deleteId}`);
+		await deleteDomainAction(deleteId);
 		setDeleteId(null);
 		load();
 	}

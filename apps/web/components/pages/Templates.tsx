@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Pencil, Trash2, FileText, Cpu, X, Mail, ChevronDown } from "lucide-react";
 import api from "@/lib/api";
+import { createTemplateAction, updateTemplateAction, deleteTemplateAction } from "@/app/actions/templates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -260,9 +261,9 @@ export default function TemplatesPage() {
 			domainId: form.domainId || undefined,
 		};
 		if (mode === "create") {
-			await api.post("/api/templates", payload);
+			await createTemplateAction(payload);
 		} else if (editing) {
-			await api.put(`/api/templates/${editing.id}`, payload);
+			await updateTemplateAction(editing.id, payload);
 		}
 		setMode("list");
 		load();
@@ -270,7 +271,7 @@ export default function TemplatesPage() {
 
 	async function confirmDelete() {
 		if (!deleteTarget) return;
-		await api.delete(`/api/templates/${deleteTarget.id}`);
+		await deleteTemplateAction(deleteTarget.id);
 		if (previewing?.id === deleteTarget.id) setPreviewing(null);
 		setDeleteTarget(null);
 		load();

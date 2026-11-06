@@ -5,19 +5,21 @@ import Link from "next/link";
 import { Plus, Trash2, Pencil, Loader2, Inbox, Users, Globe, AlertTriangle, Check } from "lucide-react";
 import {
 	getInboxes,
-	createInbox,
-	updateInbox,
-	deleteInbox,
-	setupInboxRouting,
 	getInboxMembers,
-	addInboxMember,
-	removeInboxMember,
 	getDomains,
 	Inbox as InboxType,
 	Domain as DomainType,
 	User,
 	getUsers,
 } from "@/lib/api";
+import {
+	createInboxAction,
+	updateInboxAction,
+	deleteInboxAction,
+	retryInboxRoutingAction,
+	addInboxMemberAction,
+	removeInboxMemberAction,
+} from "@/app/actions/inboxes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,7 +96,7 @@ export default function InboxSettings() {
 	async function handleCreateInbox() {
 		setCreating(true);
 		try {
-			const created = await createInbox({
+			const created = await createInboxAction({
 				email: `${localPart.trim()}@${selectedDomain}`,
 				display_name: displayName,
 				mode,
@@ -112,7 +114,7 @@ export default function InboxSettings() {
 		if (!createdInbox) return;
 		setRoutingId(createdInbox.id);
 		try {
-			const result = await setupInboxRouting(createdInbox.id);
+			const result = await retryInboxRoutingAction(createdInbox.id);
 			const updated = { ...createdInbox, routing: result.routing };
 			setCreatedInbox(updated);
 			setInboxes((prev) => prev.map((i) => (i.id === createdInbox.id ? updated : i)));
@@ -141,7 +143,7 @@ export default function InboxSettings() {
 		if (!createdInbox || !assignUserId) return;
 		setAssignAdding(true);
 		try {
-			await addInboxMember(createdInbox.id, assignUserId);
+			await addInboxMemberAction(createdInbox.id, assignUserId);
 			const user = assignUsers.find((u) => u.id === assignUserId);
 			if (user) setAssignMembers((prev) => [...prev, user]);
 			setAssignUserId("");
@@ -160,8 +162,10 @@ export default function InboxSettings() {
 		if (!editing) return;
 		setSaving(true);
 		try {
-			const updated = await updateInbox(editing.id, { display_name: displayName, mode });
-			setInboxes((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+			await updateInboxAction(editing.id, { display_name: displayName, mode });
+			setInboxes((prev) =>
+				prev.map((i) => (i.id === editing.id ? { ...i, display_name: displayName, mode } : i)),
+			);
 			setEditing(null);
 		} finally {
 			setSaving(false);
@@ -172,7 +176,7 @@ export default function InboxSettings() {
 		if (!deleteId) return;
 		setDeleting(true);
 		try {
-			await deleteInbox(deleteId);
+			await deleteInboxAction(deleteId);
 			setInboxes((prev) => prev.filter((i) => i.id !== deleteId));
 			setDeleteId(null);
 		} finally {
@@ -183,7 +187,7 @@ export default function InboxSettings() {
 	async function handleSetupRouting(inbox: InboxType) {
 		setRoutingId(inbox.id);
 		try {
-			const result = await setupInboxRouting(inbox.id);
+			const result = await retryInboxRoutingAction(inbox.id);
 			setInboxes((prev) => prev.map((i) => (i.id === inbox.id ? { ...i, routing: result.routing } : i)));
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : "Routing setup failed";
@@ -212,7 +216,7 @@ export default function InboxSettings() {
 		if (!membersInbox || !addUserId) return;
 		setAddingMember(true);
 		try {
-			await addInboxMember(membersInbox.id, addUserId);
+			await addInboxMemberAction(membersInbox.id, addUserId);
 			const updated = await getInboxMembers(membersInbox.id);
 			setMembers(updated);
 			setAddUserId("");
@@ -223,7 +227,7 @@ export default function InboxSettings() {
 
 	async function handleRemoveMember(userId: string) {
 		if (!membersInbox) return;
-		await removeInboxMember(membersInbox.id, userId).catch((err) => {
+		await removeInboxMemberAction(membersInbox.id, userId).catch((err) => {
 			console.error("[InboxSettings] failed to remove member:", err);
 		});
 		setMembers((prev) => prev.filter((m) => m.id !== userId));
