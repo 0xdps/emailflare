@@ -1,0 +1,34 @@
+apps/web/app/actions/auth.ts
+  h_95aea6b4aa8772 1-76
+apps/web/app/actions/domains.ts
+  h_95aea6b4aa8772 1-100
+apps/web/app/actions/inboxes.ts
+  h_95aea6b4aa8772 1-135
+apps/web/app/actions/keys.ts
+  h_95aea6b4aa8772 1-95
+apps/web/app/actions/templates.ts
+  h_95aea6b4aa8772 1-103
+apps/web/app/actions/users.ts
+  h_95aea6b4aa8772 1-102
+apps/web/components/pages/Domains.tsx
+  h_95aea6b4aa8772 18,81,86,96,105
+apps/web/components/pages/Keys.tsx
+  h_95aea6b4aa8772 6,54,63
+apps/web/components/pages/Templates.tsx
+  h_95aea6b4aa8772 6,264,266,274
+apps/web/components/pages/inbox/InboxSettings.tsx
+  h_95aea6b4aa8772 15-22,99,117,146,165-168,179,190,219,230
+apps/web/components/pages/settings/Users.tsx
+  h_95aea6b4aa8772 5-6,71,74,101,112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2ccfd126ddc88fb8ba31dc68f965360eba98661",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
