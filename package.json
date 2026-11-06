@@ -16,6 +16,7 @@
 	},
 	"devDependencies": {
 		"lefthook": "^2.1.12",
-		"prettier": "^3.9.6"
+		"prettier": "^3.9.6",
+		"prettier-plugin-astro": "^1.1.2"
 	}
 }

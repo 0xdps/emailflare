@@ -1,566 +1,1034 @@
 ---
-import Base from '../layouts/Base.astro';
-import { Icon } from 'astro-icon/components';
+import Base from "../layouts/Base.astro";
+import { Icon } from "astro-icon/components";
 ---
 
 <Base
-  title="Deploy to Cloudflare Workers — EmailFlare"
-  description="Run EmailFlare on Cloudflare Workers with D1 SQLite, KV caching, and the full React admin UI — no servers, no Docker, no volumes. One command setup."
-  keywords="emailflare cloudflare workers, deploy email api cloudflare, cloudflare d1 email, wrangler deploy email, serverless email api"
-  canonical="https://emailflare.dev/cloudflare"
-  ogUrl="https://emailflare.dev/cloudflare"
-  ogType="article"
-  navType="docs"
-  navTitle="Workers"
+	title="Deploy to Cloudflare Workers — EmailFlare"
+	description="Run EmailFlare on Cloudflare Workers with D1 SQLite, KV caching, and the full React admin UI — no servers, no Docker, no volumes. One command setup."
+	keywords="emailflare cloudflare workers, deploy email api cloudflare, cloudflare d1 email, wrangler deploy email, serverless email api"
+	canonical="https://emailflare.dev/cloudflare"
+	ogUrl="https://emailflare.dev/cloudflare"
+	ogType="article"
+	navType="docs"
+	navTitle="Workers"
 >
+	<style is:global>
+		/* ── CLOUDFLARE PAGE ──────────────────────────────────────── */
+		.section-eyebrow {
+			color: var(--blue);
+		}
 
-<style is:global>
-  /* ── CLOUDFLARE PAGE ──────────────────────────────────────── */
-  .section-eyebrow { color: var(--blue); }
+		.btn-primary {
+			background: var(--blue);
+		}
+		.btn-primary:hover {
+			background: var(--blue-hover);
+		}
 
-  .btn-primary      { background: var(--blue); }
-  .btn-primary:hover{ background: var(--blue-hover); }
+		/* ── HERO ─────────────────────────────────────────────────── */
+		.cf-hero {
+			background: oklch(11% 0.02 230);
+			padding: clamp(3.5rem, 8vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
+			overflow: hidden;
+		}
 
-  /* ── HERO ─────────────────────────────────────────────────── */
-  .cf-hero {
-    background: oklch(11% 0.02 230);
-    padding: clamp(3.5rem, 8vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
-    overflow: hidden;
-  }
+		.cf-hero-inner {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: clamp(2rem, 5vw, 4rem);
+			align-items: center;
+		}
 
-  .cf-hero-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(2rem, 5vw, 4rem);
-    align-items: center;
-  }
+		@media (max-width: 720px) {
+			.cf-hero-inner {
+				grid-template-columns: 1fr;
+			}
+		}
 
-  @media (max-width: 720px) { .cf-hero-inner { grid-template-columns: 1fr; } }
+		.cf-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			background: oklch(20% 0.06 230 / 0.6);
+			color: oklch(78% 0.12 230);
+			font-size: 12px;
+			font-weight: 500;
+			padding: 4px 13px;
+			border-radius: 100px;
+			border: 1px solid oklch(35% 0.1 230 / 0.5);
+			margin-bottom: 22px;
+		}
 
-  .cf-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: oklch(20% 0.06 230 / 0.6);
-    color: oklch(78% 0.12 230);
-    font-size: 12px; font-weight: 500;
-    padding: 4px 13px;
-    border-radius: 100px;
-    border: 1px solid oklch(35% 0.1 230 / 0.5);
-    margin-bottom: 22px;
-  }
+		.cf-hero h1 {
+			font-family: var(--font-display);
+			font-size: clamp(2rem, 4vw, 3rem);
+			font-weight: 400;
+			line-height: 1.1;
+			letter-spacing: -0.025em;
+			color: oklch(95% 0.008 58);
+			margin-bottom: 18px;
+		}
 
-  .cf-hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.025em;
-    color: oklch(95% 0.008 58);
-    margin-bottom: 18px;
-  }
+		.cf-hero h1 em {
+			font-style: italic;
+			color: var(--blue);
+		}
 
-  .cf-hero h1 em { font-style: italic; color: var(--blue); }
+		.cf-hero-sub {
+			font-size: 1rem;
+			color: oklch(60% 0.01 58);
+			line-height: 1.7;
+			margin-bottom: 30px;
+		}
 
-  .cf-hero-sub {
-    font-size: 1rem;
-    color: oklch(60% 0.01 58);
-    line-height: 1.7;
-    margin-bottom: 30px;
-  }
+		.cf-actions {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
 
-  .cf-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+		/* ── TERMINAL CARD ────────────────────────────────────────── */
+		.term-card {
+			background: oklch(15% 0.018 230);
+			border: 1px solid oklch(28% 0.04 230 / 0.6);
+			border-radius: var(--radius-lg);
+			overflow: hidden;
+		}
 
-  /* ── TERMINAL CARD ────────────────────────────────────────── */
-  .term-card {
-    background: oklch(15% 0.018 230);
-    border: 1px solid oklch(28% 0.04 230 / 0.6);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
+		.term-bar {
+			background: oklch(19% 0.015 230);
+			padding: 10px 16px;
+			display: flex;
+			align-items: center;
+			gap: 7px;
+		}
 
-  .term-bar {
-    background: oklch(19% 0.015 230);
-    padding: 10px 16px;
-    display: flex; align-items: center; gap: 7px;
-  }
+		.td-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+		}
+		.td-red {
+			background: oklch(52% 0.14 24 / 0.6);
+		}
+		.td-yellow {
+			background: oklch(68% 0.14 80 / 0.6);
+		}
+		.td-green {
+			background: oklch(56% 0.14 150 / 0.6);
+		}
+		.term-title {
+			margin-left: 6px;
+			font-size: 11px;
+			color: oklch(42% 0.01 58);
+			font-family: var(--font-mono);
+		}
 
-  .td-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .td-red    { background: oklch(52% 0.14 24 / 0.6); }
-  .td-yellow { background: oklch(68% 0.14 80 / 0.6); }
-  .td-green  { background: oklch(56% 0.14 150 / 0.6); }
-  .term-title { margin-left: 6px; font-size: 11px; color: oklch(42% 0.01 58); font-family: var(--font-mono); }
+		.term-body {
+			padding: 18px 20px 20px;
+			font-family: var(--font-mono);
+			font-size: 12px;
+			line-height: 1.85;
+		}
 
-  .term-body {
-    padding: 18px 20px 20px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    line-height: 1.85;
-  }
+		.tt-cmt {
+			color: oklch(40% 0.01 58);
+			font-style: italic;
+		}
+		.tt-prompt {
+			color: oklch(55% 0.1 230);
+		}
+		.tt-cmd {
+			color: oklch(82% 0.06 58);
+		}
+		.tt-ok {
+			color: oklch(62% 0.17 150);
+		}
+		.tt-out {
+			color: oklch(58% 0.01 58);
+		}
+		.tt-url {
+			color: oklch(68% 0.14 230);
+		}
 
-  .tt-cmt    { color: oklch(40% 0.01 58); font-style: italic; }
-  .tt-prompt { color: oklch(55% 0.1 230); }
-  .tt-cmd    { color: oklch(82% 0.06 58); }
-  .tt-ok     { color: oklch(62% 0.17 150); }
-  .tt-out    { color: oklch(58% 0.01 58); }
-  .tt-url    { color: oklch(68% 0.14 230); }
+		/* ── WHY GRID ─────────────────────────────────────────────── */
+		.why-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 16px;
+		}
 
-  /* ── WHY GRID ─────────────────────────────────────────────── */
-  .why-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
-  }
+		.why-card {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			padding: 24px 24px 20px;
+			transition: border-color 0.15s;
+		}
 
-  .why-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 24px 24px 20px;
-    transition: border-color 0.15s;
-  }
+		.why-card:hover {
+			border-color: var(--blue-mid);
+		}
+		.why-card h3 {
+			font-size: 0.9375rem;
+			font-weight: 600;
+			margin-bottom: 8px;
+			letter-spacing: -0.01em;
+		}
+		.why-card p {
+			font-size: 0.875rem;
+			color: var(--text-muted);
+			line-height: 1.65;
+		}
+		.why-card p code {
+			font-family: var(--font-mono);
+			font-size: 12px;
+			background: oklch(93% 0.006 60);
+			padding: 1px 5px;
+			border-radius: 4px;
+		}
+		.why-card .card-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 38px;
+			height: 38px;
+			background: var(--blue-light);
+			border-radius: 10px;
+			margin-bottom: 14px;
+			color: var(--blue);
+		}
+		.why-card .card-icon svg {
+			width: 18px;
+			height: 18px;
+		}
+		.tip-icon {
+			line-height: 0;
+		}
+		.tip-icon svg {
+			width: 15px;
+			height: 15px;
+		}
 
-  .why-card:hover { border-color: var(--blue-mid); }
-  .why-card h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em; }
-  .why-card p  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; }
-  .why-card p code { font-family: var(--font-mono); font-size: 12px; background: oklch(93% 0.006 60); padding: 1px 5px; border-radius: 4px; }
-  .why-card .card-icon {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 38px; height: 38px;
-    background: var(--blue-light); border-radius: 10px;
-    margin-bottom: 14px; color: var(--blue);
-  }
-  .why-card .card-icon svg { width: 18px; height: 18px; }
-  .tip-icon { line-height: 0; }
-  .tip-icon svg { width: 15px; height: 15px; }
+		/* ── COMPARISON ───────────────────────────────────────────── */
+		.cmp-section {
+			background: var(--bg-alt);
+			border-top: 1px solid var(--border);
+			border-bottom: 1px solid var(--border);
+		}
 
-  /* ── COMPARISON ───────────────────────────────────────────── */
-  .cmp-section { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+		.cmp-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 20px;
+		}
+		@media (max-width: 600px) {
+			.cmp-grid {
+				grid-template-columns: 1fr;
+			}
+		}
 
-  .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 600px) { .cmp-grid { grid-template-columns: 1fr; } }
+		.cmp-col {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			overflow: hidden;
+		}
 
-  .cmp-col {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
+		.cmp-col.highlighted {
+			border-color: var(--blue-mid);
+		}
 
-  .cmp-col.highlighted { border-color: var(--blue-mid); }
+		.cmp-header {
+			padding: 16px 20px;
+			border-bottom: 1px solid var(--border);
+		}
+		.cmp-header h3 {
+			font-size: 0.9375rem;
+			font-weight: 600;
+			margin-bottom: 4px;
+		}
+		.cmp-header p {
+			font-size: 12.5px;
+			color: var(--text-muted);
+		}
 
-  .cmp-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
-  .cmp-header h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 4px; }
-  .cmp-header p  { font-size: 12.5px; color: var(--text-muted); }
+		.cmp-header .badge {
+			display: inline-block;
+			font-size: 10.5px;
+			font-weight: 600;
+			padding: 2px 9px;
+			border-radius: 100px;
+			margin-bottom: 8px;
+		}
 
-  .cmp-header .badge {
-    display: inline-block; font-size: 10.5px; font-weight: 600;
-    padding: 2px 9px; border-radius: 100px; margin-bottom: 8px;
-  }
+		.badge-docker {
+			background: oklch(93% 0.004 58);
+			color: var(--text-muted);
+			border: 1px solid var(--border-strong);
+		}
+		.badge-cf {
+			background: var(--blue-light);
+			color: var(--blue-dark);
+			border: 1px solid var(--blue-mid);
+		}
 
-  .badge-docker { background: oklch(93% 0.004 58); color: var(--text-muted); border: 1px solid var(--border-strong); }
-  .badge-cf     { background: var(--blue-light); color: var(--blue-dark); border: 1px solid var(--blue-mid); }
+		.cmp-list {
+			list-style: none;
+			padding: 16px 20px;
+			display: flex;
+			flex-direction: column;
+			gap: 11px;
+		}
+		.cmp-list li {
+			display: flex;
+			gap: 10px;
+			font-size: 13.5px;
+			color: var(--text-muted);
+			line-height: 1.5;
+			align-items: flex-start;
+		}
 
-  .cmp-list { list-style: none; padding: 16px 20px; display: flex; flex-direction: column; gap: 11px; }
-  .cmp-list li { display: flex; gap: 10px; font-size: 13.5px; color: var(--text-muted); line-height: 1.5; align-items: flex-start; }
+		.ci {
+			font-size: 14px;
+			flex-shrink: 0;
+		}
+		.ci-ok {
+			color: oklch(55% 0.17 150);
+		}
+		.ci-no {
+			color: oklch(56% 0.14 24);
+		}
+		.ci-warn {
+			color: oklch(62% 0.14 80);
+		}
 
-  .ci { font-size: 14px; flex-shrink: 0; }
-  .ci-ok   { color: oklch(55% 0.17 150); }
-  .ci-no   { color: oklch(56% 0.14 24); }
-  .ci-warn { color: oklch(62% 0.14 80); }
+		/* ── SETUP SECTION ────────────────────────────────────────── */
+		.setup-section {
+			background: oklch(11% 0.02 230);
+		}
+		.setup-section .section-eyebrow {
+			color: oklch(72% 0.08 230);
+		}
+		.setup-section .section-title {
+			color: oklch(95% 0.008 58);
+		}
+		.setup-section .section-sub {
+			color: oklch(58% 0.01 58);
+		}
 
-  /* ── SETUP SECTION ────────────────────────────────────────── */
-  .setup-section { background: oklch(11% 0.02 230); }
-  .setup-section .section-eyebrow { color: oklch(72% 0.08 230); }
-  .setup-section .section-title { color: oklch(95% 0.008 58); }
-  .setup-section .section-sub { color: oklch(58% 0.01 58); }
+		.setup-steps {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			margin-top: 44px;
+		}
 
-  .setup-steps { display: flex; flex-direction: column; gap: 20px; margin-top: 44px; }
+		.setup-step {
+			display: grid;
+			grid-template-columns: 48px 1fr;
+			gap: 0 20px;
+			align-items: start;
+			position: relative;
+		}
 
-  .setup-step {
-    display: grid;
-    grid-template-columns: 48px 1fr;
-    gap: 0 20px;
-    align-items: start;
-    position: relative;
-  }
+		.setup-step:not(:last-child)::before {
+			content: "";
+			position: absolute;
+			left: 23px;
+			top: 42px;
+			bottom: -20px;
+			width: 2px;
+			background: oklch(22% 0.012 48);
+		}
 
-  .setup-step:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    left: 23px; top: 42px; bottom: -20px;
-    width: 2px;
-    background: oklch(22% 0.012 48);
-  }
+		.ss-num {
+			width: 34px;
+			height: 34px;
+			border-radius: 50%;
+			background: oklch(20% 0.04 230 / 0.8);
+			border: 1.5px solid oklch(36% 0.08 230 / 0.6);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 13px;
+			font-weight: 600;
+			color: oklch(72% 0.1 230);
+			flex-shrink: 0;
+			z-index: 1;
+		}
 
-  .ss-num {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background: oklch(20% 0.04 230 / 0.8);
-    border: 1.5px solid oklch(36% 0.08 230 / 0.6);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 600;
-    color: oklch(72% 0.1 230);
-    flex-shrink: 0; z-index: 1;
-  }
+		.ss-body {
+			background: oklch(16% 0.016 230 / 0.5);
+			border: 1px solid oklch(26% 0.02 230 / 0.4);
+			border-radius: var(--radius-lg);
+			padding: 20px 22px;
+		}
 
-  .ss-body {
-    background: oklch(16% 0.016 230 / 0.5);
-    border: 1px solid oklch(26% 0.02 230 / 0.4);
-    border-radius: var(--radius-lg);
-    padding: 20px 22px;
-  }
+		.ss-body h3 {
+			font-size: 0.9375rem;
+			font-weight: 600;
+			color: oklch(90% 0.01 58);
+			margin-bottom: 8px;
+		}
+		.ss-body p {
+			font-size: 0.875rem;
+			color: oklch(58% 0.01 58);
+			line-height: 1.7;
+			margin-bottom: 14px;
+		}
+		.ss-body p:last-child {
+			margin-bottom: 0;
+		}
+		.ss-body a.inline-link {
+			color: oklch(72% 0.14 230);
+			text-decoration: none;
+		}
+		.ss-body a.inline-link:hover {
+			text-decoration: underline;
+		}
 
-  .ss-body h3 { font-size: 0.9375rem; font-weight: 600; color: oklch(90% 0.01 58); margin-bottom: 8px; }
-  .ss-body p  { font-size: 0.875rem; color: oklch(58% 0.01 58); line-height: 1.7; margin-bottom: 14px; }
-  .ss-body p:last-child { margin-bottom: 0; }
-  .ss-body a.inline-link { color: oklch(72% 0.14 230); text-decoration: none; }
-  .ss-body a.inline-link:hover { text-decoration: underline; }
+		.code-block {
+			background: oklch(10% 0.012 230);
+			border: 1px solid oklch(22% 0.018 230);
+			border-radius: 8px;
+			padding: 14px 18px;
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			line-height: 1.8;
+			overflow-x: auto;
+			white-space: pre-wrap;
+			margin: 12px 0;
+			display: flex;
+			flex-direction: column;
+			gap: 0;
+		}
 
-  .code-block {
-    background: oklch(10% 0.012 230);
-    border: 1px solid oklch(22% 0.018 230);
-    border-radius: 8px;
-    padding: 14px 18px;
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    line-height: 1.8;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    margin: 12px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+		.c-kw {
+			color: oklch(72% 0.14 165);
+		}
+		.c-val {
+			color: oklch(74% 0.12 82);
+		}
+		.c-key {
+			color: oklch(78% 0.12 230);
+		}
+		.c-cmt {
+			color: oklch(40% 0.01 58);
+			font-style: italic;
+		}
+		.c-url {
+			color: oklch(68% 0.14 230);
+		}
+		.c-cmd {
+			color: oklch(82% 0.06 58);
+		}
+		.c-ok {
+			color: oklch(62% 0.17 150);
+		}
 
-  .c-kw  { color: oklch(72% 0.14 165); }
-  .c-val { color: oklch(74% 0.12 82); }
-  .c-key { color: oklch(78% 0.12 230); }
-  .c-cmt { color: oklch(40% 0.01 58); font-style: italic; }
-  .c-url { color: oklch(68% 0.14 230); }
-  .c-cmd { color: oklch(82% 0.06 58); }
-  .c-ok  { color: oklch(62% 0.17 150); }
+		.tip-box {
+			background: oklch(14% 0.04 230 / 0.6);
+			border: 1px solid oklch(30% 0.08 230 / 0.4);
+			border-radius: var(--radius);
+			padding: 13px 16px;
+			font-size: 0.85rem;
+			color: oklch(62% 0.06 230);
+			line-height: 1.65;
+			display: flex;
+			gap: 11px;
+			align-items: flex-start;
+			margin-top: 12px;
+		}
 
-  .tip-box {
-    background: oklch(14% 0.04 230 / 0.6);
-    border: 1px solid oklch(30% 0.08 230 / 0.4);
-    border-radius: var(--radius);
-    padding: 13px 16px;
-    font-size: 0.85rem;
-    color: oklch(62% 0.06 230);
-    line-height: 1.65;
-    display: flex; gap: 11px;
-    align-items: flex-start;
-    margin-top: 12px;
-  }
+		.tip-icon {
+			font-size: 15px;
+			flex-shrink: 0;
+		}
 
-  .tip-icon { font-size: 15px; flex-shrink: 0; }
+		/* ── NEXT SECTION ─────────────────────────────────────────── */
+		.next-section {
+			background: var(--bg-alt);
+			border-top: 1px solid var(--border);
+			padding: clamp(2.5rem, 6vw, 4rem) 0;
+		}
 
-  /* ── NEXT SECTION ─────────────────────────────────────────── */
-  .next-section {
-    background: var(--bg-alt);
-    border-top: 1px solid var(--border);
-    padding: clamp(2.5rem, 6vw, 4rem) 0;
-  }
+		.next-cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 16px;
+			margin-top: 28px;
+		}
 
-  .next-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 28px; }
+		.next-card {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			padding: 20px 22px;
+			text-decoration: none;
+			color: var(--text);
+			transition: border-color 0.15s;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
 
-  .next-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px 22px;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color 0.15s;
-    display: flex; flex-direction: column; gap: 8px;
-  }
+		.next-card:hover {
+			border-color: var(--blue-mid);
+		}
+		.next-card .nc-label {
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: var(--blue);
+		}
+		.next-card h3 {
+			font-size: 0.9375rem;
+			font-weight: 600;
+		}
+		.next-card p {
+			font-size: 0.875rem;
+			color: var(--text-muted);
+			line-height: 1.6;
+		}
+	</style>
 
-  .next-card:hover { border-color: var(--blue-mid); }
-  .next-card .nc-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue); }
-  .next-card h3 { font-size: 0.9375rem; font-weight: 600; }
-  .next-card p  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
-</style>
+	<!-- HERO -->
+	<div class="cf-hero">
+		<div class="container">
+			<div class="cf-hero-inner">
+				<div>
+					<div class="cf-badge">⚡ Deploy · Cloudflare Workers</div>
+					<h1>
+						Your email API on the <em>edge</em>. No servers, no Docker.
+					</h1>
+					<p class="cf-hero-sub">
+						EmailFlare runs as a Cloudflare Worker — with D1 for storage, KV for caching, and the React
+						admin UI served as a static asset. No Docker, no volumes, no servers to manage. One command sets
+						everything up.
+					</p>
+					<div class="cf-actions">
+						<a class="btn btn-primary" href="#setup">
+							Get started →
+						</a>
+						<a
+							class="btn btn-ghost"
+							href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md"
+							target="_blank"
+							rel="noopener"
+						>
+							Read the docs
+						</a>
+					</div>
+				</div>
 
-  <!-- HERO -->
-  <div class="cf-hero">
-    <div class="container">
-      <div class="cf-hero-inner">
-        <div>
-          <div class="cf-badge">⚡ Deploy · Cloudflare Workers</div>
-          <h1>Your email API on the <em>edge</em>. No servers, no Docker.</h1>
-          <p class="cf-hero-sub">
-            EmailFlare runs as a Cloudflare Worker — with D1 for storage, KV for caching,
-            and the React admin UI served as a static asset. No Docker, no volumes,
-            no servers to manage. One command sets everything up.
-          </p>
-          <div class="cf-actions">
-            <a class="btn btn-primary" href="#setup">Get started →</a>
-            <a class="btn btn-ghost" href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md" target="_blank" rel="noopener">Read the docs</a>
-          </div>
-        </div>
+				<div class="term-card">
+					<div class="term-bar">
+						<div class="td-dot td-red"></div>
+						<div class="td-dot td-yellow"></div>
+						<div class="td-dot td-green"></div>
+						<span class="term-title">bash — emailflare worker deploy</span>
+					</div>
+					<div class="term-body">
+						<div>
+							<span class="tt-cmt"># 1. Install all dependencies</span>
+						</div>
+						<div>
+							<span class="tt-prompt">$</span> <span class="tt-cmd">just install</span>
+						</div>
+						<div style="margin-top:8px;">
+							<span class="tt-cmt"># 2. Authenticate with Cloudflare</span>
+						</div>
+						<div>
+							<span class="tt-prompt">$</span> <span class="tt-cmd">pnpm exec wrangler login</span>
+						</div>
+						<div style="margin-top:8px;">
+							<span class="tt-cmt"># 3. One-command deploy</span>
+						</div>
+						<div>
+							<span class="tt-prompt">$</span> <span class="tt-cmd">just web-deploy</span>
+						</div>
+						<div style="margin-top:10px;">
+							<span class="tt-ok">✓</span>{" "}
+							<span class="tt-out">D1 database &amp; migrations applied</span>
+						</div>
+						<div>
+							<span class="tt-ok">✓</span>{" "}
+							<span class="tt-out">Next.js Server Components &amp; Actions built</span>
+						</div>
+						<div>
+							<span class="tt-ok">✓</span>{" "}
+							<span class="tt-out">Hono API &amp; Durable Objects bundled</span>
+						</div>
+						<div style="margin-top:6px;">
+							<span class="tt-ok">✓</span> <span class="tt-out">Deployed → </span>
+							<span class="tt-url">https://emailflare.workers.dev</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-        <div class="term-card">
-          <div class="term-bar">
-            <div class="td-dot td-red"></div>
-            <div class="td-dot td-yellow"></div>
-            <div class="td-dot td-green"></div>
-            <span class="term-title">bash — emailflare worker deploy</span>
-          </div>
-          <div class="term-body">
-            <div><span class="tt-cmt"># 1. Install all dependencies</span></div>
-            <div><span class="tt-prompt">$</span> <span class="tt-cmd">just install</span></div>
-            <div style="margin-top:8px;"><span class="tt-cmt"># 2. Configure Cloudflare credentials</span></div>
-            <div><span class="tt-prompt">$</span> <span class="tt-cmd">cp scripts/config.example.toml scripts/config.toml</span></div>
-            <div><span class="tt-prompt">$</span> <span class="tt-cmd">just emailflare-api-worker-login</span></div>
-            <div style="margin-top:8px;"><span class="tt-cmt"># 3. One-command deploy</span></div>
-            <div><span class="tt-prompt">$</span> <span class="tt-cmd">just emailflare-api-worker-setup</span></div>
-            <div style="margin-top:10px;">
-              <span class="tt-ok">✓</span> <span class="tt-out">D1 database created: emailflare</span>
-            </div>
-            <div><span class="tt-ok">✓</span> <span class="tt-out">KV namespace created: emailflare-api-rate-limit</span></div>
-            <div><span class="tt-ok">✓</span> <span class="tt-out">Secrets configured</span></div>
-            <div><span class="tt-ok">✓</span> <span class="tt-out">Admin UI built</span></div>
-            <div style="margin-top:6px;"><span class="tt-ok">✓</span> <span class="tt-out">Deployed → </span><span class="tt-url">https://emailflare.workers.dev</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+	<!-- WHY CLOUDFLARE WORKERS -->
+	<section>
+		<div class="container">
+			<div class="section-head">
+				<div class="section-eyebrow">Why Cloudflare Workers</div>
+				<h2 class="section-title">
+					Email API at the edge.
+					<br />
+					Zero infrastructure overhead.
+				</h2>
+				<p class="section-sub">
+					Cloudflare Workers bring EmailFlare closer to your users and further from your ops burden — no
+					servers to provision, no containers to run, no volumes to back up.
+				</p>
+			</div>
+			<div class="why-grid">
+				<div class="why-card">
+					<span class="card-icon">
+						<Icon name="lucide:zap" />
+					</span>
+					<h3>Zero cold starts, global edge</h3>
+					<p>
+						Cloudflare Workers run on V8 isolates — no containers, no boot time. Your email API responds in
+						milliseconds from data centres in 300+ cities worldwide.
+					</p>
+				</div>
+				<div class="why-card">
+					<span class="card-icon">
+						<Icon name="lucide:database" />
+					</span>
+					<h3>D1 SQLite — no database to manage</h3>
+					<p>
+						EmailFlare stores everything in Cloudflare D1: templates, API keys, domains, send logs. D1 is
+						fully managed SQLite at the edge — no provisioning, no backups to configure.
+					</p>
+				</div>
+				<div class="why-card">
+					<span class="card-icon">
+						<Icon name="lucide:terminal" />
+					</span>
+					<h3>One command from zero to deployed</h3>
+					<p>
+						<code>just web-deploy</code> creates your D1 database tables, applies composite indexes, builds
+						the Next.js app with Server Actions, and deploys the unified Worker — all automatically.
+					</p>
+				</div>
+				<div class="why-card">
+					<span class="card-icon">
+						<Icon name="lucide:layout-dashboard" />
+					</span>
+					<h3>Admin panel included</h3>
+					<p>
+						The full Next.js admin dashboard and team inbox run on the same Worker with React Server
+						Components for zero-waterfall initial renders. No separate hosting needed.
+					</p>
+				</div>
+				<div class="why-card">
+					<span class="card-icon">
+						<Icon name="lucide:git-branch" />
+					</span>
+					<h3>Single Worker architecture</h3>
+					<p>
+						Sending API, inbound Email Routing, team inbox CRM, and Next.js UI all execute inside a single
+						Worker bundle on Cloudflare's edge.
+					</p>
+				</div>
+				<div class="why-card">
+					<span class="card-icon">
+						<Icon name="lucide:gift" />
+					</span>
+					<h3>Cloudflare Workers free tier</h3>
+					<p>
+						Workers free tier covers 100,000 requests per day, and D1 includes 5 GB storage and 25 million
+						row reads daily. For most teams, the cost of running EmailFlare on Workers is zero.
+					</p>
+				</div>
+			</div>
+		</div>
+	</section>
 
-  <!-- WHY CLOUDFLARE WORKERS -->
-  <section>
-    <div class="container">
-      <div class="section-head">
-        <div class="section-eyebrow">Why Cloudflare Workers</div>
-        <h2 class="section-title">Email API at the edge.<br />Zero infrastructure overhead.</h2>
-        <p class="section-sub">
-          Cloudflare Workers bring EmailFlare closer to your users and further from your ops burden —
-          no servers to provision, no containers to run, no volumes to back up.
-        </p>
-      </div>
-      <div class="why-grid">
-        <div class="why-card">
-          <span class="card-icon"><Icon name="lucide:zap" /></span>
-          <h3>Zero cold starts, global edge</h3>
-          <p>Cloudflare Workers run on V8 isolates — no containers, no boot time. Your email API responds in milliseconds from data centres in 300+ cities worldwide.</p>
-        </div>
-        <div class="why-card">
-          <span class="card-icon"><Icon name="lucide:database" /></span>
-          <h3>D1 SQLite — no database to manage</h3>
-          <p>EmailFlare stores everything in Cloudflare D1: templates, API keys, domains, send logs. D1 is fully managed SQLite at the edge — no provisioning, no backups to configure.</p>
-        </div>
-        <div class="why-card">
-          <span class="card-icon"><Icon name="lucide:terminal" /></span>
-          <h3>One command from zero to deployed</h3>
-          <p><code>just emailflare-api-worker-setup</code> creates your D1 database, KV namespace, generates <code>wrangler.jsonc</code> from the tracked template, runs migrations, sets secrets, builds the admin UI, and deploys — all automatically.</p>
-        </div>
-        <div class="why-card">
-          <span class="card-icon"><Icon name="lucide:layout-dashboard" /></span>
-          <h3>Admin panel included</h3>
-          <p>The full React admin UI ships as a Worker static asset. No separate hosting needed — it's served directly from the same Worker deployment on your <code>workers.dev</code> subdomain.</p>
-        </div>
-        <div class="why-card">
-          <span class="card-icon"><Icon name="lucide:git-branch" /></span>
-          <h3>Gradual rollout built in</h3>
-          <p>Use <code>just worker-rollout-upload</code> to stage new versions with Cloudflare's gradual rollout feature. Ship confidently — roll back in seconds if something goes wrong.</p>
-        </div>
-        <div class="why-card">
-          <span class="card-icon"><Icon name="lucide:gift" /></span>
-          <h3>Cloudflare Workers free tier</h3>
-          <p>Workers free tier covers 100,000 requests per day, and D1 includes 5 GB storage and 25 million row reads daily. For most teams, the cost of running EmailFlare on Workers is zero.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+	<!-- COMPARISON -->
+	<section class="cmp-section">
+		<div class="container">
+			<div class="section-head">
+				<div class="section-eyebrow">Comparison</div>
+				<h2 class="section-title">Cloudflare Workers vs. Docker self-host</h2>
+				<p class="section-sub">
+					Cloudflare Workers is the primary deploy path — zero-ops, edge-native. Docker self-hosting is the
+					secondary option for teams that want full control over their own servers.
+				</p>
+			</div>
+			<div class="cmp-grid">
+				<div class="cmp-col highlighted">
+					<div class="cmp-header">
+						<span class="badge badge-cf">Cloudflare Workers · Primary</span>
+						<h3>wrangler deploy</h3>
+						<p>
+							Serverless edge deployment — no containers, no servers, no volumes. D1 + R2 + Durable
+							Objects.
+						</p>
+					</div>
+					<ul class="cmp-list">
+						<li>
+							<span class="ci ci-ok">✓</span> No servers to provision or manage
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> Global edge — 300+ Cloudflare locations
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> D1 SQLite — managed, no backup config needed
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> Unified Next.js UI + Sending API + Team Inbox
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> Real-time updates via Durable Object WebSockets
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> Zero cost on Workers free tier for most teams
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> One command to update: <code>just web-deploy</code>
+						</li>
+					</ul>
+				</div>
+				<div class="cmp-col">
+					<div class="cmp-header">
+						<span class="badge badge-docker">Docker self-host · Secondary</span>
+						<h3>compose.yaml + .env.local</h3>
+						<p>Full container stack — Hono API, React admin UI, SQLite storage on a server you control.</p>
+					</div>
+					<ul class="cmp-list">
+						<li>
+							<span class="ci ci-ok">✓</span> Full control over your infrastructure
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> On-premises or private cloud friendly
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> Railway, Fly, VPS, Docker Swarm — works anywhere
+						</li>
+						<li>
+							<span class="ci ci-ok">✓</span> In-house test mailbox — no external service
+						</li>
+						<li>
+							<span class="ci ci-warn">⚠</span> Requires a server or PaaS platform
+						</li>
+						<li>
+							<span class="ci ci-warn">⚠</span> Volume management and backups on you
+						</li>
+						<li>
+							<span class="ci ci-warn">⚠</span> Container restarts required for updates
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</section>
 
-  <!-- COMPARISON -->
-  <section class="cmp-section">
-    <div class="container">
-      <div class="section-head">
-        <div class="section-eyebrow">Comparison</div>
-        <h2 class="section-title">Cloudflare Workers vs. Docker self-host</h2>
-        <p class="section-sub">Cloudflare Workers is the primary deploy path — zero-ops, edge-native. Docker self-hosting is the secondary option for teams that want full control over their own servers.</p>
-      </div>
-      <div class="cmp-grid">
-        <div class="cmp-col highlighted">
-          <div class="cmp-header">
-            <span class="badge badge-cf">Cloudflare Workers · Primary</span>
-            <h3>wrangler deploy</h3>
-            <p>Serverless edge deployment — no containers, no servers, no volumes. D1 + KV + static assets.</p>
-          </div>
-          <ul class="cmp-list">
-            <li><span class="ci ci-ok">✓</span> No servers to provision or manage</li>
-            <li><span class="ci ci-ok">✓</span> Global edge — 300+ Cloudflare locations</li>
-            <li><span class="ci ci-ok">✓</span> D1 SQLite — managed, no backup config needed</li>
-            <li><span class="ci ci-ok">✓</span> Admin UI served as static asset from Workers</li>
-            <li><span class="ci ci-ok">✓</span> Gradual rollout with <code>just worker-rollout-upload</code></li>
-            <li><span class="ci ci-ok">✓</span> Zero cost on Workers free tier for most teams</li>
-            <li><span class="ci ci-ok">✓</span> One command to update: <code>just worker-update</code></li>
-          </ul>
-        </div>
-        <div class="cmp-col">
-          <div class="cmp-header">
-            <span class="badge badge-docker">Docker self-host · Secondary</span>
-            <h3>compose.yaml + .env.local</h3>
-            <p>Full container stack — Hono API, React admin UI, SQLite storage on a server you control.</p>
-          </div>
-          <ul class="cmp-list">
-            <li><span class="ci ci-ok">✓</span> Full control over your infrastructure</li>
-            <li><span class="ci ci-ok">✓</span> On-premises or private cloud friendly</li>
-            <li><span class="ci ci-ok">✓</span> Railway, Fly, VPS, Docker Swarm — works anywhere</li>
-            <li><span class="ci ci-ok">✓</span> In-house test mailbox — no external service</li>
-            <li><span class="ci ci-warn">⚠</span> Requires a server or PaaS platform</li>
-            <li><span class="ci ci-warn">⚠</span> Volume management and backups on you</li>
-            <li><span class="ci ci-warn">⚠</span> Container restarts required for updates</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
+	<!-- SETUP GUIDE -->
+	<section id="setup" class="setup-section">
+		<div class="container-narrow">
+			<div class="section-head">
+				<div class="section-eyebrow">Setup guide</div>
+				<h2 class="section-title" style="color:oklch(95% 0.008 58);">
+					Deploy to Workers in four steps.
+				</h2>
+				<p class="section-sub" style="color:oklch(58% 0.01 58);">
+					The setup script handles everything automatically — D1, KV, secrets, admin build, and deploy. You
+					just need your Cloudflare credentials ready.
+				</p>
+			</div>
 
-  <!-- SETUP GUIDE -->
-  <section id="setup" class="setup-section">
-    <div class="container-narrow">
-      <div class="section-head">
-        <div class="section-eyebrow">Setup guide</div>
-        <h2 class="section-title" style="color:oklch(95% 0.008 58);">Deploy to Workers in four steps.</h2>
-        <p class="section-sub" style="color:oklch(58% 0.01 58);">
-          The setup script handles everything automatically — D1, KV, secrets, admin build, and deploy.
-          You just need your Cloudflare credentials ready.
-        </p>
-      </div>
+			<div class="setup-steps">
+				<div class="setup-step">
+					<div class="ss-num">1</div>
+					<div class="ss-body">
+						<h3>Install dependencies</h3>
+						<p>
+							Clone the repo and run <code>just install</code> from the root. This installs dependencies
+							for the setup scripts, the Worker, and the admin UI in one step.
+						</p>
+						<div class="code-block">
+							<span class="c-cmd">git clone https://github.com/0xdps/emailflare.git</span>
+							<span class="c-cmd">cd emailflare</span>
+							<span class="c-cmd">just install</span>
+						</div>
+						<div class="tip-box">
+							<span class="tip-icon">
+								<Icon name="lucide:lightbulb" />
+							</span>
+							<span>
+								You'll need{" "}
+								<a
+									class="inline-link"
+									href="https://github.com/casey/just"
+									target="_blank"
+									rel="noopener"
+								>
+									just
+								</a>
+								, Node.js 18+, and pnpm installed. Run{" "}
+								<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+									npm i -g pnpm
+								</code>{" "}
+								if pnpm isn't available yet.
+							</span>
+						</div>
+					</div>
+				</div>
 
-      <div class="setup-steps">
-        <div class="setup-step">
-          <div class="ss-num">1</div>
-          <div class="ss-body">
-            <h3>Install dependencies</h3>
-            <p>Clone the repo and run <code>just install</code> from the root. This installs dependencies for the setup scripts, the Worker, and the admin UI in one step.</p>
-            <div class="code-block">
-              <span class="c-cmd">git clone https://github.com/0xdps/emailflare.git</span>
-              <span class="c-cmd">cd emailflare</span>
-              <span class="c-cmd">just install</span>
-            </div>
-            <div class="tip-box">
-              <span class="tip-icon"><Icon name="lucide:lightbulb" /></span>
-              <span>You'll need <a class="inline-link" href="https://github.com/casey/just" target="_blank" rel="noopener">just</a>, Node.js 18+, and pnpm installed. Run <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">npm i -g pnpm</code> if pnpm isn't available yet.</span>
-            </div>
-          </div>
-        </div>
+				<div class="setup-step">
+					<div class="ss-num">2</div>
+					<div class="ss-body">
+						<h3>Configure credentials</h3>
+						<p>
+							Copy the example config and fill in your Cloudflare API token, account ID, and the secrets
+							EmailFlare will use at runtime.
+						</p>
+						<div class="code-block">
+							<span class="c-cmd">cp scripts/config.example.toml scripts/config.toml</span>
+						</div>
+						<p>
+							Edit{" "}
+							<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+								scripts/config.toml
+							</code>{" "}
+							— the key fields are:
+						</p>
+						<div class="code-block">
+							<span>
+								<span class="c-cmt">[deploy]</span>
+							</span>
+							<span>
+								<span class="c-key">database_name</span> = <span class="c-val">"emailflare"</span>
+							</span>
+							<span>&nbsp;</span>
+							<span>
+								<span class="c-cmt">[secrets]</span>
+							</span>
+							<span>
+								<span class="c-key">admin_token</span> ={" "}
+								<span class="c-val">"$(openssl rand -hex 32)"</span>
+							</span>
+							<span>
+								<span class="c-key">session_secret</span> ={" "}
+								<span class="c-val">"$(openssl rand -hex 32)"</span>
+							</span>
+							<span>
+								<span class="c-key">cf_api_token</span> ={" "}
+								<span class="c-val">"your_runtime_token"</span>
+							</span>
+							<span>
+								<span class="c-key">cf_account_id</span> = <span class="c-val">"your_account_id"</span>
+							</span>
+							<span>
+								<span class="c-key">admin_origin</span> = <span class="c-val">""</span>{" "}
+								<span class="c-cmt"># fill after first deploy</span>
+							</span>
+							<span>
+								<span class="c-key">public_url</span> = <span class="c-val">""</span>{" "}
+								<span class="c-cmt"># fill after first deploy</span>
+							</span>
+						</div>
+						<div class="tip-box">
+							<span class="tip-icon">
+								<Icon name="lucide:key-round" />
+							</span>
+							<span>
+								Need to create a Cloudflare API token? See the{" "}
+								<a class="inline-link" href="/cloudflare-token">
+									Cloudflare API Token guide
+								</a>{" "}
+								for the exact permissions required.
+							</span>
+						</div>
+					</div>
+				</div>
 
-        <div class="setup-step">
-          <div class="ss-num">2</div>
-          <div class="ss-body">
-            <h3>Configure credentials</h3>
-            <p>Copy the example config and fill in your Cloudflare API token, account ID, and the secrets EmailFlare will use at runtime.</p>
-            <div class="code-block">
-              <span class="c-cmd">cp scripts/config.example.toml scripts/config.toml</span>
-            </div>
-            <p>Edit <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">scripts/config.toml</code> — the key fields are:</p>
-            <div class="code-block">
-              <span><span class="c-cmt">[deploy]</span></span>
-              <span><span class="c-key">database_name</span> = <span class="c-val">"emailflare"</span></span>
-              <span>&nbsp;</span>
-              <span><span class="c-cmt">[secrets]</span></span>
-              <span><span class="c-key">admin_token</span>     = <span class="c-val">"$(openssl rand -hex 32)"</span></span>
-              <span><span class="c-key">session_secret</span>  = <span class="c-val">"$(openssl rand -hex 32)"</span></span>
-              <span><span class="c-key">cf_api_token</span>    = <span class="c-val">"your_runtime_token"</span></span>
-              <span><span class="c-key">cf_account_id</span>   = <span class="c-val">"your_account_id"</span></span>
-              <span><span class="c-key">admin_origin</span>    = <span class="c-val">""</span> <span class="c-cmt"># fill after first deploy</span></span>
-              <span><span class="c-key">public_url</span>      = <span class="c-val">""</span> <span class="c-cmt"># fill after first deploy</span></span>
-            </div>
-            <div class="tip-box">
-              <span class="tip-icon"><Icon name="lucide:key-round" /></span>
-              <span>Need to create a Cloudflare API token? See the <a class="inline-link" href="/cloudflare-token">Cloudflare API Token guide</a> for the exact permissions required.</span>
-            </div>
-          </div>
-        </div>
+				<div class="setup-step">
+					<div class="ss-num">3</div>
+					<div class="ss-body">
+						<h3>Authenticate with Cloudflare</h3>
+						<p>
+							Log in to Cloudflare via Wrangler. This opens a browser window — authorise the CLI and
+							return to the terminal. You only need to do this once per machine.
+						</p>
+						<div class="code-block">
+							<span class="c-cmd">pnpm exec wrangler login</span>
+						</div>
+						<div class="tip-box">
+							<span class="tip-icon">
+								<Icon name="lucide:lightbulb" />
+							</span>
+							<span>
+								If you prefer not to use browser auth, you can set{" "}
+								<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+									CLOUDFLARE_API_TOKEN
+								</code>{" "}
+								in your environment instead.
+							</span>
+						</div>
+					</div>
+				</div>
 
-        <div class="setup-step">
-          <div class="ss-num">3</div>
-          <div class="ss-body">
-            <h3>Authenticate with Cloudflare</h3>
-            <p>Log in to Cloudflare via Wrangler. This opens a browser window — authorise the CLI and return to the terminal. You only need to do this once per machine.</p>
-            <div class="code-block">
-              <span class="c-cmd">just emailflare-api-worker-login</span>
-            </div>
-            <div class="tip-box">
-              <span class="tip-icon"><Icon name="lucide:lightbulb" /></span>
-              <span>If you prefer not to use browser auth, you can set <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">CLOUDFLARE_API_TOKEN</code> in your environment instead. The setup script will use it automatically.</span>
-            </div>
-          </div>
-        </div>
+				<div class="setup-step">
+					<div class="ss-num">4</div>
+					<div class="ss-body">
+						<h3>Deploy the unified Worker</h3>
+						<p>
+							<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+								just web-deploy
+							</code>{" "}
+							does the full build and deploy — automatically:
+						</p>
+						<div class="code-block">
+							<span class="c-cmd">just web-deploy</span>
+							<span>&nbsp;</span>
+							<span>
+								<span class="c-ok">✓</span>{" "}
+								<span style="color:oklch(62% 0.01 58);">Shared packages compiled</span>
+							</span>
+							<span>
+								<span class="c-ok">✓</span>{" "}
+								<span style="color:oklch(62% 0.01 58);">D1 migrations applied to remote database</span>
+							</span>
+							<span>
+								<span class="c-ok">✓</span>{" "}
+								<span style="color:oklch(62% 0.01 58);">Next.js React Server Components built</span>
+							</span>
+							<span>
+								<span class="c-ok">✓</span>{" "}
+								<span style="color:oklch(62% 0.01 58);">Durable Objects &amp; Hono API bundled</span>
+							</span>
+							<span>
+								<span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Deployed → </span>
+								<span class="c-url">https://emailflare.workers.dev</span>
+							</span>
+						</div>
+						<div class="tip-box">
+							<span class="tip-icon">
+								<Icon name="lucide:circle-check" />
+							</span>
+							<span>
+								That's it. Open your{" "}
+								<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+									workers.dev
+								</code>{" "}
+								URL — the EmailFlare admin dashboard is live. Add a sending domain, generate an API key,
+								and start sending email from the edge.
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
 
-        <div class="setup-step">
-          <div class="ss-num">4</div>
-          <div class="ss-body">
-            <h3>Run the setup script</h3>
-            <p><code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">just emailflare-api-worker-setup</code> does the full deploy — automatically:</p>
-            <div class="code-block">
-              <span class="c-cmd">just emailflare-api-worker-setup</span>
-              <span>&nbsp;</span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">D1 database created: emailflare</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">KV namespace created: emailflare-api-rate-limit</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">wrangler.jsonc generated from template</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">D1 migrations applied</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Secrets pushed to Worker</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Admin UI built</span></span>
-              <span><span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Deployed → </span><span class="c-url">https://emailflare.workers.dev</span></span>
-            </div>
-            <p>After the first deploy, add <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">admin_origin</code> and <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">public_url</code> to <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">scripts/config.toml</code> with your Worker URL, then run <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">just emailflare-api-worker-setup</code> again to push the secrets.</p>
-            <div class="tip-box">
-              <span class="tip-icon"><Icon name="lucide:circle-check" /></span>
-              <span>That's it. Open your <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">workers.dev</code> URL — the EmailFlare admin panel is live. Add a sending domain, generate an API key, and start sending email from the edge.</span>
-            </div>
-          </div>
-        </div>
-      </div>
+			<div class="tip-box" style="margin-top:24px;">
+				<span class="tip-icon">
+					<Icon name="lucide:workflow" />
+				</span>
+				<span>
+					<strong>Prefer CI?</strong> EmailFlare also ships a GitHub Actions workflow (
+					<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+						deploy-workers.yml
+					</code>
+					) that deploys or updates your Workers from the Actions tab — pick
+					<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+						cf-api
+					</code>
+					,
+					<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+						cf-inbox
+					</code>
+					, or
+					<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
+						cf-worker
+					</code>
+					. Requires a one-time local setup and two repo secrets — see the
+					<a
+						class="inline-link"
+						href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md"
+						target="_blank"
+						rel="noopener"
+					>
+						Cloudflare docs
+					</a>
+					.
+				</span>
+			</div>
+		</div>
+	</section>
 
-      <div class="tip-box" style="margin-top:24px;">
-        <span class="tip-icon"><Icon name="lucide:workflow" /></span>
-        <span>
-          <strong>Prefer CI?</strong> EmailFlare also ships a GitHub Actions workflow
-          (<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">deploy-workers.yml</code>)
-          that deploys or updates your Workers from the Actions tab — pick
-          <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">cf-api</code>,
-          <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">cf-inbox</code>, or
-          <code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">cf-worker</code>.
-          Requires a one-time local setup and two repo secrets — see the
-          <a class="inline-link" href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md" target="_blank" rel="noopener">Cloudflare docs</a>.
-        </span>
-      </div>
-    </div>
-  </section>
+	<!-- WHAT'S NEXT -->
+	<section class="next-section">
+		<div class="container">
+			<h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">
+				Continue setting up EmailFlare
+			</h2>
+			<p style="font-size:0.9rem;color:var(--text-muted);">Everything you need to get to a working deploy.</p>
+			<div class="next-cards">
+				<a class="next-card" href="/cloudflare-token">
+					<span class="nc-label">Required</span>
+					<h3>Create your Cloudflare API token</h3>
+					<p>
+						Step-by-step guide to the exact permissions EmailFlare needs for Email Sending, DNS, and routing
+						rules.
+					</p>
+				</a>
+				<a
+					class="next-card"
+					href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md"
+					target="_blank"
+					rel="noopener"
+				>
+					<span class="nc-label">Reference</span>
+					<h3>Full Cloudflare deployment docs</h3>
+					<p>
+						Complete guide — gradual rollout, updating secrets, local dev with Wrangler, and all config
+						options.
+					</p>
+				</a>
+				<a
+					class="next-card"
+					href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md"
+					target="_blank"
+					rel="noopener"
+				>
+					<span class="nc-label">Alternative</span>
+					<h3>Docker self-hosting guide</h3>
+					<p>
+						Prefer a container? The Docker Compose stack is the other deploy path — full control, your
+						server.
+					</p>
+				</a>
+			</div>
+		</div>
+	</section>
 
-  <!-- WHAT'S NEXT -->
-  <section class="next-section">
-    <div class="container">
-      <h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">Continue setting up EmailFlare</h2>
-      <p style="font-size:0.9rem;color:var(--text-muted);">Everything you need to get to a working deploy.</p>
-      <div class="next-cards">
-        <a class="next-card" href="/cloudflare-token">
-          <span class="nc-label">Required</span>
-          <h3>Create your Cloudflare API token</h3>
-          <p>Step-by-step guide to the exact permissions EmailFlare needs for Email Sending, DNS, and routing rules.</p>
-        </a>
-        <a class="next-card" href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md" target="_blank" rel="noopener">
-          <span class="nc-label">Reference</span>
-          <h3>Full Cloudflare deployment docs</h3>
-          <p>Complete guide — gradual rollout, updating secrets, local dev with Wrangler, and all config options.</p>
-        </a>
-        <a class="next-card" href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md" target="_blank" rel="noopener">
-          <span class="nc-label">Alternative</span>
-          <h3>Docker self-hosting guide</h3>
-          <p>Prefer a container? The Docker Compose stack is the other deploy path — full control, your server.</p>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <ul slot="footer-links" class="footer-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">GitHub</a></li>
-    <li><a href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md" target="_blank" rel="noopener">Docs</a></li>
-    <li><a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
-  </ul>
-
+	<ul slot="footer-links" class="footer-links">
+		<li>
+			<a href="/">Home</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
+				GitHub
+			</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare/blob/trunk/docs/CLOUDFLARE.md" target="_blank" rel="noopener">
+				Docs
+			</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">
+				Security
+			</a>
+		</li>
+	</ul>
 </Base>

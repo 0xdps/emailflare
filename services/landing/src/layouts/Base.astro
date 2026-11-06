@@ -1,189 +1,283 @@
 ---
-import '../styles/global.css';
-import { Icon } from 'astro-icon/components';
-import { ClientRouter } from 'astro:transitions';
+import "../styles/global.css";
+import { Icon } from "astro-icon/components";
+import { ClientRouter } from "astro:transitions";
 
 interface Props {
-  title: string;
-  description?: string;
-  canonical?: string;
-  ogUrl?: string;
-  ogType?: string;
-  navType?: 'home' | 'back' | 'docs';
-  keywords?: string;
-  navTitle?: string;
+	title: string;
+	description?: string;
+	canonical?: string;
+	ogUrl?: string;
+	ogType?: string;
+	navType?: "home" | "back" | "docs";
+	keywords?: string;
+	navTitle?: string;
 }
 
 const {
-  title,
-  description = 'EmailFlare is a self-hosted email sending platform built on Cloudflare Email Sending. Clean REST API, domain management, scoped API keys, 50 React Email templates, and an admin UI — all in one Docker container.',
-  canonical,
-  ogUrl,
-  ogType = 'website',
-  navType = 'back',
-  keywords,
-  navTitle,
+	title,
+	description = "EmailFlare is the open-source, all-in-one email engine built for Cloudflare. REST email sending API, collaborative team inbox, React Email templates, and a Next.js admin UI — deployed as a single Cloudflare Worker.",
+	canonical,
+	ogUrl,
+	ogType = "website",
+	navType = "back",
+	keywords,
+	navTitle,
 } = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title}</title>
-  <meta name="description" content={description} />
-  {keywords && <meta name="keywords" content={keywords} />}
-  <meta name="author" content="EmailFlare contributors" />
-  <meta name="robots" content="index, follow" />
-  {canonical && <link rel="canonical" href={canonical} />}
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		{keywords && <meta name="keywords" content={keywords} />}
+		<meta name="author" content="EmailFlare contributors" />
+		<meta name="robots" content="index, follow" />
+		{canonical && <link rel="canonical" href={canonical} />}
 
-  <meta property="og:type" content={ogType} />
-  {ogUrl && <meta property="og:url" content={ogUrl} />}
-  <meta property="og:site_name" content="EmailFlare" />
-  <meta property="og:title" content={title} />
-  <meta property="og:description" content={description} />
-  <meta property="og:image" content="https://emailflare.dev/og.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:locale" content="en_US" />
+		<meta property="og:type" content={ogType} />
+		{ogUrl && <meta property="og:url" content={ogUrl} />}
+		<meta property="og:site_name" content="EmailFlare" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content="https://emailflare.dev/og.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:locale" content="en_US" />
 
-  <meta name="twitter:card" content="summary_large_image" />
-  {ogUrl && <meta name="twitter:url" content={ogUrl} />}
-  <meta name="twitter:title" content={title} />
-  <meta name="twitter:description" content={description} />
-  <meta name="twitter:image" content="https://emailflare.dev/og.png" />
+		<meta name="twitter:card" content="summary_large_image" />
+		{ogUrl && <meta name="twitter:url" content={ogUrl} />}
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content="https://emailflare.dev/og.png" />
 
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
+			rel="stylesheet"
+		/>
 
-  <slot name="head" />
-  <ClientRouter defaultPrefetch="load" />
-  <script is:inline defer src="https://manage.anately.sh/script.js" data-website-id="c517f1e2-5f2c-4659-948e-659371cdeb46"></script>
-  <script is:inline>
-    // Umami doesn't natively handle Astro's ClientRouter page transitions.
-    // Manually track each navigation via astro:page-load so no pageview is missed.
-    document.addEventListener('astro:page-load', function () {
-      if (window.umami) {
-        window.umami.track(function (props) {
-          return { ...props, url: window.location.pathname + window.location.search };
-        });
-      }
-    });
-  </script>
-</head>
-<body>
+		<slot name="head" />
+		<ClientRouter defaultPrefetch="load" />
+		<script
+			is:inline
+			defer
+			src="https://manage.anately.sh/script.js"
+			data-website-id="c517f1e2-5f2c-4659-948e-659371cdeb46"
+		></script>
+		<script is:inline>
+			// Umami doesn't natively handle Astro's ClientRouter page transitions.
+			// Manually track each navigation via astro:page-load so no pageview is missed.
+			document.addEventListener("astro:page-load", function () {
+				if (window.umami) {
+					window.umami.track(function (props) {
+						return { ...props, url: window.location.pathname + window.location.search };
+					});
+				}
+			});
+		</script>
+	</head>
+	<body>
+		<div id="nav-progress" transition:persist></div>
 
-  <div id="nav-progress" transition:persist></div>
+		<nav>
+			<div class="container">
+				<div class="nav-inner">
+					{navType === "home" && (
+						<Fragment>
+							<a class="logo" href="/">
+								<div class="logo-icon">
+									<img src="/favicon.svg" alt="EmailFlare" width="30" height="30" />
+								</div>
+								<span class="logo-text">EmailFlare</span>
+							</a>
+							<ul class="nav-links">
+								<li class="hide-mobile">
+									<a href="/#features">
+										<Icon name="lucide:layers" />
+										Features
+									</a>
+								</li>
+								<li class="hide-mobile">
+									<a href="/templates">
+										<Icon name="lucide:layout" />
+										Templates
+									</a>
+								</li>
+								<li class="hide-mobile">
+									<a href="/docs">
+										<Icon name="lucide:book-open" />
+										Docs
+									</a>
+								</li>
+								<li>
+									<a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
+										<Icon name="simple-icons:github" />
+										GitHub
+									</a>
+								</li>
+								<li>
+									<a class="nav-cta" href="#deploy">
+										<Icon name="lucide:server" />
+										Deploy
+									</a>
+								</li>
+							</ul>
+						</Fragment>
+					)}
+					{navType === "back" && (
+						<Fragment>
+							<a class="logo" href="/">
+								<div class="logo-icon">
+									<img src="/favicon.svg" alt="EmailFlare" width="30" height="30" />
+								</div>
+								<span class="logo-text">EmailFlare</span>
+							</a>
+							<a class="nav-back" href="/">
+								<Icon name="lucide:arrow-left" />
+								Back to home
+							</a>
+						</Fragment>
+					)}
+					{navType === "docs" && (
+						<Fragment>
+							<a class="logo" href="/">
+								<div class="logo-icon">
+									<img src="/favicon.svg" alt="EmailFlare" width="30" height="30" />
+								</div>
+								<span class="logo-text">EmailFlare</span>
+								<span class="logo-sep hide-mobile">/</span>
+								<span class="logo-sub hide-mobile">{navTitle ?? "Docs"}</span>
+							</a>
+							<div class="nav-right">
+								<a class="nav-link" href="/#why">
+									<Icon name="lucide:heart" />
+									Why EmailFlare
+								</a>
+								<a class="nav-link" href="/#deploy">
+									<Icon name="lucide:server" />
+									Self-host
+								</a>
+								<a
+									class="nav-link"
+									href="https://github.com/0xdps/emailflare"
+									target="_blank"
+									rel="noopener"
+								>
+									<Icon name="simple-icons:github" />
+									GitHub
+								</a>
+							</div>
+						</Fragment>
+					)}
+				</div>
+			</div>
+		</nav>
 
-  <nav>
-    <div class="container">
-      <div class="nav-inner">
-        {navType === 'home' && (
-          <Fragment>
-            <a class="logo" href="/">
-              <div class="logo-icon"><img src="/favicon.svg" alt="EmailFlare" width="30" height="30" /></div>
-              <span class="logo-text">EmailFlare</span>
-            </a>
-            <ul class="nav-links">
-              <li class="hide-mobile"><a href="/email-api"><Icon name="lucide:send" />Email API</a></li>
-              <li class="hide-mobile"><a href="/inbox"><Icon name="lucide:inbox" />Inbox</a></li>
-              <li class="hide-mobile"><a href="/docs"><Icon name="lucide:book-open" />Docs</a></li>
-              <li><a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener"><Icon name="simple-icons:github" />GitHub</a></li>
-              <li><a class="nav-cta" href="#deploy"><Icon name="lucide:server" />Self-host</a></li>
-            </ul>
-          </Fragment>
-        )}
-        {navType === 'back' && (
-          <Fragment>
-            <a class="logo" href="/">
-              <div class="logo-icon"><img src="/favicon.svg" alt="EmailFlare" width="30" height="30" /></div>
-              <span class="logo-text">EmailFlare</span>
-            </a>
-            <a class="nav-back" href="/"><Icon name="lucide:arrow-left" />Back to home</a>
-          </Fragment>
-        )}
-        {navType === 'docs' && (
-          <Fragment>
-            <a class="logo" href="/">
-              <div class="logo-icon"><img src="/favicon.svg" alt="EmailFlare" width="30" height="30" /></div>
-              <span class="logo-text">EmailFlare</span>
-              <span class="logo-sep hide-mobile">/</span>
-              <span class="logo-sub hide-mobile">{navTitle ?? 'Docs'}</span>
-            </a>
-            <div class="nav-right">
-              <a class="nav-link" href="/#why"><Icon name="lucide:heart" />Why EmailFlare</a>
-              <a class="nav-link" href="/#deploy"><Icon name="lucide:server" />Self-host</a>
-              <a class="nav-link" href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener"><Icon name="simple-icons:github" />GitHub</a>
-            </div>
-          </Fragment>
-        )}
-      </div>
-    </div>
-  </nav>
+		<slot />
 
-  <slot />
+		<footer>
+			<div class="container">
+				<div class="footer-inner">
+					<div class="footer-copy">
+						© 2025 EmailFlare contributors. MIT License. ·{" "}
+						<a
+							href="https://dps.md"
+							target="_blank"
+							rel="noopener"
+							style="color:inherit;text-decoration:none;"
+						>
+							by 0xdps
+						</a>
+					</div>
+					<slot name="footer-links">
+						<ul class="footer-links">
+							<li>
+								<a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
+									GitHub
+								</a>
+							</li>
+							<li>
+								<a href="/docs">Docs</a>
+							</li>
+							<li>
+								<a href="/templates">Templates</a>
+							</li>
+							<li>
+								<a href="/cloudflare">Workers Deploy</a>
+							</li>
+							<li>
+								<a href="/cloudflare-token">CF Token Guide</a>
+							</li>
+							<li>
+								<a href="/#deploy">Deploy</a>
+							</li>
+							<li>
+								<a
+									href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md"
+									target="_blank"
+									rel="noopener"
+								>
+									Security
+								</a>
+							</li>
+							<li>
+								<a
+									href="https://github.com/0xdps/emailflare/blob/trunk/LICENSE"
+									target="_blank"
+									rel="noopener"
+								>
+									License
+								</a>
+							</li>
+						</ul>
+					</slot>
+				</div>
+			</div>
+		</footer>
 
-  <footer>
-    <div class="container">
-      <div class="footer-inner">
-        <div class="footer-copy">© 2025 EmailFlare contributors. MIT License. · <a href="https://dps.md" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">by 0xdps</a></div>
-        <slot name="footer-links">
-          <ul class="footer-links">
-            <li><a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">GitHub</a></li>
-            <li><a href="/docs">Docs</a></li>
-            <li><a href="/inbox">Inbox</a></li>
-            <li><a href="/cloudflare">Workers Deploy</a></li>
-            <li><a href="/cloudflare-token">CF Token Guide</a></li>
-            <li><a href="/mesahub">MesaHub</a></li>
-            <li><a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
-            <li><a href="https://github.com/0xdps/emailflare/blob/trunk/LICENSE" target="_blank" rel="noopener">License</a></li>
-          </ul>
-        </slot>
-      </div>
-    </div>
-  </footer>
+		<slot name="scripts" />
 
-  <slot name="scripts" />
+		<script is:inline>
+			(function () {
+				var bar = document.getElementById("nav-progress");
+				if (!bar) return;
 
-  <script is:inline>
-    (function () {
-      var bar = document.getElementById('nav-progress');
-      if (!bar) return;
+				function startProgress() {
+					bar.style.transition = "none";
+					bar.style.opacity = "1";
+					bar.style.width = "0";
+					requestAnimationFrame(function () {
+						bar.style.transition = "width 1.2s cubic-bezier(0.05, 0.8, 0.3, 1)";
+						bar.style.width = "75%";
+					});
+				}
 
-      function startProgress() {
-        bar.style.transition = 'none';
-        bar.style.opacity = '1';
-        bar.style.width = '0';
-        requestAnimationFrame(function () {
-          bar.style.transition = 'width 1.2s cubic-bezier(0.05, 0.8, 0.3, 1)';
-          bar.style.width = '75%';
-        });
-      }
+				function finishProgress() {
+					bar.style.transition = "width 0.15s ease";
+					bar.style.width = "100%";
+					setTimeout(function () {
+						bar.style.transition = "opacity 0.25s ease";
+						bar.style.opacity = "0";
+						setTimeout(function () {
+							bar.style.transition = "none";
+							bar.style.width = "0";
+						}, 300);
+					}, 120);
+				}
 
-      function finishProgress() {
-        bar.style.transition = 'width 0.15s ease';
-        bar.style.width = '100%';
-        setTimeout(function () {
-          bar.style.transition = 'opacity 0.25s ease';
-          bar.style.opacity = '0';
-          setTimeout(function () {
-            bar.style.transition = 'none';
-            bar.style.width = '0';
-          }, 300);
-        }, 120);
-      }
-
-      if (!window.__navProgressSetup) {
-        window.__navProgressSetup = true;
-        document.addEventListener('astro:before-preparation', startProgress);
-        document.addEventListener('astro:after-swap', finishProgress);
-      }
-    })();
-  </script>
-
-</body>
+				if (!window.__navProgressSetup) {
+					window.__navProgressSetup = true;
+					document.addEventListener("astro:before-preparation", startProgress);
+					document.addEventListener("astro:after-swap", finishProgress);
+				}
+			})();
+		</script>
+	</body>
 </html>

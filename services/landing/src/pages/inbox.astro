@@ -1,1461 +1,2398 @@
 ---
-import Base from '../layouts/Base.astro';
-import { Icon } from 'astro-icon/components';
+import Base from "../layouts/Base.astro";
+import { Icon } from "astro-icon/components";
 ---
 
 <Base
-  title="Inbox — Self-hosted email CRM on Cloudflare Workers"
-  description="EmailFlare Inbox is a self-hosted CRM inbox built on a Cloudflare Worker. Every inbound email lands in a clean contact thread with sequences, real-time push, and a polished dashboard — deployed with one command."
-  keywords="emailflare inbox, self-hosted crm inbox, cloudflare workers email crm, inbound email cloudflare, email sequences worker, email thread management"
-  canonical="https://emailflare.dev/inbox"
-  ogUrl="https://emailflare.dev/inbox"
-  ogType="article"
-  navType="docs"
-  navTitle="Inbox"
+	title="Inbox — Self-hosted email CRM on Cloudflare Workers"
+	description="EmailFlare Inbox is a self-hosted CRM inbox built on a Cloudflare Worker. Every inbound email lands in a clean contact thread with sequences, real-time push, and a polished dashboard — deployed with one command."
+	keywords="emailflare inbox, self-hosted crm inbox, cloudflare workers email crm, inbound email cloudflare, email sequences worker, email thread management"
+	canonical="https://emailflare.dev/inbox"
+	ogUrl="https://emailflare.dev/inbox"
+	ogType="article"
+	navType="docs"
+	navTitle="Inbox"
 >
-
-<style is:global>
-  /* ── INBOX PAGE ───────────────────────────────────────────── */
-  .section-eyebrow { color: var(--green); }
-  .btn-primary      { background: var(--green); }
-  .btn-primary:hover{ background: oklch(48% 0.18 150); }
-  .anchor-link:hover { color: var(--green) !important; }
-  .sidebar-nav li a:hover { border-left-color: var(--green) !important; }
-  .sidebar-nav li a.active { border-left-color: var(--green) !important; }
-  .doc-body ul li::marker { color: var(--green) !important; }
-  .guide-card:hover { border-color: oklch(82% 0.09 150) !important; }
-  .guide-card .gc-label { color: var(--green) !important; }
-  .qs-num { background: oklch(95% 0.04 150) !important; border-color: oklch(82% 0.09 150) !important; color: oklch(34% 0.12 150) !important; }
-  .callout-orange { background: oklch(95% 0.04 150) !important; border-color: oklch(82% 0.09 150) !important; color: oklch(34% 0.12 150) !important; }
-  .doc-body td:first-child code { background: oklch(95% 0.04 150) !important; border-color: oklch(82% 0.09 150) !important; color: oklch(34% 0.12 150) !important; }
-  .doc-body code { color: oklch(34% 0.12 150) !important; }
-
-  /* ── HERO ─────────────────────────────────────────────────── */
-  .ix-hero {
-    background: oklch(11% 0.025 150);
-    padding: clamp(3.5rem, 8vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .ix-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse 55% 80% at 80% 50%, oklch(30% 0.1 150 / 0.25) 0%, transparent 65%);
-    pointer-events: none;
-  }
-
-  .ix-hero-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(2rem, 5vw, 4rem);
-    align-items: center;
-  }
-
-  @media (max-width: 760px) { .ix-hero-inner { grid-template-columns: 1fr; } }
-
-  .ix-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: oklch(20% 0.07 150 / 0.6);
-    color: oklch(76% 0.14 150);
-    font-size: 12px; font-weight: 500;
-    padding: 4px 13px;
-    border-radius: 100px;
-    border: 1px solid oklch(38% 0.12 150 / 0.5);
-    margin-bottom: 22px;
-  }
-
-  .ix-hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.025em;
-    color: oklch(95% 0.008 58);
-    margin-bottom: 18px;
-  }
-
-  .ix-hero h1 em { font-style: italic; color: var(--green); }
-
-  .ix-hero-sub {
-    font-size: 1rem;
-    color: oklch(60% 0.01 58);
-    line-height: 1.75;
-    max-width: 480px;
-    margin-bottom: 30px;
-  }
-
-  .ix-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-  /* ── INBOX MOCK UI ───────────────────────────────────────── */
-  .ix-ui-card {
-    background: oklch(16% 0.02 150);
-    border: 1px solid oklch(28% 0.06 150 / 0.5);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow:
-      0 24px 60px oklch(0% 0 0 / 0.3),
-      0 0 0 1px oklch(100% 0 0 / 0.04);
-  }
-
-  .ix-ui-bar {
-    background: oklch(20% 0.018 150);
-    border-bottom: 1px solid oklch(28% 0.04 150 / 0.5);
-    padding: 10px 16px;
-    display: flex; align-items: center; gap: 7px;
-  }
-  .ix-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .ixd-r { background: oklch(52% 0.14 24 / 0.6); }
-  .ixd-y { background: oklch(68% 0.14 80 / 0.6); }
-  .ixd-g { background: oklch(56% 0.14 150 / 0.6); }
-  .ix-bar-title { margin-left: 6px; font-size: 11px; color: oklch(44% 0.01 58); font-family: var(--font-mono); }
-
-  .ix-ui-body { display: flex; }
-
-  .ix-ui-list {
-    width: 44%;
-    border-right: 1px solid oklch(22% 0.02 150 / 0.7);
-    padding: 8px 0;
-  }
-
-  .ix-contact-row {
-    padding: 10px 14px;
-    border-bottom: 1px solid oklch(20% 0.01 150 / 0.5);
-    cursor: default;
-    position: relative;
-  }
-  .ix-contact-row.ix-active {
-    background: oklch(22% 0.06 150 / 0.4);
-  }
-  .ix-contact-row.ix-active::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 8px; bottom: 8px;
-    width: 3px;
-    border-radius: 0 3px 3px 0;
-    background: var(--green);
-  }
-
-  .ix-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .ix-avatar {
-    width: 24px; height: 24px; border-radius: 50%;
-    background: oklch(28% 0.06 150 / 0.6);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px; font-weight: 600; color: oklch(70% 0.1 150);
-    flex-shrink: 0;
-  }
-  .ix-avatar.ix-unread { background: oklch(32% 0.1 150 / 0.7); }
-  .ix-name { font-size: 11px; font-weight: 600; color: oklch(84% 0.01 58); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ix-time { font-size: 9.5px; color: oklch(44% 0.01 58); font-family: var(--font-mono); }
-  .ix-preview { font-size: 10px; color: oklch(48% 0.01 58); line-height: 1.5; padding-left: 32px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ix-unread-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-
-  .ix-ui-thread {
-    flex: 1;
-    padding: 14px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-
-  .ix-thread-header {
-    display: flex; align-items: center; gap: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid oklch(22% 0.02 150 / 0.7);
-    margin-bottom: 4px;
-  }
-
-  .ix-thread-avatar {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: oklch(30% 0.08 150 / 0.6);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: oklch(72% 0.12 150);
-    flex-shrink: 0;
-  }
-
-  .ix-thread-name { font-size: 12.5px; font-weight: 600; color: oklch(88% 0.01 58); }
-  .ix-thread-sub  { font-size: 10px; color: oklch(48% 0.01 58); }
-  .ix-thread-badge {
-    margin-left: auto;
-    font-size: 9.5px; font-weight: 600;
-    background: oklch(26% 0.08 150 / 0.5);
-    color: oklch(68% 0.1 150);
-    border: 1px solid oklch(38% 0.1 150 / 0.4);
-    padding: 1px 7px; border-radius: 100px;
-  }
-
-  .ix-email-card {
-    background: oklch(18% 0.016 150 / 0.8);
-    border: 1px solid oklch(24% 0.03 150 / 0.5);
-    border-radius: 7px;
-    padding: 10px 12px;
-  }
-  .ix-email-card.ix-sent { background: oklch(22% 0.06 150 / 0.3); border-color: oklch(32% 0.08 150 / 0.4); }
-
-  .ix-email-header { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
-  .ix-email-from-badge {
-    font-size: 9.5px; font-weight: 600;
-    padding: 1px 6px; border-radius: 100px;
-    background: oklch(24% 0.05 150 / 0.5);
-    color: oklch(62% 0.08 150);
-    border: 1px solid oklch(32% 0.06 150 / 0.4);
-  }
-  .ix-email-card.ix-sent .ix-email-from-badge {
-    background: oklch(28% 0.1 150 / 0.4);
-    color: oklch(72% 0.12 150);
-    border-color: oklch(42% 0.1 150 / 0.4);
-  }
-  .ix-email-subj { font-size: 10px; font-weight: 600; color: oklch(80% 0.01 58); flex: 1; }
-  .ix-email-ts   { font-size: 9px; color: oklch(42% 0.01 58); font-family: var(--font-mono); margin-left: auto; }
-  .ix-email-body { font-size: 9.5px; color: oklch(55% 0.01 58); line-height: 1.6; }
-
-  .ix-reply-bar {
-    background: oklch(18% 0.018 150);
-    border: 1px solid oklch(28% 0.05 150 / 0.4);
-    border-radius: 7px;
-    padding: 8px 12px;
-    margin-top: 4px;
-    display: flex; align-items: center; gap: 8px;
-    font-size: 10px; color: oklch(38% 0.01 58);
-  }
-
-  .ix-reply-btn {
-    margin-left: auto;
-    background: var(--green);
-    color: oklch(12% 0.02 150);
-    font-size: 9.5px; font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 5px;
-    white-space: nowrap;
-  }
-
-  /* ── SECTION COMMONS ──────────────────────────────────────── */
-  .section { padding: clamp(3rem, 6vw, 5rem) 0; }
-
-  .section-eyebrow {
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 12px;
-  }
-
-  .section-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.875rem, 3.5vw, 2.625rem);
-    font-weight: 400;
-    line-height: 1.12;
-    letter-spacing: -0.025em;
-    color: var(--text);
-    margin-bottom: 16px;
-  }
-
-  .section-title em { font-style: italic; color: var(--green); }
-
-  .section-sub {
-    font-size: 1.0rem;
-    color: var(--text-muted);
-    line-height: 1.72;
-    max-width: 560px;
-    margin-bottom: 0;
-  }
-
-  .section-header { margin-bottom: 44px; }
-
-  /* ── FEATURES GRID ────────────────────────────────────────── */
-  .ix-feat-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-  }
-
-  @media (max-width: 820px) { .ix-feat-grid { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 520px) { .ix-feat-grid { grid-template-columns: 1fr; } }
-
-  .ix-feat-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 22px 22px 18px;
-    transition: border-color 0.15s;
-  }
-
-  .ix-feat-card:hover { border-color: oklch(82% 0.09 150); }
-
-  .ix-feat-icon {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 38px; height: 38px;
-    background: oklch(95% 0.04 150);
-    border-radius: 10px;
-    margin-bottom: 14px;
-    color: var(--green);
-  }
-
-  .ix-feat-icon svg { width: 18px; height: 18px; }
-
-  .ix-feat-card h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 7px; letter-spacing: -0.01em; }
-  .ix-feat-card p  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; margin: 0; }
-
-  /* ── HOW IT WORKS ─────────────────────────────────────────── */
-  .ix-flow-section { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-
-  .ix-flow-wrap {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-top: 44px;
-  }
-
-  .ix-flow-step {
-    flex: 1;
-    padding: 24px 22px 22px;
-    border-right: 1px solid var(--border);
-    position: relative;
-  }
-  .ix-flow-step:last-child { border-right: none; }
-
-  @media (max-width: 680px) {
-    .ix-flow-wrap { flex-direction: column; }
-    .ix-flow-step { border-right: none; border-bottom: 1px solid var(--border); }
-    .ix-flow-step:last-child { border-bottom: none; }
-    .ix-flow-arrow { display: none; }
-  }
-
-  .ix-flow-num {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    background: oklch(95% 0.04 150);
-    border: 1.5px solid oklch(82% 0.09 150);
-    font-size: 11px; font-weight: 700;
-    color: oklch(34% 0.12 150);
-    margin-bottom: 12px;
-  }
-
-  .ix-flow-step h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 6px; }
-  .ix-flow-step p  { font-size: 0.825rem; color: var(--text-muted); line-height: 1.6; margin: 0; }
-
-  .ix-flow-tag {
-    display: inline-block;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 2px 9px; border-radius: 100px;
-    margin-bottom: 10px;
-  }
-
-  .ix-tag-routing  { background: oklch(93% 0.04 230); color: oklch(38% 0.14 230); border: 1px solid oklch(80% 0.1 230 / 0.5); }
-  .ix-tag-worker   { background: oklch(93% 0.04 44);  color: oklch(38% 0.14 44);  border: 1px solid oklch(80% 0.1 44 / 0.5); }
-  .ix-tag-db       { background: oklch(93% 0.04 80);  color: oklch(38% 0.12 70);  border: 1px solid oklch(80% 0.1 80 / 0.5); }
-  .ix-tag-dash     { background: oklch(95% 0.04 150); color: oklch(34% 0.12 150); border: 1px solid oklch(82% 0.09 150 / 0.5); }
-  .ix-tag-queue    { background: oklch(93% 0.04 290); color: oklch(38% 0.14 290); border: 1px solid oklch(80% 0.1 290 / 0.5); }
-
-  /* ── DEPLOY SECTION ───────────────────────────────────────── */
-  .ix-deploy-section { background: oklch(11% 0.025 150); }
-  .ix-deploy-section .section-eyebrow { color: oklch(68% 0.12 150); }
-  .ix-deploy-section .section-title   { color: oklch(95% 0.006 58); }
-  .ix-deploy-section .section-sub     { color: oklch(56% 0.01 58); }
-
-  .ix-deploy-option {
-    background: oklch(14% 0.03 150 / 0.8);
-    border: 1px solid oklch(28% 0.08 150 / 0.7);
-    border-radius: var(--radius-lg);
-    display: flex; flex-direction: column; overflow: hidden;
-    margin-top: 48px;
-  }
-  .ix-do-header { padding: 24px 28px 20px; border-bottom: 1px solid oklch(22% 0.05 150 / 0.6); }
-  .ix-do-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; margin-bottom: 14px; background: oklch(20% 0.08 150 / 0.5); color: var(--green); border: 1px solid oklch(36% 0.1 150 / 0.5); }
-  .ix-do-title { font-size: 1.15rem; font-weight: 700; color: oklch(93% 0.01 58); margin-bottom: 8px; }
-  .ix-do-sub { font-size: 0.875rem; color: oklch(56% 0.01 58); line-height: 1.6; }
-  .ix-do-steps { padding: 20px 28px; flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; }
-  @media (max-width: 740px) { .ix-do-steps { grid-template-columns: 1fr; } }
-  .ix-do-step { display: flex; gap: 14px; align-items: flex-start; }
-  .ix-do-step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: 1px solid oklch(36% 0.1 150 / 0.6); font-size: 11px; font-weight: 700; color: var(--green); display: flex; align-items: center; justify-content: center; margin-top: 2px; }
-  .ix-do-step-label { font-size: 13px; font-weight: 600; color: oklch(84% 0.01 58); margin-bottom: 6px; }
-  .ix-do-step-desc { font-size: 12.5px; color: oklch(52% 0.01 58); line-height: 1.55; margin-bottom: 8px; }
-  .ix-do-step-label code, .ix-do-step-desc code { font-family: var(--font-mono); font-size: 11px; background: oklch(20% 0.04 150 / 0.5); border: 1px solid oklch(32% 0.06 150 / 0.4); color: oklch(72% 0.1 150); padding: 1px 5px; border-radius: 4px; }
-  .ix-do-footer { padding: 16px 28px; border-top: 1px solid oklch(22% 0.05 150 / 0.6); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .ix-do-footer-note { font-size: 12px; color: oklch(44% 0.01 58); }
-  .ix-do-footer a { font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; color: var(--green); }
-  .ix-code-block { background: oklch(10% 0.02 150); border: 1px solid oklch(22% 0.05 150 / 0.6); border-radius: 8px; padding: 12px 14px; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.75; overflow-x: auto; display: flex; flex-direction: column; gap: 0; }
-  .ix-cb-cmd { color: oklch(76% 0.1 150); }
-  .ix-cb-cmt { color: oklch(42% 0.01 58); font-style: italic; }
-  .ix-cb-url { color: var(--green); }
-
-  /* ── DOCS ─────────────────────────────────────────────────── */
-  .docs-hero {
-    background: oklch(14% 0.016 150);
-    padding: clamp(3rem, 7vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
-    overflow: hidden;
-  }
-
-  .docs-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: oklch(22% 0.06 150 / 0.6);
-    color: oklch(68% 0.1 150);
-    font-size: 12px; font-weight: 500;
-    padding: 4px 13px;
-    border-radius: 100px;
-    border: 1px solid oklch(36% 0.08 150 / 0.5);
-    margin-bottom: 22px;
-  }
-
-  .docs-hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-    font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.025em;
-    color: oklch(95% 0.008 58);
-    margin-bottom: 16px;
-  }
-
-  .docs-hero h1 em { font-style: italic; color: var(--green); }
-
-  .docs-hero-sub {
-    font-size: 1rem;
-    color: oklch(58% 0.01 58);
-    line-height: 1.7;
-    max-width: 560px;
-    margin-bottom: 28px;
-  }
-
-  .docs-hero-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-  .docs-layout {
-    display: grid;
-    grid-template-columns: 230px 1fr;
-    gap: 0;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 24px;
-    align-items: start;
-  }
-
-  @media (max-width: 760px) {
-    .docs-layout { grid-template-columns: 1fr; }
-    .docs-sidebar { display: none; }
-  }
-
-  .docs-sidebar {
-    position: sticky;
-    top: 82px;
-    padding: 32px 0 32px;
-    border-right: 1px solid var(--border);
-  }
-
-  .sidebar-label {
-    font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 0 16px;
-    margin-bottom: 10px;
-  }
-
-  .sidebar-nav { list-style: none; }
-  .sidebar-nav li a {
-    display: block;
-    padding: 6px 16px;
-    font-size: 13px;
-    color: var(--text-muted);
-    text-decoration: none;
-    border-left: 2px solid transparent;
-    transition: color 0.12s, border-color 0.12s;
-  }
-  .sidebar-nav li a:hover { color: var(--text); border-left-color: var(--green); }
-  .sidebar-nav li a.active { color: var(--text); border-left-color: var(--green); font-weight: 500; }
-
-  .docs-main { padding: 32px 0 56px 40px; }
-  @media (max-width: 760px) { .docs-main { padding: 32px 0 48px; } }
-
-  .doc-section {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 20px;
-    padding: 0;
-  }
-
-  .doc-section-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-alt);
-  }
-
-  .doc-section-header h2 {
-    font-size: 1.0625rem; font-weight: 600;
-    letter-spacing: -0.01em; flex: 1; margin: 0;
-  }
-
-  .anchor-link { font-size: 12px; color: var(--text-muted); text-decoration: none; font-family: var(--font-mono); }
-  .anchor-link:hover { color: var(--green); }
-
-  .doc-body { padding: 24px; }
-  .doc-body > *:first-child { margin-top: 0; }
-  .doc-body > *:last-child { margin-bottom: 0; }
-
-  .doc-body p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.75; margin-bottom: 14px; }
-
-  .doc-body h3 {
-    font-size: 0.875rem; font-weight: 600;
-    letter-spacing: -0.005em;
-    margin: 22px 0 12px; color: var(--text);
-  }
-  .doc-body h3:first-child { margin-top: 0; }
-
-  .doc-body ul { padding-left: 18px; margin-bottom: 14px; }
-  .doc-body ul li { font-size: 0.9rem; color: var(--text-muted); line-height: 1.75; margin-bottom: 5px; }
-  .doc-body ul li::marker { color: var(--green); }
-
-  .doc-body code {
-    font-family: var(--font-mono); font-size: 12px;
-    background: oklch(93% 0.006 60);
-    border: 1px solid var(--border-strong);
-    padding: 1px 5px; border-radius: 4px;
-    color: oklch(34% 0.12 150);
-  }
-
-  .table-wrap { overflow-x: auto; margin: 14px 0; }
-
-  .doc-body table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .doc-body th {
-    text-align: left; padding: 9px 12px;
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-alt);
-  }
-  .doc-body td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; line-height: 1.6; }
-  .doc-body tr:last-child td { border-bottom: none; }
-  .doc-body td:first-child code { background: oklch(95% 0.04 150); border-color: oklch(82% 0.09 150); color: oklch(34% 0.12 150); }
-
-  .pill { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
-  .pill-req  { background: oklch(93% 0.04 24); color: oklch(42% 0.14 24); border: 1px solid oklch(78% 0.1 24 / 0.5); }
-  .pill-opt  { background: oklch(93% 0.004 58); color: var(--text-muted); border: 1px solid var(--border-strong); }
-  .pill-auto { background: oklch(95% 0.04 150); color: oklch(34% 0.12 150); border: 1px solid oklch(82% 0.09 150 / 0.5); }
-
-  .callout {
-    display: flex; gap: 11px; align-items: flex-start;
-    padding: 13px 16px; border-radius: var(--radius);
-    font-size: 0.875rem; line-height: 1.65; margin: 16px 0;
-  }
-  .callout-icon { font-size: 15px; flex-shrink: 0; }
-  .callout-green { background: oklch(95% 0.04 150); border: 1px solid oklch(82% 0.08 150); color: oklch(32% 0.1 150); }
-  .callout-orange { background: var(--orange-light); border: 1px solid var(--orange-mid); color: var(--orange-dark); }
-  .callout-blue   { background: oklch(94% 0.02 230); border: 1px solid oklch(80% 0.08 230); color: oklch(42% 0.14 230); }
-
-  .code-block {
-    background: oklch(14% 0.016 48);
-    border: 1px solid oklch(24% 0.016 48);
-    border-radius: 8px;
-    padding: 16px 20px;
-    font-family: var(--font-mono); font-size: 12.5px;
-    line-height: 1.85; overflow-x: auto; margin: 14px 0;
-    white-space: pre-wrap;
-  }
-
-  .cb-cmd    { color: oklch(82% 0.06 58); }
-  .cb-str    { color: oklch(74% 0.12 140); }
-  .cb-key    { color: oklch(78% 0.12 230); }
-  .cb-punct  { color: oklch(62% 0.06 58); }
-  .cb-num    { color: oklch(74% 0.12 82); }
-  .cb-header { color: oklch(72% 0.1 58); }
-  .cb-plain  { color: oklch(75% 0.01 58); }
-  .cb-cmt    { color: oklch(44% 0.01 58); font-style: italic; }
-  .cb-green  { color: oklch(74% 0.14 150); }
-
-  .qs-steps { display: flex; flex-direction: column; gap: 14px; margin: 14px 0; }
-  .qs-step  { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; }
-  .qs-num {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: oklch(95% 0.04 150); border: 1.5px solid oklch(82% 0.09 150);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11.5px; font-weight: 700; color: oklch(34% 0.12 150); flex-shrink: 0;
-  }
-  .qs-body { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; padding-top: 3px; }
-
-  .guide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 14px 0; }
-  .guide-card {
-    background: var(--bg-alt); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px 16px;
-    text-decoration: none; color: var(--text); transition: border-color 0.15s;
-  }
-  .guide-card:hover { border-color: oklch(82% 0.09 150); }
-  .guide-card .gc-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--green); margin-bottom: 5px; }
-  .guide-card h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 5px; }
-  .guide-card p  { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin: 0; }
-
-  .method-badge {
-    display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 700;
-    padding: 2px 8px; border-radius: 5px;
-  }
-  .method-get  { background: oklch(93% 0.04 230); color: oklch(38% 0.14 230); border: 1px solid oklch(80% 0.1 230 / 0.5); }
-  .method-post { background: oklch(95% 0.04 150); color: oklch(34% 0.12 150); border: 1px solid oklch(82% 0.09 150 / 0.5); }
-  .method-del  { background: oklch(93% 0.04 24); color: oklch(38% 0.14 24); border: 1px solid oklch(80% 0.1 24 / 0.5); }
-  .method-patch{ background: oklch(94% 0.04 80); color: oklch(38% 0.12 70); border: 1px solid oklch(80% 0.1 80 / 0.5); }
-
-  .endpoint-row {
-    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .endpoint-row:last-child { border-bottom: none; }
-  .endpoint-path { font-family: var(--font-mono); font-size: 12px; color: var(--text); }
-  .endpoint-desc { color: var(--text-muted); font-size: 12.5px; }
-  .endpoint-auth { font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; }
-  .auth-session  { background: oklch(93% 0.04 44); color: oklch(38% 0.14 44); border: 1px solid oklch(80% 0.1 44 / 0.5); }
-  .auth-apikey   { background: oklch(95% 0.04 150); color: oklch(34% 0.12 150); border: 1px solid oklch(82% 0.09 150 / 0.5); }
-  .auth-public   { background: oklch(93% 0.004 58); color: var(--text-muted); border: 1px solid var(--border-strong); }
-
-  /* ── BUTTONS ──────────────────────────────────────────────── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 10px 20px; border-radius: 8px;
-    font-size: 14px; font-weight: 500;
-    text-decoration: none; transition: background 0.15s, border-color 0.15s, color 0.15s;
-    border: 1.5px solid transparent;
-    cursor: pointer;
-  }
-
-  .btn svg { width: 16px; height: 16px; }
-
-  .btn-primary {
-    background: var(--green);
-    color: oklch(12% 0.02 150);
-    border-color: var(--green);
-  }
-  .btn-primary:hover { background: oklch(48% 0.18 150); border-color: oklch(48% 0.18 150); }
-
-  .btn-ghost-dark {
-    background: oklch(100% 0 0 / 0.06);
-    color: oklch(80% 0.01 58);
-    border-color: oklch(100% 0 0 / 0.14);
-  }
-  .btn-ghost-dark:hover { background: oklch(100% 0 0 / 0.1); border-color: oklch(100% 0 0 / 0.22); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-muted);
-    border-color: var(--border-strong);
-  }
-  .btn-ghost:hover { background: var(--bg-alt); color: var(--text); border-color: var(--border-strong); }
-</style>
-
-<!-- PRODUCT SUB-NAV -->
-<nav class="product-subnav inbox-product-subnav">
-  <div class="container">
-    <div class="psn-inner">
-      <a href="#overview" class="psn-link active">Overview</a>
-      <a href="#features" class="psn-link">Features</a>
-      <a href="#deploy" class="psn-link">Deploy</a>
-    </div>
-  </div>
-</nav>
-
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  HERO                                                                   -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div id="overview" class="ix-hero">
-  <div class="container">
-    <div class="ix-hero-inner">
-      <!-- LEFT -->
-      <div>
-        <div class="ix-badge">
-          <Icon name="lucide:inbox" size={12} />
-          EmailFlare Inbox — Cloudflare Worker
-        </div>
-        <h1>Self-hosted email <em>CRM inbox</em> — deployed to the edge.</h1>
-        <p class="ix-hero-sub">
-          Every inbound email that hits your Cloudflare Email Routing rules lands in a clean
-          contact thread with sequences, real-time push notifications, and a polished dashboard.
-          No external service. No monthly seat fees. One command setup.
-        </p>
-        <div class="ix-actions">
-          <a class="btn btn-primary" href="#deploy">
-            <Icon name="lucide:rocket" size={15} />Deploy Inbox →
-          </a>
-          <a class="btn btn-ghost-dark" href="#docs">
-            <Icon name="lucide:book-open" size={15} />Setup docs
-          </a>
-          <a class="btn btn-ghost-dark" href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
-            <Icon name="simple-icons:github" size={14} />GitHub
-          </a>
-        </div>
-      </div>
-
-      <!-- RIGHT — Inbox UI Mock -->
-      <div>
-        <div class="ix-ui-card">
-          <div class="ix-ui-bar">
-            <span class="ix-dot ixd-r"></span>
-            <span class="ix-dot ixd-y"></span>
-            <span class="ix-dot ixd-g"></span>
-            <span class="ix-bar-title">emailflare-inbox.workers.dev/inbox</span>
-          </div>
-          <div class="ix-ui-body">
-            <!-- Contact list -->
-            <div class="ix-ui-list">
-              <div class="ix-contact-row ix-active">
-                <div class="ix-row-top">
-                  <div class="ix-avatar ix-unread">JD</div>
-                  <span class="ix-name">Jane Doe</span>
-                  <span class="ix-time">2m</span>
-                </div>
-                <div class="ix-preview">Re: Getting started with your API</div>
-              </div>
-              <div class="ix-contact-row">
-                <div class="ix-row-top">
-                  <div class="ix-avatar">AM</div>
-                  <span class="ix-name">Alex Miller</span>
-                  <span class="ix-time">1h</span>
-                </div>
-                <div class="ix-preview">Thanks for the quick reply!</div>
-              </div>
-              <div class="ix-contact-row">
-                <div class="ix-row-top">
-                  <div class="ix-avatar">SC</div>
-                  <span class="ix-name">Sam Chen</span>
-                  <span class="ix-time">3h</span>
-                </div>
-                <div class="ix-preview">Question about rate limits...</div>
-              </div>
-              <div class="ix-contact-row">
-                <div class="ix-row-top">
-                  <div class="ix-avatar">TW</div>
-                  <span class="ix-name">Taylor Wu</span>
-                  <span class="ix-time">1d</span>
-                </div>
-                <div class="ix-preview">Welcome — trial started</div>
-              </div>
-            </div>
-
-            <!-- Thread view -->
-            <div class="ix-ui-thread">
-              <div class="ix-thread-header">
-                <div class="ix-thread-avatar">JD</div>
-                <div>
-                  <div class="ix-thread-name">Jane Doe</div>
-                  <div class="ix-thread-sub">jane@acme.io</div>
-                </div>
-                <div class="ix-thread-badge">3 emails</div>
-              </div>
-
-              <div class="ix-email-card">
-                <div class="ix-email-header">
-                  <span class="ix-email-from-badge">Inbound</span>
-                  <span class="ix-email-subj">Getting started with your API</span>
-                  <span class="ix-email-ts">Mon 09:14</span>
-                </div>
-                <div class="ix-email-body">Hi, I just signed up and I'm trying to figure out how to configure the webhook endpoint for...</div>
-              </div>
-
-              <div class="ix-email-card ix-sent">
-                <div class="ix-email-header">
-                  <span class="ix-email-from-badge">Sent</span>
-                  <span class="ix-email-subj">Re: Getting started with your API</span>
-                  <span class="ix-email-ts">Mon 09:32</span>
-                </div>
-                <div class="ix-email-body">Hi Jane, great question! You can configure the endpoint from the Settings page. Here's the exact...</div>
-              </div>
-
-              <div class="ix-email-card">
-                <div class="ix-email-header">
-                  <span class="ix-email-from-badge">Inbound</span>
-                  <span class="ix-email-subj">Re: Getting started with your API</span>
-                  <span class="ix-email-ts">Now</span>
-                </div>
-                <div class="ix-email-body">That worked perfectly, thank you! One more thing — how do I add team members?</div>
-              </div>
-
-              <div class="ix-reply-bar">
-                <Icon name="lucide:pencil" size={11} />
-                <span>Reply to Jane…</span>
-                <span class="ix-reply-btn">Send →</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  FEATURES                                                               -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div class="section" id="features">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-eyebrow">What's included</div>
-      <h2 class="section-title">Everything your team needs, <em>nothing you don't.</em></h2>
-      <p class="section-sub">
-        Inbox is a complete inbound email CRM — not a thin wrapper. Built specifically
-        for Cloudflare Workers with D1, R2, Queues, and Durable Objects.
-      </p>
-    </div>
-
-    <div class="ix-feat-grid">
-      <div class="ix-feat-card">
-        <div class="ix-feat-icon"><Icon name="lucide:inbox" /></div>
-        <h3>Contact threads</h3>
-        <p>Inbound emails are automatically grouped into per-contact conversation threads. Gmail-style view with expandable email cards.</p>
-      </div>
-
-      <div class="ix-feat-card">
-        <div class="ix-feat-icon"><Icon name="lucide:mail" /></div>
-        <h3>Inbound email capture</h3>
-        <p>Cloudflare Email Routing delivers directly to your Worker via <code style="font-size:11px;">email()</code> handler. Attachments stored in R2, full MIME parsing.</p>
-      </div>
-
-      <div class="ix-feat-card">
-        <div class="ix-feat-icon"><Icon name="lucide:list-ordered" /></div>
-        <h3>Email sequences</h3>
-        <p>Schedule multi-step drip campaigns per contact. Powered by Cloudflare Queues — cron-triggered every 5 minutes, never misses a step.</p>
-      </div>
-
-      <div class="ix-feat-card">
-        <div class="ix-feat-icon"><Icon name="lucide:bell" /></div>
-        <h3>Real-time notifications</h3>
-        <p>New inbound emails trigger instant browser notifications via a persistent WebSocket connected to a Durable Object. No polling.</p>
-      </div>
-
-      <div class="ix-feat-card">
-        <div class="ix-feat-icon"><Icon name="lucide:users" /></div>
-        <h3>Multi-user with roles</h3>
-        <p>Admin and member roles, invite-link onboarding. Secure session-based auth with login rate limiting via Workers KV.</p>
-      </div>
-
-      <div class="ix-feat-card">
-        <div class="ix-feat-icon"><Icon name="lucide:key-round" /></div>
-        <h3>Scoped API keys</h3>
-        <p>Programmatic access for outbound replies and sequence management. Per-key domain scoping with Workers Rate Limiting (100 req/60s).</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  HOW IT WORKS                                                           -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div class="ix-flow-section section" id="how-it-works">
-  <div class="container">
-    <div class="section-header" style="margin-bottom:0">
-      <div class="section-eyebrow">Architecture</div>
-      <h2 class="section-title">How Inbox <em>works</em></h2>
-      <p class="section-sub">
-        Five Cloudflare primitives working together — no external infrastructure, no servers to manage.
-      </p>
-    </div>
-
-    <div class="ix-flow-wrap">
-      <div class="ix-flow-step">
-        <div class="ix-flow-tag ix-tag-routing">Cloudflare</div>
-        <div class="ix-flow-num">1</div>
-        <h4>Email Routing</h4>
-        <p>Configure a catch-all or address-specific rule in your Cloudflare dashboard to forward inbound mail to the inbox Worker.</p>
-      </div>
-      <div class="ix-flow-step">
-        <div class="ix-flow-tag ix-tag-worker">Worker</div>
-        <div class="ix-flow-num">2</div>
-        <h4>email() handler</h4>
-        <p>The inbox Worker's <code style="font-size:11px">email()</code> handler fires for every inbound message. It parses MIME, stores the raw email and attachments in R2, and writes the contact + thread row to D1.</p>
-      </div>
-      <div class="ix-flow-step">
-        <div class="ix-flow-tag ix-tag-db">D1 + R2</div>
-        <div class="ix-flow-num">3</div>
-        <h4>Contacts &amp; threads</h4>
-        <p>D1 holds contacts, email metadata, users, inboxes, and sequence schedules. R2 stores raw email bodies and attachments with secure per-request signed URLs.</p>
-      </div>
-      <div class="ix-flow-step">
-        <div class="ix-flow-tag ix-tag-dash">Dashboard</div>
-        <div class="ix-flow-num">4</div>
-        <h4>Inbox UI + Push</h4>
-        <p>The React dashboard SPA is served directly from the Worker's Assets binding. On new email, a Durable Object fans out a WebSocket notification to all open sessions.</p>
-      </div>
-      <div class="ix-flow-step">
-        <div class="ix-flow-tag ix-tag-queue">Queues + Cron</div>
-        <div class="ix-flow-num">5</div>
-        <h4>Sequences</h4>
-        <p>A cron trigger runs every 5 minutes to enqueue due sequence steps. The queue consumer sends replies via the CF Email Sending API with deduplication and retry logic.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  DEPLOY                                                                  -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div class="ix-deploy-section section" id="deploy">
-  <div class="container">
-    <div class="section-header" style="margin-bottom:0">
-      <div class="section-eyebrow">Deploy</div>
-      <h2 class="section-title">One command to <em>production</em>.</h2>
-      <p class="section-sub">
-        The deploy script creates every Cloudflare resource, applies migrations, sets secrets, builds the dashboard, and deploys. Safe to re-run — idempotent throughout.
-      </p>
-    </div>
-
-    <div class="ix-deploy-option">
-      <div class="ix-do-header">
-        <div class="ix-do-badge"><Icon name="lucide:zap" size={11} /> Serverless</div>
-        <div class="ix-do-title">Cloudflare Workers</div>
-        <p class="ix-do-sub">No servers, no containers. D1 database + KV + R2 + Queue — all on the edge. One script from clone to live.</p>
-      </div>
-      <div class="ix-do-steps">
-        <div class="ix-do-step">
-          <div class="ix-do-step-num">1</div>
-          <div>
-            <div class="ix-do-step-label">Copy the config template</div>
-            <p class="ix-do-step-desc">Fill in your Cloudflare API token, account ID, and VAPID keys. Or leave everything blank to be prompted interactively.</p>
-            <div class="ix-code-block">
-              <span><span class="ix-cb-cmd">cp scripts/config.example.toml scripts/config.toml</span></span>
-            </div>
-          </div>
-        </div>
-        <div class="ix-do-step">
-          <div class="ix-do-step-num">2</div>
-          <div>
-            <div class="ix-do-step-label">Generate VAPID keys</div>
-            <p class="ix-do-step-desc">Inbox uses Web Push for real-time browser notifications. Generate a key pair and paste both keys into your config.</p>
-            <div class="ix-code-block">
-              <span><span class="ix-cb-cmd">npx web-push generate-vapid-keys</span></span>
-              <span><span class="ix-cb-cmt"># paste PUBLIC_KEY and PRIVATE_KEY into config.toml</span></span>
-            </div>
-          </div>
-        </div>
-        <div class="ix-do-step">
-          <div class="ix-do-step-num">3</div>
-          <div>
-            <div class="ix-do-step-label">Run the deploy command</div>
-            <p class="ix-do-step-desc">Creates D1, KV, R2, a Queue, applies all migrations, sets Worker secrets, builds the dashboard, and deploys.</p>
-            <div class="ix-code-block">
-              <span><span class="ix-cb-cmd">just deploy-inbox</span></span>
-            </div>
-          </div>
-        </div>
-        <div class="ix-do-step">
-          <div class="ix-do-step-num">4</div>
-          <div>
-            <div class="ix-do-step-label">Open <code>/setup</code> and create your admin</div>
-            <p class="ix-do-step-desc">Visit your Worker URL at <code>/setup</code> to create the first admin account. Then add inboxes, invite teammates, and configure Cloudflare Email Routing.</p>
-            <div class="ix-code-block">
-              <span><span class="ix-cb-url">https://your-inbox.workers.dev/setup</span></span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="ix-do-footer">
-        <span class="ix-do-footer-note">D1 + KV + R2 + Queue — zero external services</span>
-        <a href="#docs">Full setup guide ↓</a>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  DOCS                                                                   -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div id="docs" style="border-bottom: 1px solid var(--border);">
-
-  <!-- Docs hero -->
-  <div class="docs-hero">
-    <div class="container">
-      <div class="docs-badge">
-        <Icon name="lucide:book-open" size={11} />
-        Inbox Documentation
-      </div>
-      <h1>Set up, configure, and <em>extend</em> Inbox.</h1>
-      <p class="docs-hero-sub">
-        Prerequisites, step-by-step setup, Email Routing configuration, secrets reference,
-        and the full Inbox API — everything in one place.
-      </p>
-      <div class="docs-hero-actions">
-        <a class="btn btn-primary" href="#prerequisites">Get started →</a>
-        <a class="btn btn-ghost" href="https://github.com/0xdps/emailflare/tree/trunk/services/inbox-worker" target="_blank" rel="noopener">
-          <Icon name="simple-icons:github" size={13} />Source
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Docs layout -->
-  <div class="docs-layout">
-    <!-- Sidebar -->
-    <aside class="docs-sidebar">
-      <div class="sidebar-label">On this page</div>
-      <ul class="sidebar-nav">
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#setup">Step-by-step setup</a></li>
-        <li><a href="#email-routing">Email Routing</a></li>
-        <li><a href="#config">config.toml reference</a></li>
-        <li><a href="#secrets">Secrets reference</a></li>
-        <li><a href="#api">Inbox API</a></li>
-        <li><a href="#upgrading">Upgrading</a></li>
-      </ul>
-    </aside>
-
-    <!-- Main -->
-    <main class="docs-main">
-
-      <!-- PREREQUISITES -->
-      <section class="doc-section" id="prerequisites">
-        <div class="doc-section-header">
-          <h2>Prerequisites</h2>
-          <a class="anchor-link" href="#prerequisites">#prerequisites</a>
-        </div>
-        <div class="doc-body">
-          <p>Inbox is a standalone Cloudflare Worker — it does not require the main EmailFlare Docker stack. You only need:</p>
-          <ul>
-            <li>A <strong>Cloudflare account</strong> on a paid plan (Workers Paid, $5/month) — required for Queues and Durable Objects.</li>
-            <li>A <strong>domain</strong> on Cloudflare with Email Routing enabled.</li>
-            <li>A <strong>Cloudflare API token</strong> with Email Routing (Edit), DNS (Edit), and Zone (Read) permissions. See the <a href="/cloudflare-token" style="color:var(--green);text-decoration:none;">CF Token guide →</a></li>
-            <li><strong>Node.js 18+</strong> and <strong>pnpm</strong> installed locally.</li>
-            <li>The <strong>emailflare repo</strong> cloned: <code>git clone https://github.com/0xdps/emailflare</code></li>
-          </ul>
-          <div class="callout callout-green">
-            <span class="callout-icon">ℹ️</span>
-            <span>Inbox shares the same <code>emailflare</code> D1 database as the main worker. If you already have the main worker deployed, the inbox deploy script will detect and reuse the existing database.</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- SETUP -->
-      <section class="doc-section" id="setup">
-        <div class="doc-section-header">
-          <h2>Step-by-step setup</h2>
-          <a class="anchor-link" href="#setup">#setup</a>
-        </div>
-        <div class="doc-body">
-          <div class="qs-steps">
-            <div class="qs-step">
-              <div class="qs-num">1</div>
-              <div class="qs-body">
-                <strong>Install dependencies</strong> — from the repo root run <code>just install</code>. This installs all workspace packages including the inbox Worker and dashboard.
-              </div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">2</div>
-              <div class="qs-body">
-                <strong>Copy the config template</strong> — <code>cp scripts/config.example.toml scripts/config.toml</code>. Fill in <code>[deploy]</code> (your CF API token + account ID) and the <code>[inbox]</code> VAPID keys. All fields are optional — any blank value will be prompted interactively.
-              </div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">3</div>
-              <div class="qs-body">
-                <strong>Generate VAPID keys</strong> — run <code>npx web-push generate-vapid-keys</code> and copy the public and private keys into <code>config.toml</code> under <code>[inbox]</code>.
-              </div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">4</div>
-              <div class="qs-body">
-                <strong>Run the deploy script</strong> — <code>just deploy-inbox</code>. The script creates all Cloudflare resources (D1, KV, R2, Queue), applies D1 migrations, sets all secrets, builds the dashboard SPA, and deploys the Worker.
-              </div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">5</div>
-              <div class="qs-body">
-                <strong>Create your admin account</strong> — visit <code>https://&lt;your-worker&gt;.workers.dev/setup</code> (or your custom domain). Fill in admin name, email, and password. This endpoint is disabled after the first account is created.
-              </div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">6</div>
-              <div class="qs-body">
-                <strong>Add inboxes</strong> — in the dashboard, go to <em>Inboxes</em> and create one per email address you want to receive mail on (e.g. <code>support@yourdomain.com</code>). Note the generated inbox address — you'll use it in the Email Routing rule.
-              </div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">7</div>
-              <div class="qs-body">
-                <strong>Configure Email Routing</strong> — see the <a href="#email-routing" style="color:var(--green);text-decoration:none;">Email Routing section →</a> for exact steps.
-              </div>
-            </div>
-          </div>
-
-          <div class="guide-cards">
-            <a class="guide-card" href="#email-routing">
-              <div class="gc-label">Required</div>
-              <h4>Email Routing setup</h4>
-              <p>Configure Cloudflare to forward inbound mail to your Worker.</p>
-            </a>
-            <a class="guide-card" href="#secrets">
-              <div class="gc-label">Reference</div>
-              <h4>Secrets reference</h4>
-              <p>All environment variables and secrets the inbox Worker uses.</p>
-            </a>
-            <a class="guide-card" href="/cloudflare-token">
-              <div class="gc-label">Guide</div>
-              <h4>Cloudflare API token</h4>
-              <p>Exact permissions needed for Email Routing, DNS, and sending.</p>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- EMAIL ROUTING -->
-      <section class="doc-section" id="email-routing">
-        <div class="doc-section-header">
-          <h2>Cloudflare Email Routing</h2>
-          <a class="anchor-link" href="#email-routing">#email-routing</a>
-        </div>
-        <div class="doc-body">
-          <p>Inbox receives mail by registering the Worker as an Email Routing worker. You need to do this in the Cloudflare dashboard for each domain you want to receive mail on.</p>
-
-          <h3>Add the routing rule</h3>
-          <div class="qs-steps">
-            <div class="qs-step">
-              <div class="qs-num">1</div>
-              <div class="qs-body">In the Cloudflare dashboard, go to <strong>Email → Email Routing → Routing Rules</strong> for your domain.</div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">2</div>
-              <div class="qs-body">Click <strong>Create address</strong>. Set the action to <strong>Send to a Worker</strong> and choose <code>emailflare-inbox</code> from the worker list.</div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">3</div>
-              <div class="qs-body">Set the matcher to a specific address (e.g. <code>support@yourdomain.com</code>) or use a <strong>catch-all</strong> rule to capture all mail to the domain.</div>
-            </div>
-            <div class="qs-step">
-              <div class="qs-num">4</div>
-              <div class="qs-body">Send a test email to the address and verify it appears in the Inbox dashboard under the correct contact thread.</div>
-            </div>
-          </div>
-
-          <div class="callout callout-orange">
-            <span class="callout-icon">💡</span>
-            <span>The inbox address the Worker reads from is determined by the <code>to</code> header of the incoming email. Make sure the address matches one of your configured inboxes in the dashboard, or it will be filed under a default inbox.</span>
-          </div>
-
-          <h3>Email Routing DNS records</h3>
-          <p>Cloudflare automatically adds the required MX records when you enable Email Routing for a domain. If they're missing, visit <strong>Email → Email Routing → Overview</strong> and click <em>Enable Email Routing</em>. No manual DNS changes are needed.</p>
-        </div>
-      </section>
-
-      <!-- CONFIG.TOML REFERENCE -->
-      <section class="doc-section" id="config">
-        <div class="doc-section-header">
-          <h2>config.toml reference</h2>
-          <a class="anchor-link" href="#config">#config</a>
-        </div>
-        <div class="doc-body">
-          <p>Copy <code>scripts/config.example.toml</code> to <code>scripts/config.toml</code>. Any blank value causes the deploy script to prompt interactively. The file is git-ignored.</p>
-
-          <div class="code-block"><span class="cb-cmt"># scripts/config.toml</span>
-
-<span class="cb-plain">[deploy]</span>
-<span class="cb-cmt"># D1 database name (default: "emailflare")</span>
-<span class="cb-key">database_name</span>  <span class="cb-punct">=</span> <span class="cb-str">"emailflare"</span>
-<span class="cb-cmt"># Cloudflare API token — used by wrangler during deploy</span>
-<span class="cb-key">cloudflare_api_token</span> <span class="cb-punct">=</span> <span class="cb-str">""</span>
-<span class="cb-cmt"># Your Cloudflare account ID</span>
-<span class="cb-key">account_id</span>     <span class="cb-punct">=</span> <span class="cb-str">""</span>
-
-<span class="cb-plain">[secrets]</span>
-<span class="cb-cmt"># 32+ char random string for JWT signing: openssl rand -hex 32</span>
-<span class="cb-key">session_secret</span>  <span class="cb-punct">=</span> <span class="cb-str">""</span>
-<span class="cb-cmt"># Runtime Cloudflare API token (Email Routing + DNS + Zone)</span>
-<span class="cb-key">cf_api_token</span>    <span class="cb-punct">=</span> <span class="cb-str">""</span>
-<span class="cb-key">cf_account_id</span>   <span class="cb-punct">=</span> <span class="cb-str">""</span>
-
-<span class="cb-plain">[inbox]</span>
-<span class="cb-cmt"># Generate: npx web-push generate-vapid-keys</span>
-<span class="cb-key">vapid_public_key</span>  <span class="cb-punct">=</span> <span class="cb-str">""</span>
-<span class="cb-key">vapid_private_key</span> <span class="cb-punct">=</span> <span class="cb-str">""</span></div>
-        </div>
-      </section>
-
-      <!-- SECRETS REFERENCE -->
-      <section class="doc-section" id="secrets">
-        <div class="doc-section-header">
-          <h2>Secrets reference</h2>
-          <a class="anchor-link" href="#secrets">#secrets</a>
-        </div>
-        <div class="doc-body">
-          <p>All secrets are set as Cloudflare Worker secrets via <code>wrangler secret put</code>. The deploy script handles this automatically; use <code>just inbox-secret SECRET_NAME</code> to update a single secret later.</p>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Secret</th>
-                  <th>Required</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>SESSION_SECRET</code></td>
-                  <td><span class="pill pill-req">required</span></td>
-                  <td>32+ character random string used to sign session JWTs. Generate with <code>openssl rand -hex 32</code>.</td>
-                </tr>
-                <tr>
-                  <td><code>CF_API_TOKEN</code></td>
-                  <td><span class="pill pill-req">required</span></td>
-                  <td>Cloudflare API token used at runtime for Email Sending (outbound replies). Needs Email Routing (Edit), Zone (Read), DNS (Edit).</td>
-                </tr>
-                <tr>
-                  <td><code>CF_ACCOUNT_ID</code></td>
-                  <td><span class="pill pill-req">required</span></td>
-                  <td>Your Cloudflare account ID. Used for Email Sending API calls.</td>
-                </tr>
-                <tr>
-                  <td><code>VAPID_PUBLIC_KEY</code></td>
-                  <td><span class="pill pill-req">required</span></td>
-                  <td>VAPID public key for Web Push. Generate with <code>npx web-push generate-vapid-keys</code>. Also stored in <code>wrangler.jsonc</code> as <code>VAPID_PUBLIC_KEY</code> var (served to the frontend).</td>
-                </tr>
-                <tr>
-                  <td><code>VAPID_PRIVATE_KEY</code></td>
-                  <td><span class="pill pill-req">required</span></td>
-                  <td>VAPID private key. Never exposed to the frontend. Keep this secret.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <h3>Updating a secret</h3>
-          <div class="code-block"><span class="cb-cmt"># Interactive (prompts without echoing)</span>
-<span class="cb-cmd">just inbox-secret SESSION_SECRET</span>
-
-<span class="cb-cmt"># Or directly with wrangler</span>
-<span class="cb-cmd">cd services/inbox-worker</span>
-<span class="cb-cmd">echo "new-value" | npx wrangler secret put SESSION_SECRET</span></div>
-        </div>
-      </section>
-
-      <!-- INBOX API -->
-      <section class="doc-section" id="api">
-        <div class="doc-section-header">
-          <h2>Inbox API</h2>
-          <a class="anchor-link" href="#api">#api</a>
-        </div>
-        <div class="doc-body">
-          <p>The inbox Worker exposes both a session-authenticated API (used by the dashboard) and an API-key-authenticated API (for programmatic access). All endpoints are prefixed with <code>/api</code>.</p>
-
-          <h3>Authentication</h3>
-          <p>Dashboard endpoints use a session cookie set on <code>POST /api/auth/login</code>. Programmatic endpoints accept a bearer token:</p>
-          <div class="code-block"><span class="cb-header">Authorization</span><span class="cb-plain">: Bearer </span><span class="cb-str">eflive_xxxxxxxxxxxx</span></div>
-
-          <h3>Auth endpoints</h3>
-          <div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/auth/login</span>
-              <span class="endpoint-auth auth-public">public</span>
-              <span class="endpoint-desc">Sign in with email + password. Returns a session cookie.</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/auth/logout</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Invalidate the current session.</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/auth/me</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Return the current authenticated user.</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/setup</span>
-              <span class="endpoint-auth auth-public">public</span>
-              <span class="endpoint-desc">Create the first admin account. Disabled after first use.</span>
-            </div>
-          </div>
-
-          <h3>People (contacts)</h3>
-          <div>
-            <div class="endpoint-row">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/people</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">List contacts. Supports <code>?search=</code> and <code>?unread=true</code> filters.</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/people/:id/thread</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Fetch a contact's full email thread (inbound + sent, chronological).</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/people/:id/read</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Mark all emails in a thread as read.</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/people/:id/reply</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Send an outbound reply to a contact. Body: <code>&#123; from, subject, text, replyToMessageId? &#125;</code></span>
-            </div>
-          </div>
-
-          <h3>Inboxes</h3>
-          <div>
-            <div class="endpoint-row">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/inboxes</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">List all configured inboxes for the account.</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/inboxes</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Create a new inbox. Body: <code>&#123; name, address &#125;</code></span>
-            </div>
-          </div>
-
-          <h3>Sequences</h3>
-          <div>
-            <div class="endpoint-row">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/sequences</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">List all sequences with step counts and active contact counts.</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/sequences</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Create a new sequence. Body: <code>&#123; name, steps: [&#123;subject, body, delayHours&#125;] &#125;</code></span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/sequences/:id/enroll</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Enroll a contact in a sequence. Body: <code>&#123; personId, from &#125;</code></span>
-            </div>
-          </div>
-
-          <h3>Users &amp; invites</h3>
-          <div>
-            <div class="endpoint-row">
-              <span class="method-badge method-get">GET</span>
-              <span class="endpoint-path">/api/users</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">List all team members (admin only).</span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/invite</span>
-              <span class="endpoint-auth auth-session">session</span>
-              <span class="endpoint-desc">Generate an invite link. Body: <code>&#123; role: "admin" | "member" &#125;</code></span>
-            </div>
-            <div class="endpoint-row">
-              <span class="method-badge method-post">POST</span>
-              <span class="endpoint-path">/api/invite/:token/accept</span>
-              <span class="endpoint-auth auth-public">public</span>
-              <span class="endpoint-desc">Accept an invite and create a new user account.</span>
-            </div>
-          </div>
-
-          <div class="callout callout-blue">
-            <span class="callout-icon">🔗</span>
-            <span>All outbound sends (replies, sequences) go through the same Cloudflare Email Sending API used by the main emailflare worker. The <code>CF_API_TOKEN</code> secret must have Email Routing (Edit) permission.</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- UPGRADING -->
-      <section class="doc-section" id="upgrading">
-        <div class="doc-section-header">
-          <h2>Upgrading</h2>
-          <a class="anchor-link" href="#upgrading">#upgrading</a>
-        </div>
-        <div class="doc-body">
-          <p>Pull the latest code and re-deploy. The <code>inbox-update</code> just recipe runs migrations before deploying so schema changes are applied atomically.</p>
-
-          <div class="code-block"><span class="cb-cmt"># Pull latest</span>
-<span class="cb-cmd">git pull origin trunk</span>
-<span class="cb-cmd">just install</span>
-
-<span class="cb-cmt"># Apply any new migrations + rebuild dashboard + redeploy</span>
-<span class="cb-cmd">just inbox-update</span></div>
-
-          <h3>What <code>just inbox-update</code> does</h3>
-          <ul>
-            <li>Runs <code>wrangler d1 migrations apply emailflare --remote</code> — applies any pending SQL migrations to the live database.</li>
-            <li>Rebuilds the inbox UI SPA (<code>pnpm build</code> in <code>services/inbox-ui</code>).</li>
-            <li>Runs <code>wrangler deploy</code> from <code>services/inbox-worker</code> — uploads new Worker code with the rebuilt assets.</li>
-          </ul>
-
-          <div class="callout callout-green">
-            <span class="callout-icon">✅</span>
-            <span>Migrations are idempotent — already-applied migrations are skipped automatically. You can safely run <code>just inbox-update</code> at any time without risk of data loss.</span>
-          </div>
-
-          <h3>Manual redeployment</h3>
-          <div class="code-block"><span class="cb-cmt"># Rebuild dashboard only</span>
-<span class="cb-cmd">just inbox-build-dashboard</span>
-
-<span class="cb-cmt"># Deploy without rebuilding dashboard (code-only change)</span>
-<span class="cb-cmd">cd services/inbox-worker && npx wrangler deploy</span>
-
-<span class="cb-cmt"># Update a single secret</span>
-<span class="cb-cmd">just inbox-secret VAPID_PRIVATE_KEY</span></div>
-        </div>
-      </section>
-
-    </main>
-  </div><!-- docs-layout -->
-</div><!-- #docs -->
-
-<script is:inline>
-  // Sidebar active-link tracking
-  (function () {
-    const nav = document.querySelector('.docs-sidebar .sidebar-nav');
-    if (!nav) return;
-
-    const links = Array.from(nav.querySelectorAll('a[href^="#"]'));
-    const ids   = links.map(l => l.getAttribute('href').slice(1));
-
-    function update() {
-      const scrollY = window.scrollY + 120;
-      let active = ids[0];
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top + window.scrollY <= scrollY) {
-          active = id;
-        }
-      }
-      links.forEach(l => {
-        l.classList.toggle('active', l.getAttribute('href') === '#' + active);
-      });
-    }
-
-    window.addEventListener('scroll', update, { passive: true });
-    update();
-  })();
-</script>
-
-<script>
-  (() => {
-    const links = document.querySelectorAll('.inbox-product-subnav .psn-link');
-    const sectionIds = ['overview', 'features', 'deploy'];
-    const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          links.forEach(l => {
-            l.classList.toggle('active', l.getAttribute('href') === '#' + id);
-          });
-        }
-      });
-    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
-
-    sections.forEach(s => observer.observe(s));
-  })();
-</script>
-
+	<style is:global>
+		/* ── INBOX PAGE ───────────────────────────────────────────── */
+		.section-eyebrow {
+			color: var(--green);
+		}
+		.btn-primary {
+			background: var(--green);
+		}
+		.btn-primary:hover {
+			background: oklch(48% 0.18 150);
+		}
+		.anchor-link:hover {
+			color: var(--green) !important;
+		}
+		.sidebar-nav li a:hover {
+			border-left-color: var(--green) !important;
+		}
+		.sidebar-nav li a.active {
+			border-left-color: var(--green) !important;
+		}
+		.doc-body ul li::marker {
+			color: var(--green) !important;
+		}
+		.guide-card:hover {
+			border-color: oklch(82% 0.09 150) !important;
+		}
+		.guide-card .gc-label {
+			color: var(--green) !important;
+		}
+		.qs-num {
+			background: oklch(95% 0.04 150) !important;
+			border-color: oklch(82% 0.09 150) !important;
+			color: oklch(34% 0.12 150) !important;
+		}
+		.callout-orange {
+			background: oklch(95% 0.04 150) !important;
+			border-color: oklch(82% 0.09 150) !important;
+			color: oklch(34% 0.12 150) !important;
+		}
+		.doc-body td:first-child code {
+			background: oklch(95% 0.04 150) !important;
+			border-color: oklch(82% 0.09 150) !important;
+			color: oklch(34% 0.12 150) !important;
+		}
+		.doc-body code {
+			color: oklch(34% 0.12 150) !important;
+		}
+
+		/* ── HERO ─────────────────────────────────────────────────── */
+		.ix-hero {
+			background: oklch(11% 0.025 150);
+			padding: clamp(3.5rem, 8vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
+			overflow: hidden;
+			position: relative;
+		}
+
+		.ix-hero::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(ellipse 55% 80% at 80% 50%, oklch(30% 0.1 150 / 0.25) 0%, transparent 65%);
+			pointer-events: none;
+		}
+
+		.ix-hero-inner {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: clamp(2rem, 5vw, 4rem);
+			align-items: center;
+		}
+
+		@media (max-width: 760px) {
+			.ix-hero-inner {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.ix-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			background: oklch(20% 0.07 150 / 0.6);
+			color: oklch(76% 0.14 150);
+			font-size: 12px;
+			font-weight: 500;
+			padding: 4px 13px;
+			border-radius: 100px;
+			border: 1px solid oklch(38% 0.12 150 / 0.5);
+			margin-bottom: 22px;
+		}
+
+		.ix-hero h1 {
+			font-family: var(--font-display);
+			font-size: clamp(2rem, 4vw, 3rem);
+			font-weight: 400;
+			line-height: 1.1;
+			letter-spacing: -0.025em;
+			color: oklch(95% 0.008 58);
+			margin-bottom: 18px;
+		}
+
+		.ix-hero h1 em {
+			font-style: italic;
+			color: var(--green);
+		}
+
+		.ix-hero-sub {
+			font-size: 1rem;
+			color: oklch(60% 0.01 58);
+			line-height: 1.75;
+			max-width: 480px;
+			margin-bottom: 30px;
+		}
+
+		.ix-actions {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		/* ── INBOX MOCK UI ───────────────────────────────────────── */
+		.ix-ui-card {
+			background: oklch(16% 0.02 150);
+			border: 1px solid oklch(28% 0.06 150 / 0.5);
+			border-radius: var(--radius-lg);
+			overflow: hidden;
+			box-shadow:
+				0 24px 60px oklch(0% 0 0 / 0.3),
+				0 0 0 1px oklch(100% 0 0 / 0.04);
+		}
+
+		.ix-ui-bar {
+			background: oklch(20% 0.018 150);
+			border-bottom: 1px solid oklch(28% 0.04 150 / 0.5);
+			padding: 10px 16px;
+			display: flex;
+			align-items: center;
+			gap: 7px;
+		}
+		.ix-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+		}
+		.ixd-r {
+			background: oklch(52% 0.14 24 / 0.6);
+		}
+		.ixd-y {
+			background: oklch(68% 0.14 80 / 0.6);
+		}
+		.ixd-g {
+			background: oklch(56% 0.14 150 / 0.6);
+		}
+		.ix-bar-title {
+			margin-left: 6px;
+			font-size: 11px;
+			color: oklch(44% 0.01 58);
+			font-family: var(--font-mono);
+		}
+
+		.ix-ui-body {
+			display: flex;
+		}
+
+		.ix-ui-list {
+			width: 44%;
+			border-right: 1px solid oklch(22% 0.02 150 / 0.7);
+			padding: 8px 0;
+		}
+
+		.ix-contact-row {
+			padding: 10px 14px;
+			border-bottom: 1px solid oklch(20% 0.01 150 / 0.5);
+			cursor: default;
+			position: relative;
+		}
+		.ix-contact-row.ix-active {
+			background: oklch(22% 0.06 150 / 0.4);
+		}
+		.ix-contact-row.ix-active::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			top: 8px;
+			bottom: 8px;
+			width: 3px;
+			border-radius: 0 3px 3px 0;
+			background: var(--green);
+		}
+
+		.ix-row-top {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin-bottom: 4px;
+		}
+		.ix-avatar {
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			background: oklch(28% 0.06 150 / 0.6);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 9px;
+			font-weight: 600;
+			color: oklch(70% 0.1 150);
+			flex-shrink: 0;
+		}
+		.ix-avatar.ix-unread {
+			background: oklch(32% 0.1 150 / 0.7);
+		}
+		.ix-name {
+			font-size: 11px;
+			font-weight: 600;
+			color: oklch(84% 0.01 58);
+			flex: 1;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.ix-time {
+			font-size: 9.5px;
+			color: oklch(44% 0.01 58);
+			font-family: var(--font-mono);
+		}
+		.ix-preview {
+			font-size: 10px;
+			color: oklch(48% 0.01 58);
+			line-height: 1.5;
+			padding-left: 32px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.ix-unread-dot {
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: var(--green);
+			flex-shrink: 0;
+		}
+
+		.ix-ui-thread {
+			flex: 1;
+			padding: 14px;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.ix-thread-header {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding-bottom: 10px;
+			border-bottom: 1px solid oklch(22% 0.02 150 / 0.7);
+			margin-bottom: 4px;
+		}
+
+		.ix-thread-avatar {
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			background: oklch(30% 0.08 150 / 0.6);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 11px;
+			font-weight: 700;
+			color: oklch(72% 0.12 150);
+			flex-shrink: 0;
+		}
+
+		.ix-thread-name {
+			font-size: 12.5px;
+			font-weight: 600;
+			color: oklch(88% 0.01 58);
+		}
+		.ix-thread-sub {
+			font-size: 10px;
+			color: oklch(48% 0.01 58);
+		}
+		.ix-thread-badge {
+			margin-left: auto;
+			font-size: 9.5px;
+			font-weight: 600;
+			background: oklch(26% 0.08 150 / 0.5);
+			color: oklch(68% 0.1 150);
+			border: 1px solid oklch(38% 0.1 150 / 0.4);
+			padding: 1px 7px;
+			border-radius: 100px;
+		}
+
+		.ix-email-card {
+			background: oklch(18% 0.016 150 / 0.8);
+			border: 1px solid oklch(24% 0.03 150 / 0.5);
+			border-radius: 7px;
+			padding: 10px 12px;
+		}
+		.ix-email-card.ix-sent {
+			background: oklch(22% 0.06 150 / 0.3);
+			border-color: oklch(32% 0.08 150 / 0.4);
+		}
+
+		.ix-email-header {
+			display: flex;
+			align-items: center;
+			gap: 7px;
+			margin-bottom: 6px;
+		}
+		.ix-email-from-badge {
+			font-size: 9.5px;
+			font-weight: 600;
+			padding: 1px 6px;
+			border-radius: 100px;
+			background: oklch(24% 0.05 150 / 0.5);
+			color: oklch(62% 0.08 150);
+			border: 1px solid oklch(32% 0.06 150 / 0.4);
+		}
+		.ix-email-card.ix-sent .ix-email-from-badge {
+			background: oklch(28% 0.1 150 / 0.4);
+			color: oklch(72% 0.12 150);
+			border-color: oklch(42% 0.1 150 / 0.4);
+		}
+		.ix-email-subj {
+			font-size: 10px;
+			font-weight: 600;
+			color: oklch(80% 0.01 58);
+			flex: 1;
+		}
+		.ix-email-ts {
+			font-size: 9px;
+			color: oklch(42% 0.01 58);
+			font-family: var(--font-mono);
+			margin-left: auto;
+		}
+		.ix-email-body {
+			font-size: 9.5px;
+			color: oklch(55% 0.01 58);
+			line-height: 1.6;
+		}
+
+		.ix-reply-bar {
+			background: oklch(18% 0.018 150);
+			border: 1px solid oklch(28% 0.05 150 / 0.4);
+			border-radius: 7px;
+			padding: 8px 12px;
+			margin-top: 4px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-size: 10px;
+			color: oklch(38% 0.01 58);
+		}
+
+		.ix-reply-btn {
+			margin-left: auto;
+			background: var(--green);
+			color: oklch(12% 0.02 150);
+			font-size: 9.5px;
+			font-weight: 600;
+			padding: 3px 10px;
+			border-radius: 5px;
+			white-space: nowrap;
+		}
+
+		/* ── SECTION COMMONS ──────────────────────────────────────── */
+		.section {
+			padding: clamp(3rem, 6vw, 5rem) 0;
+		}
+
+		.section-eyebrow {
+			font-size: 11.5px;
+			font-weight: 700;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			color: var(--green);
+			margin-bottom: 12px;
+		}
+
+		.section-title {
+			font-family: var(--font-display);
+			font-size: clamp(1.875rem, 3.5vw, 2.625rem);
+			font-weight: 400;
+			line-height: 1.12;
+			letter-spacing: -0.025em;
+			color: var(--text);
+			margin-bottom: 16px;
+		}
+
+		.section-title em {
+			font-style: italic;
+			color: var(--green);
+		}
+
+		.section-sub {
+			font-size: 1rem;
+			color: var(--text-muted);
+			line-height: 1.72;
+			max-width: 560px;
+			margin-bottom: 0;
+		}
+
+		.section-header {
+			margin-bottom: 44px;
+		}
+
+		/* ── FEATURES GRID ────────────────────────────────────────── */
+		.ix-feat-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 14px;
+		}
+
+		@media (max-width: 820px) {
+			.ix-feat-grid {
+				grid-template-columns: 1fr 1fr;
+			}
+		}
+		@media (max-width: 520px) {
+			.ix-feat-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.ix-feat-card {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			padding: 22px 22px 18px;
+			transition: border-color 0.15s;
+		}
+
+		.ix-feat-card:hover {
+			border-color: oklch(82% 0.09 150);
+		}
+
+		.ix-feat-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 38px;
+			height: 38px;
+			background: oklch(95% 0.04 150);
+			border-radius: 10px;
+			margin-bottom: 14px;
+			color: var(--green);
+		}
+
+		.ix-feat-icon svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		.ix-feat-card h3 {
+			font-size: 0.9375rem;
+			font-weight: 600;
+			margin-bottom: 7px;
+			letter-spacing: -0.01em;
+		}
+		.ix-feat-card p {
+			font-size: 0.875rem;
+			color: var(--text-muted);
+			line-height: 1.65;
+			margin: 0;
+		}
+
+		/* ── HOW IT WORKS ─────────────────────────────────────────── */
+		.ix-flow-section {
+			background: var(--bg-alt);
+			border-top: 1px solid var(--border);
+			border-bottom: 1px solid var(--border);
+		}
+
+		.ix-flow-wrap {
+			display: flex;
+			align-items: stretch;
+			gap: 0;
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			overflow: hidden;
+			margin-top: 44px;
+		}
+
+		.ix-flow-step {
+			flex: 1;
+			padding: 24px 22px 22px;
+			border-right: 1px solid var(--border);
+			position: relative;
+		}
+		.ix-flow-step:last-child {
+			border-right: none;
+		}
+
+		@media (max-width: 680px) {
+			.ix-flow-wrap {
+				flex-direction: column;
+			}
+			.ix-flow-step {
+				border-right: none;
+				border-bottom: 1px solid var(--border);
+			}
+			.ix-flow-step:last-child {
+				border-bottom: none;
+			}
+			.ix-flow-arrow {
+				display: none;
+			}
+		}
+
+		.ix-flow-num {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			background: oklch(95% 0.04 150);
+			border: 1.5px solid oklch(82% 0.09 150);
+			font-size: 11px;
+			font-weight: 700;
+			color: oklch(34% 0.12 150);
+			margin-bottom: 12px;
+		}
+
+		.ix-flow-step h4 {
+			font-size: 0.875rem;
+			font-weight: 600;
+			margin-bottom: 6px;
+		}
+		.ix-flow-step p {
+			font-size: 0.825rem;
+			color: var(--text-muted);
+			line-height: 1.6;
+			margin: 0;
+		}
+
+		.ix-flow-tag {
+			display: inline-block;
+			font-size: 10px;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			padding: 2px 9px;
+			border-radius: 100px;
+			margin-bottom: 10px;
+		}
+
+		.ix-tag-routing {
+			background: oklch(93% 0.04 230);
+			color: oklch(38% 0.14 230);
+			border: 1px solid oklch(80% 0.1 230 / 0.5);
+		}
+		.ix-tag-worker {
+			background: oklch(93% 0.04 44);
+			color: oklch(38% 0.14 44);
+			border: 1px solid oklch(80% 0.1 44 / 0.5);
+		}
+		.ix-tag-db {
+			background: oklch(93% 0.04 80);
+			color: oklch(38% 0.12 70);
+			border: 1px solid oklch(80% 0.1 80 / 0.5);
+		}
+		.ix-tag-dash {
+			background: oklch(95% 0.04 150);
+			color: oklch(34% 0.12 150);
+			border: 1px solid oklch(82% 0.09 150 / 0.5);
+		}
+		.ix-tag-queue {
+			background: oklch(93% 0.04 290);
+			color: oklch(38% 0.14 290);
+			border: 1px solid oklch(80% 0.1 290 / 0.5);
+		}
+
+		/* ── DEPLOY SECTION ───────────────────────────────────────── */
+		.ix-deploy-section {
+			background: oklch(11% 0.025 150);
+		}
+		.ix-deploy-section .section-eyebrow {
+			color: oklch(68% 0.12 150);
+		}
+		.ix-deploy-section .section-title {
+			color: oklch(95% 0.006 58);
+		}
+		.ix-deploy-section .section-sub {
+			color: oklch(56% 0.01 58);
+		}
+
+		.ix-deploy-option {
+			background: oklch(14% 0.03 150 / 0.8);
+			border: 1px solid oklch(28% 0.08 150 / 0.7);
+			border-radius: var(--radius-lg);
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			margin-top: 48px;
+		}
+		.ix-do-header {
+			padding: 24px 28px 20px;
+			border-bottom: 1px solid oklch(22% 0.05 150 / 0.6);
+		}
+		.ix-do-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+			padding: 3px 10px;
+			border-radius: 99px;
+			margin-bottom: 14px;
+			background: oklch(20% 0.08 150 / 0.5);
+			color: var(--green);
+			border: 1px solid oklch(36% 0.1 150 / 0.5);
+		}
+		.ix-do-title {
+			font-size: 1.15rem;
+			font-weight: 700;
+			color: oklch(93% 0.01 58);
+			margin-bottom: 8px;
+		}
+		.ix-do-sub {
+			font-size: 0.875rem;
+			color: oklch(56% 0.01 58);
+			line-height: 1.6;
+		}
+		.ix-do-steps {
+			padding: 20px 28px;
+			flex: 1;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 16px 32px;
+		}
+		@media (max-width: 740px) {
+			.ix-do-steps {
+				grid-template-columns: 1fr;
+			}
+		}
+		.ix-do-step {
+			display: flex;
+			gap: 14px;
+			align-items: flex-start;
+		}
+		.ix-do-step-num {
+			flex-shrink: 0;
+			width: 22px;
+			height: 22px;
+			border-radius: 50%;
+			border: 1px solid oklch(36% 0.1 150 / 0.6);
+			font-size: 11px;
+			font-weight: 700;
+			color: var(--green);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-top: 2px;
+		}
+		.ix-do-step-label {
+			font-size: 13px;
+			font-weight: 600;
+			color: oklch(84% 0.01 58);
+			margin-bottom: 6px;
+		}
+		.ix-do-step-desc {
+			font-size: 12.5px;
+			color: oklch(52% 0.01 58);
+			line-height: 1.55;
+			margin-bottom: 8px;
+		}
+		.ix-do-step-label code,
+		.ix-do-step-desc code {
+			font-family: var(--font-mono);
+			font-size: 11px;
+			background: oklch(20% 0.04 150 / 0.5);
+			border: 1px solid oklch(32% 0.06 150 / 0.4);
+			color: oklch(72% 0.1 150);
+			padding: 1px 5px;
+			border-radius: 4px;
+		}
+		.ix-do-footer {
+			padding: 16px 28px;
+			border-top: 1px solid oklch(22% 0.05 150 / 0.6);
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+		}
+		.ix-do-footer-note {
+			font-size: 12px;
+			color: oklch(44% 0.01 58);
+		}
+		.ix-do-footer a {
+			font-size: 13px;
+			font-weight: 600;
+			text-decoration: none;
+			white-space: nowrap;
+			color: var(--green);
+		}
+		.ix-code-block {
+			background: oklch(10% 0.02 150);
+			border: 1px solid oklch(22% 0.05 150 / 0.6);
+			border-radius: 8px;
+			padding: 12px 14px;
+			font-family: var(--font-mono);
+			font-size: 11.5px;
+			line-height: 1.75;
+			overflow-x: auto;
+			display: flex;
+			flex-direction: column;
+			gap: 0;
+		}
+		.ix-cb-cmd {
+			color: oklch(76% 0.1 150);
+		}
+		.ix-cb-cmt {
+			color: oklch(42% 0.01 58);
+			font-style: italic;
+		}
+		.ix-cb-url {
+			color: var(--green);
+		}
+
+		/* ── DOCS ─────────────────────────────────────────────────── */
+		.docs-hero {
+			background: oklch(14% 0.016 150);
+			padding: clamp(3rem, 7vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
+			overflow: hidden;
+		}
+
+		.docs-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			background: oklch(22% 0.06 150 / 0.6);
+			color: oklch(68% 0.1 150);
+			font-size: 12px;
+			font-weight: 500;
+			padding: 4px 13px;
+			border-radius: 100px;
+			border: 1px solid oklch(36% 0.08 150 / 0.5);
+			margin-bottom: 22px;
+		}
+
+		.docs-hero h1 {
+			font-family: var(--font-display);
+			font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+			font-weight: 400;
+			line-height: 1.1;
+			letter-spacing: -0.025em;
+			color: oklch(95% 0.008 58);
+			margin-bottom: 16px;
+		}
+
+		.docs-hero h1 em {
+			font-style: italic;
+			color: var(--green);
+		}
+
+		.docs-hero-sub {
+			font-size: 1rem;
+			color: oklch(58% 0.01 58);
+			line-height: 1.7;
+			max-width: 560px;
+			margin-bottom: 28px;
+		}
+
+		.docs-hero-actions {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		.docs-layout {
+			display: grid;
+			grid-template-columns: 230px 1fr;
+			gap: 0;
+			max-width: 1100px;
+			margin: 0 auto;
+			padding: 0 24px;
+			align-items: start;
+		}
+
+		@media (max-width: 760px) {
+			.docs-layout {
+				grid-template-columns: 1fr;
+			}
+			.docs-sidebar {
+				display: none;
+			}
+		}
+
+		.docs-sidebar {
+			position: sticky;
+			top: 82px;
+			padding: 32px 0 32px;
+			border-right: 1px solid var(--border);
+		}
+
+		.sidebar-label {
+			font-size: 10.5px;
+			font-weight: 700;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			padding: 0 16px;
+			margin-bottom: 10px;
+		}
+
+		.sidebar-nav {
+			list-style: none;
+		}
+		.sidebar-nav li a {
+			display: block;
+			padding: 6px 16px;
+			font-size: 13px;
+			color: var(--text-muted);
+			text-decoration: none;
+			border-left: 2px solid transparent;
+			transition:
+				color 0.12s,
+				border-color 0.12s;
+		}
+		.sidebar-nav li a:hover {
+			color: var(--text);
+			border-left-color: var(--green);
+		}
+		.sidebar-nav li a.active {
+			color: var(--text);
+			border-left-color: var(--green);
+			font-weight: 500;
+		}
+
+		.docs-main {
+			padding: 32px 0 56px 40px;
+		}
+		@media (max-width: 760px) {
+			.docs-main {
+				padding: 32px 0 48px;
+			}
+		}
+
+		.doc-section {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			overflow: hidden;
+			margin-bottom: 20px;
+			padding: 0;
+		}
+
+		.doc-section-header {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 18px 24px;
+			border-bottom: 1px solid var(--border);
+			background: var(--bg-alt);
+		}
+
+		.doc-section-header h2 {
+			font-size: 1.0625rem;
+			font-weight: 600;
+			letter-spacing: -0.01em;
+			flex: 1;
+			margin: 0;
+		}
+
+		.anchor-link {
+			font-size: 12px;
+			color: var(--text-muted);
+			text-decoration: none;
+			font-family: var(--font-mono);
+		}
+		.anchor-link:hover {
+			color: var(--green);
+		}
+
+		.doc-body {
+			padding: 24px;
+		}
+		.doc-body > *:first-child {
+			margin-top: 0;
+		}
+		.doc-body > *:last-child {
+			margin-bottom: 0;
+		}
+
+		.doc-body p {
+			font-size: 0.9rem;
+			color: var(--text-muted);
+			line-height: 1.75;
+			margin-bottom: 14px;
+		}
+
+		.doc-body h3 {
+			font-size: 0.875rem;
+			font-weight: 600;
+			letter-spacing: -0.005em;
+			margin: 22px 0 12px;
+			color: var(--text);
+		}
+		.doc-body h3:first-child {
+			margin-top: 0;
+		}
+
+		.doc-body ul {
+			padding-left: 18px;
+			margin-bottom: 14px;
+		}
+		.doc-body ul li {
+			font-size: 0.9rem;
+			color: var(--text-muted);
+			line-height: 1.75;
+			margin-bottom: 5px;
+		}
+		.doc-body ul li::marker {
+			color: var(--green);
+		}
+
+		.doc-body code {
+			font-family: var(--font-mono);
+			font-size: 12px;
+			background: oklch(93% 0.006 60);
+			border: 1px solid var(--border-strong);
+			padding: 1px 5px;
+			border-radius: 4px;
+			color: oklch(34% 0.12 150);
+		}
+
+		.table-wrap {
+			overflow-x: auto;
+			margin: 14px 0;
+		}
+
+		.doc-body table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 13px;
+		}
+		.doc-body th {
+			text-align: left;
+			padding: 9px 12px;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			border-bottom: 1px solid var(--border);
+			background: var(--bg-alt);
+		}
+		.doc-body td {
+			padding: 9px 12px;
+			border-bottom: 1px solid var(--border);
+			color: var(--text);
+			vertical-align: top;
+			line-height: 1.6;
+		}
+		.doc-body tr:last-child td {
+			border-bottom: none;
+		}
+		.doc-body td:first-child code {
+			background: oklch(95% 0.04 150);
+			border-color: oklch(82% 0.09 150);
+			color: oklch(34% 0.12 150);
+		}
+
+		.pill {
+			display: inline-block;
+			font-size: 10.5px;
+			font-weight: 600;
+			padding: 2px 8px;
+			border-radius: 100px;
+			white-space: nowrap;
+		}
+		.pill-req {
+			background: oklch(93% 0.04 24);
+			color: oklch(42% 0.14 24);
+			border: 1px solid oklch(78% 0.1 24 / 0.5);
+		}
+		.pill-opt {
+			background: oklch(93% 0.004 58);
+			color: var(--text-muted);
+			border: 1px solid var(--border-strong);
+		}
+		.pill-auto {
+			background: oklch(95% 0.04 150);
+			color: oklch(34% 0.12 150);
+			border: 1px solid oklch(82% 0.09 150 / 0.5);
+		}
+
+		.callout {
+			display: flex;
+			gap: 11px;
+			align-items: flex-start;
+			padding: 13px 16px;
+			border-radius: var(--radius);
+			font-size: 0.875rem;
+			line-height: 1.65;
+			margin: 16px 0;
+		}
+		.callout-icon {
+			font-size: 15px;
+			flex-shrink: 0;
+		}
+		.callout-green {
+			background: oklch(95% 0.04 150);
+			border: 1px solid oklch(82% 0.08 150);
+			color: oklch(32% 0.1 150);
+		}
+		.callout-orange {
+			background: var(--orange-light);
+			border: 1px solid var(--orange-mid);
+			color: var(--orange-dark);
+		}
+		.callout-blue {
+			background: oklch(94% 0.02 230);
+			border: 1px solid oklch(80% 0.08 230);
+			color: oklch(42% 0.14 230);
+		}
+
+		.code-block {
+			background: oklch(14% 0.016 48);
+			border: 1px solid oklch(24% 0.016 48);
+			border-radius: 8px;
+			padding: 16px 20px;
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			line-height: 1.85;
+			overflow-x: auto;
+			margin: 14px 0;
+			white-space: pre-wrap;
+		}
+
+		.cb-cmd {
+			color: oklch(82% 0.06 58);
+		}
+		.cb-str {
+			color: oklch(74% 0.12 140);
+		}
+		.cb-key {
+			color: oklch(78% 0.12 230);
+		}
+		.cb-punct {
+			color: oklch(62% 0.06 58);
+		}
+		.cb-num {
+			color: oklch(74% 0.12 82);
+		}
+		.cb-header {
+			color: oklch(72% 0.1 58);
+		}
+		.cb-plain {
+			color: oklch(75% 0.01 58);
+		}
+		.cb-cmt {
+			color: oklch(44% 0.01 58);
+			font-style: italic;
+		}
+		.cb-green {
+			color: oklch(74% 0.14 150);
+		}
+
+		.qs-steps {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			margin: 14px 0;
+		}
+		.qs-step {
+			display: grid;
+			grid-template-columns: 28px 1fr;
+			gap: 12px;
+			align-items: start;
+		}
+		.qs-num {
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background: oklch(95% 0.04 150);
+			border: 1.5px solid oklch(82% 0.09 150);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 11.5px;
+			font-weight: 700;
+			color: oklch(34% 0.12 150);
+			flex-shrink: 0;
+		}
+		.qs-body {
+			font-size: 0.9rem;
+			color: var(--text-muted);
+			line-height: 1.7;
+			padding-top: 3px;
+		}
+
+		.guide-cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 12px;
+			margin: 14px 0;
+		}
+		.guide-card {
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 14px 16px;
+			text-decoration: none;
+			color: var(--text);
+			transition: border-color 0.15s;
+		}
+		.guide-card:hover {
+			border-color: oklch(82% 0.09 150);
+		}
+		.guide-card .gc-label {
+			font-size: 10.5px;
+			font-weight: 600;
+			letter-spacing: 0.07em;
+			text-transform: uppercase;
+			color: var(--green);
+			margin-bottom: 5px;
+		}
+		.guide-card h4 {
+			font-size: 0.875rem;
+			font-weight: 600;
+			margin-bottom: 5px;
+		}
+		.guide-card p {
+			font-size: 12.5px;
+			color: var(--text-muted);
+			line-height: 1.6;
+			margin: 0;
+		}
+
+		.method-badge {
+			display: inline-block;
+			font-family: var(--font-mono);
+			font-size: 11px;
+			font-weight: 700;
+			padding: 2px 8px;
+			border-radius: 5px;
+		}
+		.method-get {
+			background: oklch(93% 0.04 230);
+			color: oklch(38% 0.14 230);
+			border: 1px solid oklch(80% 0.1 230 / 0.5);
+		}
+		.method-post {
+			background: oklch(95% 0.04 150);
+			color: oklch(34% 0.12 150);
+			border: 1px solid oklch(82% 0.09 150 / 0.5);
+		}
+		.method-del {
+			background: oklch(93% 0.04 24);
+			color: oklch(38% 0.14 24);
+			border: 1px solid oklch(80% 0.1 24 / 0.5);
+		}
+		.method-patch {
+			background: oklch(94% 0.04 80);
+			color: oklch(38% 0.12 70);
+			border: 1px solid oklch(80% 0.1 80 / 0.5);
+		}
+
+		.endpoint-row {
+			display: flex;
+			align-items: baseline;
+			gap: 10px;
+			flex-wrap: wrap;
+			padding: 9px 0;
+			border-bottom: 1px solid var(--border);
+			font-size: 13px;
+		}
+		.endpoint-row:last-child {
+			border-bottom: none;
+		}
+		.endpoint-path {
+			font-family: var(--font-mono);
+			font-size: 12px;
+			color: var(--text);
+		}
+		.endpoint-desc {
+			color: var(--text-muted);
+			font-size: 12.5px;
+		}
+		.endpoint-auth {
+			font-size: 10.5px;
+			font-weight: 600;
+			letter-spacing: 0.05em;
+			text-transform: uppercase;
+			padding: 1px 6px;
+			border-radius: 4px;
+		}
+		.auth-session {
+			background: oklch(93% 0.04 44);
+			color: oklch(38% 0.14 44);
+			border: 1px solid oklch(80% 0.1 44 / 0.5);
+		}
+		.auth-apikey {
+			background: oklch(95% 0.04 150);
+			color: oklch(34% 0.12 150);
+			border: 1px solid oklch(82% 0.09 150 / 0.5);
+		}
+		.auth-public {
+			background: oklch(93% 0.004 58);
+			color: var(--text-muted);
+			border: 1px solid var(--border-strong);
+		}
+
+		/* ── BUTTONS ──────────────────────────────────────────────── */
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			padding: 10px 20px;
+			border-radius: 8px;
+			font-size: 14px;
+			font-weight: 500;
+			text-decoration: none;
+			transition:
+				background 0.15s,
+				border-color 0.15s,
+				color 0.15s;
+			border: 1.5px solid transparent;
+			cursor: pointer;
+		}
+
+		.btn svg {
+			width: 16px;
+			height: 16px;
+		}
+
+		.btn-primary {
+			background: var(--green);
+			color: oklch(12% 0.02 150);
+			border-color: var(--green);
+		}
+		.btn-primary:hover {
+			background: oklch(48% 0.18 150);
+			border-color: oklch(48% 0.18 150);
+		}
+
+		.btn-ghost-dark {
+			background: oklch(100% 0 0 / 0.06);
+			color: oklch(80% 0.01 58);
+			border-color: oklch(100% 0 0 / 0.14);
+		}
+		.btn-ghost-dark:hover {
+			background: oklch(100% 0 0 / 0.1);
+			border-color: oklch(100% 0 0 / 0.22);
+		}
+
+		.btn-ghost {
+			background: transparent;
+			color: var(--text-muted);
+			border-color: var(--border-strong);
+		}
+		.btn-ghost:hover {
+			background: var(--bg-alt);
+			color: var(--text);
+			border-color: var(--border-strong);
+		}
+	</style>
+
+	<!-- PRODUCT SUB-NAV -->
+	<nav class="product-subnav inbox-product-subnav">
+		<div class="container">
+			<div class="psn-inner">
+				<a href="#overview" class="psn-link active">
+					Overview
+				</a>
+				<a href="#features" class="psn-link">
+					Features
+				</a>
+				<a href="#deploy" class="psn-link">
+					Deploy
+				</a>
+			</div>
+		</div>
+	</nav>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!--  HERO                                                                   -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<div id="overview" class="ix-hero">
+		<div class="container">
+			<div class="ix-hero-inner">
+				<!-- LEFT -->
+				<div>
+					<div class="ix-badge">
+						<Icon name="lucide:inbox" size={12} />
+						EmailFlare Inbox — Cloudflare Worker
+					</div>
+					<h1>
+						Self-hosted email <em>CRM inbox</em> — deployed to the edge.
+					</h1>
+					<p class="ix-hero-sub">
+						Every inbound email that hits your Cloudflare Email Routing rules lands in a clean contact
+						thread with sequences, real-time push notifications, and a polished dashboard. No external
+						service. No monthly seat fees. One command setup.
+					</p>
+					<div class="ix-actions">
+						<a class="btn btn-primary" href="#deploy">
+							<Icon name="lucide:rocket" size={15} />
+							Deploy Inbox →
+						</a>
+						<a class="btn btn-ghost-dark" href="#docs">
+							<Icon name="lucide:book-open" size={15} />
+							Setup docs
+						</a>
+						<a
+							class="btn btn-ghost-dark"
+							href="https://github.com/0xdps/emailflare"
+							target="_blank"
+							rel="noopener"
+						>
+							<Icon name="simple-icons:github" size={14} />
+							GitHub
+						</a>
+					</div>
+				</div>
+
+				<!-- RIGHT — Inbox UI Mock -->
+				<div>
+					<div class="ix-ui-card">
+						<div class="ix-ui-bar">
+							<span class="ix-dot ixd-r"></span>
+							<span class="ix-dot ixd-y"></span>
+							<span class="ix-dot ixd-g"></span>
+							<span class="ix-bar-title">emailflare-inbox.workers.dev/inbox</span>
+						</div>
+						<div class="ix-ui-body">
+							<!-- Contact list -->
+							<div class="ix-ui-list">
+								<div class="ix-contact-row ix-active">
+									<div class="ix-row-top">
+										<div class="ix-avatar ix-unread">JD</div>
+										<span class="ix-name">Jane Doe</span>
+										<span class="ix-time">2m</span>
+									</div>
+									<div class="ix-preview">Re: Getting started with your API</div>
+								</div>
+								<div class="ix-contact-row">
+									<div class="ix-row-top">
+										<div class="ix-avatar">AM</div>
+										<span class="ix-name">Alex Miller</span>
+										<span class="ix-time">1h</span>
+									</div>
+									<div class="ix-preview">Thanks for the quick reply!</div>
+								</div>
+								<div class="ix-contact-row">
+									<div class="ix-row-top">
+										<div class="ix-avatar">SC</div>
+										<span class="ix-name">Sam Chen</span>
+										<span class="ix-time">3h</span>
+									</div>
+									<div class="ix-preview">Question about rate limits...</div>
+								</div>
+								<div class="ix-contact-row">
+									<div class="ix-row-top">
+										<div class="ix-avatar">TW</div>
+										<span class="ix-name">Taylor Wu</span>
+										<span class="ix-time">1d</span>
+									</div>
+									<div class="ix-preview">Welcome — trial started</div>
+								</div>
+							</div>
+
+							<!-- Thread view -->
+							<div class="ix-ui-thread">
+								<div class="ix-thread-header">
+									<div class="ix-thread-avatar">JD</div>
+									<div>
+										<div class="ix-thread-name">Jane Doe</div>
+										<div class="ix-thread-sub">jane@acme.io</div>
+									</div>
+									<div class="ix-thread-badge">3 emails</div>
+								</div>
+
+								<div class="ix-email-card">
+									<div class="ix-email-header">
+										<span class="ix-email-from-badge">Inbound</span>
+										<span class="ix-email-subj">Getting started with your API</span>
+										<span class="ix-email-ts">Mon 09:14</span>
+									</div>
+									<div class="ix-email-body">
+										Hi, I just signed up and I'm trying to figure out how to configure the webhook
+										endpoint for...
+									</div>
+								</div>
+
+								<div class="ix-email-card ix-sent">
+									<div class="ix-email-header">
+										<span class="ix-email-from-badge">Sent</span>
+										<span class="ix-email-subj">Re: Getting started with your API</span>
+										<span class="ix-email-ts">Mon 09:32</span>
+									</div>
+									<div class="ix-email-body">
+										Hi Jane, great question! You can configure the endpoint from the Settings page.
+										Here's the exact...
+									</div>
+								</div>
+
+								<div class="ix-email-card">
+									<div class="ix-email-header">
+										<span class="ix-email-from-badge">Inbound</span>
+										<span class="ix-email-subj">Re: Getting started with your API</span>
+										<span class="ix-email-ts">Now</span>
+									</div>
+									<div class="ix-email-body">
+										That worked perfectly, thank you! One more thing — how do I add team members?
+									</div>
+								</div>
+
+								<div class="ix-reply-bar">
+									<Icon name="lucide:pencil" size={11} />
+									<span>Reply to Jane…</span>
+									<span class="ix-reply-btn">Send →</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!--  FEATURES                                                               -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<div class="section" id="features">
+		<div class="container">
+			<div class="section-header">
+				<div class="section-eyebrow">What's included</div>
+				<h2 class="section-title">
+					Everything your team needs, <em>nothing you don't.</em>
+				</h2>
+				<p class="section-sub">
+					Inbox is a complete inbound email CRM — not a thin wrapper. Built specifically for Cloudflare
+					Workers with D1, R2, Queues, and Durable Objects.
+				</p>
+			</div>
+
+			<div class="ix-feat-grid">
+				<div class="ix-feat-card">
+					<div class="ix-feat-icon">
+						<Icon name="lucide:inbox" />
+					</div>
+					<h3>Contact threads</h3>
+					<p>
+						Inbound emails are automatically grouped into per-contact conversation threads. Gmail-style view
+						with expandable email cards.
+					</p>
+				</div>
+
+				<div class="ix-feat-card">
+					<div class="ix-feat-icon">
+						<Icon name="lucide:mail" />
+					</div>
+					<h3>Inbound email capture</h3>
+					<p>
+						Cloudflare Email Routing delivers directly to your Worker via{" "}
+						<code style="font-size:11px;">email()</code> handler. Attachments stored in R2, full MIME
+						parsing.
+					</p>
+				</div>
+
+				<div class="ix-feat-card">
+					<div class="ix-feat-icon">
+						<Icon name="lucide:list-ordered" />
+					</div>
+					<h3>Email sequences</h3>
+					<p>
+						Schedule multi-step drip campaigns per contact. Powered by Cloudflare Queues — cron-triggered
+						every 5 minutes, never misses a step.
+					</p>
+				</div>
+
+				<div class="ix-feat-card">
+					<div class="ix-feat-icon">
+						<Icon name="lucide:bell" />
+					</div>
+					<h3>Real-time notifications</h3>
+					<p>
+						New inbound emails trigger instant browser notifications via a persistent WebSocket connected to
+						a Durable Object. No polling.
+					</p>
+				</div>
+
+				<div class="ix-feat-card">
+					<div class="ix-feat-icon">
+						<Icon name="lucide:users" />
+					</div>
+					<h3>Multi-user with roles</h3>
+					<p>
+						Admin and member roles, invite-link onboarding. Secure session-based auth with login rate
+						limiting via Workers KV.
+					</p>
+				</div>
+
+				<div class="ix-feat-card">
+					<div class="ix-feat-icon">
+						<Icon name="lucide:key-round" />
+					</div>
+					<h3>Scoped API keys</h3>
+					<p>
+						Programmatic access for outbound replies and sequence management. Per-key domain scoping with
+						Workers Rate Limiting (100 req/60s).
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!--  HOW IT WORKS                                                           -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<div class="ix-flow-section section" id="how-it-works">
+		<div class="container">
+			<div class="section-header" style="margin-bottom:0">
+				<div class="section-eyebrow">Architecture</div>
+				<h2 class="section-title">
+					How Inbox <em>works</em>
+				</h2>
+				<p class="section-sub">
+					Five Cloudflare primitives working together — no external infrastructure, no servers to manage.
+				</p>
+			</div>
+
+			<div class="ix-flow-wrap">
+				<div class="ix-flow-step">
+					<div class="ix-flow-tag ix-tag-routing">Cloudflare</div>
+					<div class="ix-flow-num">1</div>
+					<h4>Email Routing</h4>
+					<p>
+						Configure a catch-all or address-specific rule in your Cloudflare dashboard to forward inbound
+						mail to the inbox Worker.
+					</p>
+				</div>
+				<div class="ix-flow-step">
+					<div class="ix-flow-tag ix-tag-worker">Worker</div>
+					<div class="ix-flow-num">2</div>
+					<h4>email() handler</h4>
+					<p>
+						The inbox Worker's <code style="font-size:11px">email()</code> handler fires for every inbound
+						message. It parses MIME, stores the raw email and attachments in R2, and writes the contact +
+						thread row to D1.
+					</p>
+				</div>
+				<div class="ix-flow-step">
+					<div class="ix-flow-tag ix-tag-db">D1 + R2</div>
+					<div class="ix-flow-num">3</div>
+					<h4>Contacts &amp; threads</h4>
+					<p>
+						D1 holds contacts, email metadata, users, inboxes, and sequence schedules. R2 stores raw email
+						bodies and attachments with secure per-request signed URLs.
+					</p>
+				</div>
+				<div class="ix-flow-step">
+					<div class="ix-flow-tag ix-tag-dash">Dashboard</div>
+					<div class="ix-flow-num">4</div>
+					<h4>Inbox UI + Push</h4>
+					<p>
+						The React dashboard SPA is served directly from the Worker's Assets binding. On new email, a
+						Durable Object fans out a WebSocket notification to all open sessions.
+					</p>
+				</div>
+				<div class="ix-flow-step">
+					<div class="ix-flow-tag ix-tag-queue">Queues + Cron</div>
+					<div class="ix-flow-num">5</div>
+					<h4>Sequences</h4>
+					<p>
+						A cron trigger runs every 5 minutes to enqueue due sequence steps. The queue consumer sends
+						replies via the CF Email Sending API with deduplication and retry logic.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!--  DEPLOY                                                                  -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<div class="ix-deploy-section section" id="deploy">
+		<div class="container">
+			<div class="section-header" style="margin-bottom:0">
+				<div class="section-eyebrow">Deploy</div>
+				<h2 class="section-title">
+					One command to <em>production</em>.
+				</h2>
+				<p class="section-sub">
+					The deploy script creates every Cloudflare resource, applies migrations, sets secrets, builds the
+					dashboard, and deploys. Safe to re-run — idempotent throughout.
+				</p>
+			</div>
+
+			<div class="ix-deploy-option">
+				<div class="ix-do-header">
+					<div class="ix-do-badge">
+						<Icon name="lucide:zap" size={11} /> Serverless
+					</div>
+					<div class="ix-do-title">Cloudflare Workers</div>
+					<p class="ix-do-sub">
+						No servers, no containers. D1 database + KV + R2 + Queue — all on the edge. One script from
+						clone to live.
+					</p>
+				</div>
+				<div class="ix-do-steps">
+					<div class="ix-do-step">
+						<div class="ix-do-step-num">1</div>
+						<div>
+							<div class="ix-do-step-label">Copy the config template</div>
+							<p class="ix-do-step-desc">
+								Fill in your Cloudflare API token, account ID, and VAPID keys. Or leave everything blank
+								to be prompted interactively.
+							</p>
+							<div class="ix-code-block">
+								<span>
+									<span class="ix-cb-cmd">cp scripts/config.example.toml scripts/config.toml</span>
+								</span>
+							</div>
+						</div>
+					</div>
+					<div class="ix-do-step">
+						<div class="ix-do-step-num">2</div>
+						<div>
+							<div class="ix-do-step-label">Generate VAPID keys</div>
+							<p class="ix-do-step-desc">
+								Inbox uses Web Push for real-time browser notifications. Generate a key pair and paste
+								both keys into your config.
+							</p>
+							<div class="ix-code-block">
+								<span>
+									<span class="ix-cb-cmd">npx web-push generate-vapid-keys</span>
+								</span>
+								<span>
+									<span class="ix-cb-cmt"># paste PUBLIC_KEY and PRIVATE_KEY into config.toml</span>
+								</span>
+							</div>
+						</div>
+					</div>
+					<div class="ix-do-step">
+						<div class="ix-do-step-num">3</div>
+						<div>
+							<div class="ix-do-step-label">Run the deploy command</div>
+							<p class="ix-do-step-desc">
+								Applies all D1 migrations, compiles Next.js Server Components, and deploys the unified
+								Worker bundle.
+							</p>
+							<div class="ix-code-block">
+								<span>
+									<span class="ix-cb-cmd">just web-deploy</span>
+								</span>
+							</div>
+						</div>
+					</div>
+					<div class="ix-do-step">
+						<div class="ix-do-step-num">4</div>
+						<div>
+							<div class="ix-do-step-label">
+								Open <code>/setup</code> and create your admin
+							</div>
+							<p class="ix-do-step-desc">
+								Visit your Worker URL at <code>/setup</code> to create the first admin account. Then add
+								inboxes, invite teammates, and configure Cloudflare Email Routing.
+							</p>
+							<div class="ix-code-block">
+								<span>
+									<span class="ix-cb-url">https://your-inbox.workers.dev/setup</span>
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="ix-do-footer">
+					<span class="ix-do-footer-note">D1 + KV + R2 + Queue — zero external services</span>
+					<a href="#docs">Full setup guide ↓</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<!--  DOCS                                                                   -->
+	<!-- ═══════════════════════════════════════════════════════════════════════ -->
+	<div id="docs" style="border-bottom: 1px solid var(--border);">
+		<!-- Docs hero -->
+		<div class="docs-hero">
+			<div class="container">
+				<div class="docs-badge">
+					<Icon name="lucide:book-open" size={11} />
+					Inbox Documentation
+				</div>
+				<h1>
+					Set up, configure, and <em>extend</em> Inbox.
+				</h1>
+				<p class="docs-hero-sub">
+					Prerequisites, step-by-step setup, Email Routing configuration, secrets reference, and the full
+					Inbox API — everything in one place.
+				</p>
+				<div class="docs-hero-actions">
+					<a class="btn btn-primary" href="#prerequisites">
+						Get started →
+					</a>
+					<a
+						class="btn btn-ghost"
+						href="https://github.com/0xdps/emailflare/tree/trunk/services/inbox-worker"
+						target="_blank"
+						rel="noopener"
+					>
+						<Icon name="simple-icons:github" size={13} />
+						Source
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Docs layout -->
+		<div class="docs-layout">
+			<!-- Sidebar -->
+			<aside class="docs-sidebar">
+				<div class="sidebar-label">On this page</div>
+				<ul class="sidebar-nav">
+					<li>
+						<a href="#prerequisites">Prerequisites</a>
+					</li>
+					<li>
+						<a href="#setup">Step-by-step setup</a>
+					</li>
+					<li>
+						<a href="#email-routing">Email Routing</a>
+					</li>
+					<li>
+						<a href="#config">config.toml reference</a>
+					</li>
+					<li>
+						<a href="#secrets">Secrets reference</a>
+					</li>
+					<li>
+						<a href="#api">Inbox API</a>
+					</li>
+					<li>
+						<a href="#upgrading">Upgrading</a>
+					</li>
+				</ul>
+			</aside>
+
+			<!-- Main -->
+			<main class="docs-main">
+				<!-- PREREQUISITES -->
+				<section class="doc-section" id="prerequisites">
+					<div class="doc-section-header">
+						<h2>Prerequisites</h2>
+						<a class="anchor-link" href="#prerequisites">
+							#prerequisites
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							Inbox is a standalone Cloudflare Worker — it does not require the main EmailFlare Docker
+							stack. You only need:
+						</p>
+						<ul>
+							<li>
+								A <strong>Cloudflare account</strong> on a paid plan (Workers Paid, $5/month) — required
+								for Queues and Durable Objects.
+							</li>
+							<li>
+								A <strong>domain</strong> on Cloudflare with Email Routing enabled.
+							</li>
+							<li>
+								A <strong>Cloudflare API token</strong> with Email Routing (Edit), DNS (Edit), and Zone
+								(Read) permissions. See the{" "}
+								<a href="/cloudflare-token" style="color:var(--green);text-decoration:none;">
+									CF Token guide →
+								</a>
+							</li>
+							<li>
+								<strong>Node.js 18+</strong> and <strong>pnpm</strong> installed locally.
+							</li>
+							<li>
+								The <strong>emailflare repo</strong> cloned:{" "}
+								<code>git clone https://github.com/0xdps/emailflare</code>
+							</li>
+						</ul>
+						<div class="callout callout-green">
+							<span class="callout-icon">ℹ️</span>
+							<span>
+								Inbox shares the same <code>emailflare</code> D1 database as the main worker. If you
+								already have the main worker deployed, the inbox deploy script will detect and reuse the
+								existing database.
+							</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- SETUP -->
+				<section class="doc-section" id="setup">
+					<div class="doc-section-header">
+						<h2>Step-by-step setup</h2>
+						<a class="anchor-link" href="#setup">
+							#setup
+						</a>
+					</div>
+					<div class="doc-body">
+						<div class="qs-steps">
+							<div class="qs-step">
+								<div class="qs-num">1</div>
+								<div class="qs-body">
+									<strong>Install dependencies</strong> — from the repo root run{" "}
+									<code>just install</code>. This installs all workspace packages including the inbox
+									Worker and dashboard.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">2</div>
+								<div class="qs-body">
+									<strong>Copy the config template</strong> —{" "}
+									<code>cp scripts/config.example.toml scripts/config.toml</code>. Fill in{" "}
+									<code>[deploy]</code> (your CF API token + account ID) and the <code>[inbox]</code>{" "}
+									VAPID keys. All fields are optional — any blank value will be prompted
+									interactively.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">3</div>
+								<div class="qs-body">
+									<strong>Generate VAPID keys</strong> — run{" "}
+									<code>npx web-push generate-vapid-keys</code> and copy the public and private keys
+									into <code>config.toml</code> under <code>[inbox]</code>.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">4</div>
+								<div class="qs-body">
+									<strong>Run the deploy script</strong> — <code>just web-deploy</code>. The script
+									compiles shared packages, applies D1 migrations remotely, builds the Next.js React
+									Server Components, and deploys the unified Worker.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">5</div>
+								<div class="qs-body">
+									<strong>Create your admin account</strong> — visit{" "}
+									<code>https://&lt;your-worker&gt;.workers.dev/setup</code> (or your custom domain).
+									Fill in admin name, email, and password. This endpoint is disabled after the first
+									account is created.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">6</div>
+								<div class="qs-body">
+									<strong>Add inboxes</strong> — in the dashboard, go to <em>Inboxes</em> and create
+									one per email address you want to receive mail on (e.g.{" "}
+									<code>support@yourdomain.com</code>). Note the generated inbox address — you'll use
+									it in the Email Routing rule.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">7</div>
+								<div class="qs-body">
+									<strong>Configure Email Routing</strong> — see the{" "}
+									<a href="#email-routing" style="color:var(--green);text-decoration:none;">
+										Email Routing section →
+									</a>{" "}
+									for exact steps.
+								</div>
+							</div>
+						</div>
+
+						<div class="guide-cards">
+							<a class="guide-card" href="#email-routing">
+								<div class="gc-label">Required</div>
+								<h4>Email Routing setup</h4>
+								<p>Configure Cloudflare to forward inbound mail to your Worker.</p>
+							</a>
+							<a class="guide-card" href="#secrets">
+								<div class="gc-label">Reference</div>
+								<h4>Secrets reference</h4>
+								<p>All environment variables and secrets the inbox Worker uses.</p>
+							</a>
+							<a class="guide-card" href="/cloudflare-token">
+								<div class="gc-label">Guide</div>
+								<h4>Cloudflare API token</h4>
+								<p>Exact permissions needed for Email Routing, DNS, and sending.</p>
+							</a>
+						</div>
+					</div>
+				</section>
+
+				<!-- EMAIL ROUTING -->
+				<section class="doc-section" id="email-routing">
+					<div class="doc-section-header">
+						<h2>Cloudflare Email Routing</h2>
+						<a class="anchor-link" href="#email-routing">
+							#email-routing
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							Inbox receives mail by registering the Worker as an Email Routing worker. You need to do
+							this in the Cloudflare dashboard for each domain you want to receive mail on.
+						</p>
+
+						<h3>Add the routing rule</h3>
+						<div class="qs-steps">
+							<div class="qs-step">
+								<div class="qs-num">1</div>
+								<div class="qs-body">
+									In the Cloudflare dashboard, go to{" "}
+									<strong>Email → Email Routing → Routing Rules</strong> for your domain.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">2</div>
+								<div class="qs-body">
+									Click <strong>Create address</strong>. Set the action to{" "}
+									<strong>Send to a Worker</strong> and choose <code>emailflare-inbox</code> from the
+									worker list.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">3</div>
+								<div class="qs-body">
+									Set the matcher to a specific address (e.g. <code>support@yourdomain.com</code>) or
+									use a <strong>catch-all</strong> rule to capture all mail to the domain.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">4</div>
+								<div class="qs-body">
+									Send a test email to the address and verify it appears in the Inbox dashboard under
+									the correct contact thread.
+								</div>
+							</div>
+						</div>
+
+						<div class="callout callout-orange">
+							<span class="callout-icon">💡</span>
+							<span>
+								The inbox address the Worker reads from is determined by the <code>to</code> header of
+								the incoming email. Make sure the address matches one of your configured inboxes in the
+								dashboard, or it will be filed under a default inbox.
+							</span>
+						</div>
+
+						<h3>Email Routing DNS records</h3>
+						<p>
+							Cloudflare automatically adds the required MX records when you enable Email Routing for a
+							domain. If they're missing, visit <strong>Email → Email Routing → Overview</strong> and
+							click <em>Enable Email Routing</em>. No manual DNS changes are needed.
+						</p>
+					</div>
+				</section>
+
+				<!-- CONFIG.TOML REFERENCE -->
+				<section class="doc-section" id="config">
+					<div class="doc-section-header">
+						<h2>config.toml reference</h2>
+						<a class="anchor-link" href="#config">
+							#config
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							Copy <code>scripts/config.example.toml</code> to <code>scripts/config.toml</code>. Any blank
+							value causes the deploy script to prompt interactively. The file is git-ignored.
+						</p>
+
+						<div class="code-block">
+							<span class="cb-cmt"># scripts/config.toml</span>
+							<span class="cb-plain">[deploy]</span>
+							<span class="cb-cmt"># D1 database name (default: "emailflare")</span>
+							<span class="cb-key">database_name</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">"emailflare"</span>
+							<span class="cb-cmt"># Cloudflare API token — used by wrangler during deploy</span>
+							<span class="cb-key">cloudflare_api_token</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">""</span>
+							<span class="cb-cmt"># Your Cloudflare account ID</span>
+							<span class="cb-key">account_id</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">""</span>
+							<span class="cb-plain">[secrets]</span>
+							<span class="cb-cmt"># 32+ char random string for JWT signing: openssl rand -hex 32</span>
+							<span class="cb-key">session_secret</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">""</span>
+							<span class="cb-cmt"># Runtime Cloudflare API token (Email Routing + DNS + Zone)</span>
+							<span class="cb-key">cf_api_token</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">""</span>
+							<span class="cb-key">cf_account_id</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">""</span>
+							<span class="cb-plain">[inbox]</span>
+							<span class="cb-cmt"># Generate: npx web-push generate-vapid-keys</span>
+							<span class="cb-key">vapid_public_key</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">""</span>
+							<span class="cb-key">vapid_private_key</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">""</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- SECRETS REFERENCE -->
+				<section class="doc-section" id="secrets">
+					<div class="doc-section-header">
+						<h2>Secrets reference</h2>
+						<a class="anchor-link" href="#secrets">
+							#secrets
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							All secrets are set as Cloudflare Worker secrets via <code>wrangler secret put</code>. The
+							deploy script handles this automatically; use <code>just inbox-secret SECRET_NAME</code> to
+							update a single secret later.
+						</p>
+
+						<div class="table-wrap">
+							<table>
+								<thead>
+									<tr>
+										<th>Secret</th>
+										<th>Required</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>
+											<code>SESSION_SECRET</code>
+										</td>
+										<td>
+											<span class="pill pill-req">required</span>
+										</td>
+										<td>
+											32+ character random string used to sign session JWTs. Generate with{" "}
+											<code>openssl rand -hex 32</code>.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>CF_API_TOKEN</code>
+										</td>
+										<td>
+											<span class="pill pill-req">required</span>
+										</td>
+										<td>
+											Cloudflare API token used at runtime for Email Sending (outbound replies).
+											Needs Email Routing (Edit), Zone (Read), DNS (Edit).
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>CF_ACCOUNT_ID</code>
+										</td>
+										<td>
+											<span class="pill pill-req">required</span>
+										</td>
+										<td>Your Cloudflare account ID. Used for Email Sending API calls.</td>
+									</tr>
+									<tr>
+										<td>
+											<code>VAPID_PUBLIC_KEY</code>
+										</td>
+										<td>
+											<span class="pill pill-req">required</span>
+										</td>
+										<td>
+											VAPID public key for Web Push. Generate with{" "}
+											<code>npx web-push generate-vapid-keys</code>. Also stored in{" "}
+											<code>wrangler.jsonc</code> as <code>VAPID_PUBLIC_KEY</code> var (served to
+											the frontend).
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>VAPID_PRIVATE_KEY</code>
+										</td>
+										<td>
+											<span class="pill pill-req">required</span>
+										</td>
+										<td>VAPID private key. Never exposed to the frontend. Keep this secret.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<h3>Updating a secret</h3>
+						<div class="code-block">
+							<span class="cb-cmt"># Interactive (prompts without echoing)</span>
+							<span class="cb-cmd">just inbox-secret SESSION_SECRET</span>
+
+							<span class="cb-cmt"># Or directly with wrangler</span>
+							<span class="cb-cmd">cd services/inbox-worker</span>
+							<span class="cb-cmd">echo "new-value" | npx wrangler secret put SESSION_SECRET</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- INBOX API -->
+				<section class="doc-section" id="api">
+					<div class="doc-section-header">
+						<h2>Inbox API</h2>
+						<a class="anchor-link" href="#api">
+							#api
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							The inbox Worker exposes both a session-authenticated API (used by the dashboard) and an
+							API-key-authenticated API (for programmatic access). All endpoints are prefixed with{" "}
+							<code>/api</code>.
+						</p>
+
+						<h3>Authentication</h3>
+						<p>
+							Dashboard endpoints use a session cookie set on <code>POST /api/auth/login</code>.
+							Programmatic endpoints accept a bearer token:
+						</p>
+						<div class="code-block">
+							<span class="cb-header">Authorization</span>
+							<span class="cb-plain">: Bearer </span>
+							<span class="cb-str">eflive_xxxxxxxxxxxx</span>
+						</div>
+
+						<h3>Auth endpoints</h3>
+						<div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/auth/login</span>
+								<span class="endpoint-auth auth-public">public</span>
+								<span class="endpoint-desc">
+									Sign in with email + password. Returns a session cookie.
+								</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/auth/logout</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">Invalidate the current session.</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-get">GET</span>
+								<span class="endpoint-path">/api/auth/me</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">Return the current authenticated user.</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/setup</span>
+								<span class="endpoint-auth auth-public">public</span>
+								<span class="endpoint-desc">
+									Create the first admin account. Disabled after first use.
+								</span>
+							</div>
+						</div>
+
+						<h3>People (contacts)</h3>
+						<div>
+							<div class="endpoint-row">
+								<span class="method-badge method-get">GET</span>
+								<span class="endpoint-path">/api/people</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									List contacts. Supports <code>?search=</code> and <code>?unread=true</code> filters.
+								</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-get">GET</span>
+								<span class="endpoint-path">/api/people/:id/thread</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									Fetch a contact's full email thread (inbound + sent, chronological).
+								</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/people/:id/read</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">Mark all emails in a thread as read.</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/people/:id/reply</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									Send an outbound reply to a contact. Body:{" "}
+									<code>&#123; from, subject, text, replyToMessageId? &#125;</code>
+								</span>
+							</div>
+						</div>
+
+						<h3>Inboxes</h3>
+						<div>
+							<div class="endpoint-row">
+								<span class="method-badge method-get">GET</span>
+								<span class="endpoint-path">/api/inboxes</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">List all configured inboxes for the account.</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/inboxes</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									Create a new inbox. Body: <code>&#123; name, address &#125;</code>
+								</span>
+							</div>
+						</div>
+
+						<h3>Sequences</h3>
+						<div>
+							<div class="endpoint-row">
+								<span class="method-badge method-get">GET</span>
+								<span class="endpoint-path">/api/sequences</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									List all sequences with step counts and active contact counts.
+								</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/sequences</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									Create a new sequence. Body:{" "}
+									<code>&#123; name, steps: [&#123;subject, body, delayHours&#125;] &#125;</code>
+								</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/sequences/:id/enroll</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									Enroll a contact in a sequence. Body: <code>&#123; personId, from &#125;</code>
+								</span>
+							</div>
+						</div>
+
+						<h3>Users &amp; invites</h3>
+						<div>
+							<div class="endpoint-row">
+								<span class="method-badge method-get">GET</span>
+								<span class="endpoint-path">/api/users</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">List all team members (admin only).</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/invite</span>
+								<span class="endpoint-auth auth-session">session</span>
+								<span class="endpoint-desc">
+									Generate an invite link. Body: <code>&#123; role: "admin" | "member" &#125;</code>
+								</span>
+							</div>
+							<div class="endpoint-row">
+								<span class="method-badge method-post">POST</span>
+								<span class="endpoint-path">/api/invite/:token/accept</span>
+								<span class="endpoint-auth auth-public">public</span>
+								<span class="endpoint-desc">Accept an invite and create a new user account.</span>
+							</div>
+						</div>
+
+						<div class="callout callout-blue">
+							<span class="callout-icon">🔗</span>
+							<span>
+								All outbound sends (replies, sequences) go through the same Cloudflare Email Sending API
+								used by the main emailflare worker. The <code>CF_API_TOKEN</code> secret must have Email
+								Routing (Edit) permission.
+							</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- UPGRADING -->
+				<section class="doc-section" id="upgrading">
+					<div class="doc-section-header">
+						<h2>Upgrading</h2>
+						<a class="anchor-link" href="#upgrading">
+							#upgrading
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							Pull the latest code and re-deploy. The <code>web-deploy</code> just recipe runs remote D1
+							migrations before deploying so schema changes are applied atomically.
+						</p>
+
+						<div class="code-block">
+							<span class="cb-cmt"># Pull latest</span>
+							<span class="cb-cmd">git pull origin trunk</span>
+							<span class="cb-cmd">just install</span>
+
+							<span class="cb-cmt"># Apply any new migrations + rebuild + redeploy</span>
+							<span class="cb-cmd">just web-deploy</span>
+						</div>
+
+						<h3>
+							What <code>just web-deploy</code> does
+						</h3>
+						<ul>
+							<li>
+								Runs <code>pnpm run build:shared</code> to compile all shared core libraries.
+							</li>
+							<li>
+								Runs <code>wrangler d1 migrations apply DB --remote</code> to apply pending SQL
+								migrations to the live database.
+							</li>
+							<li>Builds the Next.js app with React Server Components and Server Actions.</li>
+							<li>
+								Deploys the single unified Worker bundle with Hono API and Durable Objects to
+								Cloudflare.
+							</li>
+						</ul>
+
+						<div class="callout callout-green">
+							<span class="callout-icon">✅</span>
+							<span>
+								Migrations are idempotent — already-applied migrations are skipped automatically. You
+								can safely run <code>just web-deploy</code> at any time without risk of data loss.
+							</span>
+						</div>
+					</div>
+				</section>
+			</main>
+		</div>
+		<!-- docs-layout -->
+	</div>
+	<!-- #docs -->
+
+	<script is:inline>
+		// Sidebar active-link tracking
+		(function () {
+			const nav = document.querySelector(".docs-sidebar .sidebar-nav");
+			if (!nav) return;
+
+			const links = Array.from(nav.querySelectorAll('a[href^="#"]'));
+			const ids = links.map((l) => l.getAttribute("href").slice(1));
+
+			function update() {
+				const scrollY = window.scrollY + 120;
+				let active = ids[0];
+				for (const id of ids) {
+					const el = document.getElementById(id);
+					if (el && el.getBoundingClientRect().top + window.scrollY <= scrollY) {
+						active = id;
+					}
+				}
+				links.forEach((l) => {
+					l.classList.toggle("active", l.getAttribute("href") === "#" + active);
+				});
+			}
+
+			window.addEventListener("scroll", update, { passive: true });
+			update();
+		})();
+	</script>
+
+	<script>
+		(() => {
+			const links = document.querySelectorAll(".inbox-product-subnav .psn-link");
+			const sectionIds = ["overview", "features", "deploy"];
+			const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting) {
+							const id = entry.target.id;
+							links.forEach((l) => {
+								l.classList.toggle("active", l.getAttribute("href") === "#" + id);
+							});
+						}
+					});
+				},
+				{ rootMargin: "-15% 0px -70% 0px", threshold: 0 },
+			);
+
+			sections.forEach((s) => observer.observe(s));
+		})();
+	</script>
 </Base>

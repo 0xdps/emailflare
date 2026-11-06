@@ -1,478 +1,707 @@
 ---
-import Base from '../layouts/Base.astro';
+import Base from "../layouts/Base.astro";
 ---
 
 <Base
-  title="Creating your Cloudflare API token — EmailFlare"
-  description="Step-by-step guide to creating the Cloudflare API token EmailFlare needs for Email Sending, DNS, and routing — with exact permissions listed."
-  keywords="cloudflare api token emailflare, email sending cloudflare token, cloudflare email permissions, wrangler api token setup"
-  canonical="https://emailflare.dev/cloudflare-token"
-  ogUrl="https://emailflare.dev/cloudflare-token"
-  ogType="article"
-  navType="docs"
-  navTitle="CF Token"
+	title="Creating your Cloudflare API token — EmailFlare"
+	description="Step-by-step guide to creating the Cloudflare API token EmailFlare needs for Email Sending, DNS, and routing — with exact permissions listed."
+	keywords="cloudflare api token emailflare, email sending cloudflare token, cloudflare email permissions, wrangler api token setup"
+	canonical="https://emailflare.dev/cloudflare-token"
+	ogUrl="https://emailflare.dev/cloudflare-token"
+	ogType="article"
+	navType="docs"
+	navTitle="CF Token"
 >
+	<style is:global>
+		/* ── CLOUDFLARE TOKEN PAGE ────────────────────────────────── */
+		.page-hero {
+			background: oklch(11% 0.02 230);
+			padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(1.5rem, 4vw, 2.5rem);
+			border-bottom: 1px solid oklch(22% 0.04 230 / 0.8);
+		}
 
-<style is:global>
-  /* ── CLOUDFLARE TOKEN PAGE ────────────────────────────────── */
-  .page-hero {
-    background: oklch(11% 0.02 230);
-    padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(1.5rem, 4vw, 2.5rem);
-    border-bottom: 1px solid oklch(22% 0.04 230 / 0.8);
-  }
+		.page-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			background: oklch(20% 0.06 230 / 0.6);
+			color: oklch(75% 0.12 230);
+			border: 1px solid oklch(35% 0.1 230 / 0.5);
+			font-size: 12px;
+			font-weight: 500;
+			padding: 4px 13px;
+			border-radius: 100px;
+			margin-bottom: 18px;
+		}
 
-  .page-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: oklch(20% 0.06 230 / 0.6);
-    color: oklch(75% 0.12 230);
-    border: 1px solid oklch(35% 0.1 230 / 0.5);
-    font-size: 12px; font-weight: 500;
-    padding: 4px 13px;
-    border-radius: 100px;
-    margin-bottom: 18px;
-  }
+		.page-hero h1 {
+			font-family: var(--font-display);
+			font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+			font-weight: 400;
+			line-height: 1.15;
+			letter-spacing: -0.025em;
+			color: oklch(95% 0.008 58);
+			margin-bottom: 14px;
+		}
 
-  .page-hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-    font-weight: 400;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
-    color: oklch(95% 0.008 58);
-    margin-bottom: 14px;
-  }
+		.page-hero-sub {
+			font-size: 1rem;
+			color: oklch(58% 0.01 58);
+			line-height: 1.7;
+			max-width: 600px;
+		}
 
-  .page-hero-sub {
-    font-size: 1rem;
-    color: oklch(58% 0.01 58);
-    line-height: 1.7;
-    max-width: 600px;
-  }
+		.page-hero code {
+			background: oklch(20% 0.04 230) !important;
+			color: oklch(80% 0.08 230) !important;
+			border-color: oklch(30% 0.06 230) !important;
+		}
 
-  .page-hero code {
-    background: oklch(20% 0.04 230) !important;
-    color: oklch(80% 0.08 230) !important;
-    border-color: oklch(30% 0.06 230) !important;
-  }
+		/* ── GUIDE LAYOUT ─────────────────────────────────────────── */
+		.guide-wrap {
+			padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(3rem, 6vw, 5rem);
+		}
 
-  /* ── GUIDE LAYOUT ─────────────────────────────────────────── */
-  .guide-wrap {
-    padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(3rem, 6vw, 5rem);
-  }
+		.guide-inner {
+			display: flex;
+			flex-direction: column;
+			gap: 0;
+		}
 
-  .guide-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+		/* ── STEP ─────────────────────────────────────────────────── */
+		.step {
+			display: grid;
+			grid-template-columns: 48px 1fr;
+			gap: 0 20px;
+			position: relative;
+			margin-bottom: 24px;
+		}
 
-  /* ── STEP ─────────────────────────────────────────────────── */
-  .step {
-    display: grid;
-    grid-template-columns: 48px 1fr;
-    gap: 0 20px;
-    position: relative;
-    margin-bottom: 24px;
-  }
+		.step:not(:last-child)::before {
+			content: "";
+			position: absolute;
+			left: 23px;
+			top: 44px;
+			bottom: -24px;
+			width: 2px;
+			background: var(--border);
+		}
 
-  .step:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    left: 23px; top: 44px; bottom: -24px;
-    width: 2px;
-    background: var(--border);
-  }
+		.step-num {
+			width: 36px;
+			height: 36px;
+			border-radius: 50%;
+			background: var(--bg-card);
+			border: 1.5px solid var(--border-strong);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--text-muted);
+			flex-shrink: 0;
+			z-index: 1;
+		}
 
-  .step-num {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: var(--bg-card);
-    border: 1.5px solid var(--border-strong);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 600;
-    color: var(--text-muted);
-    flex-shrink: 0; z-index: 1;
-  }
+		.step-body {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			padding: 20px 22px;
+		}
 
-  .step-body {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px 22px;
-  }
+		.step-body h3 {
+			font-size: 0.9375rem;
+			font-weight: 600;
+			margin-bottom: 10px;
+		}
 
-  .step-body h3 {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-  }
+		.step-body p {
+			font-size: 0.875rem;
+			color: var(--text-muted);
+			line-height: 1.7;
+			margin-bottom: 12px;
+		}
 
-  .step-body p {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 12px;
-  }
+		.step-body p:last-child {
+			margin-bottom: 0;
+		}
 
-  .step-body p:last-child { margin-bottom: 0; }
+		.step-body a.inline-link {
+			color: var(--orange);
+			text-decoration: none;
+		}
+		.step-body a.inline-link:hover {
+			text-decoration: underline;
+		}
 
-  .step-body a.inline-link { color: var(--orange); text-decoration: none; }
-  .step-body a.inline-link:hover { text-decoration: underline; }
+		/* ── INLINE CODE ──────────────────────────────────────────── */
+		.step-body code {
+			font-family: var(--font-mono);
+			font-size: 12px;
+			background: oklch(93% 0.006 60);
+			border: 1px solid var(--border-strong);
+			padding: 1px 5px;
+			border-radius: 4px;
+			color: var(--orange-dark);
+		}
 
-  /* ── INLINE CODE ──────────────────────────────────────────── */
-  .step-body code {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    background: oklch(93% 0.006 60);
-    border: 1px solid var(--border-strong);
-    padding: 1px 5px;
-    border-radius: 4px;
-    color: var(--orange-dark);
-  }
+		/* ── PERMISSIONS TABLE ────────────────────────────────────── */
+		.perm-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 14px 0;
+			font-size: 13px;
+		}
+		.perm-table th {
+			text-align: left;
+			padding: 8px 12px;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			border-bottom: 1px solid var(--border);
+			background: var(--bg-alt);
+		}
+		.perm-table td {
+			padding: 9px 12px;
+			border-bottom: 1px solid var(--border);
+			color: var(--text);
+			vertical-align: middle;
+		}
+		.perm-table tr:last-child td {
+			border-bottom: none;
+		}
+		.perm-table code {
+			font-family: var(--font-mono);
+			font-size: 11.5px;
+			background: var(--orange-light);
+			border: 1px solid var(--orange-mid);
+			color: var(--orange-dark);
+			padding: 1px 5px;
+			border-radius: 4px;
+			white-space: nowrap;
+		}
+		.perm-access {
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--text-muted);
+		}
 
-  /* ── PERMISSIONS TABLE ────────────────────────────────────── */
-  .perm-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
-  .perm-table th {
-    text-align: left; padding: 8px 12px;
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-alt);
-  }
-  .perm-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
-  .perm-table tr:last-child td { border-bottom: none; }
-  .perm-table code { font-family: var(--font-mono); font-size: 11.5px; background: var(--orange-light); border: 1px solid var(--orange-mid); color: var(--orange-dark); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
-  .perm-access { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+		/* ── RESOURCE MOCKUP ──────────────────────────────────────── */
+		.resource-mockup {
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 14px 16px;
+			margin: 14px 0;
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			line-height: 1.9;
+		}
 
-  /* ── RESOURCE MOCKUP ──────────────────────────────────────── */
-  .resource-mockup {
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin: 14px 0;
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    line-height: 1.9;
-  }
+		.rm-label {
+			font-family: var(--font-sans);
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.07em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			margin-bottom: 8px;
+		}
+		.rm-row {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+		.rm-key {
+			color: var(--text-muted);
+			min-width: 80px;
+		}
+		.rm-arrow {
+			color: oklch(72% 0.04 58);
+		}
+		.rm-val {
+			color: var(--text);
+		}
 
-  .rm-label { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
-  .rm-row { display: flex; align-items: center; gap: 12px; }
-  .rm-key { color: var(--text-muted); min-width: 80px; }
-  .rm-arrow { color: oklch(72% 0.04 58); }
-  .rm-val { color: var(--text); }
+		/* ── INFO / WARNING BOXES ─────────────────────────────────── */
+		.info-box {
+			display: flex;
+			gap: 10px;
+			align-items: flex-start;
+			padding: 13px 16px;
+			border-radius: var(--radius);
+			font-size: 0.85rem;
+			line-height: 1.65;
+			margin: 12px 0;
+		}
 
-  /* ── INFO / WARNING BOXES ─────────────────────────────────── */
-  .info-box {
-    display: flex; gap: 10px; align-items: flex-start;
-    padding: 13px 16px;
-    border-radius: var(--radius);
-    font-size: 0.85rem;
-    line-height: 1.65;
-    margin: 12px 0;
-  }
+		.info-tip {
+			background: oklch(95% 0.012 150);
+			border: 1px solid oklch(82% 0.08 150);
+			color: oklch(36% 0.1 150);
+		}
 
-  .info-tip {
-    background: oklch(95% 0.012 150);
-    border: 1px solid oklch(82% 0.08 150);
-    color: oklch(36% 0.1 150);
-  }
+		.info-warn {
+			background: oklch(96% 0.016 80);
+			border: 1px solid oklch(82% 0.1 80);
+			color: oklch(42% 0.12 60);
+		}
 
-  .info-warn {
-    background: oklch(96% 0.016 80);
-    border: 1px solid oklch(82% 0.1 80);
-    color: oklch(42% 0.12 60);
-  }
+		.info-box-icon {
+			font-size: 14px;
+			flex-shrink: 0;
+		}
 
-  .info-box-icon { font-size: 14px; flex-shrink: 0; }
+		.env-block {
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 14px 18px;
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			line-height: 1.9;
+			margin: 12px 0;
+			white-space: pre-wrap;
+		}
 
-  .env-block {
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    line-height: 1.9;
-    margin: 12px 0;
-    white-space: pre-wrap;
-  }
+		.ev-key {
+			color: oklch(58% 0.13 165);
+		}
+		.ev-val {
+			color: oklch(62% 0.12 48);
+		}
+		.ev-cmt {
+			color: var(--text-muted);
+			font-style: italic;
+		}
 
-  .ev-key { color: oklch(58% 0.13 165); }
-  .ev-val { color: oklch(62% 0.12 48); }
-  .ev-cmt { color: var(--text-muted); font-style: italic; }
+		/* ── WHAT'S NEXT ──────────────────────────────────────────── */
+		.next-section {
+			background: var(--bg-alt);
+			border-top: 1px solid var(--border);
+			padding: clamp(2.5rem, 6vw, 4rem) 0;
+		}
 
-  /* ── WHAT'S NEXT ──────────────────────────────────────────── */
-  .next-section {
-    background: var(--bg-alt);
-    border-top: 1px solid var(--border);
-    padding: clamp(2.5rem, 6vw, 4rem) 0;
-  }
+		.next-cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 16px;
+			margin-top: 28px;
+		}
 
-  .next-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 28px; }
+		.next-card {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			padding: 20px 22px;
+			text-decoration: none;
+			color: var(--text);
+			transition: border-color 0.15s;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
 
-  .next-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px 22px;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color 0.15s;
-    display: flex; flex-direction: column; gap: 8px;
-  }
+		.next-card:hover {
+			border-color: var(--border-strong);
+		}
+		.next-card .nc-label {
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: var(--orange);
+		}
+		.next-card h3 {
+			font-size: 0.9375rem;
+			font-weight: 600;
+		}
+		.next-card p {
+			font-size: 0.875rem;
+			color: var(--text-muted);
+			line-height: 1.6;
+		}
+	</style>
 
-  .next-card:hover { border-color: var(--border-strong); }
-  .next-card .nc-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); }
-  .next-card h3 { font-size: 0.9375rem; font-weight: 600; }
-  .next-card p  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
-</style>
+	<!-- HERO -->
+	<div class="page-hero">
+		<div class="container-narrow">
+			<div class="page-badge">Cloudflare Setup</div>
+			<h1>Creating your Cloudflare API token</h1>
+			<p class="page-hero-sub">
+				EmailFlare needs a Cloudflare API token with specific Email Sending, DNS, and routing permissions. This
+				guide walks through every step — from the API Tokens page to your{" "}
+				<code style="font-family:var(--font-mono);font-size:13px;background:oklch(93% 0.006 60);border:1px solid var(--border-strong);padding:1px 5px;border-radius:4px;">
+					.env.local
+				</code>{" "}
+				file.
+			</p>
+		</div>
+	</div>
 
-  <!-- HERO -->
-  <div class="page-hero">
-    <div class="container-narrow">
-      <div class="page-badge">Cloudflare Setup</div>
-      <h1>Creating your Cloudflare API token</h1>
-      <p class="page-hero-sub">
-        EmailFlare needs a Cloudflare API token with specific Email Sending, DNS, and routing permissions.
-        This guide walks through every step — from the API Tokens page to your <code style="font-family:var(--font-mono);font-size:13px;background:oklch(93% 0.006 60);border:1px solid var(--border-strong);padding:1px 5px;border-radius:4px;">.env.local</code> file.
-      </p>
-    </div>
-  </div>
+	<!-- GUIDE -->
+	<div class="guide-wrap">
+		<div class="container-narrow">
+			<div class="guide-inner">
+				<!-- STEP 1 -->
+				<div class="step">
+					<div class="step-num">1</div>
+					<div class="step-body">
+						<h3>Open the API Tokens page</h3>
+						<p>
+							Go to{" "}
+							<a
+								class="inline-link"
+								href="https://dash.cloudflare.com/profile/api-tokens"
+								target="_blank"
+								rel="noopener"
+							>
+								dash.cloudflare.com/profile/api-tokens
+							</a>
+							. Click <strong>Create Token</strong> and choose <strong>Create Custom Token</strong> at the
+							bottom of the template list.
+						</p>
+					</div>
+				</div>
 
-  <!-- GUIDE -->
-  <div class="guide-wrap">
-    <div class="container-narrow">
-      <div class="guide-inner">
+				<!-- STEP 2 -->
+				<div class="step">
+					<div class="step-num">2</div>
+					<div class="step-body">
+						<h3>Name the token</h3>
+						<p>
+							Give it a descriptive name so you can identify it later — for example{" "}
+							<code>emailflare-deploy</code> or <code>emailflare-prod</code>.
+						</p>
+					</div>
+				</div>
 
-        <!-- STEP 1 -->
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-body">
-            <h3>Open the API Tokens page</h3>
-            <p>
-              Go to <a class="inline-link" href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">dash.cloudflare.com/profile/api-tokens</a>.
-              Click <strong>Create Token</strong> and choose <strong>Create Custom Token</strong> at the bottom of the template list.
-            </p>
-          </div>
-        </div>
+				<!-- STEP 3 -->
+				<div class="step">
+					<div class="step-num">3</div>
+					<div class="step-body">
+						<h3>Add permissions</h3>
+						<p>
+							Under <strong>Permissions</strong>, add each row in the table below. For each permission,
+							you select the resource type and the access level from dropdowns.
+						</p>
 
-        <!-- STEP 2 -->
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-body">
-            <h3>Name the token</h3>
-            <p>Give it a descriptive name so you can identify it later — for example <code>emailflare-deploy</code> or <code>emailflare-prod</code>.</p>
-          </div>
-        </div>
+						<table class="perm-table">
+							<thead>
+								<tr>
+									<th>Permission</th>
+									<th>Scope</th>
+									<th>Access</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>
+										<code>Email Sending</code>
+									</td>
+									<td>Account</td>
+									<td>
+										<span class="perm-access">Edit</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>Email Security</code>
+									</td>
+									<td>Account</td>
+									<td>
+										<span class="perm-access">Edit</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>Workers Scripts</code>
+									</td>
+									<td>Account</td>
+									<td>
+										<span class="perm-access">Edit</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>Access: Users</code>
+									</td>
+									<td>Account</td>
+									<td>
+										<span class="perm-access">Read</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>Account Settings</code>
+									</td>
+									<td>Account</td>
+									<td>
+										<span class="perm-access">Read</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>Email Routing Rules</code>
+									</td>
+									<td>Zone</td>
+									<td>
+										<span class="perm-access">Edit</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>Zone</code>
+									</td>
+									<td>Zone</td>
+									<td>
+										<span class="perm-access">Read</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>Zone Settings</code>
+									</td>
+									<td>Zone</td>
+									<td>
+										<span class="perm-access">Edit</span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<code>DNS</code>
+									</td>
+									<td>Zone</td>
+									<td>
+										<span class="perm-access">Edit</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 
-        <!-- STEP 3 -->
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-body">
-            <h3>Add permissions</h3>
-            <p>Under <strong>Permissions</strong>, add each row in the table below. For each permission, you select the resource type and the access level from dropdowns.</p>
+						<div class="info-box info-warn">
+							<span class="info-box-icon">⚠️</span>
+							<span>
+								<strong>Zone Settings: Edit is the one most people miss.</strong>
+								Enabling Email Routing (<code>POST /zones/&#123;id&#125;/email/routing/enable</code>) is
+								gated by <strong>Zone Settings: Edit</strong> — <em>not</em> by "Email Routing Rules".
+								There is no obvious "Email Routing" entry in the permission list, so without Zone
+								Settings: Edit the enable step fails with an authentication error even though everything
+								else works.
+							</span>
+						</div>
 
-            <table class="perm-table">
-              <thead>
-                <tr>
-                  <th>Permission</th>
-                  <th>Scope</th>
-                  <th>Access</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>Email Sending</code></td>
-                  <td>Account</td>
-                  <td><span class="perm-access">Edit</span></td>
-                </tr>
-                <tr>
-                  <td><code>Email Security</code></td>
-                  <td>Account</td>
-                  <td><span class="perm-access">Edit</span></td>
-                </tr>
-                <tr>
-                  <td><code>Workers Scripts</code></td>
-                  <td>Account</td>
-                  <td><span class="perm-access">Edit</span></td>
-                </tr>
-                <tr>
-                  <td><code>Access: Users</code></td>
-                  <td>Account</td>
-                  <td><span class="perm-access">Read</span></td>
-                </tr>
-                <tr>
-                  <td><code>Account Settings</code></td>
-                  <td>Account</td>
-                  <td><span class="perm-access">Read</span></td>
-                </tr>
-                <tr>
-                  <td><code>Email Routing Rules</code></td>
-                  <td>Zone</td>
-                  <td><span class="perm-access">Edit</span></td>
-                </tr>
-                <tr>
-                  <td><code>Zone</code></td>
-                  <td>Zone</td>
-                  <td><span class="perm-access">Read</span></td>
-                </tr>
-                <tr>
-                  <td><code>Zone Settings</code></td>
-                  <td>Zone</td>
-                  <td><span class="perm-access">Edit</span></td>
-                </tr>
-                <tr>
-                  <td><code>DNS</code></td>
-                  <td>Zone</td>
-                  <td><span class="perm-access">Edit</span></td>
-                </tr>
-              </tbody>
-            </table>
+						<div class="info-box info-tip">
+							<span class="info-box-icon">💡</span>
+							<span>
+								<strong>Workers Scripts (Account · Edit)</strong> and{" "}
+								<strong>Email Routing Rules (Zone · Edit)</strong>
+								are required for the <em>Bounce Forwarding</em> feature — they let EmailFlare deploy the
+								forwarder Worker and configure catch-all routing rules automatically from the Settings
+								page. If you don't plan to use bounce forwarding you can omit those two.
+								<br />
+								<br />
+								<strong>DNS Edit</strong> is only needed if EmailFlare is managing your MX records
+								automatically. If you handle DNS manually, DNS Read is sufficient.
+							</span>
+						</div>
+					</div>
+				</div>
 
-            <div class="info-box info-warn">
-              <span class="info-box-icon">⚠️</span>
-              <span>
-                <strong>Zone Settings: Edit is the one most people miss.</strong>
-                Enabling Email Routing (<code>POST /zones/&#123;id&#125;/email/routing/enable</code>)
-                is gated by <strong>Zone Settings: Edit</strong> — <em>not</em> by
-                "Email Routing Rules". There is no obvious "Email Routing" entry in the
-                permission list, so without Zone Settings: Edit the enable step fails
-                with an authentication error even though everything else works.
-              </span>
-            </div>
+				<!-- STEP 4 -->
+				<div class="step">
+					<div class="step-num">4</div>
+					<div class="step-body">
+						<h3>Set the resource scope</h3>
+						<p>
+							Under <strong>Account Resources</strong>, set to your Cloudflare account. Under{" "}
+							<strong>Zone Resources</strong>, you can either include all zones or restrict to a specific
+							zone for the sending domain.
+						</p>
 
-            <div class="info-box info-tip">
-              <span class="info-box-icon">💡</span>
-              <span>
-                <strong>Workers Scripts (Account · Edit)</strong> and <strong>Email Routing Rules (Zone · Edit)</strong>
-                are required for the <em>Bounce Forwarding</em> feature — they let EmailFlare deploy the forwarder Worker
-                and configure catch-all routing rules automatically from the Settings page. If you don't plan to use
-                bounce forwarding you can omit those two.<br><br>
-                <strong>DNS Edit</strong> is only needed if EmailFlare is managing your MX records automatically.
-                If you handle DNS manually, DNS Read is sufficient.
-              </span>
-            </div>
-          </div>
-        </div>
+						<div class="resource-mockup">
+							<div class="rm-label">Account Resources</div>
+							<div class="rm-row">
+								<span class="rm-key">Include</span>
+								<span class="rm-arrow">→</span>
+								<span class="rm-val">
+									Your Account · <em style="color:var(--text-muted);">yourname</em>
+								</span>
+							</div>
+						</div>
 
-        <!-- STEP 4 -->
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-body">
-            <h3>Set the resource scope</h3>
-            <p>Under <strong>Account Resources</strong>, set to your Cloudflare account. Under <strong>Zone Resources</strong>, you can either include all zones or restrict to a specific zone for the sending domain.</p>
+						<div class="resource-mockup">
+							<div class="rm-label">Zone Resources</div>
+							<div class="rm-row">
+								<span class="rm-key">Include</span>
+								<span class="rm-arrow">→</span>
+								<span class="rm-val">
+									All zones from account · <em style="color:var(--text-muted);">yourname</em>
+								</span>
+							</div>
+						</div>
 
-            <div class="resource-mockup">
-              <div class="rm-label">Account Resources</div>
-              <div class="rm-row">
-                <span class="rm-key">Include</span>
-                <span class="rm-arrow">→</span>
-                <span class="rm-val">Your Account · <em style="color:var(--text-muted);">yourname</em></span>
-              </div>
-            </div>
+						<div class="info-box info-tip">
+							<span class="info-box-icon">💡</span>
+							<span>
+								For production, restrict Zone Resources to only the domain(s) you use for sending — this
+								limits the blast radius if the token is ever compromised.
+							</span>
+						</div>
+					</div>
+				</div>
 
-            <div class="resource-mockup">
-              <div class="rm-label">Zone Resources</div>
-              <div class="rm-row">
-                <span class="rm-key">Include</span>
-                <span class="rm-arrow">→</span>
-                <span class="rm-val">All zones from account · <em style="color:var(--text-muted);">yourname</em></span>
-              </div>
-            </div>
+				<!-- STEP 5 -->
+				<div class="step">
+					<div class="step-num">5</div>
+					<div class="step-body">
+						<h3>Create the token</h3>
+						<p>
+							Click <strong>Continue to summary</strong>, review the permissions, then click{" "}
+							<strong>Create Token</strong>. Cloudflare will show you the token value once — copy it
+							immediately.
+						</p>
+						<div class="info-box info-warn">
+							<span class="info-box-icon">⚠️</span>
+							<span>
+								You will not be able to see this token value again after leaving the page. Copy it now
+								and store it securely — a password manager is ideal.
+							</span>
+						</div>
+					</div>
+				</div>
 
-            <div class="info-box info-tip">
-              <span class="info-box-icon">💡</span>
-              <span>For production, restrict Zone Resources to only the domain(s) you use for sending — this limits the blast radius if the token is ever compromised.</span>
-            </div>
-          </div>
-        </div>
+				<!-- STEP 6 -->
+				<div class="step">
+					<div class="step-num">6</div>
+					<div class="step-body">
+						<h3>Find your Account ID</h3>
+						<p>
+							Go to{" "}
+							<a class="inline-link" href="https://dash.cloudflare.com" target="_blank" rel="noopener">
+								dash.cloudflare.com
+							</a>
+							, click any domain, and look at the right sidebar under <strong>API</strong>. Your Account
+							ID is a 32-character hex string.
+						</p>
+						<div class="info-box info-tip">
+							<span class="info-box-icon">💡</span>
+							<span>
+								You can also find your Account ID in the URL when you're on the Cloudflare dashboard:{" "}
+								<code>
+									dash.cloudflare.com/
+									<strong style="color:var(--orange-dark);">&lt;account-id&gt;</strong>/…
+								</code>
+							</span>
+						</div>
+					</div>
+				</div>
 
-        <!-- STEP 5 -->
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-body">
-            <h3>Create the token</h3>
-            <p>Click <strong>Continue to summary</strong>, review the permissions, then click <strong>Create Token</strong>. Cloudflare will show you the token value once — copy it immediately.</p>
-            <div class="info-box info-warn">
-              <span class="info-box-icon">⚠️</span>
-              <span>You will not be able to see this token value again after leaving the page. Copy it now and store it securely — a password manager is ideal.</span>
-            </div>
-          </div>
-        </div>
+				<!-- STEP 7 -->
+				<div class="step">
+					<div class="step-num">7</div>
+					<div class="step-body">
+						<h3>Add to your config</h3>
+						<p>
+							For Cloudflare Workers (primary), add the values to <code>scripts/config.toml</code>. For
+							Docker self-hosting (secondary), add them to your <code>.env.local</code>.
+						</p>
 
-        <!-- STEP 6 -->
-        <div class="step">
-          <div class="step-num">6</div>
-          <div class="step-body">
-            <h3>Find your Account ID</h3>
-            <p>
-              Go to <a class="inline-link" href="https://dash.cloudflare.com" target="_blank" rel="noopener">dash.cloudflare.com</a>, click any domain, and look at the right sidebar under <strong>API</strong>. Your Account ID is a 32-character hex string.
-            </p>
-            <div class="info-box info-tip">
-              <span class="info-box-icon">💡</span>
-              <span>You can also find your Account ID in the URL when you're on the Cloudflare dashboard: <code>dash.cloudflare.com/<strong style="color:var(--orange-dark);">&lt;account-id&gt;</strong>/…</code></span>
-            </div>
-          </div>
-        </div>
+						<p>
+							<strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">
+								.env.local (Docker)
+							</strong>
+						</p>
+						<div class="env-block">
+							<span class="ev-key">CF_API_TOKEN</span>=<span class="ev-val">your_token_value_here</span>
+							<span class="ev-key">CF_ACCOUNT_ID</span>=
+							<span class="ev-val">your_32_char_account_id</span>
+						</div>
 
-        <!-- STEP 7 -->
-        <div class="step">
-          <div class="step-num">7</div>
-          <div class="step-body">
-            <h3>Add to your config</h3>
-            <p>For Cloudflare Workers (primary), add the values to <code>scripts/config.toml</code>. For Docker self-hosting (secondary), add them to your <code>.env.local</code>.</p>
+						<p>
+							<strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">
+								scripts/config.toml (Workers)
+							</strong>
+						</p>
+						<div class="env-block">
+							<span class="ev-cmt">[deploy]</span>
+							<span class="ev-key">cloudflare_api_token</span> ={" "}
+							<span class="ev-val">"your_token_value_here"</span>
+							<span class="ev-key">account_id</span> ={" "}
+							<span class="ev-val">"your_32_char_account_id"</span>
+						</div>
 
-            <p><strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">.env.local (Docker)</strong></p>
-            <div class="env-block"><span class="ev-key">CF_API_TOKEN</span>=<span class="ev-val">your_token_value_here</span>
-<span class="ev-key">CF_ACCOUNT_ID</span>=<span class="ev-val">your_32_char_account_id</span></div>
+						<div class="info-box info-tip">
+							<span class="info-box-icon">✅</span>
+							<span>
+								That's it. Run <code>just worker-setup</code> for Workers or{" "}
+								<code>docker compose up</code> for Docker — EmailFlare will use these credentials for
+								all Cloudflare API operations.
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-            <p><strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">scripts/config.toml (Workers)</strong></p>
-            <div class="env-block"><span class="ev-cmt">[deploy]</span>
-<span class="ev-key">cloudflare_api_token</span> = <span class="ev-val">"your_token_value_here"</span>
-<span class="ev-key">account_id</span>            = <span class="ev-val">"your_32_char_account_id"</span></div>
+	<!-- WHAT'S NEXT -->
+	<section class="next-section">
+		<div class="container">
+			<h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">
+				Continue setting up EmailFlare
+			</h2>
+			<p style="font-size:0.9rem;color:var(--text-muted);">Next steps after creating your API token.</p>
+			<div class="next-cards">
+				<a class="next-card" href="/cloudflare">
+					<span class="nc-label">Deploy</span>
+					<h3>Deploy to Cloudflare Workers</h3>
+					<p>
+						Use your new API token to deploy EmailFlare to the edge. One-command setup with D1, KV, and the
+						admin UI.
+					</p>
+				</a>
+				<a class="next-card" href="/docs">
+					<span class="nc-label">API Reference</span>
+					<h3>Read the API docs</h3>
+					<p>
+						The complete reference for <code>/v1/send</code>, authentication, templates, error codes, and
+						troubleshooting.
+					</p>
+				</a>
+				<a
+					class="next-card"
+					href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md"
+					target="_blank"
+					rel="noopener"
+				>
+					<span class="nc-label">Security</span>
+					<h3>Security policy</h3>
+					<p>
+						How to responsibly report vulnerabilities and the security practices that protect EmailFlare
+						deployments.
+					</p>
+				</a>
+			</div>
+		</div>
+	</section>
 
-            <div class="info-box info-tip">
-              <span class="info-box-icon">✅</span>
-              <span>That's it. Run <code>just worker-setup</code> for Workers or <code>docker compose up</code> for Docker — EmailFlare will use these credentials for all Cloudflare API operations.</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- WHAT'S NEXT -->
-  <section class="next-section">
-    <div class="container">
-      <h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">Continue setting up EmailFlare</h2>
-      <p style="font-size:0.9rem;color:var(--text-muted);">Next steps after creating your API token.</p>
-      <div class="next-cards">
-        <a class="next-card" href="/cloudflare">
-          <span class="nc-label">Deploy</span>
-          <h3>Deploy to Cloudflare Workers</h3>
-          <p>Use your new API token to deploy EmailFlare to the edge. One-command setup with D1, KV, and the admin UI.</p>
-        </a>
-        <a class="next-card" href="/docs">
-          <span class="nc-label">API Reference</span>
-          <h3>Read the API docs</h3>
-          <p>The complete reference for <code>/v1/send</code>, authentication, templates, error codes, and troubleshooting.</p>
-        </a>
-        <a class="next-card" href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">
-          <span class="nc-label">Security</span>
-          <h3>Security policy</h3>
-          <p>How to responsibly report vulnerabilities and the security practices that protect EmailFlare deployments.</p>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <ul slot="footer-links" class="footer-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">GitHub</a></li>
-    <li><a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
-  </ul>
-
+	<ul slot="footer-links" class="footer-links">
+		<li>
+			<a href="/">Home</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
+				GitHub
+			</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">
+				Security
+			</a>
+		</li>
+	</ul>
 </Base>

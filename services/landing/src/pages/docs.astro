@@ -1,788 +1,1362 @@
 ---
-import Base from '../layouts/Base.astro';
+import Base from "../layouts/Base.astro";
 ---
 
 <Base
-  title="API Documentation — EmailFlare"
-  description="Complete EmailFlare API reference: authentication, POST /v1/send, templates, themes, error codes, and troubleshooting — from zero to first email in minutes."
-  keywords="emailflare api docs, email api documentation, post v1 send, emailflare authentication, api key types, email template api"
-  canonical="https://emailflare.dev/docs"
-  ogUrl="https://emailflare.dev/docs"
-  ogType="article"
-  navType="docs"
+	title="API Documentation — EmailFlare"
+	description="Complete EmailFlare API reference: authentication, POST /v1/send, templates, themes, error codes, and troubleshooting — from zero to first email in minutes."
+	keywords="emailflare api docs, email api documentation, post v1 send, emailflare authentication, api key types, email template api"
+	canonical="https://emailflare.dev/docs"
+	ogUrl="https://emailflare.dev/docs"
+	ogType="article"
+	navType="docs"
 >
-
-<style is:global>
-  /* ── DOCS PAGE ────────────────────────────────────────────── */
-
-  /* ── HERO ─────────────────────────────────────────────────── */
-  .docs-hero {
-    background: oklch(14% 0.016 48);
-    padding: clamp(3rem, 7vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
-    overflow: hidden;
-  }
-
-  .docs-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: oklch(22% 0.04 48 / 0.8);
-    color: oklch(68% 0.14 55);
-    font-size: 12px; font-weight: 500;
-    padding: 4px 13px;
-    border-radius: 100px;
-    border: 1px solid oklch(35% 0.08 55 / 0.5);
-    margin-bottom: 22px;
-  }
-
-  .docs-hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.875rem, 4vw, 2.75rem);
-    font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: -0.025em;
-    color: oklch(95% 0.008 58);
-    margin-bottom: 16px;
-  }
-
-  .docs-hero h1 em { font-style: italic; color: var(--orange); }
-
-  .docs-hero-sub {
-    font-size: 1rem;
-    color: oklch(58% 0.01 58);
-    line-height: 1.7;
-    max-width: 560px;
-    margin-bottom: 28px;
-  }
-
-  .docs-hero-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-  /* ── DOCS LAYOUT ──────────────────────────────────────────── */
-  .docs-layout {
-    display: grid;
-    grid-template-columns: 230px 1fr;
-    gap: 0;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 24px;
-    align-items: start;
-  }
-
-  @media (max-width: 760px) {
-    .docs-layout { grid-template-columns: 1fr; }
-    .docs-sidebar { display: none; }
-  }
-
-  .docs-sidebar {
-    position: sticky;
-    top: 82px;
-    padding: 32px 0 32px;
-    border-right: 1px solid var(--border);
-    margin-right: 0;
-  }
-
-  .sidebar-label {
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 0 16px;
-    margin-bottom: 10px;
-  }
-
-  .sidebar-nav { list-style: none; }
-  .sidebar-nav li a {
-    display: block;
-    padding: 6px 16px;
-    font-size: 13px;
-    color: var(--text-muted);
-    text-decoration: none;
-    border-left: 2px solid transparent;
-    transition: color 0.12s, border-color 0.12s;
-  }
-  .sidebar-nav li a:hover { color: var(--text); border-left-color: var(--orange); }
-  .sidebar-nav li a.active { color: var(--text); border-left-color: var(--orange); font-weight: 500; }
-
-  /* ── MAIN CONTENT ─────────────────────────────────────────── */
-  .docs-main { padding: 32px 0 56px 40px; }
-
-  @media (max-width: 760px) { .docs-main { padding: 32px 0 48px; } }
-
-  /* ── DOC SECTION ──────────────────────────────────────────── */
-  .doc-section {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 20px;
-    padding: 0;
-  }
-
-  .doc-section-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-alt);
-  }
-
-  .doc-section-header h2 {
-    font-size: 1.0625rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    flex: 1;
-    margin: 0;
-  }
-
-  .anchor-link {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-family: var(--font-mono);
-  }
-  .anchor-link:hover { color: var(--orange); }
-
-  .doc-body { padding: 24px; }
-  .doc-body > p:first-child { margin-top: 0; }
-  .doc-body > *:first-child { margin-top: 0; }
-  .doc-body > *:last-child { margin-bottom: 0; }
-
-  .doc-body p {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    line-height: 1.75;
-    margin-bottom: 14px;
-  }
-
-  .doc-body h3 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    margin: 22px 0 12px;
-    color: var(--text);
-  }
-
-  .doc-body h3:first-child { margin-top: 0; }
-
-  .doc-body ul {
-    padding-left: 18px;
-    margin-bottom: 14px;
-  }
-
-  .doc-body ul li {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    line-height: 1.75;
-    margin-bottom: 5px;
-  }
-
-  .doc-body ul li::marker { color: var(--orange); }
-
-  .doc-body code {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    background: oklch(93% 0.006 60);
-    border: 1px solid var(--border-strong);
-    padding: 1px 5px;
-    border-radius: 4px;
-    color: var(--orange-dark);
-  }
-
-  /* TABLE ── */
-  .table-wrap { overflow-x: auto; margin: 14px 0; }
-
-  .doc-body table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .doc-body th {
-    text-align: left; padding: 9px 12px;
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-alt);
-  }
-  .doc-body td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; line-height: 1.6; }
-  .doc-body tr:last-child td { border-bottom: none; }
-  .doc-body td:first-child code { background: var(--orange-light); border-color: var(--orange-mid); color: var(--orange-dark); }
-
-  /* PILLS ── */
-  .pill {
-    display: inline-block;
-    font-size: 10.5px; font-weight: 600;
-    padding: 2px 8px; border-radius: 100px;
-    white-space: nowrap;
-  }
-  .pill-req  { background: oklch(93% 0.04 24); color: oklch(42% 0.14 24); border: 1px solid oklch(78% 0.1 24 / 0.5); }
-  .pill-opt  { background: oklch(93% 0.004 58); color: var(--text-muted); border: 1px solid var(--border-strong); }
-  .pill-cond { background: oklch(94% 0.04 80); color: oklch(38% 0.12 70); border: 1px solid oklch(78% 0.1 80 / 0.5); }
-
-  /* CALLOUT ── */
-  .callout {
-    display: flex; gap: 11px; align-items: flex-start;
-    padding: 13px 16px;
-    border-radius: var(--radius);
-    font-size: 0.875rem;
-    line-height: 1.65;
-    margin: 16px 0;
-  }
-  .callout-icon { font-size: 15px; flex-shrink: 0; }
-  .callout-orange { background: var(--orange-light); border: 1px solid var(--orange-mid); color: var(--orange-dark); }
-  .callout-green  { background: oklch(95% 0.012 150); border: 1px solid oklch(82% 0.08 150); color: oklch(36% 0.1 150); }
-  .callout-blue   { background: oklch(94% 0.02 230); border: 1px solid oklch(80% 0.08 230); color: oklch(42% 0.14 230); }
-
-  /* CODE BLOCK ── */
-  .code-block {
-    background: oklch(14% 0.016 48);
-    border: 1px solid oklch(24% 0.016 48);
-    border-radius: 8px;
-    padding: 16px 20px;
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    line-height: 1.85;
-    overflow-x: auto;
-    margin: 14px 0;
-    white-space: pre-wrap;
-  }
-
-  .cb-cmd    { color: oklch(82% 0.06 58); }
-  .cb-str    { color: oklch(74% 0.12 140); }
-  .cb-key    { color: oklch(78% 0.12 230); }
-  .cb-punct  { color: oklch(62% 0.06 58); }
-  .cb-num    { color: oklch(74% 0.12 82); }
-  .cb-header { color: oklch(72% 0.1 58); }
-  .cb-plain  { color: oklch(75% 0.01 58); }
-
-  /* STATUS ── */
-  .status-err  { display: inline-block; font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; color: oklch(50% 0.14 24); background: oklch(94% 0.04 24); border: 1px solid oklch(80% 0.1 24 / 0.5); padding: 1px 6px; border-radius: 4px; }
-  .status-warn { display: inline-block; font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; color: oklch(48% 0.12 70); background: oklch(94% 0.04 80); border: 1px solid oklch(80% 0.1 80 / 0.5); padding: 1px 6px; border-radius: 4px; }
-
-  /* KEY TYPES ── */
-  .key-types { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
-  @media (max-width: 500px) { .key-types { grid-template-columns: 1fr; } }
-
-  .key-type-card {
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-  }
-
-  .key-badge {
-    display: inline-block;
-    font-size: 11px; font-weight: 600;
-    padding: 2px 9px; border-radius: 100px;
-    margin-bottom: 10px;
-    font-family: var(--font-mono);
-  }
-
-  .key-badge-test { background: oklch(93% 0.04 80); color: oklch(40% 0.12 70); border: 1px solid oklch(78% 0.1 80 / 0.5); }
-  .key-badge-live { background: oklch(93% 0.04 150); color: oklch(36% 0.1 150); border: 1px solid oklch(78% 0.08 150 / 0.5); }
-
-  .key-type-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; margin: 0; }
-
-  /* QUICKSTART STEPS ── */
-  .qs-steps { display: flex; flex-direction: column; gap: 14px; margin: 14px 0; }
-  .qs-step { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; }
-  .qs-num {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: var(--orange-light);
-    border: 1.5px solid var(--orange-mid);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11.5px; font-weight: 700;
-    color: var(--orange-dark);
-    flex-shrink: 0;
-  }
-  .qs-body { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; padding-top: 3px; }
-
-  /* GUIDE CARDS ── */
-  .guide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 14px 0; }
-  .guide-card {
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    text-decoration: none;
-    color: var(--text);
-    transition: border-color 0.15s;
-  }
-  .guide-card:hover { border-color: var(--orange-mid); }
-  .guide-card .gc-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--orange); margin-bottom: 5px; }
-  .guide-card h4 { font-size: 0.875rem; font-weight: 600; margin-bottom: 5px; }
-  .guide-card p  { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin: 0; }
-
-  /* THEME LIST ── */
-  .theme-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-  .theme-chip {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 5px 14px;
-    font-size: 13px;
-  }
-  .theme-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-</style>
-
-  <!-- HERO -->
-  <div class="docs-hero">
-    <div class="container">
-      <div class="docs-badge">Documentation v1</div>
-      <h1>From zero to <em>first delivered email</em> in minutes.</h1>
-      <p class="docs-hero-sub">
-        Complete API reference — authentication, <code style="font-family:var(--font-mono);font-size:12px;background:oklch(24% 0.03 48);border:1px solid oklch(32% 0.02 48);color:oklch(74% 0.1 55);padding:1px 5px;border-radius:4px;">/v1/send</code>, templates, themes,
-        error codes, and troubleshooting. Everything you need to integrate with EmailFlare.
-      </p>
-      <div class="docs-hero-actions">
-        <a class="btn btn-primary" href="#quickstart">Get started →</a>
-        <a class="btn btn-ghost" href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">GitHub</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- DOCS LAYOUT -->
-  <div style="border-bottom: 1px solid var(--border);">
-    <div class="docs-layout">
-      <!-- SIDEBAR -->
-      <aside class="docs-sidebar">
-        <div class="sidebar-label">On this page</div>
-        <ul class="sidebar-nav">
-          <li><a href="#quickstart">Quickstart</a></li>
-          <li><a href="#authentication">Authentication</a></li>
-          <li><a href="#api-send">POST /v1/send</a></li>
-          <li><a href="#api-unsubscribe">Unsubscribe</a></li>
-          <li><a href="#templates">Templates &amp; themes</a></li>
-          <li><a href="#errors">Error responses</a></li>
-          <li><a href="#troubleshooting">Troubleshooting</a></li>
-        </ul>
-      </aside>
-
-      <!-- MAIN -->
-      <main class="docs-main">
-
-        <!-- 1. QUICKSTART -->
-        <section class="doc-section" id="quickstart">
-          <div class="doc-section-header">
-            <h2>Quickstart</h2>
-            <a class="anchor-link" href="#quickstart">#quickstart</a>
-          </div>
-          <div class="doc-body">
-            <p>Get to a working send in four steps — from a fresh deploy to a delivered email.</p>
-            <div class="qs-steps">
-              <div class="qs-step">
-                <div class="qs-num">1</div>
-                <div class="qs-body"><strong>Deploy EmailFlare</strong> — on Cloudflare Workers (primary) or Docker Compose (secondary). See the <a href="/cloudflare" style="color:var(--orange);text-decoration:none;">Cloudflare Workers guide</a> or the <a href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md" target="_blank" rel="noopener" style="color:var(--orange);text-decoration:none;">self-hosting docs</a>.</div>
-              </div>
-              <div class="qs-step">
-                <div class="qs-num">2</div>
-                <div class="qs-body"><strong>Add a sending domain</strong> — go to the Domains page in the admin UI, enter your domain, and complete the DNS verification steps Cloudflare provides.</div>
-              </div>
-              <div class="qs-step">
-                <div class="qs-num">3</div>
-                <div class="qs-body"><strong>Create an API key</strong> — go to the Keys page in the admin UI, click <em>New key</em>, and choose a scope. Copy the key — it won't be shown again.</div>
-              </div>
-              <div class="qs-step">
-                <div class="qs-num">4</div>
-                <div class="qs-body"><strong>Send your first email</strong> — <code>POST /v1/send</code> with your key in the <code>Authorization: Bearer</code> header. Start with a test key and <code>eftest_</code> prefix to skip Cloudflare credentials.</div>
-              </div>
-            </div>
-
-            <div class="guide-cards">
-              <a class="guide-card" href="/cloudflare">
-                <div class="gc-label">Deploy</div>
-                <h4>Cloudflare Workers setup</h4>
-                <p>One-command deploy to the edge with D1, KV, and the admin UI.</p>
-              </a>
-              <a class="guide-card" href="/cloudflare-token">
-                <div class="gc-label">Required</div>
-                <h4>Cloudflare API token guide</h4>
-                <p>Exact permissions needed for Email Sending, DNS, and routing rules.</p>
-              </a>
-              <a class="guide-card" href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md" target="_blank" rel="noopener">
-                <div class="gc-label">Secondary</div>
-                <h4>Docker self-hosting guide</h4>
-                <p>Full Compose stack — container, volumes, environment variables.</p>
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2. AUTHENTICATION -->
-        <section class="doc-section" id="authentication">
-          <div class="doc-section-header">
-            <h2>Authentication</h2>
-            <a class="anchor-link" href="#authentication">#authentication</a>
-          </div>
-          <div class="doc-body">
-            <p>All <code>/v1/send</code> requests must include a bearer token in the <code>Authorization</code> header.</p>
-
-            <div class="code-block"><span class="cb-header">Authorization</span><span class="cb-plain">: Bearer </span><span class="cb-str">eflive_xxxxxxxxxxxxxxxx</span></div>
-
-            <h3>Key types</h3>
-            <div class="key-types">
-              <div class="key-type-card">
-                <div class="key-badge key-badge-test">⚗ test key</div>
-                <p>Prefix: <code>eftest_</code>. Sends are stored in the admin dashboard — no Cloudflare credentials required. Browse, preview HTML, and manage test emails from the built-in Test Mailbox page.</p>
-              </div>
-              <div class="key-type-card">
-                <div class="key-badge key-badge-live">✓ live key</div>
-                <p>Prefix: <code>eflive_</code>. Sends go through Cloudflare Email Sending. Requires valid <code>CF_API_TOKEN</code> and verified domain.</p>
-              </div>
-            </div>
-
-            <div class="callout callout-orange">
-              <span class="callout-icon">💡</span>
-              Domain-scoped keys can only send from domains listed in that key's permissions. Requests with an unauthorized domain return <code>403</code>.
-            </div>
-          </div>
-        </section>
-
-        <!-- 3. SEND API -->
-        <section class="doc-section" id="api-send">
-          <div class="doc-section-header">
-            <h2>POST /v1/send</h2>
-            <a class="anchor-link" href="#api-send">#api-send</a>
-          </div>
-          <div class="doc-body">
-            <p>The single endpoint for all transactional sends. Use <code>templateSlug</code> / <code>templateId</code> for stored templates, or pass raw <code>html</code> / <code>text</code> directly.</p>
-
-            <h3>Request fields</h3>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Field</th>
-                    <th>Type</th>
-                    <th>Required</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><code>from</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-req">required</span></td>
-                    <td>Sender email address. Must match a verified domain authorized for your key.</td>
-                  </tr>
-                  <tr>
-                    <td><code>fromName</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Display name shown in the From header, e.g. <code>Acme Inc.</code></td>
-                  </tr>
-                  <tr>
-                    <td><code>to</code></td>
-                    <td>string or string[]</td>
-                    <td><span class="pill pill-req">required</span></td>
-                    <td>Recipient address or array of up to 50 addresses. Duplicates are deduplicated.</td>
-                  </tr>
-                  <tr>
-                    <td><code>subject</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Overrides the template subject. Required for raw <code>html</code>/<code>text</code> sends.</td>
-                  </tr>
-                  <tr>
-                    <td><code>templateSlug</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-cond">conditional</span></td>
-                    <td>Stable slug-based template reference. Preferred for application code.</td>
-                  </tr>
-                  <tr>
-                    <td><code>templateId</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-cond">conditional</span></td>
-                    <td>Internal ID-based template reference. Use <code>templateSlug</code> when possible.</td>
-                  </tr>
-                  <tr>
-                    <td><code>themeId</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Applies a built-in colour theme to layout-based templates. See <a href="#templates" style="color:var(--orange);">theme list</a> below. Defaults to <code>default</code>.</td>
-                  </tr>
-                  <tr>
-                    <td><code>variables</code></td>
-                    <td>object</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Key/value map for <code>&#123;&#123;variable&#125;&#125;</code> interpolation in subject and body. Supports Handlebars loops and conditionals — see <a href="/templates" style="color:var(--orange);">templates</a>.</td>
-                  </tr>
-                  <tr>
-                    <td><code>html</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-cond">conditional</span></td>
-                    <td>Raw HTML body. Used when not referencing a template.</td>
-                  </tr>
-                  <tr>
-                    <td><code>text</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-cond">conditional</span></td>
-                    <td>Plain-text body. Can be combined with <code>html</code>.</td>
-                  </tr>
-                  <tr>
-                    <td><code>replyTo</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Reply-to address for the recipient.</td>
-                  </tr>
-                  <tr>
-                    <td><code>listId</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Audience list ID. Attaches a one-click <code>List-Unsubscribe</code> header with a per-recipient token, so the recipient can unsubscribe (globally suppressed for all future sends).</td>
-                  </tr>
-                  <tr>
-                    <td><code>listUnsubscribe</code></td>
-                    <td>string</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Override the unsubscribe URL (e.g. your own <code>https://…/unsubscribe</code>). Passed through verbatim.</td>
-                  </tr>
-                  <tr>
-                    <td><code>listUnsubscribePost</code></td>
-                    <td>boolean</td>
-                    <td><span class="pill pill-opt">optional</span></td>
-                    <td>Adds <code>List-Unsubscribe-Post: List-Unsubscribe=One-Click</code> (RFC 8058). Defaults to <code>true</code> when <code>listId</code> is set.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="callout callout-orange">
-              <span class="callout-icon">⚡</span>
-              At least one of <code>templateSlug</code>, <code>templateId</code>, <code>html</code>, or <code>text</code> must be provided.
-            </div>
-
-            <h3>cURL</h3>
-            <div class="code-block"><span class="cb-cmd">curl -X POST https://your-emailflare.com/v1/send</span> \
-  -H <span class="cb-str">"Authorization: Bearer eflive_xxx"</span> \
-  -H <span class="cb-str">"Content-Type: application/json"</span> \
-  -d <span class="cb-str">'</span><span class="cb-punct">&#123;</span>
-    <span class="cb-key">"from"</span><span class="cb-punct">:</span>         <span class="cb-str">"hello@yourdomain.com"</span><span class="cb-punct">,</span>
-    <span class="cb-key">"fromName"</span><span class="cb-punct">:</span>     <span class="cb-str">"Acme"</span><span class="cb-punct">,</span>
-    <span class="cb-key">"to"</span><span class="cb-punct">:</span>           <span class="cb-str">"alex@example.com"</span><span class="cb-punct">,</span>
-    <span class="cb-key">"templateSlug"</span><span class="cb-punct">:</span> <span class="cb-str">"welcome"</span><span class="cb-punct">,</span>
-    <span class="cb-key">"themeId"</span><span class="cb-punct">:</span>      <span class="cb-str">"ocean"</span><span class="cb-punct">,</span>
-    <span class="cb-key">"variables"</span><span class="cb-punct">:</span>    <span class="cb-punct">&#123;</span> <span class="cb-key">"name"</span><span class="cb-punct">:</span> <span class="cb-str">"Alex"</span><span class="cb-punct">,</span> <span class="cb-key">"appName"</span><span class="cb-punct">:</span> <span class="cb-str">"Acme"</span> <span class="cb-punct">&#125;</span>
-  <span class="cb-str">'&#125;</span></div>
-
-            <h3>fetch (JavaScript)</h3>
-            <div class="code-block"><span class="cb-plain">const res = await fetch(</span><span class="cb-str">'https://your-emailflare.com/v1/send'</span><span class="cb-plain">, &#123;</span>
-  <span class="cb-key">method</span><span class="cb-punct">:</span> <span class="cb-str">'POST'</span><span class="cb-punct">,</span>
-  <span class="cb-key">headers</span><span class="cb-punct">:</span> <span class="cb-punct">&#123;</span>
-    <span class="cb-str">'Authorization'</span><span class="cb-punct">:</span> <span class="cb-str">'Bearer eflive_xxx'</span><span class="cb-punct">,</span>
-    <span class="cb-str">'Content-Type'</span><span class="cb-punct">:</span>  <span class="cb-str">'application/json'</span><span class="cb-punct">,</span>
-  <span class="cb-punct">&#125;,</span>
-  <span class="cb-key">body</span><span class="cb-punct">:</span> <span class="cb-plain">JSON.stringify(&#123;</span>
-    <span class="cb-key">from</span><span class="cb-punct">:</span>         <span class="cb-str">'hello@yourdomain.com'</span><span class="cb-punct">,</span>
-    <span class="cb-key">to</span><span class="cb-punct">:</span>           <span class="cb-str">'alex@example.com'</span><span class="cb-punct">,</span>
-    <span class="cb-key">templateSlug</span><span class="cb-punct">:</span> <span class="cb-str">'welcome'</span><span class="cb-punct">,</span>
-    <span class="cb-key">themeId</span><span class="cb-punct">:</span>      <span class="cb-str">'ocean'</span><span class="cb-punct">,</span>
-    <span class="cb-key">variables</span><span class="cb-punct">:</span>    <span class="cb-punct">&#123;</span> <span class="cb-key">name</span><span class="cb-punct">:</span> <span class="cb-str">'Alex'</span><span class="cb-punct">,</span> <span class="cb-key">appName</span><span class="cb-punct">:</span> <span class="cb-str">'Acme'</span> <span class="cb-punct">&#125;,</span>
-  <span class="cb-plain">&#125;),</span>
-<span class="cb-plain">&#125;);</span>
-<span class="cb-plain">const data = await res.json();</span></div>
-
-            <h3>Response (200)</h3>
-            <div class="code-block"><span class="cb-punct">&#123;</span>
-  <span class="cb-key">"results"</span><span class="cb-punct">:</span> <span class="cb-punct">[&#123;</span>
-    <span class="cb-key">"to"</span><span class="cb-punct">:</span>   <span class="cb-str">"alex@example.com"</span><span class="cb-punct">,</span>
-    <span class="cb-key">"cfId"</span><span class="cb-punct">:</span> <span class="cb-str">"cf_msg_xxxxxxxxxxxxxxxxxx"</span>
-  <span class="cb-punct">&#125;]</span>
-<span class="cb-punct">&#125;</span></div>
-          </div>
-        </section>
-
-        <!-- 3b. UNSUBSCRIBE -->
-        <section class="doc-section" id="api-unsubscribe">
-          <div class="doc-section-header">
-            <h2>Unsubscribe</h2>
-            <a class="anchor-link" href="#api-unsubscribe">#api-unsubscribe</a>
-          </div>
-          <div class="doc-body">
-            <p>EmailFlare supports one-click unsubscribe via <code>List-Unsubscribe</code> headers (RFC 8058). When a send includes a <code>listId</code>, a per-recipient, one-time token is embedded in the header. Recipients who click it are suppressed from all future sends.</p>
-
-            <h3>Public endpoint</h3>
-            <p>The unsubscribe endpoint is public — no API key required:</p>
-            <div class="code-block"><span class="cb-cmd">GET  https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;</span>
-<span class="cb-cmd">POST https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;</span></div>
-            <p><code>GET</code> returns a confirmation page (for browser clicks); <code>POST</code> returns JSON (for mail-client one-click). Each token is single-use.</p>
-
-            <h3>Admin API</h3>
-            <p>Manage lists with the admin API (session-authenticated, same as other <code>/api/*</code> routes):</p>
-            <div class="code-block"><span class="cb-cmd">GET    /api/lists        # list all lists</span>
-<span class="cb-cmd">POST   /api/lists        # create a list</span>
-<span class="cb-cmd">DELETE /api/lists/:id    # delete a list</span></div>
-
-            <div class="callout callout-orange">
-              <span class="callout-icon">⚡</span>
-              Unsubscribe links require <code>PUBLIC_URL</code> (or <code>public_url</code> in <code>config.toml</code>) to be set. Without it, <code>listId</code> is ignored — pass your own <code>listUnsubscribe</code> URL instead.
-            </div>
-          </div>
-        </section>
-
-        <!-- 4. TEMPLATES & THEMES -->
-        <section class="doc-section" id="templates">
-          <div class="doc-section-header">
-            <h2>Templates &amp; themes</h2>
-            <a class="anchor-link" href="#templates">#templates</a>
-          </div>
-          <div class="doc-body">
-            <p>EmailFlare ships 50 layout-based templates built with React Email. Reference them by their <code>templateSlug</code>. Pass <code>themeId</code> to switch colour palettes per send — no CSS edits needed. For custom templates, see the <a href="/templates" style="color:var(--orange);text-decoration:none;">templates guide →</a></p>
-
-            <h3>Available themes</h3>
-            <div class="theme-list">
-              <div class="theme-chip"><span class="theme-dot" style="background:#f97316;"></span><code>default</code></div>
-              <div class="theme-chip"><span class="theme-dot" style="background:#0ea5e9;"></span><code>ocean</code></div>
-              <div class="theme-chip"><span class="theme-dot" style="background:#16a34a;"></span><code>forest</code></div>
-              <div class="theme-chip"><span class="theme-dot" style="background:#7c3aed;"></span><code>violet</code></div>
-              <div class="theme-chip"><span class="theme-dot" style="background:#334155;"></span><code>slate</code></div>
-            </div>
-
-            <div class="callout callout-green">
-              <span class="callout-icon">💡</span>
-              Use the admin Playground to preview any template with any theme before sending to real recipients.
-            </div>
-
-            <h3>Template reference tips</h3>
-            <ul>
-              <li>Prefer <code>templateSlug</code> over <code>templateId</code> — slugs are stable across restores.</li>
-              <li>Variable names follow the <code>&#123;&#123;camelCase&#125;&#125;</code> convention used in the template body and subject.</li>
-              <li>If a variable is missing from the payload, it renders as an empty string — not as the literal <code>&#123;&#123;variableName&#125;&#125;</code> placeholder.</li>
-              <li>Custom templates use Handlebars, so loops (<code>&#123;&#123;#each&#125;&#125;</code>) and conditionals (<code>&#123;&#123;#if&#125;&#125;</code>) work. See the <a href="/templates" style="color:var(--orange);text-decoration:none;">templates guide →</a></li>
-              <li><code>themeId</code> only applies to layout-based templates. Custom HTML templates ignore it.</li>
-            </ul>
-          </div>
-        </section>
-
-        <!-- 5. ERRORS -->
-        <section class="doc-section" id="errors">
-          <div class="doc-section-header">
-            <h2>Error responses</h2>
-            <a class="anchor-link" href="#errors">#errors</a>
-          </div>
-          <div class="doc-body">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Status</th>
-                    <th>Meaning</th>
-                    <th>Common cause</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><span class="status-err">401</span></td>
-                    <td>Unauthorized</td>
-                    <td>Missing or invalid <code>Authorization</code> header.</td>
-                  </tr>
-                  <tr>
-                    <td><span class="status-err">403</span></td>
-                    <td>Forbidden</td>
-                    <td>Key scope does not authorize the sender domain.</td>
-                  </tr>
-                  <tr>
-                    <td><span class="status-warn">404</span></td>
-                    <td>Not found</td>
-                    <td><code>templateSlug</code> or <code>templateId</code> does not exist.</td>
-                  </tr>
-                  <tr>
-                    <td><span class="status-warn">422</span></td>
-                    <td>Validation error</td>
-                    <td>Missing required fields or invalid email format.</td>
-                  </tr>
-                  <tr>
-                    <td><span class="status-warn">429</span></td>
-                    <td>Rate limited</td>
-                    <td>Per-key send limit reached. Check <code>X-RateLimit-Reset</code> header.</td>
-                  </tr>
-                  <tr>
-                    <td><span class="status-err">502</span></td>
-                    <td>All recipients failed</td>
-                    <td>Downstream delivery failed for every address in the request.</td>
-                  </tr>
-                  <tr>
-                    <td><span class="status-err">500</span></td>
-                    <td>Server error</td>
-                    <td>Unexpected backend error — check container logs.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <p style="margin-top:12px;">Rate limiting headers returned on every <code>/v1/send</code> response:</p>
-            <div class="code-block"><span class="cb-header">X-RateLimit-Limit</span><span class="cb-plain">:     </span><span class="cb-num">100</span>
-<span class="cb-header">X-RateLimit-Remaining</span><span class="cb-plain">: </span><span class="cb-num">97</span>
-<span class="cb-header">X-RateLimit-Reset</span><span class="cb-plain">:     </span><span class="cb-num">1746403200</span></div>
-          </div>
-        </section>
-
-        <!-- 6. TROUBLESHOOTING -->
-        <section class="doc-section" id="troubleshooting">
-          <div class="doc-section-header">
-            <h2>Troubleshooting</h2>
-            <a class="anchor-link" href="#troubleshooting">#troubleshooting</a>
-          </div>
-          <div class="doc-body">
-            <h3>401 on /v1/send</h3>
-            <p>Confirm the header is exactly <code>Authorization: Bearer &lt;key&gt;</code> with no extra spaces. Verify the key is marked active on the Keys page.</p>
-
-            <h3>403 with a domain-scoped key</h3>
-            <p>The <code>from</code> address domain must be included in the key's allowed domains. Create a <code>global</code> scoped key to bypass domain restrictions while debugging.</p>
-
-            <h3>Template not found (404)</h3>
-            <p>Copy the slug exactly from the Templates page — it is case-sensitive. System templates use slugs like <code>welcome</code>, <code>magic-link</code>, <code>otp</code>.</p>
-
-            <h3>Theme not applied to email</h3>
-            <p><code>themeId</code> only works with layout-based (built-in) templates. For custom HTML templates the field is ignored — you control the styles directly in the HTML body.</p>
-
-            <h3>Sends succeed in test mode but fail in live mode</h3>
-            <p>Test keys (<code>eftest_</code>) store emails in the dashboard and don't require Cloudflare credentials. Live keys use Cloudflare Email Sending — ensure <code>CF_API_TOKEN</code> has the correct permissions and the sender domain is verified. See the <a href="/cloudflare-token" style="color:var(--orange);text-decoration:none;">Cloudflare token guide →</a></p>
-            <p style="margin-top:8px;">Test emails are stored in the built-in Test Mailbox page in the admin UI — no external service needed.</p>
-
-            <h3>Database errors in logs</h3>
-            <p>If you see <em>"This SQL statement is not allowed on /query endpoint"</em>, upgrade to the latest EmailFlare image — this was a bug fixed in the backend send route.</p>
-
-            <div class="callout callout-orange">
-              <span class="callout-icon">📋</span>
-              Always check container logs first: <code>docker compose logs -f emailflare</code>. Most issues are visible in the startup or request output.
-            </div>
-          </div>
-        </section>
-
-      </main>
-    </div>
-  </div>
-
-  <ul slot="footer-links" class="footer-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">GitHub</a></li>
-    <li><a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
-    <li><a href="https://github.com/0xdps/emailflare/blob/trunk/LICENSE" target="_blank" rel="noopener">License</a></li>
-  </ul>
-
+	<style is:global>
+		/* ── DOCS PAGE ────────────────────────────────────────────── */
+
+		/* ── HERO ─────────────────────────────────────────────────── */
+		.docs-hero {
+			background: oklch(14% 0.016 48);
+			padding: clamp(3rem, 7vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
+			overflow: hidden;
+		}
+
+		.docs-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			background: oklch(22% 0.04 48 / 0.8);
+			color: oklch(68% 0.14 55);
+			font-size: 12px;
+			font-weight: 500;
+			padding: 4px 13px;
+			border-radius: 100px;
+			border: 1px solid oklch(35% 0.08 55 / 0.5);
+			margin-bottom: 22px;
+		}
+
+		.docs-hero h1 {
+			font-family: var(--font-display);
+			font-size: clamp(1.875rem, 4vw, 2.75rem);
+			font-weight: 400;
+			line-height: 1.1;
+			letter-spacing: -0.025em;
+			color: oklch(95% 0.008 58);
+			margin-bottom: 16px;
+		}
+
+		.docs-hero h1 em {
+			font-style: italic;
+			color: var(--orange);
+		}
+
+		.docs-hero-sub {
+			font-size: 1rem;
+			color: oklch(58% 0.01 58);
+			line-height: 1.7;
+			max-width: 560px;
+			margin-bottom: 28px;
+		}
+
+		.docs-hero-actions {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		/* ── DOCS LAYOUT ──────────────────────────────────────────── */
+		.docs-layout {
+			display: grid;
+			grid-template-columns: 230px 1fr;
+			gap: 0;
+			max-width: 1100px;
+			margin: 0 auto;
+			padding: 0 24px;
+			align-items: start;
+		}
+
+		@media (max-width: 760px) {
+			.docs-layout {
+				grid-template-columns: 1fr;
+			}
+			.docs-sidebar {
+				display: none;
+			}
+		}
+
+		.docs-sidebar {
+			position: sticky;
+			top: 82px;
+			padding: 32px 0 32px;
+			border-right: 1px solid var(--border);
+			margin-right: 0;
+		}
+
+		.sidebar-label {
+			font-size: 10.5px;
+			font-weight: 700;
+			letter-spacing: 0.1em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			padding: 0 16px;
+			margin-bottom: 10px;
+		}
+
+		.sidebar-nav {
+			list-style: none;
+		}
+		.sidebar-nav li a {
+			display: block;
+			padding: 6px 16px;
+			font-size: 13px;
+			color: var(--text-muted);
+			text-decoration: none;
+			border-left: 2px solid transparent;
+			transition:
+				color 0.12s,
+				border-color 0.12s;
+		}
+		.sidebar-nav li a:hover {
+			color: var(--text);
+			border-left-color: var(--orange);
+		}
+		.sidebar-nav li a.active {
+			color: var(--text);
+			border-left-color: var(--orange);
+			font-weight: 500;
+		}
+
+		/* ── MAIN CONTENT ─────────────────────────────────────────── */
+		.docs-main {
+			padding: 32px 0 56px 40px;
+		}
+
+		@media (max-width: 760px) {
+			.docs-main {
+				padding: 32px 0 48px;
+			}
+		}
+
+		/* ── DOC SECTION ──────────────────────────────────────────── */
+		.doc-section {
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			overflow: hidden;
+			margin-bottom: 20px;
+			padding: 0;
+		}
+
+		.doc-section-header {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 18px 24px;
+			border-bottom: 1px solid var(--border);
+			background: var(--bg-alt);
+		}
+
+		.doc-section-header h2 {
+			font-size: 1.0625rem;
+			font-weight: 600;
+			letter-spacing: -0.01em;
+			flex: 1;
+			margin: 0;
+		}
+
+		.anchor-link {
+			font-size: 12px;
+			color: var(--text-muted);
+			text-decoration: none;
+			font-family: var(--font-mono);
+		}
+		.anchor-link:hover {
+			color: var(--orange);
+		}
+
+		.doc-body {
+			padding: 24px;
+		}
+		.doc-body > p:first-child {
+			margin-top: 0;
+		}
+		.doc-body > *:first-child {
+			margin-top: 0;
+		}
+		.doc-body > *:last-child {
+			margin-bottom: 0;
+		}
+
+		.doc-body p {
+			font-size: 0.9rem;
+			color: var(--text-muted);
+			line-height: 1.75;
+			margin-bottom: 14px;
+		}
+
+		.doc-body h3 {
+			font-size: 0.875rem;
+			font-weight: 600;
+			letter-spacing: -0.005em;
+			margin: 22px 0 12px;
+			color: var(--text);
+		}
+
+		.doc-body h3:first-child {
+			margin-top: 0;
+		}
+
+		.doc-body ul {
+			padding-left: 18px;
+			margin-bottom: 14px;
+		}
+
+		.doc-body ul li {
+			font-size: 0.9rem;
+			color: var(--text-muted);
+			line-height: 1.75;
+			margin-bottom: 5px;
+		}
+
+		.doc-body ul li::marker {
+			color: var(--orange);
+		}
+
+		.doc-body code {
+			font-family: var(--font-mono);
+			font-size: 12px;
+			background: oklch(93% 0.006 60);
+			border: 1px solid var(--border-strong);
+			padding: 1px 5px;
+			border-radius: 4px;
+			color: var(--orange-dark);
+		}
+
+		/* TABLE ── */
+		.table-wrap {
+			overflow-x: auto;
+			margin: 14px 0;
+		}
+
+		.doc-body table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 13px;
+		}
+		.doc-body th {
+			text-align: left;
+			padding: 9px 12px;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+			border-bottom: 1px solid var(--border);
+			background: var(--bg-alt);
+		}
+		.doc-body td {
+			padding: 9px 12px;
+			border-bottom: 1px solid var(--border);
+			color: var(--text);
+			vertical-align: top;
+			line-height: 1.6;
+		}
+		.doc-body tr:last-child td {
+			border-bottom: none;
+		}
+		.doc-body td:first-child code {
+			background: var(--orange-light);
+			border-color: var(--orange-mid);
+			color: var(--orange-dark);
+		}
+
+		/* PILLS ── */
+		.pill {
+			display: inline-block;
+			font-size: 10.5px;
+			font-weight: 600;
+			padding: 2px 8px;
+			border-radius: 100px;
+			white-space: nowrap;
+		}
+		.pill-req {
+			background: oklch(93% 0.04 24);
+			color: oklch(42% 0.14 24);
+			border: 1px solid oklch(78% 0.1 24 / 0.5);
+		}
+		.pill-opt {
+			background: oklch(93% 0.004 58);
+			color: var(--text-muted);
+			border: 1px solid var(--border-strong);
+		}
+		.pill-cond {
+			background: oklch(94% 0.04 80);
+			color: oklch(38% 0.12 70);
+			border: 1px solid oklch(78% 0.1 80 / 0.5);
+		}
+
+		/* CALLOUT ── */
+		.callout {
+			display: flex;
+			gap: 11px;
+			align-items: flex-start;
+			padding: 13px 16px;
+			border-radius: var(--radius);
+			font-size: 0.875rem;
+			line-height: 1.65;
+			margin: 16px 0;
+		}
+		.callout-icon {
+			font-size: 15px;
+			flex-shrink: 0;
+		}
+		.callout-orange {
+			background: var(--orange-light);
+			border: 1px solid var(--orange-mid);
+			color: var(--orange-dark);
+		}
+		.callout-green {
+			background: oklch(95% 0.012 150);
+			border: 1px solid oklch(82% 0.08 150);
+			color: oklch(36% 0.1 150);
+		}
+		.callout-blue {
+			background: oklch(94% 0.02 230);
+			border: 1px solid oklch(80% 0.08 230);
+			color: oklch(42% 0.14 230);
+		}
+
+		/* CODE BLOCK ── */
+		.code-block {
+			background: oklch(14% 0.016 48);
+			border: 1px solid oklch(24% 0.016 48);
+			border-radius: 8px;
+			padding: 16px 20px;
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			line-height: 1.85;
+			overflow-x: auto;
+			margin: 14px 0;
+			white-space: pre-wrap;
+		}
+
+		.cb-cmd {
+			color: oklch(82% 0.06 58);
+		}
+		.cb-str {
+			color: oklch(74% 0.12 140);
+		}
+		.cb-key {
+			color: oklch(78% 0.12 230);
+		}
+		.cb-punct {
+			color: oklch(62% 0.06 58);
+		}
+		.cb-num {
+			color: oklch(74% 0.12 82);
+		}
+		.cb-header {
+			color: oklch(72% 0.1 58);
+		}
+		.cb-plain {
+			color: oklch(75% 0.01 58);
+		}
+
+		/* STATUS ── */
+		.status-err {
+			display: inline-block;
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			font-weight: 600;
+			color: oklch(50% 0.14 24);
+			background: oklch(94% 0.04 24);
+			border: 1px solid oklch(80% 0.1 24 / 0.5);
+			padding: 1px 6px;
+			border-radius: 4px;
+		}
+		.status-warn {
+			display: inline-block;
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			font-weight: 600;
+			color: oklch(48% 0.12 70);
+			background: oklch(94% 0.04 80);
+			border: 1px solid oklch(80% 0.1 80 / 0.5);
+			padding: 1px 6px;
+			border-radius: 4px;
+		}
+
+		/* KEY TYPES ── */
+		.key-types {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 12px;
+			margin: 14px 0;
+		}
+		@media (max-width: 500px) {
+			.key-types {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.key-type-card {
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 14px 16px;
+		}
+
+		.key-badge {
+			display: inline-block;
+			font-size: 11px;
+			font-weight: 600;
+			padding: 2px 9px;
+			border-radius: 100px;
+			margin-bottom: 10px;
+			font-family: var(--font-mono);
+		}
+
+		.key-badge-test {
+			background: oklch(93% 0.04 80);
+			color: oklch(40% 0.12 70);
+			border: 1px solid oklch(78% 0.1 80 / 0.5);
+		}
+		.key-badge-live {
+			background: oklch(93% 0.04 150);
+			color: oklch(36% 0.1 150);
+			border: 1px solid oklch(78% 0.08 150 / 0.5);
+		}
+
+		.key-type-card p {
+			font-size: 0.85rem;
+			color: var(--text-muted);
+			line-height: 1.65;
+			margin: 0;
+		}
+
+		/* QUICKSTART STEPS ── */
+		.qs-steps {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			margin: 14px 0;
+		}
+		.qs-step {
+			display: grid;
+			grid-template-columns: 28px 1fr;
+			gap: 12px;
+			align-items: start;
+		}
+		.qs-num {
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background: var(--orange-light);
+			border: 1.5px solid var(--orange-mid);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 11.5px;
+			font-weight: 700;
+			color: var(--orange-dark);
+			flex-shrink: 0;
+		}
+		.qs-body {
+			font-size: 0.9rem;
+			color: var(--text-muted);
+			line-height: 1.7;
+			padding-top: 3px;
+		}
+
+		/* GUIDE CARDS ── */
+		.guide-cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 12px;
+			margin: 14px 0;
+		}
+		.guide-card {
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 14px 16px;
+			text-decoration: none;
+			color: var(--text);
+			transition: border-color 0.15s;
+		}
+		.guide-card:hover {
+			border-color: var(--orange-mid);
+		}
+		.guide-card .gc-label {
+			font-size: 10.5px;
+			font-weight: 600;
+			letter-spacing: 0.07em;
+			text-transform: uppercase;
+			color: var(--orange);
+			margin-bottom: 5px;
+		}
+		.guide-card h4 {
+			font-size: 0.875rem;
+			font-weight: 600;
+			margin-bottom: 5px;
+		}
+		.guide-card p {
+			font-size: 12.5px;
+			color: var(--text-muted);
+			line-height: 1.6;
+			margin: 0;
+		}
+
+		/* THEME LIST ── */
+		.theme-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin: 12px 0;
+		}
+		.theme-chip {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			background: var(--bg-alt);
+			border: 1px solid var(--border);
+			border-radius: 100px;
+			padding: 5px 14px;
+			font-size: 13px;
+		}
+		.theme-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			flex-shrink: 0;
+		}
+	</style>
+
+	<!-- HERO -->
+	<div class="docs-hero">
+		<div class="container">
+			<div class="docs-badge">Documentation v1</div>
+			<h1>
+				From zero to <em>first delivered email</em> in minutes.
+			</h1>
+			<p class="docs-hero-sub">
+				Complete API reference — authentication,{" "}
+				<code style="font-family:var(--font-mono);font-size:12px;background:oklch(24% 0.03 48);border:1px solid oklch(32% 0.02 48);color:oklch(74% 0.1 55);padding:1px 5px;border-radius:4px;">
+					/v1/send
+				</code>
+				, templates, themes, error codes, and troubleshooting. Everything you need to integrate with EmailFlare.
+			</p>
+			<div class="docs-hero-actions">
+				<a class="btn btn-primary" href="#quickstart">
+					Get started →
+				</a>
+				<a class="btn btn-ghost" href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
+					GitHub
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<!-- DOCS LAYOUT -->
+	<div style="border-bottom: 1px solid var(--border);">
+		<div class="docs-layout">
+			<!-- SIDEBAR -->
+			<aside class="docs-sidebar">
+				<div class="sidebar-label">On this page</div>
+				<ul class="sidebar-nav">
+					<li>
+						<a href="#quickstart">Quickstart</a>
+					</li>
+					<li>
+						<a href="#authentication">Authentication</a>
+					</li>
+					<li>
+						<a href="#api-send">POST /v1/send</a>
+					</li>
+					<li>
+						<a href="#api-unsubscribe">Unsubscribe</a>
+					</li>
+					<li>
+						<a href="#templates">Templates &amp; themes</a>
+					</li>
+					<li>
+						<a href="#errors">Error responses</a>
+					</li>
+					<li>
+						<a href="#troubleshooting">Troubleshooting</a>
+					</li>
+				</ul>
+			</aside>
+
+			<!-- MAIN -->
+			<main class="docs-main">
+				<!-- 1. QUICKSTART -->
+				<section class="doc-section" id="quickstart">
+					<div class="doc-section-header">
+						<h2>Quickstart</h2>
+						<a class="anchor-link" href="#quickstart">
+							#quickstart
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>Get to a working send in four steps — from a fresh deploy to a delivered email.</p>
+						<div class="qs-steps">
+							<div class="qs-step">
+								<div class="qs-num">1</div>
+								<div class="qs-body">
+									<strong>Deploy EmailFlare</strong> — on Cloudflare Workers (primary) or Docker
+									Compose (secondary). See the{" "}
+									<a href="/cloudflare" style="color:var(--orange);text-decoration:none;">
+										Cloudflare Workers guide
+									</a>{" "}
+									or the{" "}
+									<a
+										href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md"
+										target="_blank"
+										rel="noopener"
+										style="color:var(--orange);text-decoration:none;"
+									>
+										self-hosting docs
+									</a>
+									.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">2</div>
+								<div class="qs-body">
+									<strong>Add a sending domain</strong> — go to the Domains page in the admin UI,
+									enter your domain, and complete the DNS verification steps Cloudflare provides.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">3</div>
+								<div class="qs-body">
+									<strong>Create an API key</strong> — go to the Keys page in the admin UI, click{" "}
+									<em>New key</em>, and choose a scope. Copy the key — it won't be shown again.
+								</div>
+							</div>
+							<div class="qs-step">
+								<div class="qs-num">4</div>
+								<div class="qs-body">
+									<strong>Send your first email</strong> — <code>POST /v1/send</code> with your key in
+									the <code>Authorization: Bearer</code> header. Start with a test key and{" "}
+									<code>eftest_</code> prefix to skip Cloudflare credentials.
+								</div>
+							</div>
+						</div>
+
+						<div class="guide-cards">
+							<a class="guide-card" href="/cloudflare">
+								<div class="gc-label">Deploy</div>
+								<h4>Cloudflare Workers setup</h4>
+								<p>One-command deploy to the edge with D1, KV, and the admin UI.</p>
+							</a>
+							<a class="guide-card" href="/cloudflare-token">
+								<div class="gc-label">Required</div>
+								<h4>Cloudflare API token guide</h4>
+								<p>Exact permissions needed for Email Sending, DNS, and routing rules.</p>
+							</a>
+							<a
+								class="guide-card"
+								href="https://github.com/0xdps/emailflare/blob/trunk/docs/SELF_HOSTING.md"
+								target="_blank"
+								rel="noopener"
+							>
+								<div class="gc-label">Secondary</div>
+								<h4>Docker self-hosting guide</h4>
+								<p>Full Compose stack — container, volumes, environment variables.</p>
+							</a>
+						</div>
+					</div>
+				</section>
+
+				<!-- 2. AUTHENTICATION -->
+				<section class="doc-section" id="authentication">
+					<div class="doc-section-header">
+						<h2>Authentication</h2>
+						<a class="anchor-link" href="#authentication">
+							#authentication
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							All <code>/v1/send</code> requests must include a bearer token in the{" "}
+							<code>Authorization</code> header.
+						</p>
+
+						<div class="code-block">
+							<span class="cb-header">Authorization</span>
+							<span class="cb-plain">: Bearer </span>
+							<span class="cb-str">eflive_xxxxxxxxxxxxxxxx</span>
+						</div>
+
+						<h3>Key types</h3>
+						<div class="key-types">
+							<div class="key-type-card">
+								<div class="key-badge key-badge-test">⚗ test key</div>
+								<p>
+									Prefix: <code>eftest_</code>. Sends are stored in the admin dashboard — no
+									Cloudflare credentials required. Browse, preview HTML, and manage test emails from
+									the built-in Test Mailbox page.
+								</p>
+							</div>
+							<div class="key-type-card">
+								<div class="key-badge key-badge-live">✓ live key</div>
+								<p>
+									Prefix: <code>eflive_</code>. Sends go through Cloudflare Email Sending. Requires
+									valid <code>CF_API_TOKEN</code> and verified domain.
+								</p>
+							</div>
+						</div>
+
+						<div class="callout callout-orange">
+							<span class="callout-icon">💡</span>
+							Domain-scoped keys can only send from domains listed in that key's permissions. Requests
+							with an unauthorized domain return <code>403</code>.
+						</div>
+					</div>
+				</section>
+
+				<!-- 3. SEND API -->
+				<section class="doc-section" id="api-send">
+					<div class="doc-section-header">
+						<h2>POST /v1/send</h2>
+						<a class="anchor-link" href="#api-send">
+							#api-send
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							The single endpoint for all transactional sends. Use <code>templateSlug</code> /{" "}
+							<code>templateId</code> for stored templates, or pass raw <code>html</code> /{" "}
+							<code>text</code> directly.
+						</p>
+
+						<h3>Request fields</h3>
+						<div class="table-wrap">
+							<table>
+								<thead>
+									<tr>
+										<th>Field</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>
+											<code>from</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-req">required</span>
+										</td>
+										<td>
+											Sender email address. Must match a verified domain authorized for your key.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>fromName</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>
+											Display name shown in the From header, e.g. <code>Acme Inc.</code>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>to</code>
+										</td>
+										<td>string or string[]</td>
+										<td>
+											<span class="pill pill-req">required</span>
+										</td>
+										<td>
+											Recipient address or array of up to 50 addresses. Duplicates are
+											deduplicated.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>subject</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>
+											Overrides the template subject. Required for raw <code>html</code>/
+											<code>text</code> sends.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>templateSlug</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-cond">conditional</span>
+										</td>
+										<td>Stable slug-based template reference. Preferred for application code.</td>
+									</tr>
+									<tr>
+										<td>
+											<code>templateId</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-cond">conditional</span>
+										</td>
+										<td>
+											Internal ID-based template reference. Use <code>templateSlug</code> when
+											possible.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>themeId</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>
+											Applies a built-in colour theme to layout-based templates. See{" "}
+											<a href="#templates" style="color:var(--orange);">
+												theme list
+											</a>{" "}
+											below. Defaults to <code>default</code>.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>variables</code>
+										</td>
+										<td>object</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>
+											Key/value map for <code>&#123;&#123;variable&#125;&#125;</code>{" "}
+											interpolation in subject and body. Supports Handlebars loops and
+											conditionals — see{" "}
+											<a href="/templates" style="color:var(--orange);">
+												templates
+											</a>
+											.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>html</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-cond">conditional</span>
+										</td>
+										<td>Raw HTML body. Used when not referencing a template.</td>
+									</tr>
+									<tr>
+										<td>
+											<code>text</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-cond">conditional</span>
+										</td>
+										<td>
+											Plain-text body. Can be combined with <code>html</code>.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>replyTo</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>Reply-to address for the recipient.</td>
+									</tr>
+									<tr>
+										<td>
+											<code>listId</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>
+											Audience list ID. Attaches a one-click <code>List-Unsubscribe</code> header
+											with a per-recipient token, so the recipient can unsubscribe (globally
+											suppressed for all future sends).
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>listUnsubscribe</code>
+										</td>
+										<td>string</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>
+											Override the unsubscribe URL (e.g. your own{" "}
+											<code>https://…/unsubscribe</code>). Passed through verbatim.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<code>listUnsubscribePost</code>
+										</td>
+										<td>boolean</td>
+										<td>
+											<span class="pill pill-opt">optional</span>
+										</td>
+										<td>
+											Adds <code>List-Unsubscribe-Post: List-Unsubscribe=One-Click</code> (RFC
+											8058). Defaults to <code>true</code> when <code>listId</code> is set.
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<div class="callout callout-orange">
+							<span class="callout-icon">⚡</span>
+							At least one of <code>templateSlug</code>, <code>templateId</code>, <code>html</code>, or{" "}
+							<code>text</code> must be provided.
+						</div>
+
+						<h3>cURL</h3>
+						<div class="code-block">
+							<span class="cb-cmd">curl -X POST https://your-emailflare.com/v1/send</span> \ -H{" "}
+							<span class="cb-str">"Authorization: Bearer eflive_xxx"</span> \ -H{" "}
+							<span class="cb-str">"Content-Type: application/json"</span> \ -d{" "}
+							<span class="cb-str">'</span>
+							<span class="cb-punct">&#123;</span>
+							<span class="cb-key">"from"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"hello@yourdomain.com"</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">"fromName"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"Acme"</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">"to"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"alex@example.com"</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">"templateSlug"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"welcome"</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">"themeId"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"ocean"</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">"variables"</span>
+							<span class="cb-punct">:</span> <span class="cb-punct">&#123;</span>{" "}
+							<span class="cb-key">"name"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"Alex"</span>
+							<span class="cb-punct">,</span> <span class="cb-key">"appName"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"Acme"</span>{" "}
+							<span class="cb-punct">&#125;</span>
+							<span class="cb-str">'&#125;</span>
+						</div>
+
+						<h3>fetch (JavaScript)</h3>
+						<div class="code-block">
+							<span class="cb-plain">const res = await fetch(</span>
+							<span class="cb-str">'https://your-emailflare.com/v1/send'</span>
+							<span class="cb-plain">, &#123;</span>
+							<span class="cb-key">method</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'POST'</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">headers</span>
+							<span class="cb-punct">:</span> <span class="cb-punct">&#123;</span>
+							<span class="cb-str">'Authorization'</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'Bearer eflive_xxx'</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-str">'Content-Type'</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'application/json'</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-punct">&#125;,</span>
+							<span class="cb-key">body</span>
+							<span class="cb-punct">:</span> <span class="cb-plain">JSON.stringify(&#123;</span>
+							<span class="cb-key">from</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'hello@yourdomain.com'</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">to</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'alex@example.com'</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">templateSlug</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'welcome'</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">themeId</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'ocean'</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">variables</span>
+							<span class="cb-punct">:</span> <span class="cb-punct">&#123;</span>{" "}
+							<span class="cb-key">name</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'Alex'</span>
+							<span class="cb-punct">,</span> <span class="cb-key">appName</span>
+							<span class="cb-punct">:</span> <span class="cb-str">'Acme'</span>{" "}
+							<span class="cb-punct">&#125;,</span>
+							<span class="cb-plain">&#125;),</span>
+							<span class="cb-plain">&#125;);</span>
+							<span class="cb-plain">const data = await res.json();</span>
+						</div>
+
+						<h3>Response (200)</h3>
+						<div class="code-block">
+							<span class="cb-punct">&#123;</span>
+							<span class="cb-key">"results"</span>
+							<span class="cb-punct">:</span> <span class="cb-punct">[&#123;</span>
+							<span class="cb-key">"to"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"alex@example.com"</span>
+							<span class="cb-punct">,</span>
+							<span class="cb-key">"cfId"</span>
+							<span class="cb-punct">:</span> <span class="cb-str">"cf_msg_xxxxxxxxxxxxxxxxxx"</span>
+							<span class="cb-punct">&#125;]</span>
+							<span class="cb-punct">&#125;</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- 3b. UNSUBSCRIBE -->
+				<section class="doc-section" id="api-unsubscribe">
+					<div class="doc-section-header">
+						<h2>Unsubscribe</h2>
+						<a class="anchor-link" href="#api-unsubscribe">
+							#api-unsubscribe
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							EmailFlare supports one-click unsubscribe via <code>List-Unsubscribe</code> headers (RFC
+							8058). When a send includes a <code>listId</code>, a per-recipient, one-time token is
+							embedded in the header. Recipients who click it are suppressed from all future sends.
+						</p>
+
+						<h3>Public endpoint</h3>
+						<p>The unsubscribe endpoint is public — no API key required:</p>
+						<div class="code-block">
+							<span class="cb-cmd">
+								GET https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;
+							</span>
+							<span class="cb-cmd">
+								POST https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;
+							</span>
+						</div>
+						<p>
+							<code>GET</code> returns a confirmation page (for browser clicks); <code>POST</code> returns
+							JSON (for mail-client one-click). Each token is single-use.
+						</p>
+
+						<h3>Admin API</h3>
+						<p>
+							Manage lists with the admin API (session-authenticated, same as other <code>/api/*</code>{" "}
+							routes):
+						</p>
+						<div class="code-block">
+							<span class="cb-cmd">GET /api/lists # list all lists</span>
+							<span class="cb-cmd">POST /api/lists # create a list</span>
+							<span class="cb-cmd">DELETE /api/lists/:id # delete a list</span>
+						</div>
+
+						<div class="callout callout-orange">
+							<span class="callout-icon">⚡</span>
+							Unsubscribe links require <code>PUBLIC_URL</code> (or <code>public_url</code> in{" "}
+							<code>config.toml</code>) to be set. Without it, <code>listId</code> is ignored — pass your
+							own <code>listUnsubscribe</code> URL instead.
+						</div>
+					</div>
+				</section>
+
+				<!-- 4. TEMPLATES & THEMES -->
+				<section class="doc-section" id="templates">
+					<div class="doc-section-header">
+						<h2>Templates &amp; themes</h2>
+						<a class="anchor-link" href="#templates">
+							#templates
+						</a>
+					</div>
+					<div class="doc-body">
+						<p>
+							EmailFlare ships 50 layout-based templates built with React Email. Reference them by their{" "}
+							<code>templateSlug</code>. Pass <code>themeId</code> to switch colour palettes per send — no
+							CSS edits needed. For custom templates, see the{" "}
+							<a href="/templates" style="color:var(--orange);text-decoration:none;">
+								templates guide →
+							</a>
+						</p>
+
+						<h3>Available themes</h3>
+						<div class="theme-list">
+							<div class="theme-chip">
+								<span class="theme-dot" style="background:#f97316;"></span>
+								<code>default</code>
+							</div>
+							<div class="theme-chip">
+								<span class="theme-dot" style="background:#0ea5e9;"></span>
+								<code>ocean</code>
+							</div>
+							<div class="theme-chip">
+								<span class="theme-dot" style="background:#16a34a;"></span>
+								<code>forest</code>
+							</div>
+							<div class="theme-chip">
+								<span class="theme-dot" style="background:#7c3aed;"></span>
+								<code>violet</code>
+							</div>
+							<div class="theme-chip">
+								<span class="theme-dot" style="background:#334155;"></span>
+								<code>slate</code>
+							</div>
+						</div>
+
+						<div class="callout callout-green">
+							<span class="callout-icon">💡</span>
+							Use the admin Playground to preview any template with any theme before sending to real
+							recipients.
+						</div>
+
+						<h3>Template reference tips</h3>
+						<ul>
+							<li>
+								Prefer <code>templateSlug</code> over <code>templateId</code> — slugs are stable across
+								restores.
+							</li>
+							<li>
+								Variable names follow the <code>&#123;&#123;camelCase&#125;&#125;</code> convention used
+								in the template body and subject.
+							</li>
+							<li>
+								If a variable is missing from the payload, it renders as an empty string — not as the
+								literal <code>&#123;&#123;variableName&#125;&#125;</code> placeholder.
+							</li>
+							<li>
+								Custom templates use Handlebars, so loops (<code>&#123;&#123;#each&#125;&#125;</code>)
+								and conditionals (<code>&#123;&#123;#if&#125;&#125;</code>) work. See the{" "}
+								<a href="/templates" style="color:var(--orange);text-decoration:none;">
+									templates guide →
+								</a>
+							</li>
+							<li>
+								<code>themeId</code> only applies to layout-based templates. Custom HTML templates
+								ignore it.
+							</li>
+						</ul>
+					</div>
+				</section>
+
+				<!-- 5. ERRORS -->
+				<section class="doc-section" id="errors">
+					<div class="doc-section-header">
+						<h2>Error responses</h2>
+						<a class="anchor-link" href="#errors">
+							#errors
+						</a>
+					</div>
+					<div class="doc-body">
+						<div class="table-wrap">
+							<table>
+								<thead>
+									<tr>
+										<th>Status</th>
+										<th>Meaning</th>
+										<th>Common cause</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>
+											<span class="status-err">401</span>
+										</td>
+										<td>Unauthorized</td>
+										<td>
+											Missing or invalid <code>Authorization</code> header.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<span class="status-err">403</span>
+										</td>
+										<td>Forbidden</td>
+										<td>Key scope does not authorize the sender domain.</td>
+									</tr>
+									<tr>
+										<td>
+											<span class="status-warn">404</span>
+										</td>
+										<td>Not found</td>
+										<td>
+											<code>templateSlug</code> or <code>templateId</code> does not exist.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<span class="status-warn">422</span>
+										</td>
+										<td>Validation error</td>
+										<td>Missing required fields or invalid email format.</td>
+									</tr>
+									<tr>
+										<td>
+											<span class="status-warn">429</span>
+										</td>
+										<td>Rate limited</td>
+										<td>
+											Per-key send limit reached. Check <code>X-RateLimit-Reset</code> header.
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<span class="status-err">502</span>
+										</td>
+										<td>All recipients failed</td>
+										<td>Downstream delivery failed for every address in the request.</td>
+									</tr>
+									<tr>
+										<td>
+											<span class="status-err">500</span>
+										</td>
+										<td>Server error</td>
+										<td>Unexpected backend error — check container logs.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<p style="margin-top:12px;">
+							Rate limiting headers returned on every <code>/v1/send</code> response:
+						</p>
+						<div class="code-block">
+							<span class="cb-header">X-RateLimit-Limit</span>
+							<span class="cb-plain">: </span>
+							<span class="cb-num">100</span>
+							<span class="cb-header">X-RateLimit-Remaining</span>
+							<span class="cb-plain">: </span>
+							<span class="cb-num">97</span>
+							<span class="cb-header">X-RateLimit-Reset</span>
+							<span class="cb-plain">: </span>
+							<span class="cb-num">1746403200</span>
+						</div>
+					</div>
+				</section>
+
+				<!-- 6. TROUBLESHOOTING -->
+				<section class="doc-section" id="troubleshooting">
+					<div class="doc-section-header">
+						<h2>Troubleshooting</h2>
+						<a class="anchor-link" href="#troubleshooting">
+							#troubleshooting
+						</a>
+					</div>
+					<div class="doc-body">
+						<h3>401 on /v1/send</h3>
+						<p>
+							Confirm the header is exactly <code>Authorization: Bearer &lt;key&gt;</code> with no extra
+							spaces. Verify the key is marked active on the Keys page.
+						</p>
+
+						<h3>403 with a domain-scoped key</h3>
+						<p>
+							The <code>from</code> address domain must be included in the key's allowed domains. Create a{" "}
+							<code>global</code> scoped key to bypass domain restrictions while debugging.
+						</p>
+
+						<h3>Template not found (404)</h3>
+						<p>
+							Copy the slug exactly from the Templates page — it is case-sensitive. System templates use
+							slugs like <code>welcome</code>, <code>magic-link</code>, <code>otp</code>.
+						</p>
+
+						<h3>Theme not applied to email</h3>
+						<p>
+							<code>themeId</code> only works with layout-based (built-in) templates. For custom HTML
+							templates the field is ignored — you control the styles directly in the HTML body.
+						</p>
+
+						<h3>Sends succeed in test mode but fail in live mode</h3>
+						<p>
+							Test keys (<code>eftest_</code>) store emails in the dashboard and don't require Cloudflare
+							credentials. Live keys use Cloudflare Email Sending — ensure <code>CF_API_TOKEN</code> has
+							the correct permissions and the sender domain is verified. See the{" "}
+							<a href="/cloudflare-token" style="color:var(--orange);text-decoration:none;">
+								Cloudflare token guide →
+							</a>
+						</p>
+						<p style="margin-top:8px;">
+							Test emails are stored in the built-in Test Mailbox page in the admin UI — no external
+							service needed.
+						</p>
+
+						<h3>Database errors in logs</h3>
+						<p>
+							If you see <em>"This SQL statement is not allowed on /query endpoint"</em>, upgrade to the
+							latest EmailFlare image — this was a bug fixed in the backend send route.
+						</p>
+
+						<div class="callout callout-orange">
+							<span class="callout-icon">📋</span>
+							Always check container logs first: <code>docker compose logs -f emailflare</code>. Most
+							issues are visible in the startup or request output.
+						</div>
+					</div>
+				</section>
+			</main>
+		</div>
+	</div>
+
+	<ul slot="footer-links" class="footer-links">
+		<li>
+			<a href="/">Home</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
+				GitHub
+			</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">
+				Security
+			</a>
+		</li>
+		<li>
+			<a href="https://github.com/0xdps/emailflare/blob/trunk/LICENSE" target="_blank" rel="noopener">
+				License
+			</a>
+		</li>
+	</ul>
 </Base>
 
 <script>
-  const links = document.querySelectorAll<HTMLAnchorElement>('.sidebar-nav a[href^="#"]');
-  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')!)).filter(Boolean) as Element[];
+	const links = document.querySelectorAll<HTMLAnchorElement>('.sidebar-nav a[href^="#"]');
+	const sections = Array.from(links)
+		.map((l) => document.querySelector(l.getAttribute("href")!))
+		.filter(Boolean) as Element[];
 
-  const setActive = (id: string) => {
-    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
-  };
+	const setActive = (id: string) => {
+		links.forEach((l) => l.classList.toggle("active", l.getAttribute("href") === "#" + id));
+	};
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          setActive(entry.target.id);
-          break;
-        }
-      }
-    },
-    { rootMargin: '-82px 0px -60% 0px', threshold: 0 }
-  );
+	const observer = new IntersectionObserver(
+		(entries) => {
+			for (const entry of entries) {
+				if (entry.isIntersecting) {
+					setActive(entry.target.id);
+					break;
+				}
+			}
+		},
+		{ rootMargin: "-82px 0px -60% 0px", threshold: 0 },
+	);
 
-  sections.forEach(s => observer.observe(s));
+	sections.forEach((s) => observer.observe(s));
 
-  // Highlight first section on load if none intersecting yet
-  if (sections.length) setActive(sections[0].id);
+	// Highlight first section on load if none intersecting yet
+	if (sections.length) setActive(sections[0].id);
 </script>
