@@ -1,0 +1,24 @@
+CONTRIBUTING.md
+  h_95aea6b4aa8772 58-61
+apps/landing/src/pages/email-api.astro
+  h_95aea6b4aa8772 1324-1325
+apps/landing/src/pages/inbox.astro
+  h_95aea6b4aa8772 1855-1856,2030,2107
+apps/landing/src/pages/index.astro
+  h_95aea6b4aa8772 2303-2304
+docs/RECIPES.md
+  h_95aea6b4aa8772 11,18-25,28,32,34-36,42-78,81,87,89,92,97,101,109,115,117,119-123,125,128,131,133,136,141,143,146-149
+justfile
+  h_95aea6b4aa8772 3-4,10-11,16-22,30-43,48,52,54,62-76,80,83-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bf86bd38f56e2f1886ccaa14b6a62526a46a6a33",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
