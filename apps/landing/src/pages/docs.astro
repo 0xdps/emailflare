@@ -310,6 +310,11 @@ import Base from "../layouts/Base.astro";
 		.callout-icon {
 			font-size: 15px;
 			flex-shrink: 0;
+			line-height: 1.65;
+		}
+		.callout > span:last-child,
+		.callout > div:last-child {
+			flex: 1;
 		}
 		.callout-orange {
 			background: var(--orange-light);
@@ -705,8 +710,10 @@ import Base from "../layouts/Base.astro";
 
 						<div class="callout callout-orange">
 							<span class="callout-icon">💡</span>
-							Domain-scoped keys can only send from domains listed in that key's permissions. Requests
-							with an unauthorized domain return <code>403</code>.
+							<span>
+								Domain-scoped keys can only send from domains listed in that key's permissions. Requests
+								with an unauthorized domain return <code>403</code>.
+							</span>
 						</div>
 					</div>
 				</section>
@@ -923,8 +930,10 @@ import Base from "../layouts/Base.astro";
 
 						<div class="callout callout-orange">
 							<span class="callout-icon">⚡</span>
-							At least one of <code>templateSlug</code>, <code>templateId</code>, <code>html</code>, or{" "}
-							<code>text</code> must be provided.
+							<span>
+								At least one of <code>templateSlug</code>, <code>templateId</code>, <code>html</code>,
+								or <code>text</code> must be provided.
+							</span>
 						</div>
 
 						<h3>cURL</h3>
@@ -1008,9 +1017,11 @@ const data = await res.json();</span></code></pre>
 
 						<div class="callout callout-orange">
 							<span class="callout-icon">⚡</span>
-							Unsubscribe links require <code>PUBLIC_URL</code> (configured in <code>wrangler.jsonc</code>{" "}
-							or as a Worker secret) to be set. Without it, <code>listId</code> is ignored — pass your own{" "}
-							<code>listUnsubscribe</code> URL instead.
+							<span>
+								Unsubscribe links require <code>PUBLIC_URL</code> (configured in{" "}
+								<code>wrangler.jsonc</code> or as a Worker secret) to be set. Without it,{" "}
+								<code>listId</code> is ignored — pass your own <code>listUnsubscribe</code> URL instead.
+							</span>
 						</div>
 					</div>
 				</section>
@@ -1059,8 +1070,10 @@ const data = await res.json();</span></code></pre>
 
 						<div class="callout callout-green">
 							<span class="callout-icon">💡</span>
-							Use the admin Playground to preview any template with any theme before sending to real
-							recipients.
+							<span>
+								Use the admin Playground to preview any template with any theme before sending to real
+								recipients.
+							</span>
 						</div>
 
 						<h3>Template reference tips</h3>
@@ -1237,8 +1250,10 @@ const data = await res.json();</span></code></pre>
 
 						<div class="callout callout-orange">
 							<span class="callout-icon">📋</span>
-							Check real-time Worker logs using <code>pnpm exec wrangler tail</code> or in the Cloudflare
-							Workers dashboard under Logs. Most issues will show clear error traces there.
+							<span>
+								Check real-time Worker logs using <code>pnpm exec wrangler tail</code> or in the
+								Cloudflare Workers dashboard under Logs. Most issues will show clear error traces there.
+							</span>
 						</div>
 					</div>
 				</section>
