@@ -255,6 +255,7 @@ import Base from "../layouts/Base.astro";
 			flex-shrink: 0;
 		}
 
+		pre.env-block,
 		.env-block {
 			background: var(--bg-alt);
 			border: 1px solid var(--border);
@@ -264,7 +265,18 @@ import Base from "../layouts/Base.astro";
 			font-size: 12.5px;
 			line-height: 1.9;
 			margin: 12px 0;
-			white-space: pre-wrap;
+			white-space: pre;
+		}
+
+		.env-block code {
+			background: transparent !important;
+			border: none !important;
+			padding: 0 !important;
+			border-radius: 0 !important;
+			color: inherit !important;
+			font-size: inherit !important;
+			line-height: inherit !important;
+			font-family: inherit !important;
 		}
 
 		.ev-key {
@@ -615,22 +627,17 @@ import Base from "../layouts/Base.astro";
 								Production (Wrangler secrets)
 							</strong>
 						</p>
-						<div class="env-block">
-							<span class="ev-cmt"># Using just recipe:</span>
-							<span class="ev-key">just dashboard-secret CF_API_TOKEN</span>
-							<span class="ev-key">just dashboard-secret CF_ACCOUNT_ID</span>
-						</div>
+						<pre class="env-block"><code><span class="ev-cmt"># Using just recipe:</span>
+<span class="ev-key">just dashboard-secret CF_API_TOKEN</span>
+<span class="ev-key">just dashboard-secret CF_ACCOUNT_ID</span></code></pre>
 
 						<p>
 							<strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">
 								Local Development (apps/dashboard/.dev.vars)
 							</strong>
 						</p>
-						<div class="env-block">
-							<span class="ev-key">CF_API_TOKEN</span>=<span class="ev-val">your_token_value_here</span>
-							<span class="ev-key">CF_ACCOUNT_ID</span>=
-							<span class="ev-val">your_32_char_account_id</span>
-						</div>
+						<pre class="env-block"><code><span class="ev-key">CF_API_TOKEN</span>=<span class="ev-val">your_token_value_here</span>
+<span class="ev-key">CF_ACCOUNT_ID</span>=<span class="ev-val">your_32_char_account_id</span></code></pre>
 
 						<div class="info-box info-tip">
 							<span class="info-box-icon">✅</span>

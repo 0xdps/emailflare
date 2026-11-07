@@ -1038,6 +1038,7 @@ import { Icon } from "astro-icon/components";
 			color: oklch(42% 0.14 230);
 		}
 
+		pre.code-block,
 		.code-block {
 			background: oklch(14% 0.016 48);
 			border: 1px solid oklch(24% 0.016 48);
@@ -1048,7 +1049,18 @@ import { Icon } from "astro-icon/components";
 			line-height: 1.85;
 			overflow-x: auto;
 			margin: 14px 0;
-			white-space: pre-wrap;
+			white-space: pre;
+		}
+
+		.code-block code {
+			background: transparent !important;
+			border: none !important;
+			padding: 0 !important;
+			border-radius: 0 !important;
+			color: inherit !important;
+			font-size: inherit !important;
+			line-height: inherit !important;
+			font-family: inherit !important;
 		}
 
 		.cb-cmd {
@@ -1984,20 +1996,13 @@ import { Icon } from "astro-icon/components";
 							running <code>just dev</code>.
 						</p>
 
-						<div class="code-block">
-							<span class="cb-cmt"># apps/dashboard/.dev.vars</span>
-							<span class="cb-cmt">
-								# 32+ char random string for session JWT signing: openssl rand -hex 32
-							</span>
-							<span class="cb-key">SESSION_SECRET</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">"your_32_char_secret_here"</span>
-							<span class="cb-cmt"># Runtime Cloudflare API token (Email Routing + Sending + DNS)</span>
-							<span class="cb-key">CF_API_TOKEN</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">"your_token_value_here"</span>
-							<span class="cb-cmt"># Your Cloudflare account ID</span>
-							<span class="cb-key">CF_ACCOUNT_ID</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">"your_32_char_account_id"</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-cmt"># apps/dashboard/.dev.vars</span>
+<span class="cb-cmt"># 32+ char random string for session JWT signing: openssl rand -hex 32</span>
+<span class="cb-key">SESSION_SECRET</span>=<span class="cb-str">"your_32_char_secret_here"</span>
+<span class="cb-cmt"># Runtime Cloudflare API token (Email Routing + Sending + DNS)</span>
+<span class="cb-key">CF_API_TOKEN</span>=<span class="cb-str">"your_token_value_here"</span>
+<span class="cb-cmt"># Your Cloudflare account ID</span>
+<span class="cb-key">CF_ACCOUNT_ID</span>=<span class="cb-str">"your_32_char_account_id"</span></code></pre>
 					</div>
 				</section>
 
@@ -2087,14 +2092,12 @@ import { Icon } from "astro-icon/components";
 						</div>
 
 						<h3>Updating a secret</h3>
-						<div class="code-block">
-							<span class="cb-cmt"># Interactive (prompts without echoing)</span>
-							<span class="cb-cmd">just dashboard-secret SESSION_SECRET</span>
+						<pre class="code-block"><code><span class="cb-cmt"># Interactive (prompts without echoing)</span>
+<span class="cb-cmd">just dashboard-secret SESSION_SECRET</span>
 
-							<span class="cb-cmt"># Or directly with wrangler</span>
-							<span class="cb-cmd">cd apps/dashboard</span>
-							<span class="cb-cmd">echo "new-value" | npx wrangler secret put SESSION_SECRET</span>
-						</div>
+<span class="cb-cmt"># Or directly with wrangler</span>
+<span class="cb-cmd">cd apps/dashboard</span>
+<span class="cb-cmd">echo "new-value" | npx wrangler secret put SESSION_SECRET</span></code></pre>
 					</div>
 				</section>
 
@@ -2118,11 +2121,7 @@ import { Icon } from "astro-icon/components";
 							Dashboard endpoints use a session cookie set on <code>POST /api/auth/login</code>.
 							Programmatic endpoints accept a bearer token:
 						</p>
-						<div class="code-block">
-							<span class="cb-header">Authorization</span>
-							<span class="cb-plain">: Bearer </span>
-							<span class="cb-str">eflive_xxxxxxxxxxxx</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-header">Authorization</span><span class="cb-plain">: Bearer </span><span class="cb-str">eflive_xxxxxxxxxxxx</span></code></pre>
 
 						<h3>Auth endpoints</h3>
 						<div>
@@ -2288,14 +2287,12 @@ import { Icon } from "astro-icon/components";
 							remote D1 migrations before deploying so schema changes are applied atomically.
 						</p>
 
-						<div class="code-block">
-							<span class="cb-cmt"># Pull latest</span>
-							<span class="cb-cmd">git pull origin trunk</span>
-							<span class="cb-cmd">just install</span>
+						<pre class="code-block"><code><span class="cb-cmt"># Pull latest</span>
+<span class="cb-cmd">git pull origin trunk</span>
+<span class="cb-cmd">just install</span>
 
-							<span class="cb-cmt"># Apply any new migrations + rebuild + redeploy</span>
-							<span class="cb-cmd">just dashboard-deploy</span>
-						</div>
+<span class="cb-cmt"># Apply any new migrations + rebuild + redeploy</span>
+<span class="cb-cmd">just dashboard-deploy</span></code></pre>
 
 						<h3>
 							What <code>just dashboard-deploy</code> does

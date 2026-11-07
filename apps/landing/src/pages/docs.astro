@@ -338,7 +338,18 @@ import Base from "../layouts/Base.astro";
 			line-height: 1.85;
 			overflow-x: auto;
 			margin: 14px 0;
-			white-space: pre-wrap;
+			white-space: pre;
+		}
+
+		.code-block code {
+			background: transparent !important;
+			border: none !important;
+			padding: 0 !important;
+			border-radius: 0 !important;
+			color: inherit !important;
+			font-size: inherit !important;
+			line-height: inherit !important;
+			font-family: inherit !important;
 		}
 
 		.cb-cmd {
@@ -671,11 +682,7 @@ import Base from "../layouts/Base.astro";
 							<code>Authorization</code> header.
 						</p>
 
-						<div class="code-block">
-							<span class="cb-header">Authorization</span>
-							<span class="cb-plain">: Bearer </span>
-							<span class="cb-str">eflive_xxxxxxxxxxxxxxxx</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-header">Authorization</span><span class="cb-plain">: Bearer </span><span class="cb-str">eflive_xxxxxxxxxxxxxxxx</span></code></pre>
 
 						<h3>Key types</h3>
 						<div class="key-types">
@@ -921,93 +928,48 @@ import Base from "../layouts/Base.astro";
 						</div>
 
 						<h3>cURL</h3>
-						<div class="code-block">
-							<span class="cb-cmd">curl -X POST https://your-emailflare.com/v1/send</span> \ -H{" "}
-							<span class="cb-str">"Authorization: Bearer eflive_xxx"</span> \ -H{" "}
-							<span class="cb-str">"Content-Type: application/json"</span> \ -d{" "}
-							<span class="cb-str">'</span>
-							<span class="cb-punct">&#123;</span>
-							<span class="cb-key">"from"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"hello@yourdomain.com"</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">"fromName"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"Acme"</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">"to"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"alex@example.com"</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">"templateSlug"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"welcome"</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">"themeId"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"ocean"</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">"variables"</span>
-							<span class="cb-punct">:</span> <span class="cb-punct">&#123;</span>{" "}
-							<span class="cb-key">"name"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"Alex"</span>
-							<span class="cb-punct">,</span> <span class="cb-key">"appName"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"Acme"</span>{" "}
-							<span class="cb-punct">&#125;</span>
-							<span class="cb-str">'&#125;</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-cmd">curl -X POST https://your-emailflare.com/v1/send \</span>
+  <span class="cb-plain">-H </span><span class="cb-str">"Authorization: Bearer eflive_xxx"</span><span class="cb-plain"> \</span>
+  <span class="cb-plain">-H </span><span class="cb-str">"Content-Type: application/json"</span><span class="cb-plain"> \</span>
+  <span class="cb-plain">-d </span><span class="cb-str">'&#123;
+    "from": "hello@yourdomain.com",
+    "fromName": "Acme",
+    "to": "alex@example.com",
+    "templateSlug": "welcome",
+    "themeId": "ocean",
+    "variables": &#123;
+      "name": "Alex",
+      "appName": "Acme"
+    &#125;
+  &#125;'</span></code></pre>
 
 						<h3>fetch (JavaScript)</h3>
-						<div class="code-block">
-							<span class="cb-plain">const res = await fetch(</span>
-							<span class="cb-str">'https://your-emailflare.com/v1/send'</span>
-							<span class="cb-plain">, &#123;</span>
-							<span class="cb-key">method</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'POST'</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">headers</span>
-							<span class="cb-punct">:</span> <span class="cb-punct">&#123;</span>
-							<span class="cb-str">'Authorization'</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'Bearer eflive_xxx'</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-str">'Content-Type'</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'application/json'</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-punct">&#125;,</span>
-							<span class="cb-key">body</span>
-							<span class="cb-punct">:</span> <span class="cb-plain">JSON.stringify(&#123;</span>
-							<span class="cb-key">from</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'hello@yourdomain.com'</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">to</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'alex@example.com'</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">templateSlug</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'welcome'</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">themeId</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'ocean'</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">variables</span>
-							<span class="cb-punct">:</span> <span class="cb-punct">&#123;</span>{" "}
-							<span class="cb-key">name</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'Alex'</span>
-							<span class="cb-punct">,</span> <span class="cb-key">appName</span>
-							<span class="cb-punct">:</span> <span class="cb-str">'Acme'</span>{" "}
-							<span class="cb-punct">&#125;,</span>
-							<span class="cb-plain">&#125;),</span>
-							<span class="cb-plain">&#125;);</span>
-							<span class="cb-plain">const data = await res.json();</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-plain">const res = await fetch(</span><span class="cb-str">'https://your-emailflare.com/v1/send'</span><span class="cb-plain">, &#123;
+  method: </span><span class="cb-str">'POST'</span><span class="cb-plain">,
+  headers: &#123;
+    </span><span class="cb-str">'Authorization'</span><span class="cb-plain">: </span><span class="cb-str">'Bearer eflive_xxx'</span><span class="cb-plain">,
+    </span><span class="cb-str">'Content-Type'</span><span class="cb-plain">: </span><span class="cb-str">'application/json'</span><span class="cb-plain">,
+  &#125;,
+  body: JSON.stringify(&#123;
+    from: </span><span class="cb-str">'hello@yourdomain.com'</span><span class="cb-plain">,
+    to: </span><span class="cb-str">'alex@example.com'</span><span class="cb-plain">,
+    templateSlug: </span><span class="cb-str">'welcome'</span><span class="cb-plain">,
+    themeId: </span><span class="cb-str">'ocean'</span><span class="cb-plain">,
+    variables: &#123; name: </span><span class="cb-str">'Alex'</span><span class="cb-plain">, appName: </span><span class="cb-str">'Acme'</span><span class="cb-plain"> &#125;,
+  &#125;),
+&#125;);
+
+const data = await res.json();</span></code></pre>
 
 						<h3>Response (200)</h3>
-						<div class="code-block">
-							<span class="cb-punct">&#123;</span>
-							<span class="cb-key">"results"</span>
-							<span class="cb-punct">:</span> <span class="cb-punct">[&#123;</span>
-							<span class="cb-key">"to"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"alex@example.com"</span>
-							<span class="cb-punct">,</span>
-							<span class="cb-key">"cfId"</span>
-							<span class="cb-punct">:</span> <span class="cb-str">"cf_msg_xxxxxxxxxxxxxxxxxx"</span>
-							<span class="cb-punct">&#125;]</span>
-							<span class="cb-punct">&#125;</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-punct">&#123;
+  </span><span class="cb-key">"results"</span><span class="cb-punct">: [
+    &#123;
+      </span><span class="cb-key">"to"</span><span class="cb-punct">: </span><span class="cb-str">"alex@example.com"</span><span class="cb-punct">,
+      </span><span class="cb-key">"cfId"</span><span class="cb-punct">: </span><span class="cb-str">"cf_msg_xxxxxxxxxxxxxxxxxx"</span><span class="cb-punct">
+    &#125;
+  ]
+&#125;</span></code></pre>
 					</div>
 				</section>
 
@@ -1028,14 +990,8 @@ import Base from "../layouts/Base.astro";
 
 						<h3>Public endpoint</h3>
 						<p>The unsubscribe endpoint is public — no API key required:</p>
-						<div class="code-block">
-							<span class="cb-cmd">
-								GET https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;
-							</span>
-							<span class="cb-cmd">
-								POST https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;
-							</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-cmd">GET  https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;</span>
+<span class="cb-cmd">POST https://your-emailflare.com/v1/unsubscribe?token=&lt;token&gt;</span></code></pre>
 						<p>
 							<code>GET</code> returns a confirmation page (for browser clicks); <code>POST</code> returns
 							JSON (for mail-client one-click). Each token is single-use.
@@ -1046,11 +1002,9 @@ import Base from "../layouts/Base.astro";
 							Manage lists with the admin API (session-authenticated, same as other <code>/api/*</code>{" "}
 							routes):
 						</p>
-						<div class="code-block">
-							<span class="cb-cmd">GET /api/lists # list all lists</span>
-							<span class="cb-cmd">POST /api/lists # create a list</span>
-							<span class="cb-cmd">DELETE /api/lists/:id # delete a list</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-cmd">GET    /api/lists     # list all lists</span>
+<span class="cb-cmd">POST   /api/lists     # create a list</span>
+<span class="cb-cmd">DELETE /api/lists/:id # delete a list</span></code></pre>
 
 						<div class="callout callout-orange">
 							<span class="callout-icon">⚡</span>
@@ -1222,17 +1176,9 @@ import Base from "../layouts/Base.astro";
 						<p style="margin-top:12px;">
 							Rate limiting headers returned on every <code>/v1/send</code> response:
 						</p>
-						<div class="code-block">
-							<span class="cb-header">X-RateLimit-Limit</span>
-							<span class="cb-plain">: </span>
-							<span class="cb-num">100</span>
-							<span class="cb-header">X-RateLimit-Remaining</span>
-							<span class="cb-plain">: </span>
-							<span class="cb-num">97</span>
-							<span class="cb-header">X-RateLimit-Reset</span>
-							<span class="cb-plain">: </span>
-							<span class="cb-num">1746403200</span>
-						</div>
+						<pre class="code-block"><code><span class="cb-header">X-RateLimit-Limit</span><span class="cb-plain">: </span><span class="cb-num">100</span>
+<span class="cb-header">X-RateLimit-Remaining</span><span class="cb-plain">: </span><span class="cb-num">97</span>
+<span class="cb-header">X-RateLimit-Reset</span><span class="cb-plain">: </span><span class="cb-num">1746403200</span></code></pre>
 					</div>
 				</section>
 
