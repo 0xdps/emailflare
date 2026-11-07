@@ -1,15 +1,5 @@
-import Layout from "@/components/Layout";
-import Page from "@/components/pages/Lists";
-import { getListsList } from "@/lib/server/queries";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function RoutePage() {
-	const initialLists = await getListsList().catch(() => []);
-
-	return (
-		<Layout>
-			<Page initialLists={initialLists as any} />
-		</Layout>
-	);
+export default function RoutePage() {
+	redirect("/developer/lists");
 }

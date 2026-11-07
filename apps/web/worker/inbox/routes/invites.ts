@@ -30,18 +30,20 @@ app.post(
 		"json",
 		z.object({
 			email: z.string().email().toLowerCase(),
-			role: z.enum(["admin", "member", "tester"]).optional().default("member"),
+			user_type: z.enum(["admin", "member"]).default("member"),
+			access_types: z.array(z.enum(["inbox", "api", "tester"])).default(["inbox"]),
 		}),
 	),
 	async (c) => {
-		const { email, role: requestedRole } = c.req.valid("json");
-
-		// Non-super-admins can only invite members
-		const callerRole = c.get("userRole");
-		const role = callerRole === "super-admin" ? requestedRole : "member";
+		const { email, user_type, access_types: reqAccessTypes } = c.req.valid("json");
 
 		const existing = await c.env.DB.prepare("SELECT id FROM users WHERE email = ? LIMIT 1").bind(email).first();
 		if (existing) return c.json({ error: "already_exists" }, 409);
+
+		let access_types = reqAccessTypes ?? [];
+		if (user_type === "admin") {
+			access_types = ["inbox", "api", "tester"];
+		}
 
 		const rawToken = generateId() + generateId();
 		const tokenHash = await sha256Hex(rawToken);
@@ -50,9 +52,18 @@ app.post(
 		const createdBy = c.get("userId");
 
 		await c.env.DB.prepare(
-			"INSERT INTO invites (id, email, token_hash, created_by, expires_at, role, used, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?)",
+			"INSERT INTO invites (id, email, token_hash, created_by, expires_at, user_type, access_types, used, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)",
 		)
-			.bind(id, email, tokenHash, createdBy, expiresAt, role, new Date().toISOString())
+			.bind(
+				id,
+				email,
+				tokenHash,
+				createdBy,
+				expiresAt,
+				user_type,
+				JSON.stringify(access_types),
+				new Date().toISOString(),
+			)
 			.run();
 
 		const origin = new URL(c.req.url).origin;
@@ -89,10 +100,17 @@ app.post("/invites/:token/accept", zValidator("json", acceptSchema), async (c) =
 	const tokenHash = await sha256Hex(rawToken);
 
 	const invite = await c.env.DB.prepare(
-		"SELECT id, email, expires_at, used, role FROM invites WHERE token_hash = ? LIMIT 1",
+		"SELECT id, email, expires_at, used, user_type, access_types FROM invites WHERE token_hash = ? LIMIT 1",
 	)
 		.bind(tokenHash)
-		.first<{ id: string; email: string; expires_at: string; used: number; role: string }>();
+		.first<{
+			id: string;
+			email: string;
+			expires_at: string;
+			used: number;
+			user_type: "admin" | "member";
+			access_types?: string;
+		}>();
 
 	if (!invite) return c.json({ error: "invite_not_found" }, 404);
 	if (invite.used) return c.json({ error: "invite_not_found" }, 404);
@@ -102,16 +120,35 @@ app.post("/invites/:token/accept", zValidator("json", acceptSchema), async (c) =
 	const passwordHash = await hashPassword(password);
 	const userId = generateId();
 	const now = new Date().toISOString();
-	const role = (invite.role as "admin" | "member" | "tester") ?? "member";
+
+	const userType: "admin" | "member" = invite.user_type === "admin" ? "admin" : "member";
+
+	let accessTypes: ("inbox" | "api" | "tester")[] = [];
+	if (userType === "admin") {
+		accessTypes = ["inbox", "api", "tester"];
+	} else if (invite.access_types) {
+		try {
+			const parsed = JSON.parse(invite.access_types);
+			accessTypes = Array.isArray(parsed) ? parsed : [];
+		} catch {
+			accessTypes = [];
+		}
+	}
 
 	await c.env.DB.batch([
 		c.env.DB.prepare(
-			"INSERT INTO users (id, name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-		).bind(userId, name, invite.email, passwordHash, role, now),
+			"INSERT INTO users (id, name, email, password_hash, user_type, access_types, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		).bind(userId, name, invite.email, passwordHash, userType, JSON.stringify(accessTypes), now),
 		c.env.DB.prepare("UPDATE invites SET used = 1 WHERE id = ?").bind(invite.id),
 	]);
 
-	await saveSession(c, { userId, role, name, email: invite.email });
+	await saveSession(c, {
+		userId,
+		userType,
+		accessTypes,
+		name,
+		email: invite.email,
+	});
 	return c.json({ ok: true }, 201);
 });
 

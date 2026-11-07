@@ -1,19 +1,23 @@
-import Layout from "@/components/Layout";
-import Dashboard from "@/components/pages/Dashboard";
-import { getDashboardStats, getDashboardLogs, getCloudflareStatus } from "@/lib/server/queries";
+import { redirect } from "next/navigation";
+import { getServerSession } from "@/lib/server/queries";
 
 export const dynamic = "force-dynamic";
 
-export default async function RoutePage() {
-	const [stats, logs, cfStatus] = await Promise.all([
-		getDashboardStats("7d"),
-		getDashboardLogs(10),
-		getCloudflareStatus(),
-	]);
+export default async function RootPage() {
+	const session = await getServerSession().catch(() => null);
+	if (!session) {
+		redirect("/login");
+	}
 
-	return (
-		<Layout>
-			<Dashboard initialStats={stats} initialLogs={logs} initialCfStatus={cfStatus} />
-		</Layout>
-	);
+	const hasInbox = session.userType === "admin" || session.accessTypes.includes("inbox");
+	if (hasInbox) {
+		redirect("/inbox");
+	}
+
+	const hasApi = session.accessTypes.includes("api");
+	if (hasApi) {
+		redirect("/developer/overview");
+	}
+
+	redirect("/login");
 }

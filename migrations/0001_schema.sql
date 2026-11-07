@@ -80,6 +80,8 @@ CREATE INDEX IF NOT EXISTS idx_logs_sent_at   ON email_logs(sent_at);
 CREATE INDEX IF NOT EXISTS idx_logs_status    ON email_logs(status);
 CREATE INDEX IF NOT EXISTS idx_logs_api_key   ON email_logs(api_key_id);
 CREATE INDEX IF NOT EXISTS idx_logs_domain    ON email_logs(domain_id);
+CREATE INDEX IF NOT EXISTS idx_logs_domain_status_sent ON email_logs(domain_id, status, sent_at);
+CREATE INDEX IF NOT EXISTS idx_logs_sent_status ON email_logs(sent_at DESC, status);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_logs_idempotency ON email_logs(idempotency_key)
   WHERE idempotency_key IS NOT NULL;
 
@@ -138,22 +140,25 @@ CREATE TABLE IF NOT EXISTS users (
   name          TEXT NOT NULL,
   email         TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  role          TEXT NOT NULL DEFAULT 'member'
-                 CHECK (role IN ('super-admin', 'admin', 'member', 'tester')),
+  user_type     TEXT NOT NULL DEFAULT 'member'
+                 CHECK (user_type IN ('admin', 'member')),
+  access_types  TEXT NOT NULL DEFAULT '["inbox"]',
   created_at    TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
 
 CREATE TABLE IF NOT EXISTS invites (
-  id          TEXT PRIMARY KEY,
-  email       TEXT NOT NULL,
-  token_hash  TEXT NOT NULL UNIQUE,
-  created_by  TEXT NOT NULL,
-  role        TEXT NOT NULL DEFAULT 'member',
-  expires_at  TEXT NOT NULL,
-  used        INTEGER NOT NULL DEFAULT 0,
-  created_at  TEXT NOT NULL
+  id           TEXT PRIMARY KEY,
+  email        TEXT NOT NULL,
+  token_hash   TEXT NOT NULL UNIQUE,
+  created_by   TEXT NOT NULL,
+  user_type    TEXT NOT NULL DEFAULT 'member'
+                CHECK (user_type IN ('admin', 'member')),
+  access_types TEXT NOT NULL DEFAULT '["inbox"]',
+  expires_at   TEXT NOT NULL,
+  used         INTEGER NOT NULL DEFAULT 0,
+  created_at   TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_invites_token_hash ON invites (token_hash);
@@ -286,6 +291,7 @@ CREATE TABLE IF NOT EXISTS sequence_enrollments (
 
 CREATE INDEX IF NOT EXISTS idx_seq_enrollments_status ON sequence_enrollments (status);
 CREATE INDEX IF NOT EXISTS idx_seq_enrollments_person  ON sequence_enrollments (person_id);
+CREATE INDEX IF NOT EXISTS idx_seq_enrollments_status_enrolled ON sequence_enrollments(status, enrolled_at);
 
 -- ── Push Subscriptions ───────────────────────────────────────────────────────
 

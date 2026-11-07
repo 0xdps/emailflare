@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { ShieldOff, Search, X, Trash2, Plus, ChevronLeft, ChevronRight, MailX } from "lucide-react";
 import api from "@/lib/api";
 import { createSuppressionAction, deleteSuppressionAction } from "@/app/actions/suppressions";
@@ -8,9 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+	DialogDescription,
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 export type SuppressionReason = "hard_bounce" | "soft_bounce" | "complaint" | "manual" | "unsubscribed";
 
@@ -70,7 +78,7 @@ function AddDialog({ open, onClose, onAdded }: { open: boolean; onClose: () => v
 		setErr("");
 		setSaving(true);
 		try {
-			const res = await createSuppressionAction({ email, reason });
+			const res = await createSuppressionAction({ email: email.toLowerCase().trim(), reason });
 			if (res.error) {
 				setErr(res.error);
 				return;
@@ -96,42 +104,56 @@ function AddDialog({ open, onClose, onAdded }: { open: boolean; onClose: () => v
 		>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="text-base">Suppress address</DialogTitle>
+					<DialogTitle className="text-base font-semibold">Suppress Recipient Address</DialogTitle>
+					<DialogDescription className="text-xs">
+						Prevent EmailFlare from sending emails to this counterparty across all domains.
+					</DialogDescription>
 				</DialogHeader>
-				<form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
-					<div className="flex flex-col gap-1.5">
-						<label className="text-xs font-medium text-muted-foreground">Email address</label>
+
+				<form onSubmit={handleSubmit} className="space-y-4 pt-2">
+					{err && <p className="text-xs text-destructive">{err}</p>}
+
+					<div className="space-y-1.5">
+						<Label className="text-xs">Email Address</Label>
 						<Input
 							type="email"
-							required
-							placeholder="user@example.com"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
-							className="h-9 text-sm"
+							placeholder="recipient@example.com"
+							required
+							className="h-8.5 text-xs font-mono"
 						/>
 					</div>
-					<div className="flex flex-col gap-1.5">
-						<label className="text-xs font-medium text-muted-foreground">Reason</label>
+
+					<div className="space-y-1.5">
+						<Label className="text-xs">Suppression Reason</Label>
 						<Select value={reason} onValueChange={(v) => setReason(v as SuppressionReason)}>
-							<SelectTrigger className="h-9 text-sm">
+							<SelectTrigger className="h-8.5 text-xs">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="manual">Manual</SelectItem>
-								<SelectItem value="hard_bounce">Hard bounce</SelectItem>
-								<SelectItem value="soft_bounce">Soft bounce</SelectItem>
-								<SelectItem value="complaint">Complaint</SelectItem>
-								<SelectItem value="unsubscribed">Unsubscribed</SelectItem>
+								<SelectItem value="manual" className="text-xs">
+									Manual Suppression
+								</SelectItem>
+								<SelectItem value="hard_bounce" className="text-xs">
+									Hard Bounce
+								</SelectItem>
+								<SelectItem value="complaint" className="text-xs">
+									Spam Complaint
+								</SelectItem>
+								<SelectItem value="unsubscribed" className="text-xs">
+									Unsubscribed
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
-					{err && <p className="text-xs text-destructive">{err}</p>}
-					<DialogFooter>
-						<Button type="button" variant="outline" size="sm" onClick={onClose}>
+
+					<DialogFooter className="pt-2">
+						<Button type="button" variant="ghost" onClick={onClose} className="h-8 text-xs">
 							Cancel
 						</Button>
-						<Button type="submit" size="sm" disabled={saving}>
-							{saving ? "Saving…" : "Suppress"}
+						<Button type="submit" disabled={saving || !email} className="h-8 text-xs">
+							{saving ? "Saving..." : "Add to Suppressions"}
 						</Button>
 					</DialogFooter>
 				</form>
@@ -140,48 +162,41 @@ function AddDialog({ open, onClose, onAdded }: { open: boolean; onClose: () => v
 	);
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Main ────────────────────────────────────────────────────────────────────
 
-export default function SuppressionsPage({ initialResult }: { initialResult?: PagedSuppressions }) {
+export default function SuppressionsPage({ initialResult }: { initialResult?: PagedSuppressions } = {}) {
 	const [result, setResult] = useState<PagedSuppressions | null>(initialResult ?? null);
 	const [page, setPage] = useState(1);
-	const [reason, setReason] = useState("");
 	const [search, setSearch] = useState("");
 	const [searchInput, setSearchInput] = useState("");
+	const [reason, setReason] = useState("");
 	const [loading, setLoading] = useState(initialResult === undefined);
 	const [addOpen, setAddOpen] = useState(false);
 	const [deleting, setDeleting] = useState<string | null>(null);
+	const isFirstMount = useRef(true);
 
 	const load = useCallback(async () => {
 		setLoading(true);
 		const params = new URLSearchParams({ page: String(page), limit: "50" });
-		if (reason) params.set("reason", reason);
 		if (search) params.set("search", search);
-		const { data } = await api.get<PagedSuppressions>(`/api/suppressions?${params}`);
-		setResult(data);
-		setLoading(false);
-	}, [page, reason, search]);
+		if (reason) params.set("reason", reason);
+		try {
+			const { data } = await api.get<PagedSuppressions>(`/api/suppressions?${params}`);
+			setResult(data);
+		} catch {
+			setResult(null);
+		} finally {
+			setLoading(false);
+		}
+	}, [page, search, reason]);
 
 	useEffect(() => {
-		if (initialResult === undefined || page !== 1 || reason !== "" || search !== "") {
-			load();
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (initialResult) return;
 		}
-	}, [load, initialResult, page, reason, search]);
-
-	async function handleDelete(id: string) {
-		setDeleting(id);
-		try {
-			const res = await deleteSuppressionAction(id);
-			if (res.error) {
-				return;
-			}
-			await load();
-		} catch (error: unknown) {
-			console.error("Failed to delete suppression", error);
-		} finally {
-			setDeleting(null);
-		}
-	}
+		load();
+	}, [load, initialResult]);
 
 	function handleSearch(e: React.FormEvent) {
 		e.preventDefault();
@@ -189,140 +204,160 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 		setPage(1);
 	}
 
+	async function handleDelete(id: string) {
+		setDeleting(id);
+		try {
+			await deleteSuppressionAction(id);
+			load();
+		} finally {
+			setDeleting(null);
+		}
+	}
+
 	return (
-		<div className="flex flex-col h-full overflow-hidden">
+		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
 			{/* Header */}
-			<div className="px-6 pt-6 pb-4 border-b border-border flex-shrink-0 flex flex-col gap-3">
-				<div className="flex items-center justify-between">
-					<div>
-						<div className="flex items-center gap-2 mb-1">
-							<ShieldOff size={14} className="text-primary" />
-							<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-								Reputation
-							</span>
-						</div>
-						<h1 className="text-2xl font-bold">Suppressions</h1>
+			<div className="flex items-center justify-between">
+				<div>
+					<div className="flex items-center gap-2 mb-1">
+						<ShieldOff size={14} className="text-orange-500" />
+						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+							Deliverability & Reputation
+						</span>
 					</div>
-					<Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setAddOpen(true)}>
-						<Plus size={12} />
-						Add
-					</Button>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">Suppressions</h1>
+					<p className="text-xs text-muted-foreground mt-0.5">
+						Addresses blocked from receiving emails due to bounces, spam complaints, or unsubscribes.
+					</p>
 				</div>
-
-				<div className="flex items-center gap-2">
-					{/* Search */}
-					<form onSubmit={handleSearch} className="flex items-center gap-2 flex-1">
-						<div className="relative flex-1 max-w-xs">
-							<Search
-								size={11}
-								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-							/>
-							<Input
-								value={searchInput}
-								onChange={(e) => setSearchInput(e.target.value)}
-								placeholder="Search email…"
-								className="pl-7 h-8 text-xs"
-							/>
-						</div>
-						{search && (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								className="size-8"
-								onClick={() => {
-									setSearch("");
-									setSearchInput("");
-									setPage(1);
-								}}
-							>
-								<X size={12} />
-							</Button>
-						)}
-					</form>
-
-					{/* Reason filter */}
-					<Select
-						value={reason}
-						onValueChange={(v) => {
-							setReason(v ?? "");
-							setPage(1);
-						}}
-					>
-						<SelectTrigger className="h-8 text-xs w-36">
-							<SelectValue placeholder="All reasons" />
-						</SelectTrigger>
-						<SelectContent>
-							{REASON_FILTER_OPTS.map((o) => (
-								<SelectItem key={o.value} value={o.value}>
-									{o.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
+				<Button size="sm" className="gap-1.5 h-8.5 text-xs shadow-xs" onClick={() => setAddOpen(true)}>
+					<Plus size={13} />
+					<span>Add Suppression</span>
+				</Button>
 			</div>
 
-			{/* Table */}
-			<div className="flex-1 overflow-auto">
+			{/* Filter & Search Bar */}
+			<div className="flex items-center gap-3">
+				<form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 max-w-sm">
+					<div className="relative flex-1">
+						<Search
+							size={12}
+							className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+						/>
+						<Input
+							value={searchInput}
+							onChange={(e) => setSearchInput(e.target.value)}
+							placeholder="Search suppressed emails..."
+							className="pl-7 h-8.5 text-xs bg-muted/30"
+						/>
+					</div>
+					{search && (
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							className="size-8"
+							onClick={() => {
+								setSearch("");
+								setSearchInput("");
+								setPage(1);
+							}}
+						>
+							<X size={12} />
+						</Button>
+					)}
+				</form>
+
+				<Select
+					value={reason}
+					onValueChange={(v) => {
+						setReason(v ?? "");
+						setPage(1);
+					}}
+				>
+					<SelectTrigger className="h-8.5 text-xs w-40">
+						<SelectValue placeholder="All reasons" />
+					</SelectTrigger>
+					<SelectContent>
+						{REASON_FILTER_OPTS.map((o) => (
+							<SelectItem key={o.value} value={o.value} className="text-xs">
+								{o.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
+			{/* Suppressions Table Card */}
+			<div className="rounded-xl border border-border bg-card overflow-hidden">
+				<div className="px-5 py-3.5 border-b border-border bg-muted/20 flex items-center justify-between">
+					<span className="text-xs font-semibold text-foreground">
+						Suppressed Recipients ({result?.total ?? 0})
+					</span>
+					<span className="text-[11px] text-muted-foreground">Automatically checked before send</span>
+				</div>
+
 				{loading ? (
-					<div className="p-4 flex flex-col gap-2">
-						{[...Array(6)].map((_, i) => (
+					<div className="p-4 space-y-2">
+						{[...Array(5)].map((_, i) => (
 							<Skeleton key={i} className="h-12 rounded-lg" />
 						))}
 					</div>
 				) : !result || result.data.length === 0 ? (
-					<div className="flex flex-col items-center justify-center h-40 gap-3 text-muted-foreground py-20">
-						<MailX size={24} className="opacity-30" />
-						<p className="text-xs">No suppressed addresses</p>
+					<div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
+						<MailX size={32} strokeWidth={1.25} className="opacity-30 mb-1" />
+						<p className="text-xs font-semibold text-foreground">No suppressions recorded</p>
+						<p className="text-[11px]">Any bounced or unsubscribed recipients will be listed here.</p>
 					</div>
 				) : (
-					<table className="w-full text-sm">
+					<table className="w-full text-xs">
 						<thead>
-							<tr className="border-b border-border">
-								<th className="px-6 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-									Email
+							<tr className="border-b border-border bg-muted/10 text-muted-foreground">
+								<th className="px-5 py-3 text-left font-semibold uppercase tracking-wider text-[11px]">
+									Email Address
 								</th>
-								<th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+								<th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[11px]">
 									Reason
 								</th>
-								<th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-									Added
+								<th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[11px]">
+									Date Suppressed
 								</th>
-								<th className="px-4 py-2.5 w-12" />
+								<th className="px-5 py-3 text-right font-semibold uppercase tracking-wider text-[11px]">
+									Actions
+								</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody className="divide-y divide-border">
 							{result.data.map((row) => (
-								<tr
-									key={row.id}
-									className="border-b border-border/50 hover:bg-muted/30 transition-colors"
-								>
-									<td className="px-6 py-3 font-mono text-[13px]">{row.email}</td>
+								<tr key={row.id} className="hover:bg-muted/30 transition-colors">
+									<td className="px-5 py-3 font-mono text-xs font-medium text-foreground select-all">
+										{row.email}
+									</td>
 									<td className="px-4 py-3">
 										<Badge
 											variant="outline"
-											className={`text-[10px] px-1.5 py-0.5 ${REASON_CLASS[row.reason]}`}
+											className={`text-[10px] px-2 py-0.5 font-medium ${REASON_CLASS[row.reason]}`}
 										>
 											{REASON_LABEL[row.reason]}
 										</Badge>
 									</td>
-									<td className="px-4 py-3 text-[12px] text-muted-foreground tabular-nums">
+									<td className="px-4 py-3 text-muted-foreground tabular-nums">
 										{new Date(row.created_at).toLocaleDateString("en-US", {
 											year: "numeric",
 											month: "short",
 											day: "numeric",
 										})}
 									</td>
-									<td className="px-4 py-3">
+									<td className="px-5 py-3 text-right">
 										<Button
 											variant="ghost"
-											size="icon"
-											className="size-7 text-muted-foreground hover:text-destructive"
+											size="sm"
+											className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
 											disabled={deleting === row.id}
 											onClick={() => handleDelete(row.id)}
 										>
-											<Trash2 size={13} />
+											<Trash2 size={12} className="mr-1" />
+											<span>Unsuppress</span>
 										</Button>
 									</td>
 								</tr>
@@ -330,39 +365,36 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 						</tbody>
 					</table>
 				)}
-			</div>
 
-			{/* Pagination */}
-			{result && result.pages > 1 && (
-				<>
-					<Separator />
-					<div className="px-6 py-3 flex items-center justify-between flex-shrink-0">
-						<span className="text-[11px] text-muted-foreground tabular-nums">
-							{result.total} total · {result.page}/{result.pages}
+				{/* Pagination */}
+				{result && result.pages > 1 && (
+					<div className="p-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground bg-background">
+						<span>
+							{result.total} total · Page {result.page} of {result.pages}
 						</span>
-						<div className="flex gap-1">
+						<div className="flex items-center gap-1">
 							<Button
-								variant="outline"
+								variant="ghost"
 								size="icon"
 								className="size-7"
 								disabled={page <= 1}
-								onClick={() => setPage((p) => p - 1)}
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
 							>
-								<ChevronLeft size={12} />
+								<ChevronLeft size={13} />
 							</Button>
 							<Button
-								variant="outline"
+								variant="ghost"
 								size="icon"
 								className="size-7"
 								disabled={page >= result.pages}
-								onClick={() => setPage((p) => p + 1)}
+								onClick={() => setPage((p) => Math.min(result.pages, p + 1))}
 							>
-								<ChevronRight size={12} />
+								<ChevronRight size={13} />
 							</Button>
 						</div>
 					</div>
-				</>
-			)}
+				)}
+			</div>
 
 			<AddDialog open={addOpen} onClose={() => setAddOpen(false)} onAdded={load} />
 		</div>

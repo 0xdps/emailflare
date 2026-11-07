@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Loader2, Users, Trash2, Copy, Check } from "lucide-react";
-import { getUsers, User } from "@/lib/api";
-import { createInviteAction, revokeUserAction, changeUserRoleAction } from "@/app/actions/users";
-import { useUser } from "@/lib/UserContext";
+import { Plus, Loader2, Users, Trash2, Copy, Check, Shield, Wrench, Edit2 } from "lucide-react";
+import { getUsers, User, UserType, AccessType } from "@/lib/api";
+import { createInviteAction, revokeUserAction, changeUserPermissionsAction } from "@/app/actions/users";
+import { usePermissions } from "@/lib/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,33 +13,54 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
-function RoleBadge({ role }: { role: User["role"] }) {
-	if (role === "super-admin") {
+function UserTypeBadge({ userType }: { userType: UserType }) {
+	if (userType === "admin") {
 		return (
-			<Badge className="text-[10px] h-4 px-1.5 bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50">
-				owner
-			</Badge>
-		);
-	}
-	if (role === "admin") {
-		return (
-			<Badge className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50">
+			<Badge className="text-[10px] h-4.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800">
 				admin
 			</Badge>
 		);
 	}
-	if (role === "tester") {
-		return (
-			<Badge className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-50">
-				tester
-			</Badge>
-		);
-	}
 	return (
-		<Badge variant="secondary" className="text-[10px] h-4 px-1.5">
-			user
+		<Badge variant="secondary" className="text-[10px] h-4.5 px-2 text-zinc-600 dark:text-zinc-300">
+			member
 		</Badge>
+	);
+}
+
+function AccessBadges({ accessTypes, userType }: { accessTypes: AccessType[]; userType: UserType }) {
+	if (userType === "admin") {
+		return <span className="text-xs text-muted-foreground italic">Full access (all capabilities)</span>;
+	}
+
+	const list = accessTypes ?? ["inbox"];
+	return (
+		<div className="flex items-center gap-1.5 flex-wrap">
+			<Badge
+				variant="outline"
+				className="text-[10px] h-4 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
+			>
+				inbox
+			</Badge>
+			{list.includes("api") && (
+				<Badge
+					variant="outline"
+					className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300"
+				>
+					api
+				</Badge>
+			)}
+			{list.includes("tester") && (
+				<Badge
+					variant="outline"
+					className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300"
+				>
+					test inbox
+				</Badge>
+			)}
+		</div>
 	);
 }
 
@@ -48,19 +69,32 @@ export interface UsersPageProps {
 }
 
 export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
-	const { user: currentUser } = useUser();
+	const { user: currentUser } = usePermissions();
 	const [users, setUsers] = useState<User[]>(initialUsers ?? []);
 	const [loading, setLoading] = useState(!initialUsers);
+
+	// Invite state
 	const [inviteOpen, setInviteOpen] = useState(false);
 	const [inviteEmail, setInviteEmail] = useState("");
-	const [inviteRole, setInviteRole] = useState<"admin" | "member" | "tester">("member");
+	const [inviteUserType, setInviteUserType] = useState<UserType>("member");
+	const [inviteCanApi, setInviteCanApi] = useState(false);
+	const [inviteCanTest, setInviteCanTest] = useState(false);
 	const [inviteUrl, setInviteUrl] = useState("");
 	const [inviting, setInviting] = useState(false);
 	const [inviteError, setInviteError] = useState("");
 	const [copied, setCopied] = useState(false);
+
+	// Edit user permissions state
+	const [editUser, setEditUser] = useState<User | null>(null);
+	const [editUserType, setEditUserType] = useState<UserType>("member");
+	const [editCanApi, setEditCanApi] = useState(false);
+	const [editCanTest, setEditCanTest] = useState(false);
+	const [savingPermissions, setSavingPermissions] = useState(false);
+	const [editError, setEditError] = useState("");
+
+	// Revoke state
 	const [revokeId, setRevokeId] = useState<string | null>(null);
 	const [revoking, setRevoking] = useState(false);
-	const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!initialUsers) {
@@ -68,13 +102,17 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 				.then(setUsers)
 				.finally(() => setLoading(false));
 		}
-	}, []);
+	}, [initialUsers]);
 
 	async function handleInvite() {
 		setInviteError("");
 		setInviting(true);
 		try {
-			const { inviteUrl: url } = await createInviteAction(inviteEmail.trim(), inviteRole);
+			const accessTypes: AccessType[] = ["inbox"];
+			if (inviteCanApi) accessTypes.push("api");
+			if (inviteCanTest) accessTypes.push("tester");
+
+			const { inviteUrl: url } = await createInviteAction(inviteEmail.trim(), inviteUserType, accessTypes);
 			setInviteUrl(url);
 		} catch (err: any) {
 			const msg = err?.message;
@@ -88,7 +126,9 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 	function closeInviteDialog() {
 		setInviteOpen(false);
 		setInviteEmail("");
-		setInviteRole("member");
+		setInviteUserType("member");
+		setInviteCanApi(false);
+		setInviteCanTest(false);
 		setInviteUrl("");
 		setInviteError("");
 		setCopied(false);
@@ -98,6 +138,44 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 		await navigator.clipboard.writeText(inviteUrl);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
+	}
+
+	function openEdit(user: User) {
+		setEditUser(user);
+		setEditUserType(user.user_type);
+		const acts = Array.isArray(user.access_types) ? user.access_types : [];
+		setEditCanApi(acts.includes("api"));
+		setEditCanTest(acts.includes("tester"));
+		setEditError("");
+	}
+
+	async function handleSavePermissions() {
+		if (!editUser) return;
+		setSavingPermissions(true);
+		setEditError("");
+		try {
+			const accessTypes: AccessType[] = ["inbox"];
+			if (editCanApi) accessTypes.push("api");
+			if (editCanTest) accessTypes.push("tester");
+
+			await changeUserPermissionsAction(editUser.id, editUserType, accessTypes);
+			setUsers((prev) =>
+				prev.map((u) =>
+					u.id === editUser.id
+						? {
+								...u,
+								user_type: editUserType,
+								access_types: editUserType === "admin" ? ["inbox", "api", "tester"] : accessTypes,
+							}
+						: u,
+				),
+			);
+			setEditUser(null);
+		} catch (err: any) {
+			setEditError(err?.message || "Failed to update permissions.");
+		} finally {
+			setSavingPermissions(false);
+		}
 	}
 
 	async function handleRevoke() {
@@ -112,31 +190,25 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 		}
 	}
 
-	async function handleRoleChange(userId: string, newRole: "admin" | "member" | "tester") {
-		setChangingRoleId(userId);
-		try {
-			await changeUserRoleAction(userId, newRole);
-			setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-		} catch {
-			// revert is implicit — state unchanged on error
-		} finally {
-			setChangingRoleId(null);
-		}
-	}
-
-	const isSuperAdmin = currentUser?.role === "super-admin";
-
 	return (
-		<div className="p-6 max-w-4xl">
+		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
 			{/* Header */}
-			<div className="flex items-center justify-between mb-6">
+			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-[18px] font-semibold text-foreground tracking-tight">Users</h1>
-					<p className="text-sm text-muted-foreground mt-0.5">Invite-only access — manage your team here</p>
+					<div className="flex items-center gap-2 mb-1">
+						<Users size={14} className="text-orange-500" />
+						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+							Access Control
+						</span>
+					</div>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">Team Users & Permissions</h1>
+					<p className="text-xs text-muted-foreground mt-0.5">
+						Manage administrative authority and additive capabilities for organization members.
+					</p>
 				</div>
-				<Button size="sm" onClick={() => setInviteOpen(true)}>
+				<Button onClick={() => setInviteOpen(true)} className="gap-1.5 text-xs h-8.5 shadow-xs">
 					<Plus size={14} />
-					Invite user
+					<span>Invite User</span>
 				</Button>
 			</div>
 
@@ -145,78 +217,180 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 					<Loader2 size={20} className="animate-spin text-muted-foreground" />
 				</div>
 			) : (
-				<div className="rounded-xl border border-border overflow-hidden">
+				<div className="rounded-xl border border-border overflow-hidden bg-card">
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Name</TableHead>
-								<TableHead>Email</TableHead>
-								<TableHead>Role</TableHead>
+								<TableHead>User</TableHead>
+								<TableHead>Authority</TableHead>
+								<TableHead>Capabilities</TableHead>
 								<TableHead>Joined</TableHead>
 								<TableHead className="text-right">Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{users.map((user) => (
-								<TableRow key={user.id}>
-									<TableCell className="font-medium text-sm">{user.name}</TableCell>
-									<TableCell className="text-sm text-muted-foreground">{user.email}</TableCell>
-									<TableCell>
-										{user.role === "super-admin" ? (
-											<RoleBadge role={user.role} />
-										) : (
-											<Select
-												value={user.role}
-												onValueChange={(val) =>
-													handleRoleChange(user.id, val as "admin" | "member" | "tester")
-												}
-												disabled={changingRoleId === user.id}
-											>
-												<SelectTrigger className="h-6 w-[90px] text-[11px] px-2 border-0 bg-transparent p-0 shadow-none focus:ring-0">
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="admin" className="text-xs">
-														admin
-													</SelectItem>
-													<SelectItem value="member" className="text-xs">
-														user
-													</SelectItem>
-													<SelectItem value="tester" className="text-xs">
-														tester
-													</SelectItem>
-												</SelectContent>
-											</Select>
-										)}
-									</TableCell>
-									<TableCell className="text-sm text-muted-foreground">
-										{new Date(user.created_at).toLocaleDateString(undefined, {
-											month: "short",
-											day: "numeric",
-											year: "numeric",
-										})}
-									</TableCell>
-									<TableCell className="text-right">
-										{user.role !== "super-admin" && (
-											<Button
-												size="sm"
-												variant="ghost"
-												onClick={() => setRevokeId(user.id)}
-												className="h-7 px-2 hover:text-destructive"
-											>
-												<Trash2 size={12} />
-												Revoke
-											</Button>
-										)}
-									</TableCell>
-								</TableRow>
-							))}
+							{users.map((user) => {
+								const userType: UserType = user.user_type;
+								const accessTypes = user.access_types ?? ["inbox"];
+								const isSelf = currentUser?.id === user.id;
+
+								return (
+									<TableRow key={user.id}>
+										<TableCell>
+											<div className="font-medium text-sm text-foreground">{user.name}</div>
+											<div className="text-xs text-muted-foreground">{user.email}</div>
+										</TableCell>
+										<TableCell>
+											<UserTypeBadge userType={userType} />
+										</TableCell>
+										<TableCell>
+											<AccessBadges accessTypes={accessTypes} userType={userType} />
+										</TableCell>
+										<TableCell className="text-xs text-muted-foreground">
+											{new Date(user.created_at).toLocaleDateString(undefined, {
+												month: "short",
+												day: "numeric",
+												year: "numeric",
+											})}
+										</TableCell>
+										<TableCell className="text-right">
+											<div className="flex items-center justify-end gap-1">
+												<Button
+													size="sm"
+													variant="ghost"
+													onClick={() => openEdit(user)}
+													className="h-7 px-2 text-xs"
+												>
+													<Edit2 size={12} className="mr-1" />
+													Permissions
+												</Button>
+												{!isSelf && (
+													<Button
+														size="sm"
+														variant="ghost"
+														onClick={() => setRevokeId(user.id)}
+														className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+													>
+														<Trash2 size={12} />
+													</Button>
+												)}
+											</div>
+										</TableCell>
+									</TableRow>
+								);
+							})}
 						</TableBody>
 					</Table>
 				</div>
 			)}
 
-			{/* Invite dialog */}
+			{/* ── Edit Permissions Dialog ── */}
+			<Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Edit User Permissions</DialogTitle>
+					</DialogHeader>
+
+					{editUser && (
+						<div className="flex flex-col gap-4 py-2">
+							<div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
+								<span className="font-semibold text-foreground">{editUser.name}</span>
+								<span className="text-muted-foreground">{editUser.email}</span>
+							</div>
+
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="edit-user-type">User Type (Administrative Authority)</Label>
+								<Select value={editUserType} onValueChange={(val) => setEditUserType(val as UserType)}>
+									<SelectTrigger id="edit-user-type" className="h-9 text-sm">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="member">Member — Regular application user</SelectItem>
+										<SelectItem value="admin">Admin — Full platform administration</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{editUserType === "admin" ? (
+								<p className="text-xs text-muted-foreground italic bg-amber-50/50 border border-amber-200/60 rounded p-2.5 dark:bg-amber-950/20 dark:border-amber-900">
+									Administrators automatically receive full authority across all dashboards,
+									mailboxes, and settings.
+								</p>
+							) : (
+								<div className="flex flex-col gap-2 pt-1">
+									<Label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+										Product Capabilities
+									</Label>
+									<div className="space-y-2.5 rounded-lg border border-border p-3">
+										<div className="flex items-center gap-2.5">
+											<Checkbox id="edit-cap-inbox" checked disabled />
+											<label
+												htmlFor="edit-cap-inbox"
+												className="text-xs font-medium cursor-not-allowed"
+											>
+												Production Inbox{" "}
+												<span className="text-muted-foreground font-normal">
+													(Included by default)
+												</span>
+											</label>
+										</div>
+										<div className="flex items-center gap-2.5">
+											<Checkbox
+												id="edit-cap-api"
+												checked={editCanApi}
+												onCheckedChange={(checked) => setEditCanApi(!!checked)}
+											/>
+											<label
+												htmlFor="edit-cap-api"
+												className="text-xs font-medium cursor-pointer"
+											>
+												API Dashboard{" "}
+												<span className="text-muted-foreground font-normal">
+													(Logs, templates, playground, keys)
+												</span>
+											</label>
+										</div>
+										<div className="flex items-center gap-2.5">
+											<Checkbox
+												id="edit-cap-test"
+												checked={editCanTest}
+												onCheckedChange={(checked) => setEditCanTest(!!checked)}
+											/>
+											<label
+												htmlFor="edit-cap-test"
+												className="text-xs font-medium cursor-pointer"
+											>
+												Test Inbox{" "}
+												<span className="text-muted-foreground font-normal">
+													(Virtual testing folder inside Inbox)
+												</span>
+											</label>
+										</div>
+									</div>
+								</div>
+							)}
+
+							{editError && (
+								<Alert variant="destructive">
+									<AlertDescription>{editError}</AlertDescription>
+								</Alert>
+							)}
+
+							<DialogFooter>
+								<Button variant="outline" onClick={() => setEditUser(null)}>
+									Cancel
+								</Button>
+								<Button onClick={handleSavePermissions} disabled={savingPermissions}>
+									{savingPermissions && <Loader2 size={13} className="animate-spin mr-1.5" />}
+									Save changes
+								</Button>
+							</DialogFooter>
+						</div>
+					)}
+				</DialogContent>
+			</Dialog>
+
+			{/* ── Invite Dialog ── */}
 			<Dialog open={inviteOpen} onOpenChange={(open) => !open && closeInviteDialog()}>
 				<DialogContent>
 					<DialogHeader>
@@ -237,41 +411,94 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 									onKeyDown={(e) => e.key === "Enter" && inviteEmail.trim() && handleInvite()}
 								/>
 							</div>
+
 							<div className="flex flex-col gap-1.5">
-								<Label htmlFor="invite-role">Role</Label>
+								<Label htmlFor="invite-user-type">User Type</Label>
 								<Select
-									value={inviteRole}
-									onValueChange={(val) => setInviteRole(val as "admin" | "member" | "tester")}
+									value={inviteUserType}
+									onValueChange={(val) => setInviteUserType(val as UserType)}
 								>
-									<SelectTrigger id="invite-role" className="h-9 text-sm" style={{ width: "auto" }}>
+									<SelectTrigger id="invite-user-type" className="h-9 text-sm">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{isSuperAdmin && (
-											<SelectItem value="admin" className="text-sm">
-												Admin — inbox + API management
-											</SelectItem>
-										)}
-										<SelectItem value="member" className="text-sm">
-											User — inbox access only
-										</SelectItem>
-										<SelectItem value="tester" className="text-sm">
-											Tester — test mailbox access only
-										</SelectItem>
+										<SelectItem value="member">Member — Regular user</SelectItem>
+										<SelectItem value="admin">Admin — Full platform administration</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
+
+							{inviteUserType === "admin" ? (
+								<p className="text-xs text-muted-foreground italic bg-amber-50/50 border border-amber-200/60 rounded p-2.5 dark:bg-amber-950/20 dark:border-amber-900">
+									Administrators automatically receive full authority across all dashboards,
+									mailboxes, and settings.
+								</p>
+							) : (
+								<div className="flex flex-col gap-2 pt-1">
+									<Label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+										Capabilities
+									</Label>
+									<div className="space-y-2.5 rounded-lg border border-border p-3">
+										<div className="flex items-center gap-2.5">
+											<Checkbox id="invite-cap-inbox" checked disabled />
+											<label
+												htmlFor="invite-cap-inbox"
+												className="text-xs font-medium cursor-not-allowed"
+											>
+												Production Inbox{" "}
+												<span className="text-muted-foreground font-normal">
+													(Included by default)
+												</span>
+											</label>
+										</div>
+										<div className="flex items-center gap-2.5">
+											<Checkbox
+												id="invite-cap-api"
+												checked={inviteCanApi}
+												onCheckedChange={(checked) => setInviteCanApi(!!checked)}
+											/>
+											<label
+												htmlFor="invite-cap-api"
+												className="text-xs font-medium cursor-pointer"
+											>
+												API Dashboard{" "}
+												<span className="text-muted-foreground font-normal">
+													(Logs, templates, playground, keys)
+												</span>
+											</label>
+										</div>
+										<div className="flex items-center gap-2.5">
+											<Checkbox
+												id="invite-cap-test"
+												checked={inviteCanTest}
+												onCheckedChange={(checked) => setInviteCanTest(!!checked)}
+											/>
+											<label
+												htmlFor="invite-cap-test"
+												className="text-xs font-medium cursor-pointer"
+											>
+												Test Inbox{" "}
+												<span className="text-muted-foreground font-normal">
+													(Virtual testing folder)
+												</span>
+											</label>
+										</div>
+									</div>
+								</div>
+							)}
+
 							{inviteError && (
 								<Alert variant="destructive">
 									<AlertDescription>{inviteError}</AlertDescription>
 								</Alert>
 							)}
+
 							<DialogFooter>
 								<Button variant="outline" onClick={closeInviteDialog}>
 									Cancel
 								</Button>
 								<Button onClick={handleInvite} disabled={inviting || !inviteEmail.trim()}>
-									{inviting && <Loader2 size={13} className="animate-spin" />}
+									{inviting && <Loader2 size={13} className="animate-spin mr-1.5" />}
 									{inviting ? "Creating invite…" : "Create invite"}
 								</Button>
 							</DialogFooter>
@@ -297,7 +524,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 				</DialogContent>
 			</Dialog>
 
-			{/* Revoke confirm */}
+			{/* ── Revoke Confirm Dialog ── */}
 			<Dialog open={!!revokeId} onOpenChange={(open) => !open && setRevokeId(null)}>
 				<DialogContent>
 					<DialogHeader>
@@ -311,7 +538,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 							Cancel
 						</Button>
 						<Button variant="destructive" onClick={handleRevoke} disabled={revoking}>
-							{revoking && <Loader2 size={13} className="animate-spin" />}
+							{revoking && <Loader2 size={13} className="animate-spin mr-1.5" />}
 							Revoke access
 						</Button>
 					</DialogFooter>

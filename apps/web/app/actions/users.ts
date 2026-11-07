@@ -2,7 +2,7 @@
 
 import { env } from "cloudflare:workers";
 import { generateId } from "@emailflare/email-core";
-import { requireAdmin, requireSuperAdmin } from "./auth";
+import { requireAdmin } from "./auth";
 import type { Env } from "@/worker/inbox/env";
 
 async function sha256Hex(input: string): Promise<string> {
@@ -14,14 +14,17 @@ async function sha256Hex(input: string): Promise<string> {
 
 export async function createInviteAction(
 	email: string,
-	role: "admin" | "member" | "tester" = "member",
+	user_type: "admin" | "member" = "member",
+	accessTypes: ("inbox" | "api" | "tester")[] = ["inbox"],
 ): Promise<{ inviteUrl: string }> {
 	const session = await requireAdmin();
 	const workerEnv = env as unknown as Env;
 
 	const normalizedEmail = email.trim().toLowerCase();
-	// Non-super-admins can only invite members
-	const targetRole = session.role === "super-admin" ? role : "member";
+	let finalAccessTypes = [...accessTypes];
+	if (user_type === "admin") {
+		finalAccessTypes = ["inbox", "api", "tester"];
+	}
 
 	const existing = await workerEnv.DB.prepare("SELECT id FROM users WHERE email = ? LIMIT 1")
 		.bind(normalizedEmail)
@@ -37,9 +40,18 @@ export async function createInviteAction(
 	const now = new Date().toISOString();
 
 	await workerEnv.DB.prepare(
-		"INSERT INTO invites (id, email, token_hash, created_by, role, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO invites (id, email, token_hash, created_by, user_type, access_types, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 	)
-		.bind(id, normalizedEmail, tokenHash, session.userId, targetRole, expiresAt, now)
+		.bind(
+			id,
+			normalizedEmail,
+			tokenHash,
+			session.userId,
+			user_type,
+			JSON.stringify(finalAccessTypes),
+			expiresAt,
+			now,
+		)
 		.run();
 
 	const publicOrigin = (workerEnv.PUBLIC_URL ?? "").replace(/\/$/, "");
@@ -49,21 +61,27 @@ export async function createInviteAction(
 }
 
 export async function revokeUserAction(id: string): Promise<{ deleted: boolean }> {
-	const session = await requireSuperAdmin();
+	const session = await requireAdmin();
 	const workerEnv = env as unknown as Env;
 
 	if (id === session.userId) {
 		throw new Error("Cannot delete own account");
 	}
 
-	const user = await workerEnv.DB.prepare("SELECT id, role FROM users WHERE id = ? LIMIT 1")
+	const user = await workerEnv.DB.prepare("SELECT id, user_type FROM users WHERE id = ? LIMIT 1")
 		.bind(id)
-		.first<{ id: string; role: string }>();
+		.first<{ id: string; user_type?: string }>();
 	if (!user) {
 		throw new Error("User not found");
 	}
-	if (user.role === "super-admin") {
-		throw new Error("Cannot delete the owner account");
+
+	const isAdmin = user.user_type === "admin";
+	const adminCount = await workerEnv.DB.prepare(
+		"SELECT COUNT(*) as count FROM users WHERE user_type = 'admin'",
+	).first<{ count: number }>();
+
+	if (isAdmin && (adminCount?.count ?? 0) <= 1) {
+		throw new Error("Cannot delete the sole admin account");
 	}
 
 	await workerEnv.DB.batch([
@@ -75,28 +93,42 @@ export async function revokeUserAction(id: string): Promise<{ deleted: boolean }
 	return { deleted: true };
 }
 
-export async function changeUserRoleAction(
+export async function changeUserPermissionsAction(
 	id: string,
-	role: "admin" | "member" | "tester",
+	user_type: "admin" | "member",
+	access_types: ("inbox" | "api" | "tester")[],
 ): Promise<{ updated: boolean }> {
-	const session = await requireSuperAdmin();
+	const session = await requireAdmin();
 	const workerEnv = env as unknown as Env;
 
-	if (id === session.userId) {
-		throw new Error("Cannot change own role");
+	if (id === session.userId && user_type !== "admin") {
+		throw new Error("Cannot demote your own admin account");
 	}
 
-	const user = await workerEnv.DB.prepare("SELECT id, role FROM users WHERE id = ? LIMIT 1")
+	const user = await workerEnv.DB.prepare("SELECT id, user_type FROM users WHERE id = ? LIMIT 1")
 		.bind(id)
-		.first<{ id: string; role: string }>();
+		.first<{ id: string; user_type?: string }>();
 	if (!user) {
 		throw new Error("User not found");
 	}
-	if (user.role === "super-admin") {
-		throw new Error("Cannot change the owner role");
+
+	if (user.user_type === "admin" && user_type !== "admin") {
+		const adminCount = await workerEnv.DB.prepare(
+			"SELECT COUNT(*) as count FROM users WHERE user_type = 'admin'",
+		).first<{ count: number }>();
+		if ((adminCount?.count ?? 0) <= 1) {
+			throw new Error("Cannot demote the last remaining admin account");
+		}
 	}
 
-	await workerEnv.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(role, id).run();
+	let finalAccess = [...access_types];
+	if (user_type === "admin") {
+		finalAccess = ["inbox", "api", "tester"];
+	}
+
+	await workerEnv.DB.prepare("UPDATE users SET user_type = ?, access_types = ? WHERE id = ?")
+		.bind(user_type, JSON.stringify(finalAccess), id)
+		.run();
 
 	return { updated: true };
 }

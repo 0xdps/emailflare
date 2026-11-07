@@ -4,7 +4,7 @@ import { env } from "cloudflare:workers";
 import { generateId, keyCreateSchema } from "@emailflare/email-core";
 import { makeDb } from "@/worker/inbox/db";
 import { sha256Hex } from "@/worker/inbox/middleware/apiKey";
-import { requireSession } from "./auth";
+import { requireAdmin } from "./auth";
 import type { Env } from "@/worker/inbox/env";
 
 export interface ApiKey {
@@ -36,7 +36,7 @@ export async function createApiKeyAction(input: {
 	scope: "global" | "domain" | "multi";
 	domainIds?: string[];
 }): Promise<CreatedApiKey> {
-	await requireSession();
+	await requireAdmin();
 	const validated = keyCreateSchema.parse(input);
 
 	const workerEnv = env as unknown as Env;
@@ -83,7 +83,7 @@ export async function createApiKeyAction(input: {
 }
 
 export async function revokeApiKeyAction(id: string): Promise<{ revoked: boolean }> {
-	await requireSession();
+	await requireAdmin();
 	const workerEnv = env as unknown as Env;
 	const { apiKeys } = makeDb(workerEnv.DB);
 

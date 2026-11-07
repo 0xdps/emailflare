@@ -44,13 +44,17 @@ export interface Env {
 	INBOX_WORKER_NAME: string;
 }
 
+export type UserType = "admin" | "member";
+export type AccessType = "inbox" | "api" | "tester";
+
 // Hono generic type used by every route file
 export type HonoEnv = {
 	Bindings: Env;
 	Variables: {
 		apiKey: ApiKeyContext;
 		userId: string;
-		userRole: "super-admin" | "admin" | "member" | "tester";
+		userType: UserType;
+		accessTypes: AccessType[];
 	};
 };
 

@@ -56,6 +56,21 @@ function toInbox(row: any) {
 
 // GET /api/inbox/inboxes
 app.get("/", async (c) => {
+	const userId = c.get("userId");
+	const userType = c.get("userType");
+
+	if (userType !== "admin" && userId) {
+		const rows = await c.env.DB.prepare(
+			`SELECT i.* FROM inboxes i
+       JOIN inbox_members im ON i.id = im.inbox_id
+       WHERE im.user_id = ?
+       ORDER BY i.created_at DESC`,
+		)
+			.bind(userId)
+			.all();
+		return c.json(rows.results.map(toInbox));
+	}
+
 	const rows = await c.env.DB.prepare("SELECT * FROM inboxes ORDER BY created_at DESC").all();
 	return c.json(rows.results.map(toInbox));
 });
@@ -138,7 +153,7 @@ app.delete("/:id", requireAdmin, async (c) => {
 // GET /api/inbox/inboxes/:id/members
 app.get("/:id/members", async (c) => {
 	const members = await c.env.DB.prepare(
-		`SELECT u.id, u.name, u.email, u.role
+		`SELECT u.id, u.name, u.email, u.user_type
      FROM inbox_members im
      JOIN users u ON u.id = im.user_id
      WHERE im.inbox_id = ?`,

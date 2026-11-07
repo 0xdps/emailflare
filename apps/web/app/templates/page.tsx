@@ -1,15 +1,5 @@
-import Layout from "@/components/Layout";
-import TemplatesPage from "@/components/pages/Templates";
-import { getTemplatesList } from "@/lib/server/queries";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function RoutePage() {
-	const initialTemplates = await getTemplatesList();
-
-	return (
-		<Layout>
-			<TemplatesPage initialTemplates={initialTemplates as any} />
-		</Layout>
-	);
+export default function RoutePage() {
+	redirect("/developer/templates");
 }

@@ -42,11 +42,15 @@ export async function logout(): Promise<void> {
 	await api.post("/api/auth/logout");
 }
 
+export type UserType = "admin" | "member";
+export type AccessType = "inbox" | "api" | "tester";
+
 export interface User {
 	id: string;
 	name: string;
 	email: string;
-	role: "super-admin" | "admin" | "member" | "tester";
+	user_type: UserType;
+	access_types: AccessType[];
 	created_at: string;
 }
 
@@ -73,6 +77,14 @@ export async function getUsers(): Promise<User[]> {
 	return data;
 }
 
+export async function updateUserPermissions(
+	id: string,
+	user_type: UserType,
+	access_types: AccessType[],
+): Promise<void> {
+	await api.patch(`/api/admin/users/${id}/permissions`, { user_type, access_types });
+}
+
 // ── Domains ───────────────────────────────────────────────────────────────────
 
 export interface Domain {
@@ -96,6 +108,10 @@ export interface Person {
 	unread_count: number;
 	total_count: number;
 	last_email_at: string | null;
+	latest_subject?: string | null;
+	latest_snippet?: string | null;
+	latest_inbox?: string | null;
+	inbox_address?: string | null;
 }
 
 export interface ThreadItem {
@@ -112,6 +128,15 @@ export interface ThreadItem {
 	is_read: number;
 	timestamp: string;
 	inbox_address?: string | null;
+	spf?: string | null;
+	dkim?: string | null;
+	dmarc?: string | null;
+	attachments?: Array<{
+		id: string;
+		filename: string;
+		content_type: string;
+		size: number;
+	}>;
 }
 
 export interface Thread {
@@ -156,6 +181,44 @@ export interface InboxTemplate {
 	body_html: string;
 	created_at: string;
 	updated_at: string;
+}
+
+export interface ThreadSummary {
+	id: string; // thread_id
+	thread_id: string;
+	inbox_address: string;
+	counterparty_email: string;
+	counterparty_name: string | null;
+	person_id?: string | null;
+	subject: string;
+	latest_snippet?: string | null;
+	last_message_at: string;
+	unread_count: number;
+	total_count: number;
+}
+
+export async function getThreads(params?: {
+	inbox?: string;
+	search?: string;
+	unread?: boolean;
+	page?: number;
+}): Promise<{ data: ThreadSummary[]; total: number }> {
+	const { data } = await api.get("/api/inbox/threads", {
+		params: {
+			...params,
+			unread: params?.unread ? "1" : undefined,
+		},
+	});
+	return data;
+}
+
+export async function getThreadDetails(threadId: string): Promise<Thread> {
+	const { data } = await api.get<Thread>(`/api/inbox/threads/${threadId}`);
+	return data;
+}
+
+export async function markThreadRead(threadId: string): Promise<void> {
+	await api.post(`/api/inbox/threads/${threadId}/mark-read`);
 }
 
 // ── People ────────────────────────────────────────────────────────────────────
@@ -269,4 +332,63 @@ export async function updateInboxTemplate(
 
 export async function deleteInboxTemplate(id: string): Promise<void> {
 	await api.delete(`/api/inbox/inbox-templates/${id}`);
+}
+
+// ── Test Emails (Sandbox) ─────────────────────────────────────────────────────
+
+export interface TestEmailRow {
+	id: string;
+	to_address: string;
+	from_address: string;
+	subject: string;
+	status: "sent" | "failed";
+	cf_message_id: string | null;
+	domain_id: string | null;
+	template_id: string | null;
+	error: string | null;
+	is_test: number;
+	html_body: string | null;
+	text_body: string | null;
+	sent_at: string;
+}
+
+export async function getTestEmails(params?: { search?: string; limit?: number; page?: number }): Promise<{
+	data: TestEmailRow[];
+	total: number;
+	page: number;
+	limit: number;
+	pages: number;
+}> {
+	const { data } = await api.get("/api/test-emails", { params });
+	return data;
+}
+
+export async function deleteTestEmail(id: string): Promise<void> {
+	await api.delete(`/api/test-emails/${id}`);
+}
+
+export async function clearAllTestEmails(): Promise<void> {
+	await api.delete("/api/test-emails");
+}
+
+// ── Playground ────────────────────────────────────────────────────────────────
+
+export interface PlaygroundSendInput {
+	from: string;
+	fromName?: string;
+	to: string;
+	subject?: string;
+	templateId?: string;
+	templateSlug?: string;
+	variables?: Record<string, unknown>;
+	themeId?: string;
+	mode: "test" | "live";
+	apiKey?: string;
+}
+
+export async function sendPlaygroundEmail(
+	input: PlaygroundSendInput,
+): Promise<{ ok: boolean; isTest?: boolean; messageId?: string; error?: string }> {
+	const { data } = await api.post("/api/playground/send", input);
+	return data;
 }

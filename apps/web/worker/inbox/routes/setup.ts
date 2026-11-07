@@ -34,12 +34,18 @@ app.post("/", zValidator("json", setupSchema), async (c) => {
 	const now = new Date().toISOString();
 
 	await c.env.DB.prepare(
-		"INSERT INTO users (id, name, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO users (id, name, email, password_hash, user_type, access_types, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
 	)
-		.bind(id, name, email, passwordHash, "super-admin", now)
+		.bind(id, name, email, passwordHash, "admin", JSON.stringify(["inbox", "api", "tester"]), now)
 		.run();
 
-	await saveSession(c, { userId: id, role: "super-admin", name, email });
+	await saveSession(c, {
+		userId: id,
+		userType: "admin",
+		accessTypes: ["inbox", "api", "tester"],
+		name,
+		email,
+	});
 	return c.json({ ok: true }, 201);
 });
 

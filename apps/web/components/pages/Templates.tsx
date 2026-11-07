@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, FileText, Cpu, X, Mail, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Pencil, Trash2, FileText, Cpu, X, Mail, ChevronDown, Play } from "lucide-react";
 import api from "@/lib/api";
 import { createTemplateAction, updateTemplateAction, deleteTemplateAction } from "@/app/actions/templates";
 import { Button } from "@/components/ui/button";
@@ -168,6 +169,7 @@ export interface TemplatesPageProps {
 }
 
 export default function TemplatesPage({ initialTemplates }: TemplatesPageProps = {}) {
+	const router = useRouter();
 	const [templates, setTemplates] = useState<Template[]>(initialTemplates ?? []);
 	const [loading, setLoading] = useState(!initialTemplates);
 	const [search, setSearch] = useState("");
@@ -698,8 +700,16 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 									{previewSubject || previewing.subject}
 								</p>
 							</div>
-							<div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+							<div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
 								<ThemePicker value={previewThemeId} onChange={(id) => setPreviewThemeId(id)} />
+								<Button
+									variant="outline"
+									size="sm"
+									className="gap-1.5 h-7 text-xs text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40"
+									onClick={() => router.push(`/playground?templateId=${previewing.id}`)}
+								>
+									<Play size={11} className="fill-current" /> Test in Playground
+								</Button>
 								{previewing.is_system === 0 && (
 									<div className="flex items-center gap-1.5">
 										<Button

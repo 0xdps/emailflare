@@ -1,15 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Users, X } from "lucide-react";
+import { Plus, Trash2, Users, X, ListFilter, ShieldCheck } from "lucide-react";
 import api from "@/lib/api";
 import { createListAction, deleteListAction } from "@/app/actions/lists";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+	DialogFooter,
+} from "@/components/ui/dialog";
 
 export interface List {
 	id: string;
@@ -31,9 +38,14 @@ export default function ListsPage({ initialLists }: { initialLists?: List[] }) {
 
 	async function load() {
 		setLoading(true);
-		const { data } = await api.get<List[]>("/api/lists");
-		setLists(data);
-		setLoading(false);
+		try {
+			const { data } = await api.get<List[]>("/api/lists");
+			setLists(data);
+		} catch {
+			setLists([]);
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	useEffect(() => {
@@ -84,110 +96,135 @@ export default function ListsPage({ initialLists }: { initialLists?: List[] }) {
 	}
 
 	return (
-		<div className="p-6">
-			<div className="max-w-[680px]">
-				<div className="flex items-center justify-between mb-6">
-					<div>
-						<div className="flex items-center gap-2 mb-1">
-							<Users size={14} className="text-primary" />
-							<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-								Unsubscribe
-							</span>
+		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+			{/* Create Dialog */}
+			<Dialog open={creating} onOpenChange={(open) => !open && setCreating(false)}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle className="text-base font-semibold">New Unsubscribe List</DialogTitle>
+						<DialogDescription className="text-xs">
+							Recipients unsubscribing from this list will be issued an RFC 8058 one-click token.
+						</DialogDescription>
+					</DialogHeader>
+
+					<form onSubmit={handleCreate} className="space-y-4 pt-2">
+						{err && <p className="text-xs text-destructive">{err}</p>}
+
+						<div className="space-y-1.5">
+							<Label className="text-xs">List Name</Label>
+							<Input
+								value={form.name}
+								onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+								required
+								placeholder="e.g. Weekly Newsletter, Product Updates"
+								className="h-8.5 text-xs"
+							/>
 						</div>
-						<h1 className="text-2xl font-bold">Unsubscribe lists</h1>
-						<p className="text-sm text-muted-foreground mt-1">
-							Attach one-click unsubscribe headers to sequence sends. A recipient who unsubscribes is
-							suppressed globally.
-						</p>
+
+						<div className="space-y-1.5">
+							<Label className="text-xs">Description (optional)</Label>
+							<Input
+								value={form.description}
+								onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+								placeholder="e.g. Marketing campaigns and product announcements"
+								className="h-8.5 text-xs"
+							/>
+						</div>
+
+						<DialogFooter className="pt-2">
+							<Button
+								type="button"
+								variant="ghost"
+								onClick={() => setCreating(false)}
+								className="h-8 text-xs"
+							>
+								Cancel
+							</Button>
+							<Button type="submit" disabled={saving || !form.name} className="h-8 text-xs">
+								{saving ? "Creating..." : "Create List"}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
+
+			{/* Page Header */}
+			<div className="flex items-center justify-between">
+				<div>
+					<div className="flex items-center gap-2 mb-1">
+						<Users size={14} className="text-orange-500" />
+						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+							Compliance & Opt-out
+						</span>
 					</div>
-					<Button onClick={() => setCreating(true)}>
-						<Plus size={14} data-icon="inline-start" /> New list
-					</Button>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">Unsubscribe Lists</h1>
+					<p className="text-xs text-muted-foreground mt-0.5">
+						Attach RFC 8058 one-click unsubscribe headers to transactional or sequence sends.
+					</p>
+				</div>
+				<Button onClick={() => setCreating(true)} className="gap-1.5 text-xs h-8.5 shadow-xs">
+					<Plus size={13} />
+					<span>New List</span>
+				</Button>
+			</div>
+
+			{/* Lists Card */}
+			<div className="rounded-xl border border-border bg-card overflow-hidden">
+				<div className="px-5 py-3.5 border-b border-border bg-muted/20 flex items-center justify-between">
+					<span className="text-xs font-semibold text-foreground">Active Lists ({lists.length})</span>
+					<span className="text-[11px] text-muted-foreground">List-Unsubscribe: One-Click</span>
 				</div>
 
-				{creating && (
-					<Card className="mb-6">
-						<CardContent className="pt-5 flex flex-col gap-4">
-							<div className="flex items-center justify-between">
-								<h2 className="font-semibold text-sm">New list</h2>
-								<Button
-									variant="ghost"
-									size="icon"
-									className="size-6"
-									onClick={() => setCreating(false)}
-								>
-									<X size={14} />
-								</Button>
-							</div>
-							<form onSubmit={handleCreate} className="flex flex-col gap-4">
-								<div className="flex flex-col gap-1.5">
-									<Label>Name</Label>
-									<Input
-										value={form.name}
-										onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-										required
-										placeholder="Product updates"
-									/>
-								</div>
-								<div className="flex flex-col gap-1.5">
-									<Label>Description (optional)</Label>
-									<Input
-										value={form.description}
-										onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-										placeholder="Weekly product newsletter"
-									/>
-								</div>
-								{err && <p className="text-xs text-destructive">{err}</p>}
-								<div className="flex gap-2">
-									<Button type="submit" disabled={saving}>
-										{saving ? "Saving…" : "Create"}
-									</Button>
-									<Button type="button" variant="ghost" onClick={() => setCreating(false)}>
-										Cancel
-									</Button>
-								</div>
-							</form>
-						</CardContent>
-					</Card>
-				)}
-
 				{loading ? (
-					<div className="flex flex-col gap-2">
+					<div className="p-4 space-y-2">
 						{[...Array(3)].map((_, i) => (
-							<Skeleton key={i} className="h-14 rounded-xl" />
+							<Skeleton key={i} className="h-14 rounded-lg" />
 						))}
 					</div>
 				) : lists.length === 0 ? (
-					<div className="text-center py-20 text-muted-foreground text-sm">No unsubscribe lists yet.</div>
+					<div className="text-center py-16 text-muted-foreground space-y-2">
+						<ListFilter size={32} strokeWidth={1.25} className="mx-auto opacity-40 mb-1" />
+						<p className="text-xs font-semibold text-foreground">No unsubscribe lists configured</p>
+						<p className="text-[11px] max-w-sm mx-auto">
+							Create a list to attach RFC 8058 one-click headers to campaigns and sequences.
+						</p>
+					</div>
 				) : (
-					<Card className="overflow-hidden p-0 divide-y divide-border">
+					<div className="divide-y divide-border">
 						{lists.map((l) => (
-							<div key={l.id} className="flex items-center px-5 py-3.5 gap-4">
-								<div className="flex-1 min-w-0">
+							<div
+								key={l.id}
+								className="p-4 md:px-5 flex items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
+							>
+								<div className="space-y-1 min-w-0 flex-1">
 									<div className="flex items-center gap-2">
-										<span className="font-medium text-sm">{l.name}</span>
+										<span className="text-xs font-semibold text-foreground">{l.name}</span>
 										{l.slug && (
-											<Badge variant="secondary" className="font-mono text-xs">
+											<Badge variant="outline" className="font-mono text-[10px]">
 												{l.slug}
 											</Badge>
 										)}
 									</div>
-									{l.description && (
-										<p className="text-xs text-muted-foreground mt-0.5">{l.description}</p>
+									{l.description ? (
+										<p className="text-xs text-muted-foreground truncate">{l.description}</p>
+									) : (
+										<p className="text-[11px] text-muted-foreground font-mono">ID: {l.id}</p>
 									)}
 								</div>
+
 								<Button
 									variant="ghost"
 									size="sm"
 									onClick={() => handleDelete(l.id)}
 									disabled={deleting === l.id}
-									className="text-xs gap-1.5 h-7 px-2.5 text-muted-foreground hover:text-destructive"
+									className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
 								>
-									<Trash2 size={11} /> Delete
+									<Trash2 size={12} className="mr-1.5" />
+									<span>Delete</span>
 								</Button>
 							</div>
 						))}
-					</Card>
+					</div>
 				)}
 			</div>
 		</div>

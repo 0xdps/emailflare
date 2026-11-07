@@ -243,16 +243,28 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 	const nonMembers = allUsers.filter((u) => !members.some((m) => m.id === u.id));
 
 	return (
-		<div className="p-6 max-w-4xl">
+		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
 			{/* Header */}
-			<div className="flex items-center justify-between mb-6">
+			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-[18px] font-semibold text-foreground tracking-tight">Inboxes</h1>
-					<p className="text-sm text-muted-foreground mt-0.5">Manage receiving addresses and team members</p>
+					<div className="flex items-center gap-2 mb-1">
+						<Inbox size={14} className="text-orange-500" />
+						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+							Mailboxes & Routing
+						</span>
+					</div>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">Inboxes & Cloudflare Routing</h1>
+					<p className="text-xs text-muted-foreground mt-0.5">
+						Configure shared receiving addresses, catch-all routing rules, and assign team members.
+					</p>
 				</div>
-				<Button size="sm" onClick={openCreate} disabled={domains.length === 0}>
+				<Button
+					onClick={openCreate}
+					disabled={domains.length === 0}
+					className="gap-1.5 text-xs h-8.5 shadow-xs"
+				>
 					<Plus size={14} />
-					New inbox
+					<span>New Mailbox</span>
 				</Button>
 			</div>
 

@@ -21,10 +21,17 @@ app.post("/login", zValidator("json", userLoginSchema), async (c) => {
 	const { email, password } = c.req.valid("json");
 
 	const user = await c.env.DB.prepare(
-		"SELECT id, name, email, password_hash, role FROM users WHERE email = ? LIMIT 1",
+		"SELECT id, name, email, password_hash, user_type, access_types FROM users WHERE email = ? LIMIT 1",
 	)
 		.bind(email)
-		.first<{ id: string; name: string; email: string; password_hash: string; role: string }>();
+		.first<{
+			id: string;
+			name: string;
+			email: string;
+			password_hash: string;
+			user_type: "admin" | "member";
+			access_types: string;
+		}>();
 
 	if (!user) {
 		// Constant-time dummy hash comparison to prevent user enumeration
@@ -35,9 +42,24 @@ app.post("/login", zValidator("json", userLoginSchema), async (c) => {
 	const valid = await verifyPassword(password, user.password_hash);
 	if (!valid) return c.json({ error: "Invalid email or password" }, 401);
 
+	const userType: "admin" | "member" = user.user_type === "admin" ? "admin" : "member";
+
+	let accessTypes: ("inbox" | "api" | "tester")[];
+	if (userType === "admin") {
+		accessTypes = ["inbox", "api", "tester"];
+	} else {
+		try {
+			const parsed = JSON.parse(user.access_types || "[]");
+			accessTypes = Array.isArray(parsed) ? parsed : [];
+		} catch {
+			accessTypes = [];
+		}
+	}
+
 	await saveSession(c, {
 		userId: user.id,
-		role: user.role as "super-admin" | "admin" | "member" | "tester",
+		userType,
+		accessTypes,
 		name: user.name,
 		email: user.email,
 	});
@@ -51,7 +73,7 @@ app.post("/logout", (c) => {
 });
 
 // GET /api/auth/me — returns user from session cookie (no DB query needed;
-// name, email, and role are embedded in the JWT at login time).
+// userType, accessTypes, name, and email are embedded in the JWT at login time).
 app.get("/me", async (c) => {
 	const session = await getSession(c);
 	if (!session) return c.json({ error: "Unauthorized" }, 401);
@@ -60,7 +82,8 @@ app.get("/me", async (c) => {
 		id: session.userId,
 		name: session.name,
 		email: session.email,
-		role: session.role,
+		user_type: session.userType,
+		access_types: session.accessTypes,
 	});
 });
 

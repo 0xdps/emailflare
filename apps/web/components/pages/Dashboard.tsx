@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
 	Globe,
 	Send,
@@ -12,6 +13,8 @@ import {
 	AlertTriangle,
 	Mail,
 	Activity,
+	FlaskConical,
+	Key,
 } from "lucide-react";
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
@@ -419,6 +422,44 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 				</div>
 			</div>
 
+			{/* ── Transactional Send API Quickstart ───────────────────────────────── */}
+			<div className="rounded-xl border border-border bg-gradient-to-r from-orange-500/5 via-purple-500/5 to-transparent p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+				<div className="space-y-1">
+					<div className="flex items-center gap-2">
+						<span className="text-xs font-semibold text-foreground">Transactional Send API</span>
+						<span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted text-muted-foreground border border-border">
+							POST /v1/send
+						</span>
+					</div>
+					<p className="text-xs text-muted-foreground">
+						Dispatch emails via HTTP API or test with sandbox isolation in the interactive Playground.
+					</p>
+				</div>
+				<div className="flex items-center gap-2 shrink-0 flex-wrap">
+					<Link
+						href="/playground"
+						className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition-colors"
+					>
+						<FlaskConical size={13} className="text-purple-600 dark:text-purple-400" />
+						<span>Playground</span>
+					</Link>
+					<Link
+						href="/keys"
+						className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition-colors"
+					>
+						<Key size={13} className="text-orange-500" />
+						<span>API Keys</span>
+					</Link>
+					<Link
+						href="/developer/logs"
+						className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition-colors"
+					>
+						<Activity size={13} className="text-blue-500" />
+						<span>Logs</span>
+					</Link>
+				</div>
+			</div>
+
 			{/* ── Cloudflare token status ───────────────────────────────────────── */}
 			<Card className="px-5 py-4">
 				<div className="flex items-start justify-between gap-3">
@@ -591,12 +632,12 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 								{stats.totalDomains} total · {stats.verifiedDomains} verified
 							</p>
 						</div>
-						<a
+						<Link
 							href="/domains"
 							className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
 						>
 							Manage <ArrowRight size={10} />
-						</a>
+						</Link>
 					</div>
 
 					{stats.domainBreakdown.length === 0 ? (
@@ -681,12 +722,12 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 				<Card className="lg:col-span-2 overflow-hidden p-0 gap-0">
 					<div className="flex items-center justify-between px-5 py-[14px] border-b border-border">
 						<p className="text-sm font-medium">Recent activity</p>
-						<a
-							href="/logs"
+						<Link
+							href="/developer/logs"
 							className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
 						>
 							All logs <ArrowRight size={10} />
-						</a>
+						</Link>
 					</div>
 
 					{logs.length === 0 ? (
@@ -697,7 +738,10 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 					) : (
 						<div className="divide-y divide-border">
 							{logs.map((log) => (
-								<div className="flex items-start gap-3 px-5 py-3 hover:bg-muted/40 transition-colors">
+								<div
+									key={log.id}
+									className="flex items-start gap-3 px-5 py-3 hover:bg-muted/40 transition-colors"
+								>
 									<div className="mt-0.5 flex-shrink-0">
 										{log.status === "sent" ? (
 											<CheckCircle2 size={13} className="text-emerald-500" />

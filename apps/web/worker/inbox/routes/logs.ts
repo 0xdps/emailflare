@@ -15,9 +15,16 @@ app.get("/", async (c) => {
 	const search = c.req.query("search");
 	const fromDate = c.req.query("from");
 	const toDate = c.req.query("to");
+	const isTest = c.req.query("isTest");
 
 	const conditions: string[] = [];
 	const params: unknown[] = [];
+
+	if (isTest === "1" || isTest === "true") {
+		conditions.push("is_test = 1");
+	} else if (isTest === "0" || isTest === "false") {
+		conditions.push("is_test = 0");
+	}
 
 	if (domainId) {
 		conditions.push("domain_id = ?");

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { generateId } from "@emailflare/email-core";
 import { makeDb } from "@/worker/inbox/db";
 import type { Env } from "@/worker/inbox/env";
-import { requireSession } from "./auth";
+import { requireApi } from "./auth";
 
 const addSchema = z.object({
 	email: z.string().email(),
@@ -18,7 +18,7 @@ export async function createSuppressionAction(data: {
 	reason?: "hard_bounce" | "soft_bounce" | "complaint" | "manual" | "unsubscribed";
 	domain_id?: string;
 }) {
-	await requireSession();
+	await requireApi();
 	const parsed = addSchema.safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid suppression parameters" };
@@ -45,7 +45,7 @@ export async function createSuppressionAction(data: {
 }
 
 export async function deleteSuppressionAction(id: string) {
-	await requireSession();
+	await requireApi();
 	const workerEnv = env as unknown as Env;
 	const { db } = makeDb(workerEnv.DB);
 

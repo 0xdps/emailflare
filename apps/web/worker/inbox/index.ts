@@ -29,9 +29,11 @@ import listsRouter from "./routes/lists.ts";
 import suppressionsRouter from "./routes/suppressions.ts";
 import testEmailsRouter from "./routes/testEmails.ts";
 import unsubscribeRouter from "./routes/unsubscribe.ts";
+import playgroundRouter from "./routes/playground.ts";
 
 // ── Inbox
 import peopleRouter from "./routes/inbox/people.ts";
+import threadsRouter from "./routes/inbox/threads.ts";
 import composeRouter from "./routes/inbox/compose.ts";
 import inboxesRouter from "./routes/inbox/inboxes.ts";
 import sequencesRouter from "./routes/inbox/sequences.ts";
@@ -43,7 +45,7 @@ import adminUsersRouter from "./routes/admin/users.ts";
 // ── Middleware
 import { checkRateLimit } from "./middleware/rateLimit.ts";
 import { requireApiKey } from "./middleware/apiKey.ts";
-import { requireSession, requireAdmin, requireTester } from "./middleware/auth.ts";
+import { requireSession, requireAdmin, requireApi, requireTester, requireInbox } from "./middleware/auth.ts";
 import { seedSystemTemplates } from "./seed.ts";
 
 // ── Email + sequence handlers
@@ -79,53 +81,60 @@ app.route("/v1/unsubscribe", unsubscribeRouter);
 app.use("/v1/*", requireApiKey, checkRateLimit);
 app.route("/v1/send", sendRouter);
 
-// ── Sending admin routes (session auth required) ──────────────────────────────
-const adminApp = new Hono<HonoEnv>();
-adminApp.use("/*", requireSession);
+// ── Authenticated session routes ──────────────────────────────────────────────
+const sessionApp = new Hono<HonoEnv>();
+sessionApp.use("/*", requireSession);
 
+// 1. Admin-only routes (requireAdmin)
+const adminApp = new Hono<HonoEnv>();
+adminApp.use("/*", requireAdmin);
 adminApp.route("/domains", domainsRouter);
 adminApp.route("/keys", keysRouter);
-adminApp.route("/logs", logsRouter);
-adminApp.route("/templates", templatesRouter);
-adminApp.route("/stats", statsRouter);
-adminApp.route("/cloudflare", cloudflareRouter);
-adminApp.route("/lists", listsRouter);
-adminApp.route("/suppressions", suppressionsRouter);
+adminApp.route("/admin/users", adminUsersRouter);
+adminApp.post("/seed", async (c) => {
+	await seedSystemTemplates(c.env.DB);
+	return c.json({ ok: true });
+});
+sessionApp.route("/", adminApp);
 
-// Test Mailbox — accessible to tester, admin, and super-admin roles
+// 2. API Dashboard routes (requireApi)
+const apiApp = new Hono<HonoEnv>();
+apiApp.use("/*", requireApi);
+apiApp.route("/logs", logsRouter);
+apiApp.route("/templates", templatesRouter);
+apiApp.route("/stats", statsRouter);
+apiApp.route("/cloudflare", cloudflareRouter);
+apiApp.route("/lists", listsRouter);
+apiApp.route("/suppressions", suppressionsRouter);
+apiApp.route("/playground", playgroundRouter);
+sessionApp.route("/", apiApp);
+
+// 3. Test Mailbox route (requireTester)
 const testMailboxApp = new Hono<HonoEnv>();
 testMailboxApp.use("/*", requireTester);
-testMailboxApp.route("/", testEmailsRouter);
-adminApp.route("/test-emails", testMailboxApp);
+testMailboxApp.route("/test-emails", testEmailsRouter);
+sessionApp.route("/", testMailboxApp);
 
-// ── Inbox routes (session auth required) ──────────────────────────────────────
-adminApp.route("/inbox/people", peopleRouter);
-adminApp.route("/inbox/compose", composeRouter);
-adminApp.route("/inbox/inboxes", inboxesRouter);
-adminApp.route("/inbox/sequences", sequencesRouter);
-adminApp.route("/inbox/templates", inboxTemplatesRouter);
-
-// Admin-only routes
-const adminOnlyApp = new Hono<HonoEnv>();
-adminOnlyApp.use("/*", requireAdmin);
-adminOnlyApp.route("/users", adminUsersRouter);
-adminApp.route("/admin", adminOnlyApp);
+// 4. Inbox routes (requireInbox)
+const inboxApp = new Hono<HonoEnv>();
+inboxApp.use("/*", requireInbox);
+inboxApp.route("/inbox/people", peopleRouter);
+inboxApp.route("/inbox/threads", threadsRouter);
+inboxApp.route("/inbox/compose", composeRouter);
+inboxApp.route("/inbox/inboxes", inboxesRouter);
+inboxApp.route("/inbox/sequences", sequencesRouter);
+inboxApp.route("/inbox/templates", inboxTemplatesRouter);
+sessionApp.route("/", inboxApp);
 
 // WebSocket notification endpoint (per-user DO)
-adminApp.get("/notifications/ws", async (c) => {
+sessionApp.get("/notifications/ws", async (c) => {
 	const userId = c.get("userId");
 	const id = c.env.NOTIFICATIONS.idFromName(userId);
 	const stub = c.env.NOTIFICATIONS.get(id);
 	return stub.fetch(c.req.raw);
 });
 
-// Seed endpoint (admin only, idempotent) — useful on first deploy
-adminApp.post("/seed", requireAdmin, async (c) => {
-	await seedSystemTemplates(c.env.DB);
-	return c.json({ ok: true });
-});
-
-app.route("/api", adminApp);
+app.route("/api", sessionApp);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 

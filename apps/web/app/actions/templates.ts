@@ -4,7 +4,7 @@ import { env } from "cloudflare:workers";
 import { templateSchema, toSlug, enrich, generateId, shortId } from "@emailflare/email-core";
 import { makeDb } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
-import { requireAdmin } from "./auth";
+import { requireApi } from "./auth";
 import type { Env } from "@/worker/inbox/env";
 
 export async function createTemplateAction(input: {
@@ -15,7 +15,7 @@ export async function createTemplateAction(input: {
 	textBody?: string;
 	domainId?: string;
 }) {
-	await requireAdmin();
+	await requireApi();
 	const body = templateSchema.parse(input);
 	const workerEnv = env as unknown as Env;
 	const { templates } = makeDb(workerEnv.DB);
@@ -52,7 +52,7 @@ export async function updateTemplateAction(
 		domainId?: string;
 	},
 ) {
-	await requireAdmin();
+	await requireApi();
 	const body = templateSchema.partial().parse(input);
 	const workerEnv = env as unknown as Env;
 	const { templates } = makeDb(workerEnv.DB);
@@ -90,7 +90,7 @@ export async function updateTemplateAction(
 }
 
 export async function deleteTemplateAction(id: string): Promise<{ deleted: boolean }> {
-	await requireAdmin();
+	await requireApi();
 	const workerEnv = env as unknown as Env;
 	const { templates } = makeDb(workerEnv.DB);
 

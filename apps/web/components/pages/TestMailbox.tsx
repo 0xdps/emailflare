@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
 	CheckCircle2,
 	XCircle,
@@ -13,6 +14,7 @@ import {
 	Clock,
 	Trash2,
 	FlaskConical,
+	Play,
 } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -51,8 +53,18 @@ interface PagedTestEmails {
 // ─── Right panel ────────────────────────────────────────────────────────────
 
 function DetailPanel({ log, onDelete }: { log: TestEmailRow; onDelete: () => void }) {
+	const router = useRouter();
 	const sentAt = new Date(log.sent_at);
 	const isSent = log.status === "sent";
+
+	function handleRerunInPlayground() {
+		const params = new URLSearchParams();
+		if (log.from_address) params.set("from", log.from_address);
+		if (log.to_address) params.set("to", log.to_address);
+		if (log.subject) params.set("subject", log.subject);
+		if (log.template_id) params.set("templateId", log.template_id);
+		router.push(`/playground?${params.toString()}`);
+	}
 
 	return (
 		<div className="flex flex-col h-full">
@@ -75,14 +87,25 @@ function DetailPanel({ log, onDelete }: { log: TestEmailRow; onDelete: () => voi
 						{log.subject || <span className="text-muted-foreground italic font-normal">No subject</span>}
 					</h2>
 				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="size-8 text-muted-foreground hover:text-destructive"
-					onClick={onDelete}
-				>
-					<Trash2 size={14} />
-				</Button>
+				<div className="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleRerunInPlayground}
+						className="h-8 gap-1.5 text-xs text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40"
+					>
+						<Play size={12} className="fill-current" />
+						<span>Playground</span>
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="size-8 text-muted-foreground hover:text-destructive"
+						onClick={onDelete}
+					>
+						<Trash2 size={14} />
+					</Button>
+				</div>
 			</div>
 
 			{/* Tabs */}
@@ -256,6 +279,23 @@ export default function TestMailboxPage() {
 							</div>
 							<h1 className="text-2xl font-bold">Test Mailbox</h1>
 						</div>
+						{result?.data && result.data.length > 0 && (
+							<Button
+								variant="outline"
+								size="sm"
+								className="text-xs text-muted-foreground hover:text-destructive"
+								onClick={async () => {
+									if (confirm("Are you sure you want to clear all test emails?")) {
+										await api.delete("/api/test-emails");
+										load();
+										setSelected(null);
+									}
+								}}
+							>
+								<Trash2 size={12} className="mr-1" />
+								Clear All
+							</Button>
+						)}
 					</div>
 
 					{/* Search */}

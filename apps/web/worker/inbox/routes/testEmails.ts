@@ -66,6 +66,13 @@ app.get("/:id", async (c) => {
 	return c.json(log);
 });
 
+// DELETE /api/test-emails — delete all test emails
+app.delete("/", async (c) => {
+	const { db } = makeDb(c.env.DB);
+	await db.query("DELETE FROM email_logs WHERE is_test = 1");
+	return c.json({ ok: true, cleared: true });
+});
+
 // DELETE /api/test-emails/:id — delete a test email
 app.delete("/:id", async (c) => {
 	const { emailLogs } = makeDb(c.env.DB);

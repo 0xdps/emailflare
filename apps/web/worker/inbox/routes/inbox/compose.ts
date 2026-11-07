@@ -25,6 +25,22 @@ const app = new Hono<HonoEnv>();
 app.post("/", zValidator("json", composeSchema), async (c) => {
 	try {
 		const body = c.req.valid("json");
+		const userId = c.get("userId");
+		const userType = c.get("userType");
+
+		// Enforce that non-admin members can only send from mailboxes they are assigned to
+		if (userType !== "admin") {
+			const memberRow = await c.env.DB.prepare(
+				"SELECT 1 FROM inboxes i JOIN inbox_members im ON i.id = im.inbox_id WHERE im.user_id = ? AND i.email = ?",
+			)
+				.bind(userId, body.from)
+				.first();
+
+			if (!memberRow) {
+				return c.json({ error: "Forbidden: You are not assigned to this sending mailbox" }, 403);
+			}
+		}
+
 		const now = new Date().toISOString();
 		const db = new D1Db(c.env.DB);
 

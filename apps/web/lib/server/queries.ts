@@ -1,4 +1,6 @@
 import { env } from "cloudflare:workers";
+export { getServerSession } from "@/app/actions/auth";
+import { getServerSession } from "@/app/actions/auth";
 import { makeDb, D1Db } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
 import { enrich } from "@emailflare/email-core";
@@ -295,9 +297,38 @@ export async function getUsersList() {
 	const workerEnv = env as unknown as Env;
 	if (!workerEnv?.DB) return [];
 	const users = await workerEnv.DB.prepare(
-		"SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC",
-	).all();
-	return users.results ?? [];
+		"SELECT id, name, email, user_type, access_types, created_at FROM users ORDER BY created_at ASC",
+	).all<{
+		id: string;
+		name: string;
+		email: string;
+		user_type?: "admin" | "member";
+		access_types?: string;
+		created_at: string;
+	}>();
+
+	return (users.results ?? []).map((u) => {
+		const user_type: "admin" | "member" = u.user_type === "admin" ? "admin" : "member";
+		let access_types: ("inbox" | "api" | "tester")[] = [];
+		if (user_type === "admin") {
+			access_types = ["inbox", "api", "tester"];
+		} else if (u.access_types) {
+			try {
+				const parsed = JSON.parse(u.access_types);
+				access_types = Array.isArray(parsed) ? parsed : [];
+			} catch {
+				access_types = [];
+			}
+		}
+		return {
+			id: u.id,
+			name: u.name,
+			email: u.email,
+			user_type,
+			access_types,
+			created_at: u.created_at,
+		};
+	});
 }
 
 export async function getTemplatesList() {
@@ -327,6 +358,20 @@ function toInbox(row: any) {
 export async function getInboxesList() {
 	const workerEnv = env as unknown as Env;
 	if (!workerEnv?.DB) return [];
+
+	const session = await getServerSession().catch(() => null);
+	if (session && session.userType !== "admin") {
+		const rows = await workerEnv.DB.prepare(
+			`SELECT i.* FROM inboxes i
+			 JOIN inbox_members im ON i.id = im.inbox_id
+			 WHERE im.user_id = ?
+			 ORDER BY i.created_at DESC`,
+		)
+			.bind(session.userId)
+			.all();
+		return (rows.results ?? []).map(toInbox);
+	}
+
 	const rows = await workerEnv.DB.prepare("SELECT * FROM inboxes ORDER BY created_at DESC").all();
 	return (rows.results ?? []).map(toInbox);
 }
@@ -348,28 +393,60 @@ export interface Person {
 	unread_count: number;
 	total_count: number;
 	last_email_at: string | null;
+	latest_subject?: string | null;
+	latest_snippet?: string | null;
+	latest_inbox?: string | null;
+	inbox_address?: string | null;
 }
 
-export async function getPeopleList(search?: string, unread?: boolean): Promise<Person[]> {
+export async function getPeopleList(search?: string, unread?: boolean, inbox?: string): Promise<Person[]> {
 	const workerEnv = env as unknown as Env;
 	if (!workerEnv?.DB) return [];
 
-	let sql = `
-    SELECT p.id, p.email, p.name, p.created_at,
-           COUNT(DISTINCT ie.id) AS total_count,
-           SUM(CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END) AS unread_count,
-           MAX(ie.received_at) AS last_email_at
-    FROM people p
-    LEFT JOIN inbox_emails ie ON ie.person_id = p.id
-  `;
-	const params: unknown[] = [];
 	const conditions: string[] = [];
+	const params: unknown[] = [];
+
+	const session = await getServerSession().catch(() => null);
+	if (session && session.userType !== "admin") {
+		const assignedRows = await workerEnv.DB.prepare(
+			"SELECT i.email FROM inboxes i JOIN inbox_members im ON i.id = im.inbox_id WHERE im.user_id = ?",
+		)
+			.bind(session.userId)
+			.all<{ email: string }>();
+		const assignedEmails = (assignedRows.results ?? []).map((r) => r.email);
+		if (assignedEmails.length === 0) return [];
+		if (inbox && !assignedEmails.includes(inbox)) return [];
+
+		if (inbox) {
+			conditions.push("(p.inbox_address = ? OR ie.inbox_address = ?)");
+			params.push(inbox, inbox);
+		} else {
+			const placeholders = assignedEmails.map(() => "?").join(",");
+			conditions.push(`(p.inbox_address IN (${placeholders}) OR ie.inbox_address IN (${placeholders}))`);
+			params.push(...assignedEmails, ...assignedEmails);
+		}
+	} else if (inbox) {
+		conditions.push("(p.inbox_address = ? OR ie.inbox_address = ?)");
+		params.push(inbox, inbox);
+	}
 
 	if (search) {
 		conditions.push("(p.email LIKE ? OR p.name LIKE ?)");
 		params.push(`%${search}%`, `%${search}%`);
 	}
 	if (unread) conditions.push("ie.is_read = 0");
+
+	let sql = `
+    SELECT p.id, p.email, p.name, p.inbox_address, p.created_at,
+           COUNT(DISTINCT ie.id) AS total_count,
+           SUM(CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END) AS unread_count,
+           MAX(ie.received_at) AS last_email_at,
+           (SELECT subject FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_subject,
+           (SELECT body_text FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_snippet,
+           (SELECT inbox_address FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_inbox
+    FROM people p
+    LEFT JOIN inbox_emails ie ON ie.person_id = p.id
+  `;
 
 	if (conditions.length) sql += ` WHERE ${conditions.join(" AND ")}`;
 	sql += " GROUP BY p.id ORDER BY last_email_at DESC NULLS LAST LIMIT 50";
@@ -381,6 +458,142 @@ export async function getPeopleList(search?: string, unread?: boolean): Promise<
 		...r,
 		unread_count: Number(r.unread_count ?? 0),
 		total_count: Number(r.total_count ?? 0),
+	}));
+}
+
+export interface ThreadHeader {
+	id: string; // thread_id
+	thread_id: string;
+	subject: string;
+	latest_subject: string;
+	email: string;
+	counterparty_email: string;
+	name: string | null;
+	counterparty_name: string | null;
+	person_id?: string | null;
+	inbox_address: string;
+	last_message_at: string;
+	last_email_at: string;
+	unread_count: number;
+	total_count: number;
+	latest_snippet?: string | null;
+}
+
+export async function getThreadsList(search?: string, unread?: boolean, inbox?: string): Promise<ThreadHeader[]> {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.DB) return [];
+
+	const conditions: string[] = [];
+	const params: unknown[] = [];
+
+	const session = await getServerSession().catch(() => null);
+	if (session && session.userType !== "admin") {
+		const assignedRows = await workerEnv.DB.prepare(
+			"SELECT i.email FROM inboxes i JOIN inbox_members im ON i.id = im.inbox_id WHERE im.user_id = ?",
+		)
+			.bind(session.userId)
+			.all<{ email: string }>();
+		const assignedEmails = (assignedRows.results ?? []).map((r) => r.email);
+		if (assignedEmails.length === 0) return [];
+		if (inbox && !assignedEmails.includes(inbox)) return [];
+
+		if (inbox) {
+			conditions.push("m.inbox_address = ?");
+			params.push(inbox);
+		} else {
+			const placeholders = assignedEmails.map(() => "?").join(",");
+			conditions.push(`m.inbox_address IN (${placeholders})`);
+			params.push(...assignedEmails);
+		}
+	} else if (inbox) {
+		conditions.push("m.inbox_address = ?");
+		params.push(inbox);
+	}
+
+	if (search) {
+		conditions.push(
+			"(m.subject LIKE ? OR m.counterparty_email LIKE ? OR m.counterparty_name LIKE ? OR m.body_text LIKE ?)",
+		);
+		params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+	}
+
+	const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+	const havingClause = unread ? "HAVING unread_count > 0" : "";
+
+	const sql = `
+		WITH all_messages AS (
+			SELECT
+				ie.id,
+				ie.thread_id,
+				ie.inbox_address,
+				COALESCE(p.email, ie.inbox_address) AS counterparty_email,
+				p.name AS counterparty_name,
+				p.id AS person_id,
+				ie.subject,
+				ie.body_text,
+				ie.received_at AS timestamp,
+				CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END AS is_unread
+			FROM inbox_emails ie
+			LEFT JOIN people p ON p.id = ie.person_id
+
+			UNION ALL
+
+			SELECT
+				se.id,
+				se.thread_id,
+				se.from_address AS inbox_address,
+				se.to_address AS counterparty_email,
+				p.name AS counterparty_name,
+				p.id AS person_id,
+				se.subject,
+				se.body_text,
+				se.sent_at AS timestamp,
+				0 AS is_unread
+			FROM sent_inbox_emails se
+			LEFT JOIN people p ON p.id = se.person_id
+		)
+		SELECT
+			m.thread_id AS id,
+			m.inbox_address,
+			m.counterparty_email,
+			m.counterparty_name,
+			m.person_id,
+			COALESCE(
+				(SELECT subject FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.subject IS NOT NULL AND m2.subject != '' ORDER BY timestamp DESC LIMIT 1),
+				'(No subject)'
+			) AS subject,
+			(SELECT body_text FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.body_text IS NOT NULL ORDER BY timestamp DESC LIMIT 1) AS latest_snippet,
+			MAX(m.timestamp) AS last_message_at,
+			SUM(m.is_unread) AS unread_count,
+			COUNT(m.id) AS total_count
+		FROM all_messages m
+		${whereClause}
+		GROUP BY m.thread_id, m.inbox_address, m.counterparty_email
+		${havingClause}
+		ORDER BY last_message_at DESC
+		LIMIT 50
+	`;
+
+	const rows = await workerEnv.DB.prepare(sql)
+		.bind(...params)
+		.all();
+
+	return (rows.results ?? []).map((r: any) => ({
+		id: r.id,
+		thread_id: r.id,
+		subject: r.subject || "(No subject)",
+		latest_subject: r.subject || "(No subject)",
+		email: r.counterparty_email,
+		counterparty_email: r.counterparty_email,
+		name: r.counterparty_name,
+		counterparty_name: r.counterparty_name,
+		person_id: r.person_id,
+		inbox_address: r.inbox_address,
+		last_message_at: r.last_message_at,
+		last_email_at: r.last_message_at,
+		unread_count: Number(r.unread_count || 0),
+		total_count: Number(r.total_count || 0),
+		latest_snippet: r.latest_snippet || null,
 	}));
 }
 

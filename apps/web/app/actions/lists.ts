@@ -4,10 +4,10 @@ import { env } from "cloudflare:workers";
 import { generateId, listCreateSchema } from "@emailflare/email-core";
 import { makeDb } from "@/worker/inbox/db";
 import type { Env } from "@/worker/inbox/env";
-import { requireSession } from "./auth";
+import { requireApi } from "./auth";
 
 export async function createListAction(data: { name: string; slug?: string; description?: string; domainId?: string }) {
-	await requireSession();
+	await requireApi();
 	const parsed = listCreateSchema.safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid list parameters" };
@@ -29,7 +29,7 @@ export async function createListAction(data: { name: string; slug?: string; desc
 }
 
 export async function deleteListAction(id: string) {
-	await requireSession();
+	await requireApi();
 	const workerEnv = env as unknown as Env;
 	const { lists, suppressions } = makeDb(workerEnv.DB);
 

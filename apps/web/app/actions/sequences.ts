@@ -5,7 +5,7 @@ import { z } from "zod";
 import { generateId } from "@emailflare/email-core";
 import { sequenceSchema } from "@emailflare/inbox-core";
 import type { Env } from "@/worker/inbox/env";
-import { requireSession } from "./auth";
+import { requireInbox } from "./auth";
 
 const enrollSchema = z.object({
 	personId: z.string(),
@@ -14,7 +14,7 @@ const enrollSchema = z.object({
 });
 
 export async function createSequenceAction(data: { name: string; steps: any[] }) {
-	await requireSession();
+	await requireInbox();
 	const parsed = sequenceSchema.safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid sequence" };
@@ -32,7 +32,7 @@ export async function createSequenceAction(data: { name: string; steps: any[] })
 }
 
 export async function updateSequenceAction(id: string, data: { name?: string; steps?: any[] }) {
-	await requireSession();
+	await requireInbox();
 	const parsed = sequenceSchema.partial().safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid sequence update" };
@@ -59,7 +59,7 @@ export async function updateSequenceAction(id: string, data: { name?: string; st
 }
 
 export async function deleteSequenceAction(id: string) {
-	await requireSession();
+	await requireInbox();
 	const workerEnv = env as unknown as Env;
 	const row = await workerEnv.DB.prepare("SELECT id FROM sequences WHERE id = ? LIMIT 1").bind(id).first();
 	if (!row) {
@@ -74,13 +74,23 @@ export async function enrollInSequenceAction(
 	sequenceId: string,
 	data: { personId: string; fromAddress: string; variables?: Record<string, string> },
 ) {
-	await requireSession();
+	const session = await requireInbox();
 	const parsed = enrollSchema.safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid enrollment parameters" };
 	}
 
 	const workerEnv = env as unknown as Env;
+	if (session.userType !== "admin") {
+		const membership = await workerEnv.DB.prepare(
+			"SELECT 1 FROM inbox_members WHERE user_id = ? AND inbox_email = ? LIMIT 1",
+		)
+			.bind(session.userId, parsed.data.fromAddress)
+			.first();
+		if (!membership) {
+			return { error: `You do not have access to send from ${parsed.data.fromAddress}` };
+		}
+	}
 	const seq = await workerEnv.DB.prepare("SELECT id FROM sequences WHERE id = ? LIMIT 1").bind(sequenceId).first();
 	if (!seq) {
 		return { error: "Sequence not found" };

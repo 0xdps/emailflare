@@ -1,12 +1,5 @@
-"use client";
-
-import Layout from "@/components/Layout";
-import Page from "@/components/pages/TestMailbox";
+import { redirect } from "next/navigation";
 
 export default function RoutePage() {
-	return (
-		<Layout>
-			<Page />
-		</Layout>
-	);
+	redirect("/inbox?folder=test");
 }
