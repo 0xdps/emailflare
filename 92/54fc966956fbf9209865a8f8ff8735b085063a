@@ -1,0 +1,24 @@
+CONTRIBUTING.md
+  h_95aea6b4aa8772 41
+README.md
+  h_95aea6b4aa8772 216
+apps/web/lib/core/email.ts
+  h_95aea6b4aa8772 628
+apps/web/wrangler.jsonc
+  h_95aea6b4aa8772 34
+docs/CLOUDFLARE.md
+  h_95aea6b4aa8772 22
+docs/RECIPES.md
+  h_95aea6b4aa8772 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9254fc966956fbf9209865a8f8ff8735b085063a",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
