@@ -15,8 +15,4 @@ apps/web/worker-configuration.d.ts
 **/.localflare
 *.tsbuildinfo
 
-# Compiled output from services/emails (safety net if tsc writes into src/)
-services/emails/src/**/*.js
-services/emails/src/**/*.js.map
-services/emails/src/**/*.d.ts
-services/emails/src/**/*.d.ts.map
+

@@ -39,8 +39,7 @@ The application runs locally on Miniflare bindings. **You do not need Docker, Re
 ## Monorepo Layout
 
 - `apps/web`: The unified Cloudflare Worker bundle containing the Next.js frontend, Hono REST backend, queue consumers, email handlers, React Email templates, and core logic.
-- `services/landing`: The public marketing website (`emailflare.dev`) built with Astro.
-- `migrations`: Relational SQLite database schema migrations applied to Cloudflare D1.
+- `apps/landing`: The public marketing website (`emailflare.dev`) built with Astro.
 - `migrations`: Relational SQLite database schema migrations applied to Cloudflare D1.
 
 ---

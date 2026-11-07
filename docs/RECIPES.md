@@ -90,7 +90,7 @@ just web-migrate-remote
 
 ## Marketing Website
 
-The marketing site (`services/landing`) is built with Astro and deployed as an independent Worker:
+The marketing site (`apps/landing`) is built with Astro and deployed as an independent Worker:
 
 ```bash
 just landing-dev    # Start local Astro dev server

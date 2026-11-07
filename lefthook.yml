@@ -14,7 +14,7 @@ pre-commit:
         typecheck:
             glob: "*.{ts,tsx}"
             run: |
-                for dir in packages/email-core packages/inbox-core services/emails apps/web; do
+                for dir in apps/web; do
                   if [ -f "$dir/tsconfig.json" ]; then
                     echo "→ typecheck $dir"
                     cd "$dir" && pnpm exec tsc --noEmit --pretty 2>&1 | head -20 || true

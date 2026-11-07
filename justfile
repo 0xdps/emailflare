@@ -1,7 +1,7 @@
 # EmailFlare · task runner
 #
 # apps/web: Unified Cloudflare Worker (Next.js + Hono API + templates + core logic)
-# services/landing: Marketing site (separate Worker)
+# apps/landing: Marketing site (separate Worker)
 
 # List all recipes
 default:
