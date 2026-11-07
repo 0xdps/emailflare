@@ -1,0 +1,18 @@
+apps/landing/src/pages/cloudflare-token.astro
+  h_95aea6b4aa8772 258,268-279,630-632,639-640
+apps/landing/src/pages/docs.astro
+  h_95aea6b4aa8772 341-352,685,931-944,947-962,965-972,993-994,1005-1007,1179-1181
+apps/landing/src/pages/inbox.astro
+  h_95aea6b4aa8772 1041,1052-1063,1999-2005,2095-2096,2098-2100,2124,2290-2292,2294-2295
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f8dd8f24b2a4be81a79f55f45ca3e3cc29f02c47",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
