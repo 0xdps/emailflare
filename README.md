@@ -213,9 +213,8 @@ Open `http://localhost:5173` (or `http://localhost:3000`) in your browser. The i
 ## Repository Layout
 
 ```text
-apps/web              Unified Cloudflare Worker (Next.js Dashboard + Hono API + Emails & Core Engine)
+apps/web              Unified Cloudflare Worker (Next.js Dashboard + Hono API + D1 Migrations + Emails)
 apps/landing          EmailFlare public marketing website (https://emailflare.dev)
-migrations            D1 relational database schema definitions
 docs                  Architecture deep dives, template guides, and deployment recipes
 ```
 

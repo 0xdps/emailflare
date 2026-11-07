@@ -32,7 +32,7 @@ just web-dev
 
 ### `just web-migrate`
 
-Applies all SQL migrations from `migrations/` to the local D1 database. Required on first run before completing the `/setup` wizard.
+Applies all SQL migrations from `apps/web/migrations/` to the local D1 database. Required on first run before completing the `/setup` wizard.
 
 ```bash
 just web-migrate

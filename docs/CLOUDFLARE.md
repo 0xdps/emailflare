@@ -19,7 +19,7 @@ When connecting your repository to Cloudflare Workers Builds, verify the followi
 | **Deploy command**    | `pnpm run deploy`   | Applies D1 migrations to `DB` binding, then deploys    |
 | **Production branch** | `staging` or `main` | Set to your primary repository branch                  |
 
-`pnpm run deploy` automatically applies database migrations from `migrations/` to the `DB` binding prior to worker deployment.
+`pnpm run deploy` automatically applies database migrations from `apps/web/migrations/` to the `DB` binding prior to worker deployment.
 
 ---
 
