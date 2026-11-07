@@ -1,0 +1,28 @@
+.gitignore
+  h_95aea6b4aa8772 18
+CONTRIBUTING.md
+  h_95aea6b4aa8772 42
+README.md
+  h_95aea6b4aa8772 217
+apps/landing/src/pages/inbox.astro
+  h_95aea6b4aa8772 1725,2110
+docs/RECIPES.md
+  h_95aea6b4aa8772 93
+justfile
+  h_95aea6b4aa8772 4
+lefthook.yml
+  h_95aea6b4aa8772 17
+pnpm-lock.yaml
+  h_95aea6b4aa8772 24-38,4223,4225,4250,4258,4278,4280,4551,5087,5690,5692,5720,5746,7402,7408-7433,7435,7466-7467
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "061ea100f53a30b37b3ca46efe607c0156dc9ace",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
