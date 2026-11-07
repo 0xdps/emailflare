@@ -142,32 +142,502 @@ const structuredData = {
 			}
 		}
 
-		/* ── EMAIL FLOW DIAGRAM ────────────────────────────────────── */
-		.email-flow-wrap {
-			background: var(--bg-dark);
+		/* ── LIVING EDGE PIPELINE (CONCEPT 3) ───────────────────────── */
+		.pipeline-card {
+			background: oklch(13% 0.016 48);
+			border: 1px solid oklch(24% 0.02 48);
 			border-radius: var(--radius-lg);
 			box-shadow:
-				0 32px 72px oklch(0% 0 0 / 0.22),
+				0 24px 60px oklch(0% 0 0 / 0.35),
 				0 0 0 1px oklch(100% 0 0 / 0.06),
-				inset 0 1px 0 oklch(100% 0 0 / 0.04);
+				inset 0 1px 0 oklch(100% 0 0 / 0.06);
 			overflow: hidden;
-			padding: 28px 22px 24px;
+			position: relative;
+			display: flex;
+			flex-direction: column;
 		}
 
-		.email-flow-svg {
-			display: block;
-			width: 100%;
-			height: auto;
+		/* Ambient corner glow inside card */
+		.pipeline-card::before {
+			content: "";
+			position: absolute;
+			top: -80px;
+			right: -80px;
+			width: 240px;
+			height: 240px;
+			background: radial-gradient(circle, oklch(64% 0.19 44 / 0.18) 0%, transparent 70%);
+			pointer-events: none;
+			border-radius: 50%;
 		}
 
-		@keyframes ef-pulse {
+		.pipeline-bar {
+			background: oklch(16% 0.014 48);
+			border-bottom: 1px solid oklch(22% 0.016 48);
+			padding: 12px 18px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+		}
+
+		.pipeline-dots {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.p-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			opacity: 0.85;
+		}
+		.p-dot-red {
+			background: #ef4444;
+		}
+		.p-dot-yellow {
+			background: #f59e0b;
+		}
+		.p-dot-green {
+			background: #10b981;
+		}
+
+		.pipeline-title {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-family: var(--font-mono);
+			font-size: 11.5px;
+			color: oklch(75% 0.01 58);
+		}
+
+		.p-edge-badge {
+			color: var(--orange);
+			font-weight: 600;
+		}
+
+		.p-sep {
+			color: oklch(40% 0.01 58);
+		}
+
+		.p-route {
+			color: oklch(65% 0.01 58);
+		}
+
+		.pipeline-status {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			background: oklch(18% 0.02 150 / 0.6);
+			border: 1px solid oklch(40% 0.1 150 / 0.4);
+			padding: 3px 9px;
+			border-radius: 100px;
+			font-size: 11px;
+			color: oklch(80% 0.12 150);
+			font-family: var(--font-mono);
+		}
+
+		.live-pulse {
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: #10b981;
+			box-shadow: 0 0 8px #10b981;
+			animation: p-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+		}
+
+		@keyframes p-pulse {
 			0%,
 			100% {
 				opacity: 1;
+				transform: scale(1);
 			}
 			50% {
-				opacity: 0.22;
+				opacity: 0.4;
+				transform: scale(0.85);
 			}
+		}
+
+		.pipeline-body {
+			padding: 22px 20px 20px;
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+		}
+
+		/* Step 1: Inbound Node */
+		.pipe-node {
+			display: flex;
+			gap: 14px;
+			position: relative;
+		}
+
+		.node-badge-col {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			width: 32px;
+			flex-shrink: 0;
+		}
+
+		.node-icon {
+			width: 32px;
+			height: 32px;
+			border-radius: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 14px;
+			border: 1px solid oklch(28% 0.02 48);
+			background: oklch(18% 0.018 48);
+			color: oklch(75% 0.01 58);
+			z-index: 2;
+		}
+
+		.node-icon-inbound {
+			color: oklch(78% 0.14 230);
+			border-color: oklch(40% 0.12 230 / 0.4);
+			background: oklch(20% 0.04 230 / 0.4);
+		}
+
+		.node-icon-worker {
+			color: var(--orange);
+			border-color: oklch(50% 0.18 44 / 0.5);
+			background: oklch(20% 0.06 44 / 0.5);
+		}
+
+		.pipe-connector-line {
+			width: 2px;
+			flex: 1;
+			min-height: 24px;
+			background: linear-gradient(to bottom, oklch(36% 0.03 48), oklch(22% 0.02 48));
+			position: relative;
+			overflow: hidden;
+			margin: 4px 0;
+		}
+
+		.flow-particle {
+			position: absolute;
+			top: -20px;
+			left: 0;
+			width: 2px;
+			height: 20px;
+			background: linear-gradient(to bottom, transparent, var(--orange));
+			animation: flow-down 2.2s linear infinite;
+		}
+
+		.flow-particle-delayed {
+			animation-delay: 1.1s;
+		}
+
+		@keyframes flow-down {
+			0% {
+				top: -20px;
+				opacity: 0;
+			}
+			30% {
+				opacity: 1;
+			}
+			80% {
+				opacity: 1;
+			}
+			100% {
+				top: 100%;
+				opacity: 0;
+			}
+		}
+
+		.node-content {
+			flex: 1;
+			background: oklch(16% 0.014 48);
+			border: 1px solid oklch(24% 0.016 48);
+			border-radius: 10px;
+			padding: 12px 14px;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.node-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+		}
+
+		.node-pill {
+			font-family: var(--font-mono);
+			font-size: 10px;
+			font-weight: 700;
+			padding: 2px 7px;
+			border-radius: 4px;
+			letter-spacing: 0.03em;
+		}
+
+		.pill-post {
+			background: oklch(24% 0.08 230);
+			color: oklch(78% 0.15 230);
+			border: 1px solid oklch(40% 0.12 230 / 0.5);
+		}
+
+		.node-route {
+			font-family: var(--font-mono);
+			font-size: 12.5px;
+			font-weight: 600;
+			color: oklch(90% 0.01 58);
+		}
+
+		.node-time {
+			font-family: var(--font-mono);
+			font-size: 11px;
+			color: oklch(75% 0.14 150);
+			margin-left: auto;
+		}
+
+		.node-code-snippet {
+			font-family: var(--font-mono);
+			font-size: 11px;
+			color: oklch(62% 0.01 58);
+			background: oklch(12% 0.014 48);
+			border: 1px solid oklch(20% 0.014 48);
+			border-radius: 6px;
+			padding: 7px 10px;
+			overflow-x: auto;
+			white-space: nowrap;
+		}
+
+		.nc-key {
+			color: oklch(75% 0.1 230);
+		}
+
+		.nc-val {
+			color: oklch(76% 0.12 140);
+		}
+
+		/* Step 2: Runtime Node Content */
+		.node-content-runtime {
+			border-color: oklch(34% 0.06 48);
+			background: linear-gradient(180deg, oklch(17% 0.02 48) 0%, oklch(15% 0.014 48) 100%);
+		}
+
+		.runtime-title {
+			font-size: 13px;
+			font-weight: 600;
+			color: oklch(95% 0.01 58);
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.runtime-runtime {
+			font-family: var(--font-mono);
+			font-size: 10.5px;
+			color: var(--orange);
+			background: oklch(24% 0.06 44 / 0.6);
+			border: 1px solid oklch(42% 0.14 44 / 0.4);
+			padding: 2px 7px;
+			border-radius: 100px;
+		}
+
+		.runtime-tasks {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 6px;
+			margin-top: 4px;
+		}
+
+		@media (max-width: 520px) {
+			.runtime-tasks {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.rt-chip {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			background: oklch(12% 0.014 48);
+			border: 1px solid oklch(22% 0.016 48);
+			border-radius: 6px;
+			padding: 5px 8px;
+			font-size: 11px;
+			color: oklch(80% 0.01 58);
+			font-family: var(--font-mono);
+		}
+
+		.rt-check {
+			color: #10b981;
+			font-weight: 700;
+			font-size: 11px;
+		}
+
+		.rt-id {
+			color: oklch(75% 0.1 58);
+		}
+
+		/* Step 3: Dual Output Branches */
+		.pipe-branches-wrap {
+			padding-left: 46px;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.pipe-branch-label {
+			font-size: 10.5px;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			font-weight: 600;
+			color: oklch(50% 0.01 58);
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.pipe-branches {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		@media (max-width: 520px) {
+			.pipe-branches {
+				grid-template-columns: 1fr;
+			}
+			.pipe-branches-wrap {
+				padding-left: 0;
+			}
+		}
+
+		.pipe-branch-card {
+			background: oklch(16% 0.014 48);
+			border: 1px solid oklch(24% 0.016 48);
+			border-radius: 10px;
+			padding: 12px 14px;
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			position: relative;
+			overflow: hidden;
+			transition:
+				border-color 0.2s,
+				transform 0.2s;
+		}
+
+		.pipe-branch-card:hover {
+			border-color: oklch(34% 0.03 48);
+			transform: translateY(-1px);
+		}
+
+		.branch-delivery {
+			border-left: 3px solid var(--orange);
+		}
+
+		.branch-inbox {
+			border-left: 3px solid #10b981;
+		}
+
+		.branch-top {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+		}
+
+		.branch-icon {
+			width: 24px;
+			height: 24px;
+			border-radius: 6px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 12px;
+		}
+
+		.branch-icon-send {
+			background: oklch(24% 0.06 44 / 0.5);
+			color: var(--orange);
+		}
+
+		.branch-icon-inbox {
+			background: oklch(24% 0.06 150 / 0.5);
+			color: #10b981;
+		}
+
+		.branch-status {
+			font-size: 10px;
+			font-family: var(--font-mono);
+			font-weight: 600;
+			color: var(--orange);
+			background: oklch(20% 0.06 44 / 0.5);
+			padding: 1px 6px;
+			border-radius: 4px;
+		}
+
+		.branch-status-sync {
+			color: #10b981;
+			background: oklch(20% 0.06 150 / 0.5);
+		}
+
+		.branch-title {
+			font-size: 12px;
+			font-weight: 600;
+			color: oklch(90% 0.01 58);
+		}
+
+		.branch-meta {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			font-family: var(--font-mono);
+			font-size: 10px;
+			color: oklch(52% 0.01 58);
+			margin-top: 2px;
+		}
+
+		.bm-time {
+			color: oklch(65% 0.12 150);
+		}
+
+		/* Footer */
+		.pipeline-footer {
+			background: oklch(12% 0.014 48);
+			border-top: 1px solid oklch(20% 0.014 48);
+			padding: 10px 18px;
+			display: flex;
+			align-items: center;
+			justify-content: space-around;
+			font-family: var(--font-mono);
+			font-size: 11px;
+		}
+
+		.p-metric {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.pm-label {
+			color: oklch(48% 0.01 58);
+		}
+
+		.pm-value {
+			color: oklch(80% 0.01 58);
+			font-weight: 600;
+		}
+
+		.p-metric-sep {
+			width: 1px;
+			height: 12px;
+			background: oklch(22% 0.014 48);
+		}
+
+		.highlight-green {
+			color: #10b981;
+		}
+
+		.highlight-orange {
+			color: var(--orange);
 		}
 
 		/* ── API SECTION ──────────────────────────────────────────── */
@@ -1696,358 +2166,145 @@ const structuredData = {
 					</div>
 				</div>
 
-				<!-- RIGHT: animated email flow -->
+				<!-- RIGHT: Living Edge Pipeline Stream -->
 				<div class="hero-visual">
-					<div class="email-flow-wrap">
-						<svg
-							class="email-flow-svg"
-							viewBox="0 0 500 490"
-							xmlns="http://www.w3.org/2000/svg"
-							aria-label="Email flow: Your App sends via EmailFlare through Cloudflare Email Sending to the recipient Inbox"
-						>
-							<defs>
-								<marker
-									id="ef-arr"
-									viewBox="0 0 10 7"
-									refX="9"
-									refY="3.5"
-									markerUnits="strokeWidth"
-									markerWidth="7"
-									markerHeight="5"
-									orient="auto"
-								>
-									<path d="M0,0 L10,3.5 L0,7 Z" fill="#5a5040" />
-								</marker>
-								<radialGradient id="ef-glow" cx="50%" cy="50%" r="50%">
-									<stop offset="0%" stop-color="#ea580c" stop-opacity="0.26" />
-									<stop offset="100%" stop-color="#ea580c" stop-opacity="0" />
-								</radialGradient>
-								<linearGradient id="ef-logo-bg" x1="0" y1="1" x2="1" y2="0">
-									<stop offset="0%" stop-color="#9a3412" />
-									<stop offset="58%" stop-color="#ea580c" />
-									<stop offset="100%" stop-color="#fb923c" />
-								</linearGradient>
-								<!-- connector paths for animateMotion -->
-								<path id="p1" d="M158,74 L318,74" />
-								<path id="p2" d="M400,136 L400,338" />
-								<path id="p3" d="M318,399 L160,399" />
-							</defs>
+					<div class="pipeline-card">
+						<!-- Top window bar -->
+						<div class="pipeline-bar">
+							<div class="pipeline-dots">
+								<span class="p-dot p-dot-red"></span>
+								<span class="p-dot p-dot-yellow"></span>
+								<span class="p-dot p-dot-green"></span>
+							</div>
+							<div class="pipeline-title">
+								<span class="p-edge-badge">Cloudflare Edge</span>
+								<span class="p-sep">/</span>
+								<span class="p-route">pipeline.event.send</span>
+							</div>
+							<div class="pipeline-status">
+								<span class="live-pulse"></span>
+								<span>Live Event Stream</span>
+							</div>
+						</div>
 
-							<!-- ambient glow behind EmailFlare node -->
-							<ellipse cx="400" cy="70" rx="140" ry="100" fill="url(#ef-glow)" />
+						<!-- Pipeline Body -->
+						<div class="pipeline-body">
+							<!-- Node 1: Inbound API Event -->
+							<div class="pipe-node">
+								<div class="node-badge-col">
+									<div class="node-icon node-icon-inbound">
+										<Icon name="lucide:arrow-down" />
+									</div>
+									<div class="pipe-connector-line">
+										<span class="flow-particle"></span>
+									</div>
+								</div>
+								<div class="node-content">
+									<div class="node-header">
+										<span class="node-pill pill-post">POST</span>
+										<span class="node-route">/v1/send</span>
+										<span class="node-time">0.4ms</span>
+									</div>
+									<div class="node-code-snippet">
+										<span class="nc-key">to:</span> <span class="nc-val">"alex@example.com"</span> ·{" "}
+										<span class="nc-key">template:</span> <span class="nc-val">"welcome"</span> ·{" "}
+										<span class="nc-key">theme:</span> <span class="nc-val">"ocean"</span>
+									</div>
+								</div>
+							</div>
 
-							<!-- ── NODE 1: Your App (top-left) ──────────────────── -->
-							<rect
-								x="10"
-								y="14"
-								width="148"
-								height="118"
-								rx="10"
-								fill="#1d1b18"
-								stroke="#332f28"
-								stroke-width="1"
-							/>
-							<!-- terminal window icon -->
-							<rect
-								x="52"
-								y="28"
-								width="52"
-								height="38"
-								rx="5"
-								fill="#2a2620"
-								stroke="#3e3a32"
-								stroke-width="1"
-							/>
-							<circle cx="60" cy="36" r="2.5" fill="#ff5f57" />
-							<circle cx="68" cy="36" r="2.5" fill="#ffbd2e" />
-							<circle cx="76" cy="36" r="2.5" fill="#28c840" />
-							<polyline
-								points="55,50 62,55 55,60"
-								fill="none"
-								stroke="#6a9955"
-								stroke-width="1.6"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<line
-								x1="65"
-								y1="60"
-								x2="78"
-								y2="60"
-								stroke="#5a8a8a"
-								stroke-width="1.6"
-								stroke-linecap="round"
-							/>
-							<text
-								x="84"
-								y="88"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="13"
-								font-weight="600"
-								fill="#c0b4a4"
-							>
-								Your App
-							</text>
-							<text
-								x="84"
-								y="106"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="11"
-								fill="#6a6050"
-							>
-								Any language
-							</text>
+							<!-- Node 2: EmailFlare Edge Engine -->
+							<div class="pipe-node">
+								<div class="node-badge-col">
+									<div class="node-icon node-icon-worker">
+										<Icon name="lucide:zap" />
+									</div>
+									<div class="pipe-connector-line">
+										<span class="flow-particle flow-particle-delayed"></span>
+									</div>
+								</div>
+								<div class="node-content node-content-runtime">
+									<div class="node-header">
+										<span class="runtime-title">EmailFlare Unified Worker</span>
+										<span class="runtime-runtime">D1 · KV · DO</span>
+									</div>
+									<div class="runtime-tasks">
+										<div class="rt-chip">
+											<span class="rt-check">✓</span>
+											<span>React Email 19 rendered</span>
+										</div>
+										<div class="rt-chip">
+											<span class="rt-check">✓</span>
+											<span>DKIM / SPF aligned</span>
+										</div>
+										<div class="rt-chip">
+											<span class="rt-check">✓</span>
+											<span>Suppression check: clear</span>
+										</div>
+										<div class="rt-chip">
+											<span class="rt-check">✓</span>
+											<span>
+												Tracking: <code class="rt-id">eflive_8f21</code>
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
 
-							<!-- ── CONNECTOR 1: right (App → EmailFlare) ────────── -->
-							<line
-								x1="158"
-								y1="74"
-								x2="318"
-								y2="74"
-								stroke="#504840"
-								stroke-width="1.5"
-								marker-end="url(#ef-arr)"
-							/>
-							<circle r="3.5" fill="#ea580c" opacity="0.9">
-								<animateMotion dur="1.8s" repeatCount="indefinite" begin="0s">
-									<mpath href="#p1" />
-								</animateMotion>
-							</circle>
-							<circle r="3.5" fill="#ea580c" opacity="0.9">
-								<animateMotion dur="1.8s" repeatCount="indefinite" begin="0.9s">
-									<mpath href="#p1" />
-								</animateMotion>
-							</circle>
-							<text
-								x="238"
-								y="61"
-								text-anchor="middle"
-								font-family="SF Mono, Fira Code, monospace"
-								font-size="9.5"
-								fill="#9c8c78"
-							>
-								POST /v1/send
-							</text>
+							<!-- Node 3: Dual Output Branches -->
+							<div class="pipe-branches-wrap">
+								<div class="pipe-branch-label">Dual Routing &amp; Edge Sync</div>
+								<div class="pipe-branches">
+									<!-- Branch A: Outbound Delivery -->
+									<div class="pipe-branch-card branch-delivery">
+										<div class="branch-top">
+											<div class="branch-icon branch-icon-send">
+												<Icon name="lucide:send" />
+											</div>
+											<span class="branch-status">Delivered</span>
+										</div>
+										<div class="branch-title">Cloudflare Email Sending</div>
+										<div class="branch-meta">
+											<span class="bm-target">alex@example.com</span>
+											<span class="bm-time">14ms latency</span>
+										</div>
+									</div>
 
-							<!-- ── NODE 2: EmailFlare (top-right, hero node) ──────── -->
-							<rect
-								x="316"
-								y="4"
-								width="166"
-								height="132"
-								rx="14"
-								fill="none"
-								stroke="#ea580c"
-								stroke-width="1.5"
-								style="animation: ef-pulse 2.8s ease-in-out infinite;"
-							/>
-							<rect
-								x="318"
-								y="6"
-								width="162"
-								height="128"
-								rx="12"
-								fill="#180c02"
-								stroke="#9a3412"
-								stroke-width="1"
-							/>
-							<!-- EmailFlare logo: orange-gradient rounded square + two white triangles -->
-							<rect x="378" y="18" width="44" height="44" rx="9" fill="url(#ef-logo-bg)" />
-							<path d="M412,26 L383,37 L391,43 Z" fill="white" />
-							<path d="M412,26 L391,43 L383,54 Z" fill="white" opacity="0.82" />
-							<text
-								x="399"
-								y="84"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="13.5"
-								font-weight="600"
-								fill="#ecd4b0"
-							>
-								EmailFlare
-							</text>
-							<text
-								x="399"
-								y="102"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="11"
-								fill="#a85828"
-							>
-								Render · Log · Route
-							</text>
+									<!-- Branch B: Team Inbox Sync -->
+									<div class="pipe-branch-card branch-inbox">
+										<div class="branch-top">
+											<div class="branch-icon branch-icon-inbox">
+												<Icon name="lucide:inbox" />
+											</div>
+											<span class="branch-status branch-status-sync">Synced</span>
+										</div>
+										<div class="branch-title">Team Inbox &amp; DO Hub</div>
+										<div class="branch-meta">
+											<span class="bm-target">Thread updated</span>
+											<span class="bm-time">WebSocket live</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 
-							<!-- ── CONNECTOR 2: down (EmailFlare → Cloudflare) ────── -->
-							<line
-								x1="400"
-								y1="136"
-								x2="400"
-								y2="338"
-								stroke="#504840"
-								stroke-width="1.5"
-								marker-end="url(#ef-arr)"
-							/>
-							<circle r="3.5" fill="#c05818" opacity="0.9">
-								<animateMotion dur="1.6s" repeatCount="indefinite" begin="0.3s">
-									<mpath href="#p2" />
-								</animateMotion>
-							</circle>
-							<circle r="3.5" fill="#c05818" opacity="0.9">
-								<animateMotion dur="1.6s" repeatCount="indefinite" begin="1.1s">
-									<mpath href="#p2" />
-								</animateMotion>
-							</circle>
-							<text
-								x="418"
-								y="237"
-								text-anchor="start"
-								font-family="SF Mono, Fira Code, monospace"
-								font-size="9.5"
-								fill="#9c8c78"
-							>
-								test mailbox · capture
-							</text>
-
-							<!-- ── NODE 3: Cloudflare Email (bottom-right) ────────── -->
-							<rect
-								x="318"
-								y="340"
-								width="162"
-								height="118"
-								rx="10"
-								fill="#080f1c"
-								stroke="#1a3660"
-								stroke-width="1"
-							/>
-							<!-- Cloudflare logo SVG (128×128 viewBox), scaled to ~56px, centered in node -->
-							<g transform="translate(371,352) scale(0.44)">
-								<path
-									fill="#FFF"
-									d="m115.679 69.288-15.591-8.94-2.689-1.163-63.781.436v32.381h82.061z"
-								/>
-								<path
-									fill="#F38020"
-									d="M87.295 89.022c.763-2.617.472-5.015-.8-6.796-1.163-1.635-3.125-2.58-5.488-2.689l-44.737-.581c-.291 0-.545-.145-.691-.363s-.182-.509-.109-.8c.145-.436.581-.763 1.054-.8l45.137-.581c5.342-.254 11.157-4.579 13.192-9.885l2.58-6.723c.109-.291.145-.581.073-.872-2.906-13.158-14.644-22.97-28.672-22.97-12.938 0-23.913 8.359-27.838 19.952a13.35 13.35 0 0 0-9.267-2.58c-6.215.618-11.193 5.597-11.811 11.811-.145 1.599-.036 3.162.327 4.615C10.104 70.051 2 78.337 2 88.549c0 .909.073 1.817.182 2.726a.895.895 0 0 0 .872.763h82.57c.472 0 .909-.327 1.054-.8l.617-2.216z"
-								/>
-								<path
-									fill="#FAAE40"
-									d="M101.542 60.275c-.4 0-.836 0-1.236.036-.291 0-.545.218-.654.509l-1.744 6.069c-.763 2.617-.472 5.015.8 6.796 1.163 1.635 3.125 2.58 5.488 2.689l9.522.581c.291 0 .545.145.691.363.145.218.182.545.109.8-.145.436-.581.763-1.054.8l-9.924.582c-5.379.254-11.157 4.579-13.192 9.885l-.727 1.853c-.145.363.109.727.509.727h34.089c.4 0 .763-.254.872-.654.581-2.108.909-4.325.909-6.614 0-13.447-10.975-24.422-24.458-24.422"
-								/>
-							</g>
-							<text
-								x="399"
-								y="428"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="13"
-								font-weight="600"
-								fill="#88aadc"
-							>
-								Cloudflare Email
-							</text>
-							<text
-								x="399"
-								y="446"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="11"
-								fill="#4a72b0"
-							>
-								Sending API
-							</text>
-
-							<!-- ── CONNECTOR 3: left (Cloudflare → Inbox) ────────── -->
-							<line
-								x1="318"
-								y1="399"
-								x2="160"
-								y2="399"
-								stroke="#504840"
-								stroke-width="1.5"
-								marker-end="url(#ef-arr)"
-							/>
-							<circle r="3.5" fill="#3878c0" opacity="0.9">
-								<animateMotion dur="1.5s" repeatCount="indefinite" begin="0.15s">
-									<mpath href="#p3" />
-								</animateMotion>
-							</circle>
-							<circle r="3.5" fill="#3878c0" opacity="0.9">
-								<animateMotion dur="1.5s" repeatCount="indefinite" begin="0.9s">
-									<mpath href="#p3" />
-								</animateMotion>
-							</circle>
-							<text
-								x="238"
-								y="386"
-								text-anchor="middle"
-								font-family="SF Mono, Fira Code, monospace"
-								font-size="9.5"
-								fill="#9c8c78"
-							>
-								delivered
-							</text>
-
-							<!-- ── NODE 4: Inbox (bottom-left) ──────────────────── -->
-							<rect
-								x="10"
-								y="340"
-								width="148"
-								height="118"
-								rx="10"
-								fill="#071310"
-								stroke="#1a3c28"
-								stroke-width="1"
-							/>
-							<!-- Inbox icon (48×48) -->
-							<svg
-								x="54"
-								y="348"
-								width="60"
-								height="60"
-								viewBox="0 0 48 48"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									d="M38.8824,13.85055v7.8501c0,1.2-0.99,2.19-2.2,2.19h-7.85c-0.92,0-1.71-0.57-2.03-1.37c-0.1-0.25-0.16-0.5301-0.16-0.82v-7.8501c0-1.2099,0.98-2.1999,2.19-2.1999h7.85C37.8924,11.65065,38.8824,12.64065,38.8824,13.85055z"
-									style="fill:#F43735;"
-								/>
-								<polygon
-									points="25.4376,16.34935 25.4376,21.92785 21.8176,24.46385 10.0547,16.34935"
-									style="fill:#4AA0EC;"
-								/>
-								<path
-									d="M34.5176,25.08935v8.44h-22.41l-2.99,2.82v-19.08l12.7,8.7664l4-2.7964c0.57,1.13,1.72,1.85,3.01,1.85H34.5176z"
-									style="fill:#4AA0EC;"
-								/>
-								<path
-									d="M33.0324,15.17065l-1.14,0.61l0.14,0.54l0.9-0.49h0.02v4.54h0.68v-5.2H33.0324L33.0324,15.17065z"
-									style="fill:#FFFFFF;"
-								/>
-							</svg>
-							<text
-								x="84"
-								y="424"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="13"
-								font-weight="600"
-								fill="#7acc8e"
-							>
-								Inbox
-							</text>
-							<text
-								x="84"
-								y="441"
-								text-anchor="middle"
-								font-family="DM Sans, system-ui, sans-serif"
-								font-size="11"
-								fill="#2e7040"
-							>
-								Delivered ✓
-							</text>
-						</svg>
+						<!-- Pipeline Footer -->
+						<div class="pipeline-footer">
+							<div class="p-metric">
+								<span class="pm-label">Cold start</span>
+								<span class="pm-value highlight-green">0ms</span>
+							</div>
+							<div class="p-metric-sep"></div>
+							<div class="p-metric">
+								<span class="pm-label">Edge runtime</span>
+								<span class="pm-value">330+ locations</span>
+							</div>
+							<div class="p-metric-sep"></div>
+							<div class="p-metric">
+								<span class="pm-label">Monthly cost</span>
+								<span class="pm-value highlight-orange">zsh / free tier</span>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
