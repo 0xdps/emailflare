@@ -1,0 +1,120 @@
+CHANGELOG.md
+  h_95aea6b4aa8772 3,8-42
+CONTRIBUTING.md
+  h_95aea6b4aa8772 1,3-15,18-22,24-25,27-28,30-32,35-39,41-44,46,48-50,53-60,63,65,67,69-72
+README.md
+  h_95aea6b4aa8772 2-4,7,9-28,30,32-33,35,39-87,90-120,122-126,129-162,165-183,185,187-189,192-206,209,211,213,216-219,221-234
+SECURITY.md
+  h_95aea6b4aa8772 3,5,7,9-38
+apps/web/README.md
+  h_95aea6b4aa8772 3,5-46,49,52,54,56-70,73-80,82-83
+apps/web/app/actions/domains.ts
+  h_95aea6b4aa8772 4
+apps/web/app/actions/inboxes.ts
+  h_95aea6b4aa8772 4
+apps/web/app/actions/keys.ts
+  h_95aea6b4aa8772 4
+apps/web/app/actions/lists.ts
+  h_95aea6b4aa8772 4
+apps/web/app/actions/sequences.ts
+  h_95aea6b4aa8772 5
+apps/web/app/actions/suppressions.ts
+  h_95aea6b4aa8772 5
+apps/web/app/actions/templates.ts
+  h_95aea6b4aa8772 4
+apps/web/app/actions/users.ts
+  h_95aea6b4aa8772 4
+apps/web/lib/core/cloudflare.ts
+  h_95aea6b4aa8772 5
+apps/web/lib/core/email.ts
+  h_95aea6b4aa8772 24,840,843
+apps/web/lib/core/index.ts
+  h_95aea6b4aa8772 1-6
+apps/web/lib/server/queries.ts
+  h_95aea6b4aa8772 6
+apps/web/package.json
+  h_95aea6b4aa8772 7-8,48
+apps/web/test/bounce.test.ts
+  h_95aea6b4aa8772 3
+apps/web/test/inbox.test.ts
+  h_95aea6b4aa8772 12
+apps/web/test/send.test.ts
+  h_95aea6b4aa8772 11
+apps/web/worker/inbox/db.ts
+  h_95aea6b4aa8772 5,16,26
+apps/web/worker/inbox/email-handler.ts
+  h_95aea6b4aa8772 9,21
+apps/web/worker/inbox/emails.ts
+  h_95aea6b4aa8772 1,5,7
+apps/web/worker/inbox/index.ts
+  h_95aea6b4aa8772 9
+apps/web/worker/inbox/lib/password.ts
+  h_95aea6b4aa8772 1
+apps/web/worker/inbox/routes/auth.ts
+  h_95aea6b4aa8772 10
+apps/web/worker/inbox/routes/domains.ts
+  h_95aea6b4aa8772 13
+apps/web/worker/inbox/routes/inbox/compose.ts
+  h_95aea6b4aa8772 8-11,17-22
+apps/web/worker/inbox/routes/inbox/inbox-templates.ts
+  h_95aea6b4aa8772 9
+apps/web/worker/inbox/routes/inbox/inboxes.ts
+  h_95aea6b4aa8772 14
+apps/web/worker/inbox/routes/inbox/people.ts
+  h_95aea6b4aa8772 8
+apps/web/worker/inbox/routes/inbox/sequences.ts
+  h_95aea6b4aa8772 12
+apps/web/worker/inbox/routes/inbox/threads.ts
+  h_95aea6b4aa8772 7
+apps/web/worker/inbox/routes/invites.ts
+  h_95aea6b4aa8772 9
+apps/web/worker/inbox/routes/keys.ts
+  h_95aea6b4aa8772 6
+apps/web/worker/inbox/routes/lists.ts
+  h_95aea6b4aa8772 8
+apps/web/worker/inbox/routes/logs.ts
+  h_95aea6b4aa8772 2
+apps/web/worker/inbox/routes/playground.ts
+  h_95aea6b4aa8772 11
+apps/web/worker/inbox/routes/send.ts
+  h_95aea6b4aa8772 13
+apps/web/worker/inbox/routes/setup.ts
+  h_95aea6b4aa8772 7
+apps/web/worker/inbox/routes/suppressions.ts
+  h_95aea6b4aa8772 9
+apps/web/worker/inbox/routes/templates.ts
+  h_95aea6b4aa8772 8
+apps/web/worker/inbox/routes/testEmails.ts
+  h_95aea6b4aa8772 7
+apps/web/worker/inbox/routes/unsubscribe.ts
+  h_95aea6b4aa8772 11
+apps/web/worker/inbox/seed.ts
+  h_95aea6b4aa8772 4
+apps/web/worker/inbox/sequence-processor.ts
+  h_95aea6b4aa8772 8
+apps/web/worker/inbox/services/cloudflare.ts
+  h_95aea6b4aa8772 2
+docs/CLOUDFLARE.md
+  h_95aea6b4aa8772 3,7,9,11,13,15-20,22,24,26,28-36,38,40,42,44-46,48-49,51-56,58-59,61-63,65,67,69,71-73,75-76,78-79,81-83,85
+docs/RECIPES.md
+  h_95aea6b4aa8772 1,3,5-7,11,18,20,24-27,35,43,49-69,71,75,83,89-93,96-97
+docs/TEMPLATES.md
+  h_95aea6b4aa8772 174,176,181,186,217
+justfile
+  h_95aea6b4aa8772 3-4,10,30
+package.json
+  h_95aea6b4aa8772 6,8-9,17-18
+pnpm-lock.yaml
+  h_95aea6b4aa8772 20-22,32-37,5145,5147,5149,5151,5153,5156-5188,5192,5194,5196,5198,5200,5202,5204,5206,5208,5210,5212,5214,5216,5218,5220,5222,5224,5227,5229,5231,5233,5237-5238,5240,5246-5247,5249,5251,5253,5255,5257,5259-5261,5263-5274,5276
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "127452bb10ee4f86de2b651695d1fc0f1cb73afb",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
