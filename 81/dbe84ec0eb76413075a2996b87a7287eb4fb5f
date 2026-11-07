@@ -1,0 +1,30 @@
+CHANGELOG.md
+  h_95aea6b4aa8772 24
+README.md
+  h_95aea6b4aa8772 130
+apps/dashboard/README.md
+  h_95aea6b4aa8772 18
+apps/landing/src/pages/cloudflare-token.astro
+  h_95aea6b4aa8772 619-621
+apps/landing/src/pages/cloudflare.astro
+  h_95aea6b4aa8772 794-795,797,800-801,804-807,809-811
+apps/landing/src/pages/docs.astro
+  h_95aea6b4aa8772 1057-1059
+apps/landing/src/pages/inbox.astro
+  h_95aea6b4aa8772 1630,1632,1636-1638,1648-1649,1656,1753,1830-1831,1837-1839,1846,1972-1973,1975-1977,1982-1984,1988-1996,1998-1999
+apps/landing/src/pages/index.astro
+  h_95aea6b4aa8772 2375
+docs/TEMPLATES.md
+  h_95aea6b4aa8772 217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "81dbe84ec0eb76413075a2996b87a7287eb4fb5f",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
