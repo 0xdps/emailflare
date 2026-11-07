@@ -9,9 +9,8 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { generateId } from "@emailflare/email-core";
+import { generateId, sequenceSchema } from "@/lib/core";
 import type { HonoEnv } from "../../env.ts";
-import { sequenceSchema } from "@emailflare/inbox-core";
 
 const app = new Hono<HonoEnv>();
 

@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { sha256Hex } from "../middleware/apiKey.ts";
 import { makeDb } from "../db.ts";
 import type { HonoEnv } from "../env.ts";
-import { keyCreateSchema, generateId } from "@emailflare/email-core";
+import { keyCreateSchema, generateId } from "@/lib/core";
 
 function randomHex(bytes: number): string {
 	const arr = crypto.getRandomValues(new Uint8Array(bytes));

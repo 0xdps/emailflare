@@ -2,7 +2,7 @@
 // Provides a lightweight typed wrapper over Cloudflare D1Database that
 // mirrors the MesaHub client API used by the Node.js backend.
 
-// ── Row types (email-api subset) — re-exported from @emailflare/email-core ────
+// ── Row types (email-api subset) — re-exported from @/lib/core ────
 
 export type {
 	DomainRow,
@@ -13,7 +13,7 @@ export type {
 	SuppressionRow,
 	ListRow,
 	UnsubscribeTokenRow,
-} from "@emailflare/email-core";
+} from "@/lib/core";
 import type {
 	DomainRow,
 	TemplateRow,
@@ -23,7 +23,7 @@ import type {
 	SuppressionRow,
 	ListRow,
 	UnsubscribeTokenRow,
-} from "@emailflare/email-core";
+} from "@/lib/core";
 
 // ── D1Table — typed query wrapper ────────────────────────────────────────────
 

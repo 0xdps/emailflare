@@ -1,7 +1,7 @@
 "use server";
 
 import { env } from "cloudflare:workers";
-import { generateId } from "@emailflare/email-core";
+import { generateId } from "@/lib/core";
 import { requireAdmin } from "./auth";
 import type { Env } from "@/worker/inbox/env";
 

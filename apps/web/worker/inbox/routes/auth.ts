@@ -7,7 +7,7 @@ import { verifyPassword } from "../lib/password.ts";
 import { getSession, saveSession, clearSession } from "../middleware/auth.ts";
 import { checkLoginRateLimit } from "../middleware/loginRateLimit.ts";
 import type { HonoEnv } from "../env.ts";
-import { userLoginSchema } from "@emailflare/inbox-core";
+import { userLoginSchema } from "@/lib/core";
 
 const app = new Hono<HonoEnv>();
 

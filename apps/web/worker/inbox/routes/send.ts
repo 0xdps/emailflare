@@ -10,7 +10,7 @@ import { sendEmail } from "../services/cloudflare.ts";
 import { renderLayout } from "../emails.ts";
 import type { LayoutName } from "../emails.ts";
 import type { HonoEnv, ApiKeyContext } from "../env.ts";
-import { executeSend, generateId, sendSchema } from "@emailflare/email-core";
+import { executeSend, generateId, sendSchema } from "@/lib/core";
 
 const app = new Hono<HonoEnv>();
 

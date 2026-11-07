@@ -6,7 +6,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
-import { createLogger } from "@emailflare/email-core/logger";
+import { createLogger } from "@/lib/core";
 
 const log = createLogger("inbox-worker");
 

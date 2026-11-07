@@ -10,7 +10,7 @@ import {
 	getZoneByHostname,
 } from "../services/cloudflare.ts";
 import type { HonoEnv } from "../env.ts";
-import { domainCreateSchema, generateId } from "@emailflare/email-core";
+import { domainCreateSchema, generateId } from "@/lib/core";
 
 const app = new Hono<HonoEnv>();
 

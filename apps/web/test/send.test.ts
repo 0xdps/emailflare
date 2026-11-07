@@ -8,7 +8,7 @@ import {
 	type ExecuteSendDeps,
 	type SendApiKeyContext,
 	type SendWithLogMessage,
-} from "../src/index.ts";
+} from "../lib/core/index.ts";
 
 interface Memory {
 	domains: Array<{ id: string; name: string }>;

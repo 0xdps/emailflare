@@ -1,85 +1,85 @@
 # Cloudflare Workers Deployment
 
-EmailFlare deploys as one new Cloudflare Worker: the dashboard, the sending API, inbound mail, the sequence cron, and the send queue. Do not reuse the old `emailflare-api` or `emailflare-inbox` Workers.
+EmailFlare deploys as **one single Cloudflare Worker** containing the Next.js web application, Hono REST API, inbound email handler, sequence cron, and outbound send queue.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/0xdps/emailflare)
 
-The button clones this repo into your Git account, creates a fresh D1 database, KV namespace, R2 bucket, and queue, then builds and deploys. The Worker name in the dashboard must stay `emailflare`, matching [apps/web/wrangler.jsonc](../apps/web/wrangler.jsonc).
+The 1-Click Deploy button automatically provisions a fresh D1 database, KV namespace, R2 bucket, and queue in your Cloudflare account, then builds and deploys the unified Worker.
 
-Workers Builds settings, if they are not filled in automatically:
+---
 
-| Setting           | Value                                                        |
-| ----------------- | ------------------------------------------------------------ |
-| Root directory    | `apps/web`                                                   |
-| Build command     | leave empty (`predeploy` builds shared packages and the app) |
-| Deploy command    | `pnpm run deploy`                                            |
-| Production branch | `staging` until `main` contains this app                     |
+## Workers Builds Settings
 
-`pnpm run deploy` applies `migrations/` to the `DB` binding, then deploys. It uses the binding name, not the database name, so a renamed database still migrates.
+When connecting your repository to Cloudflare Workers Builds, verify the following configuration:
 
-After the first deploy:
+| Setting               | Value               | Notes                                                  |
+| :-------------------- | :------------------ | :----------------------------------------------------- |
+| **Root directory**    | `apps/web`          | Location of the unified Worker                         |
+| **Build command**     | _(leave empty)_     | Handled automatically by `predeploy` in `package.json` |
+| **Deploy command**    | `pnpm run deploy`   | Applies D1 migrations to `DB` binding, then deploys    |
+| **Production branch** | `staging` or `main` | Set to your primary repository branch                  |
 
-1. Open the `workers.dev` URL and finish `/setup`.
-2. Set `PUBLIC_URL` to that URL (or your custom domain) if it is not `https://emailflare.workers.dev`.
-3. In the zone, point Email Routing at the `emailflare` Worker.
-4. `CF_API_TOKEN` needs Email Sending and Email Routing edit. `CF_ACCOUNT_ID` is the account that owns this Worker.
+`pnpm run deploy` automatically applies database migrations from `migrations/` to the `DB` binding prior to worker deployment.
 
-Pushing to the production branch redeploys. Preview builds are off by default because this Worker uses a Durable Object.
+---
 
-## What gets deployed
+## What Gets Deployed
 
-| Resource                | Purpose                                                                           |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| **Worker** (`apps/web`) | Next.js dashboard + Hono API + email / scheduled / queue handlers                 |
-| **D1**                  | Domains, templates, API keys, logs, inbox, sequences                              |
-| **KV**                  | Rate limiting and short-lived state                                               |
-| **R2**                  | Raw inbound message bodies                                                        |
-| **Queue**               | Outbound send jobs                                                                |
-| **Durable Object**      | Live inbox notifications                                                          |
-| **Secrets**             | Session secret and the Cloudflare API token used to configure sending and routing |
+| Resource                | Binding         | Purpose                                                                                                                                                        |
+| :---------------------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Worker** (`apps/web`) | —               | Next.js dashboard (`/inbox`, `/developer/*`, `/settings/*`), Hono REST API (`/api/*`, `/v1/*`), and background handlers (`email()`, `scheduled()`, `queue()`). |
+| **D1 Database**         | `DB`            | Relational storage for users, mailboxes, threads, contacts, templates, API keys, domains, logs, and suppressions.                                              |
+| **R2 Bucket**           | `ATTACHMENTS`   | Object storage for raw inbound email MIME messages and file attachments.                                                                                       |
+| **Queue**               | `SEND_QUEUE`    | Outbound email queue producer and consumer for high-throughput, reliable delivery.                                                                             |
+| **KV Namespace**        | `RATE_LIMIT_KV` | Distributed rate limiting and short-lived token storage.                                                                                                       |
+| **Durable Object**      | `NOTIFICATIONS` | `NotificationsHub` Durable Object managing persistent real-time WebSocket feeds for the inbox.                                                                 |
+| **Email Sending**       | `EMAIL`         | Cloudflare's native MTA binding for dispatching outbound emails.                                                                                               |
 
-The marketing site (`services/landing`) is a separate Worker and is not part of this deploy.
+---
 
-## Requirements
+## Post-Deployment Setup
 
-- Node.js 22+
-- pnpm 11+
-- A Cloudflare account
+Once the initial deploy completes:
 
-## 1. Install
+1. **Access Setup Wizard:**
+    - Open your deployed `workers.dev` URL (or custom domain).
+    - Complete the `/setup` wizard to create your initial workspace Administrator account.
+
+2. **Configure Required Secrets:**
+   In your Cloudflare dashboard (or using `wrangler secret put`), configure:
+
+    ```bash
+    cd apps/web
+    pnpm exec wrangler secret put SESSION_SECRET   # 32+ char random string for session tokens
+    pnpm exec wrangler secret put CF_API_TOKEN      # Cloudflare API token with Email Routing & Email Sending permissions
+    pnpm exec wrangler secret put CF_ACCOUNT_ID     # Your Cloudflare Account ID
+    ```
+
+3. **Set `PUBLIC_URL` (Optional):**
+    - If hosting on a custom domain (e.g., `https://mail.yourcompany.com`), set the `PUBLIC_URL` environment variable in your Worker configuration so links in invite and notification emails resolve correctly.
+
+4. **Connect Cloudflare Email Routing:**
+    - In the Cloudflare dashboard for your zone, navigate to **Email** > **Email Routing**.
+    - Create a catch-all rule (or specific addresses like `support@yourdomain.com`, `billing@...`) and set the action to **Send to Worker**, choosing `emailflare`.
+
+---
+
+## Local Development & Emulation
+
+For local testing, the application runs on Miniflare with emulated D1, KV, and R2 bindings:
 
 ```bash
+# 1. Install dependencies and build core libraries
 just install
+
+# 2. Configure local secrets
+cp apps/web/.dev.vars.example apps/web/.dev.vars
+
+# 3. Apply migrations to local SQLite/D1
+just web-migrate
+
+# 4. Start local development server
+just web-dev
 ```
 
-## 2. Authenticate
-
-```bash
-cd apps/web && pnpm exec wrangler login
-```
-
-## 3. Deploy a new stack
-
-Leave the placeholder IDs in [`apps/web/wrangler.jsonc`](../apps/web/wrangler.jsonc). Wrangler provisions a new D1 database, KV namespace, R2 bucket, and queue on first deploy, then the deploy script applies `migrations/` to the `DB` binding.
-
-```bash
-cd apps/web
-pnpm exec wrangler secret put SESSION_SECRET
-pnpm exec wrangler secret put CF_API_TOKEN
-pnpm exec wrangler secret put CF_ACCOUNT_ID
-just web-deploy
-```
-
-Do not point this config at the old database. This is a new deployment.
-
-Local development reads the same secret names from `apps/web/.dev.vars` (see `.dev.vars.example`). Do not commit that file.
-
-## 4. Email Routing
-
-In the Cloudflare dashboard, point the zone's Email Routing catch-all (or the addresses you receive on) at the `emailflare` Worker. The same Worker sends mail through the Email Sending binding.
-
-## CI
-
-Prefer the Deploy to Cloudflare button. It connects the repo to Workers Builds, so later pushes deploy themselves.
-
-`.github/workflows/deploy-workers.yml` is only a manual fallback. It needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets, then runs `pnpm run deploy` in `apps/web`.
+The app is accessible locally at `http://localhost:5173`.

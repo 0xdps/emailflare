@@ -171,19 +171,19 @@ Layout templates support colour themes via `themeId`. The available themes are:
 
 ## Managing templates
 
-### From the admin UI
+### From the developer console
 
-Go to **Templates** in the admin UI:
+Go to **Templates** under the Developer dashboard (`/developer/templates`):
 
 - **Create** — fill in name, slug, subject, HTML body, and optional text body.
   The live preview highlights resolved variables inline.
 - **Edit** — update any field; changing the slug checks for collisions.
-- **Preview** — render a template with sample variables (and a theme, for layouts).
+- **Preview & Test** — render a template with sample variables (and a theme, for layouts) or test send directly from the **Playground** (`/developer/playground`).
 - **Delete** — remove a custom template. System templates cannot be modified or deleted.
 
 ### From the templates API
 
-All admin routes are session-authenticated (`/api/templates`):
+Template management routes (`/api/templates`) require an authenticated session with `api` access:
 
 ```text
 GET    /api/templates             # list templates
@@ -214,7 +214,7 @@ Send by slug (preferred — stable across restores) or by id:
 
 ```text
 POST /v1/send
-Authorization: Bearer eflive_xxx
+Authorization: Bearer ef_live_xxx
 Content-Type: application/json
 
 {

@@ -6,9 +6,8 @@
 
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { generateId } from "@emailflare/email-core";
+import { generateId, inboxTemplateSchema } from "@/lib/core";
 import type { HonoEnv } from "../../env.ts";
-import { inboxTemplateSchema } from "@emailflare/inbox-core";
 
 const app = new Hono<HonoEnv>();
 

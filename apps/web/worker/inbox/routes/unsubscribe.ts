@@ -8,7 +8,7 @@
 
 import { Hono } from "hono";
 import { makeDb } from "../db.ts";
-import { generateId } from "@emailflare/email-core";
+import { generateId } from "@/lib/core";
 import type { HonoEnv } from "../env.ts";
 
 const app = new Hono<HonoEnv>();

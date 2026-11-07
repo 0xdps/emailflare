@@ -5,8 +5,7 @@
 // Queue: sends the individual step email via CF Email API.
 
 import { sendEmail } from "./services/cloudflare.ts";
-import { generateId, listUnsubscribeHeaders, applyVariables } from "@emailflare/email-core";
-import { createLogger } from "@emailflare/email-core/logger";
+import { generateId, listUnsubscribeHeaders, applyVariables, createLogger } from "@/lib/core";
 import type { Env, SequenceQueueMessage } from "./env.ts";
 
 const log = createLogger("sequence-processor");

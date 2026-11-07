@@ -1,8 +1,7 @@
 "use server";
 
 import { env } from "cloudflare:workers";
-import { generateId } from "@emailflare/email-core";
-import { inboxSchema } from "@emailflare/inbox-core";
+import { generateId, inboxSchema } from "@/lib/core";
 import { enableEmailRouting, setCatchAllToWorker, getZoneByHostname } from "@/worker/inbox/services/cloudflare";
 import { requireAdmin } from "./auth";
 import type { Env } from "@/worker/inbox/env";

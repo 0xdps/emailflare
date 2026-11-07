@@ -9,7 +9,7 @@ import {
 	stripThreadToken,
 	threadMessageId,
 	verifyPassword,
-} from "../src/index.ts";
+} from "../lib/core/index.ts";
 
 test("thread tokens round-trip through a Reply-To address", () => {
 	const replyTo = buildReplyToAddress("hello@dps.codes", "abc_12");

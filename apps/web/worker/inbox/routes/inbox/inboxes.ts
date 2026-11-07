@@ -11,11 +11,10 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { generateId } from "@emailflare/email-core";
+import { generateId, inboxSchema } from "@/lib/core";
 import { enableEmailRouting, setCatchAllToWorker, getZoneByHostname } from "../../services/cloudflare.ts";
 import { requireAdmin } from "../../middleware/auth.ts";
 import type { HonoEnv } from "../../env.ts";
-import { inboxSchema } from "@emailflare/inbox-core";
 
 const app = new Hono<HonoEnv>();
 

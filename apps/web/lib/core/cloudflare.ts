@@ -2,7 +2,7 @@
 // Credentials are passed per-call (no module-level globals) so this module
 // is safe to use in both Workers and Node.js environments.
 
-import { createLogger } from "./logger.js";
+import { createLogger } from "./logger.ts";
 
 const log = createLogger("cloudflare");
 

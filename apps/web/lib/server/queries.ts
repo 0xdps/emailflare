@@ -3,7 +3,7 @@ export { getServerSession } from "@/app/actions/auth";
 import { getServerSession } from "@/app/actions/auth";
 import { makeDb, D1Db } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
-import { enrich } from "@emailflare/email-core";
+import { enrich } from "@/lib/core";
 import { getCloudflareTokenStatus as fetchCfStatus } from "@/worker/inbox/services/cloudflare";
 import type { Env } from "@/worker/inbox/env";
 

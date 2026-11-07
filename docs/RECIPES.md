@@ -1,31 +1,30 @@
-# Recipes
+# Developer Recipes
 
-One app: `apps/web`. Run `just --list` for the current set.
+EmailFlare uses [`just`](https://github.com/casey/just) as the workspace command runner. Run `just` or `just --list` from the repository root to see all available tasks.
 
-## Setup
+---
+
+## Workspace Setup
 
 ### `just install`
 
-Install workspace dependencies and build `services/emails`, `packages/email-core`, and `packages/inbox-core`.
+Installs dependencies for all monorepo workspaces.
 
 ```bash
 just install
 cp apps/web/.dev.vars.example apps/web/.dev.vars
 ```
 
-### `just emails-build`
+---
 
-Rebuild the shared email layouts after editing `services/emails`.
-
-```bash
-just emails-build
-```
-
-## Local app
+## Local Development
 
 ### `just web-dev`
 
-Start the unified Worker locally. Dashboard on `http://localhost:3000`. API routes are `/api/*` and `/v1/*` on the same origin.
+Starts the unified Cloudflare Worker dev server with Miniflare local emulation for D1, KV, and R2.
+
+- Web Dashboard: `http://localhost:5173` (or `http://localhost:3000`)
+- Backend & Public API: `/api/*` and `/v1/*` on the same host
 
 ```bash
 just web-dev
@@ -33,7 +32,7 @@ just web-dev
 
 ### `just web-migrate`
 
-Apply `migrations/` to the local D1 database. Required before `/setup` or `/api/setup/status` can succeed.
+Applies all SQL migrations from `migrations/` to the local D1 database. Required on first run before completing the `/setup` wizard.
 
 ```bash
 just web-migrate
@@ -41,19 +40,39 @@ just web-migrate
 
 ### `just web-build`
 
-Build shared packages, then the production Worker bundle.
+Runs typechecks and compiles the production Worker bundle (`apps/web/dist`).
 
 ```bash
 just web-build
 ```
 
-## Deploy
+---
 
-Fill real resource IDs in `apps/web/wrangler.jsonc` first. See [CLOUDFLARE.md](./CLOUDFLARE.md).
+## Quality & Testing
+
+### `just test`
+
+Executes unit test suites across all core packages (`@emailflare/email-core` and `@emailflare/inbox-core`).
+
+```bash
+just test
+```
+
+### `just typecheck`
+
+Runs strict TypeScript compilation checks across all monorepo packages.
+
+```bash
+just typecheck
+```
+
+---
+
+## Production Deployment
 
 ### `just web-deploy`
 
-Build and deploy the `emailflare` Worker.
+Builds shared packages, applies pending migrations to the remote Cloudflare D1 database, and deploys the unified Worker bundle via Wrangler.
 
 ```bash
 just web-deploy
@@ -61,15 +80,19 @@ just web-deploy
 
 ### `just web-migrate-remote`
 
-Apply `migrations/` to the remote D1 database.
+Applies pending D1 schema migrations directly to the remote production database without redeploying Worker code.
 
 ```bash
 just web-migrate-remote
 ```
 
-## Marketing site
+---
+
+## Marketing Website
+
+The marketing site (`services/landing`) is built with Astro and deployed as an independent Worker:
 
 ```bash
-just landing-dev
-just landing-build
+just landing-dev    # Start local Astro dev server
+just landing-build  # Build static/edge production assets
 ```

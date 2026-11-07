@@ -1,7 +1,7 @@
 "use server";
 
 import { env } from "cloudflare:workers";
-import { generateId, listCreateSchema } from "@emailflare/email-core";
+import { generateId, listCreateSchema } from "@/lib/core";
 import { makeDb } from "@/worker/inbox/db";
 import type { Env } from "@/worker/inbox/env";
 import { requireApi } from "./auth";

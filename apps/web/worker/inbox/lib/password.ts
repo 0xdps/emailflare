@@ -1,1 +1,1 @@
-export { hashPassword, verifyPassword } from "@emailflare/inbox-core";
+export { hashPassword, verifyPassword } from "@/lib/core/password.ts";

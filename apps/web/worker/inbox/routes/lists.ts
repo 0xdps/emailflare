@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { generateId, listCreateSchema } from "@emailflare/email-core";
+import { generateId, listCreateSchema } from "@/lib/core";
 import { makeDb } from "../db.ts";
 import type { HonoEnv } from "../env.ts";
 

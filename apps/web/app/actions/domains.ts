@@ -1,7 +1,7 @@
 "use server";
 
 import { env } from "cloudflare:workers";
-import { generateId, domainCreateSchema } from "@emailflare/email-core";
+import { generateId, domainCreateSchema } from "@/lib/core";
 import { makeDb, deleteDomainCascade } from "@/worker/inbox/db";
 import {
 	CloudflareApiError,

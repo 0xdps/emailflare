@@ -8,7 +8,7 @@ import { makeDb, D1Db } from "../db.ts";
 import { renderLayout } from "../emails.ts";
 import type { LayoutName } from "../emails.ts";
 import type { HonoEnv } from "../env.ts";
-import { generateId, sendWithLog, resolveDomainId, applyVariables, executeSend } from "@emailflare/email-core";
+import { generateId, sendWithLog, resolveDomainId, applyVariables, executeSend } from "@/lib/core";
 import { sendEmail } from "../services/cloudflare.ts";
 import { sha256Hex } from "../middleware/apiKey.ts";
 

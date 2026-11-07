@@ -1,7 +1,7 @@
 // Seed the system email templates into D1.
 // Call once after applying migrations: POST /api/_seed (admin token required).
 
-import { generateId } from "@emailflare/email-core";
+import { generateId } from "@/lib/core";
 import { makeDb } from "./db.ts";
 import { LAYOUTS } from "./emails.ts";
 import type { LayoutName } from "./emails.ts";

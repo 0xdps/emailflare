@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { classifyBounce, extractReason, extractRecipient, isBounce, isComplaint } from "../src/index.ts";
+import { classifyBounce, extractReason, extractRecipient, isBounce, isComplaint } from "../lib/core/index.ts";
 
 test("isBounce matches mailer-daemon and delivery subjects", () => {
 	assert.equal(isBounce({ subject: "Mail delivery failed", from: { address: "ops@example.com" } }), true);

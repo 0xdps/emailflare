@@ -5,22 +5,20 @@
 // Registered as `email` export in index.ts.
 
 import PostalMime from "postal-mime";
-import { createLogger } from "@emailflare/email-core/logger";
 import {
+	createLogger,
 	classifyBounce,
 	extractReason,
 	extractRecipient,
 	generateId,
 	isBounce,
 	isComplaint,
-} from "@emailflare/email-core";
-import {
 	parseThreadToken,
 	stripThreadToken,
 	threadMessageId,
 	upsertPerson,
 	resolveThreadId,
-} from "@emailflare/inbox-core";
+} from "@/lib/core";
 import { D1Db } from "./db.ts";
 import type { Env } from "./env.ts";
 

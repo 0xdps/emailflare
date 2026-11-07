@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { parsePagination } from "@emailflare/email-core";
+import { parsePagination } from "@/lib/core";
 import { D1Db } from "../db.ts";
 import type { HonoEnv } from "../env.ts";
 

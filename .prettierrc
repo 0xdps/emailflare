@@ -7,4 +7,3 @@
 	"printWidth": 120,
 	"plugins": ["prettier-plugin-astro"]
 }
-

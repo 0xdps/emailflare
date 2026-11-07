@@ -2,8 +2,7 @@
 
 import { env } from "cloudflare:workers";
 import { z } from "zod";
-import { generateId } from "@emailflare/email-core";
-import { sequenceSchema } from "@emailflare/inbox-core";
+import { generateId, sequenceSchema } from "@/lib/core";
 import type { Env } from "@/worker/inbox/env";
 import { requireInbox } from "./auth";
 

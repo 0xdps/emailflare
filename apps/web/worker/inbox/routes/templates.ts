@@ -5,7 +5,7 @@ import type { TemplateRow } from "../db.ts";
 import { renderLayout, LAYOUTS, THEMES } from "../emails.ts";
 import type { LayoutName } from "../emails.ts";
 import type { HonoEnv } from "../env.ts";
-import { templateSchema, toSlug, enrich, generateId, shortId, applyVariables } from "@emailflare/email-core";
+import { templateSchema, toSlug, enrich, generateId, shortId, applyVariables } from "@/lib/core";
 
 const app = new Hono<HonoEnv>();
 

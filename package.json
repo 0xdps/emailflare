@@ -3,13 +3,10 @@
 	"private": true,
 	"packageManager": "pnpm@11.8.0",
 	"scripts": {
-		"build:email-core": "pnpm --filter @emailflare/email-core build",
-		"build:inbox-core": "pnpm --filter @emailflare/inbox-core build",
-		"build:emails": "pnpm --filter @emailflare/emails build",
-		"build:shared": "pnpm run build:email-core && pnpm run build:inbox-core && pnpm run build:emails",
+		"build": "pnpm --filter @emailflare/web build",
 		"build:web": "pnpm --filter @emailflare/web build",
-		"test": "pnpm --filter @emailflare/email-core test && pnpm --filter @emailflare/inbox-core test",
-		"typecheck": "pnpm --filter '@emailflare/*' exec tsc --noEmit",
+		"test": "tsx --test apps/web/test/*.test.ts",
+		"typecheck": "pnpm --filter @emailflare/web exec tsc --noEmit",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"audit": "pnpm audit --audit-level=high"
@@ -17,6 +14,7 @@
 	"devDependencies": {
 		"lefthook": "^2.1.12",
 		"prettier": "^3.9.6",
-		"prettier-plugin-astro": "^1.1.2"
+		"prettier-plugin-astro": "^1.1.2",
+		"tsx": "^4.19.3"
 	}
 }

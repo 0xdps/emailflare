@@ -4,20 +4,22 @@
 
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { generateId, sendWithLog, resolveDomainId } from "@emailflare/email-core";
-import { createLogger } from "@emailflare/email-core/logger";
-import { sendEmail, type CFSendEmailParams } from "../../services/cloudflare.ts";
-
-const log = createLogger("inbox-compose");
-import { D1Db } from "../../db.ts";
-import type { HonoEnv } from "../../env.ts";
 import {
+	generateId,
+	sendWithLog,
+	resolveDomainId,
+	createLogger,
 	composeSchema,
 	buildReplyToAddress,
 	threadMessageId,
 	upsertPerson,
 	resolveThreadId,
-} from "@emailflare/inbox-core";
+} from "@/lib/core";
+import { sendEmail, type CFSendEmailParams } from "../../services/cloudflare.ts";
+import { D1Db } from "../../db.ts";
+import type { HonoEnv } from "../../env.ts";
+
+const log = createLogger("inbox-compose");
 
 const app = new Hono<HonoEnv>();
 

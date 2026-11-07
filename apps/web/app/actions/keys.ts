@@ -1,7 +1,7 @@
 "use server";
 
 import { env } from "cloudflare:workers";
-import { generateId, keyCreateSchema } from "@emailflare/email-core";
+import { generateId, keyCreateSchema } from "@/lib/core";
 import { makeDb } from "@/worker/inbox/db";
 import { sha256Hex } from "@/worker/inbox/middleware/apiKey";
 import { requireAdmin } from "./auth";

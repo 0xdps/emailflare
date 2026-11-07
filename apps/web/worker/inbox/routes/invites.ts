@@ -6,7 +6,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { generateId } from "@emailflare/email-core";
+import { generateId } from "@/lib/core";
 import { requireSession, requireAdmin, saveSession } from "../middleware/auth.ts";
 import { hashPassword } from "../lib/password.ts";
 import type { HonoEnv } from "../env.ts";

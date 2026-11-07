@@ -4,7 +4,7 @@
 // POST /api/inbox/threads/:id/mark-read — mark all messages in a thread as read
 
 import { Hono } from "hono";
-import { parsePagination } from "@emailflare/email-core";
+import { parsePagination } from "@/lib/core";
 import type { HonoEnv } from "../../env.ts";
 
 const app = new Hono<HonoEnv>();

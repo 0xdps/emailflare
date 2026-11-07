@@ -1,7 +1,7 @@
 "use server";
 
 import { env } from "cloudflare:workers";
-import { templateSchema, toSlug, enrich, generateId, shortId } from "@emailflare/email-core";
+import { templateSchema, toSlug, enrich, generateId, shortId } from "@/lib/core";
 import { makeDb } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
 import { requireApi } from "./auth";

@@ -21,7 +21,7 @@ export {
 	extractReason,
 	type BounceMessageView,
 	type BounceClass,
-} from "./bounce.js";
+} from "./bounce.ts";
 
 // ── Row interfaces ─────────────────────────────────────────────────────────────
 // SQLite columns use INTEGER for booleans (0 | 1) and TEXT for dates (ISO 8601).
@@ -837,10 +837,10 @@ export async function executeSend(deps: ExecuteSendDeps, input: ExecuteSendInput
 
 /**
  * Enrich a template row with a computed `variables` array, derived from
- * the layout registry. Pass the `LAYOUTS` map from `@emailflare/emails`.
+ * the layout registry. Pass the `LAYOUTS` map from the emails module.
  *
  * @example
- * import { LAYOUTS } from '@emailflare/emails';
+ * import { LAYOUTS } from '@/emails';
  * import { enrich } from '@emailflare/email-core';
  * const rows = await templates.find();
  * return c.json(rows.map(r => enrich(r, LAYOUTS)));
