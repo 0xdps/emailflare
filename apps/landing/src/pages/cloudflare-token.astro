@@ -616,9 +616,9 @@ import Base from "../layouts/Base.astro";
 							</strong>
 						</p>
 						<div class="env-block">
-							<span class="ev-cmt"># In apps/dashboard directory:</span>
-							<span class="ev-key">pnpm exec wrangler secret put CF_API_TOKEN</span>
-							<span class="ev-key">pnpm exec wrangler secret put CF_ACCOUNT_ID</span>
+							<span class="ev-cmt"># Using just recipe:</span>
+							<span class="ev-key">just dashboard-secret CF_API_TOKEN</span>
+							<span class="ev-key">just dashboard-secret CF_ACCOUNT_ID</span>
 						</div>
 
 						<p>

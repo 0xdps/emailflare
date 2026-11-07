@@ -127,7 +127,7 @@ Sending an email with EmailFlare is as simple as a standard REST call:
 
 ```bash
 curl -X POST https://your-emailflare-worker.workers.dev/v1/send \
-  -H "Authorization: Bearer ef_live_your_api_key" \
+  -H "Authorization: Bearer eflive_your_api_key" \
   -H "Content-Type: application/json" \
   -d '{
     "from": "notifications@yourdomain.com",

@@ -1054,9 +1054,9 @@ import Base from "../layouts/Base.astro";
 
 						<div class="callout callout-orange">
 							<span class="callout-icon">⚡</span>
-							Unsubscribe links require <code>PUBLIC_URL</code> (or <code>public_url</code> in{" "}
-							<code>config.toml</code>) to be set. Without it, <code>listId</code> is ignored — pass your
-							own <code>listUnsubscribe</code> URL instead.
+							Unsubscribe links require <code>PUBLIC_URL</code> (configured in <code>wrangler.jsonc</code>{" "}
+							or as a Worker secret) to be set. Without it, <code>listId</code> is ignored — pass your own{" "}
+							<code>listUnsubscribe</code> URL instead.
 						</div>
 					</div>
 				</section>

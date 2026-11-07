@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **50+ React Email Templates:** Built-in responsive templates covering authentication, receipts, security alerts, and newsletters.
 - **Custom Handlebars Templates:** Custom template creation with variable interpolation, conditionals, and loops.
 - **Interactive Playground:** Sandboxed developer environment for drafting, testing, and previewing sends.
-- **Scoped API Keys:** Fine-grained token management with live/test environments and domain-restricted keys (`ef_live_...` and `ef_test_...`).
+- **Scoped API Keys:** Fine-grained token management with live/test environments and domain-restricted keys (`eflive_...` and `eftest_...`).
 - **Deliverability & Reputation:** Automatic bounce classification (hard vs. soft), complaint processing, suppression lists, and RFC 8058 one-click list unsubscribe headers.
 - **Developer Console (`/developer/*`):** Dedicated routes for overview metrics, searchable delivery logs, templates, audiences, and suppressions.
 

@@ -214,7 +214,7 @@ Send by slug (preferred — stable across restores) or by id:
 
 ```text
 POST /v1/send
-Authorization: Bearer ef_live_xxx
+Authorization: Bearer eflive_xxx
 Content-Type: application/json
 
 {

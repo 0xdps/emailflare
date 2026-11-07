@@ -791,55 +791,24 @@ import { Icon } from "astro-icon/components";
 				<div class="setup-step">
 					<div class="ss-num">2</div>
 					<div class="ss-body">
-						<h3>Configure credentials</h3>
-						<p>
-							Copy the example config and fill in your Cloudflare API token, account ID, and the secrets
-							EmailFlare will use at runtime.
-						</p>
+						<h3>Configure credentials &amp; secrets</h3>
+						<p>For local offline development with Miniflare, copy the example environment file:</p>
 						<div class="code-block">
-							<span class="c-cmd">cp scripts/config.example.toml scripts/config.toml</span>
+							<span class="c-cmd">cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars</span>
 						</div>
 						<p>
-							Edit{" "}
-							<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
-								scripts/config.toml
-							</code>{" "}
-							— the key fields are:
+							For production deployment, set your encrypted secrets using{" "}
+							<code>just dashboard-secret</code> or Wrangler:
 						</p>
 						<div class="code-block">
-							<span>
-								<span class="c-cmt">[deploy]</span>
+							<span class="c-cmt"># Generate random 32+ char session secret</span>
+							<span class="c-cmd">just dashboard-secret SESSION_SECRET</span>
+							<span class="c-cmt">
+								# Cloudflare API token with Email Sending &amp; Routing permissions
 							</span>
-							<span>
-								<span class="c-key">database_name</span> = <span class="c-val">"emailflare"</span>
-							</span>
-							<span>&nbsp;</span>
-							<span>
-								<span class="c-cmt">[secrets]</span>
-							</span>
-							<span>
-								<span class="c-key">admin_token</span> ={" "}
-								<span class="c-val">"$(openssl rand -hex 32)"</span>
-							</span>
-							<span>
-								<span class="c-key">session_secret</span> ={" "}
-								<span class="c-val">"$(openssl rand -hex 32)"</span>
-							</span>
-							<span>
-								<span class="c-key">cf_api_token</span> ={" "}
-								<span class="c-val">"your_runtime_token"</span>
-							</span>
-							<span>
-								<span class="c-key">cf_account_id</span> = <span class="c-val">"your_account_id"</span>
-							</span>
-							<span>
-								<span class="c-key">admin_origin</span> = <span class="c-val">""</span>{" "}
-								<span class="c-cmt"># fill after first deploy</span>
-							</span>
-							<span>
-								<span class="c-key">public_url</span> = <span class="c-val">""</span>{" "}
-								<span class="c-cmt"># fill after first deploy</span>
-							</span>
+							<span class="c-cmd">just dashboard-secret CF_API_TOKEN</span>
+							<span class="c-cmt"># Your Cloudflare Account ID</span>
+							<span class="c-cmd">just dashboard-secret CF_ACCOUNT_ID</span>
 						</div>
 						<div class="tip-box">
 							<span class="tip-icon">

@@ -15,7 +15,7 @@ The Worker entrypoint in `worker/index.ts` dispatches requests and events based 
 2. **REST API Backend (`/api/*`, `/v1/*`, `/health`):**
     - Mounted from `worker/inbox` using Hono.
     - Enforces strict Role-Based Access Control (`requireSession`, `requireApi`, `requireAccess("inbox")`, `requireAdmin`).
-    - Public send API at `POST /v1/send` with scoped API key authentication (`ef_live_...` and `ef_test_...`).
+    - Public send API at `POST /v1/send` with scoped API key authentication (`eflive_...` and `eftest_...`).
 3. **Inbound Email Handler (`email()`):**
     - Consumes Cloudflare Email Routing events for inbound messages.
     - Parses MIME bodies, saves raw payloads to R2, indexes conversations into D1, and processes bounce/complaint suppression webhooks.

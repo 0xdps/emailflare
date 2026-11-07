@@ -1627,14 +1627,15 @@ import { Icon } from "astro-icon/components";
 					<div class="ix-do-step">
 						<div class="ix-do-step-num">1</div>
 						<div>
-							<div class="ix-do-step-label">Copy the config template</div>
+							<div class="ix-do-step-label">Copy local environment template</div>
 							<p class="ix-do-step-desc">
-								Fill in your Cloudflare API token, account ID, and VAPID keys. Or leave everything blank
-								to be prompted interactively.
+								Copy example environment variables for local Miniflare testing.
 							</p>
 							<div class="ix-code-block">
 								<span>
-									<span class="ix-cb-cmd">cp scripts/config.example.toml scripts/config.toml</span>
+									<span class="ix-cb-cmd">
+										cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars
+									</span>
 								</span>
 							</div>
 						</div>
@@ -1644,15 +1645,15 @@ import { Icon } from "astro-icon/components";
 						<div>
 							<div class="ix-do-step-label">Generate VAPID keys</div>
 							<p class="ix-do-step-desc">
-								Inbox uses Web Push for real-time browser notifications. Generate a key pair and paste
-								both keys into your config.
+								Inbox uses Web Push for real-time browser notifications. Generate a key pair for push
+								notifications.
 							</p>
 							<div class="ix-code-block">
 								<span>
 									<span class="ix-cb-cmd">npx web-push generate-vapid-keys</span>
 								</span>
 								<span>
-									<span class="ix-cb-cmt"># paste PUBLIC_KEY and PRIVATE_KEY into config.toml</span>
+									<span class="ix-cb-cmt"># store VAPID_PUBLIC_KEY &amp; VAPID_PRIVATE_KEY</span>
 								</span>
 							</div>
 						</div>
@@ -1749,7 +1750,7 @@ import { Icon } from "astro-icon/components";
 						<a href="#email-routing">Email Routing</a>
 					</li>
 					<li>
-						<a href="#config">config.toml reference</a>
+						<a href="#local-config">Local development</a>
 					</li>
 					<li>
 						<a href="#secrets">Secrets reference</a>
@@ -1826,26 +1827,23 @@ import { Icon } from "astro-icon/components";
 								<div class="qs-num">1</div>
 								<div class="qs-body">
 									<strong>Install dependencies</strong> — from the repo root run{" "}
-									<code>just install</code>. This installs all workspace packages including the inbox
-									Worker and dashboard.
+									<code>just install</code>. This installs all workspace dependencies for the
+									dashboard app and marketing site.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">2</div>
 								<div class="qs-body">
-									<strong>Copy the config template</strong> —{" "}
-									<code>cp scripts/config.example.toml scripts/config.toml</code>. Fill in{" "}
-									<code>[deploy]</code> (your CF API token + account ID) and the <code>[inbox]</code>{" "}
-									VAPID keys. All fields are optional — any blank value will be prompted
-									interactively.
+									<strong>Configure local environment</strong> —{" "}
+									<code>cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars</code>. For
+									production, set secrets via <code>just dashboard-secret &lt;KEY&gt;</code>.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">3</div>
 								<div class="qs-body">
 									<strong>Generate VAPID keys</strong> — run{" "}
-									<code>npx web-push generate-vapid-keys</code> and copy the public and private keys
-									into <code>config.toml</code> under <code>[inbox]</code>.
+									<code>npx web-push generate-vapid-keys</code> and configure Web Push keys.
 								</div>
 							</div>
 							<div class="qs-step">
@@ -1971,47 +1969,34 @@ import { Icon } from "astro-icon/components";
 					</div>
 				</section>
 
-				<!-- CONFIG.TOML REFERENCE -->
-				<section class="doc-section" id="config">
+				<!-- LOCAL DEVELOPMENT CONFIG -->
+				<section class="doc-section" id="local-config">
 					<div class="doc-section-header">
-						<h2>config.toml reference</h2>
-						<a class="anchor-link" href="#config">
-							#config
+						<h2>Local development (.dev.vars)</h2>
+						<a class="anchor-link" href="#local-config">
+							#local-config
 						</a>
 					</div>
 					<div class="doc-body">
 						<p>
-							Copy <code>scripts/config.example.toml</code> to <code>scripts/config.toml</code>. Any blank
-							value causes the deploy script to prompt interactively. The file is git-ignored.
+							For local development with Miniflare, copy <code>apps/dashboard/.dev.vars.example</code> to{" "}
+							<code>apps/dashboard/.dev.vars</code>. Miniflare automatically loads these secrets when
+							running <code>just dev</code>.
 						</p>
 
 						<div class="code-block">
-							<span class="cb-cmt"># scripts/config.toml</span>
-							<span class="cb-plain">[deploy]</span>
-							<span class="cb-cmt"># D1 database name (default: "emailflare")</span>
-							<span class="cb-key">database_name</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">"emailflare"</span>
-							<span class="cb-cmt"># Cloudflare API token — used by wrangler during deploy</span>
-							<span class="cb-key">cloudflare_api_token</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">""</span>
+							<span class="cb-cmt"># apps/dashboard/.dev.vars</span>
+							<span class="cb-cmt">
+								# 32+ char random string for session JWT signing: openssl rand -hex 32
+							</span>
+							<span class="cb-key">SESSION_SECRET</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">"your_32_char_secret_here"</span>
+							<span class="cb-cmt"># Runtime Cloudflare API token (Email Routing + Sending + DNS)</span>
+							<span class="cb-key">CF_API_TOKEN</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">"your_token_value_here"</span>
 							<span class="cb-cmt"># Your Cloudflare account ID</span>
-							<span class="cb-key">account_id</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">""</span>
-							<span class="cb-plain">[secrets]</span>
-							<span class="cb-cmt"># 32+ char random string for JWT signing: openssl rand -hex 32</span>
-							<span class="cb-key">session_secret</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">""</span>
-							<span class="cb-cmt"># Runtime Cloudflare API token (Email Routing + DNS + Zone)</span>
-							<span class="cb-key">cf_api_token</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">""</span>
-							<span class="cb-key">cf_account_id</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">""</span>
-							<span class="cb-plain">[inbox]</span>
-							<span class="cb-cmt"># Generate: npx web-push generate-vapid-keys</span>
-							<span class="cb-key">vapid_public_key</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">""</span>
-							<span class="cb-key">vapid_private_key</span> <span class="cb-punct">=</span>{" "}
-							<span class="cb-str">""</span>
+							<span class="cb-key">CF_ACCOUNT_ID</span> <span class="cb-punct">=</span>{" "}
+							<span class="cb-str">"your_32_char_account_id"</span>
 						</div>
 					</div>
 				</section>
