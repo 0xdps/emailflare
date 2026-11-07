@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Architecture & Edge Infrastructure
 
-- **Single Worker Bundle:** Unified the Next.js web application, Hono REST API, queue consumers, sequence cron, and email routing into a single Cloudflare Worker (`apps/web`).
+- **Single Worker Bundle:** Unified the Next.js web application, Hono REST API, queue consumers, sequence cron, and email routing into a single Cloudflare Worker (`apps/dashboard`).
 - **Cloudflare Edge Primitives:** Fully backed by Cloudflare D1 (SQL database), R2 (raw email storage & attachments), KV (rate limiting), Queues (reliable outbound dispatch), and Durable Objects (live WebSocket feeds).
 - **1-Click Deployment:** Automatic resource provisioning and D1 database migrations via Cloudflare Workers Builds.
 

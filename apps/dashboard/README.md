@@ -1,4 +1,4 @@
-# @emailflare/web
+# @emailflare/dashboard
 
 The unified web dashboard and edge engine for EmailFlare, running as a **single Cloudflare Worker**. It combines a Next.js (App Router, via [vinext](https://github.com/cloudflare/vinext)) frontend with a high-performance [Hono](https://hono.dev) REST API backend, live WebSocket Durable Objects, and native Cloudflare email handlers.
 

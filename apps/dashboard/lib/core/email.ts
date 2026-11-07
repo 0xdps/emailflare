@@ -625,7 +625,7 @@ export async function resolveDomainId(db: Pick<DbQueryHandle, "query">, fromAddr
  * null if the address is safe to send to.
  */
 export async function checkSuppressed(db: Pick<DbQueryHandle, "query">, email: string): Promise<string | null> {
-	// Addresses are stored lowercase (see apps/web/migrations/0001_schema.sql).
+	// Addresses are stored lowercase (see apps/dashboard/migrations/0001_schema.sql).
 	const result = await db.query("SELECT reason FROM suppressions WHERE email = ? LIMIT 1", [email.toLowerCase()]);
 	return (result.rows[0]?.reason as string | undefined) ?? null;
 }

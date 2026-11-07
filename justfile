@@ -1,6 +1,6 @@
 # EmailFlare · task runner
 #
-# apps/web: Unified Cloudflare Worker (Next.js + Hono API + D1 Migrations + Emails)
+# apps/dashboard: Unified Cloudflare Worker (Next.js + Hono API + D1 Migrations + Emails)
 # apps/landing: Public marketing website (Astro on Cloudflare Workers)
 
 # List all recipes
@@ -15,39 +15,47 @@ install:
 
 # Clean build artifacts across all workspaces
 clean:
-    rm -rf apps/web/dist apps/landing/dist
+    rm -rf apps/dashboard/dist apps/landing/dist
 
-# ── Unified Web App & Worker (apps/web) ──────────────────────────────────────
+# ── Unified Dashboard App & Worker (apps/dashboard) ──────────────────────────
 
-# Run the unified app locally with Miniflare bindings (Next.js + Hono API + emails)
-web-dev:
-    pnpm --filter @emailflare/web dev
+# Run dashboard locally with Miniflare bindings (Next.js + Hono API + emails)
+dashboard-dev:
+    pnpm --filter @emailflare/dashboard dev
+
+alias dev := dashboard-dev
 
 # Production build of the unified Worker
-web-build:
-    pnpm --filter @emailflare/web build
+dashboard-build:
+    pnpm --filter @emailflare/dashboard build
+
+alias build := dashboard-build
 
 # Preview production build locally via Miniflare/Wrangler
-web-preview:
-    pnpm --filter @emailflare/web preview
+dashboard-preview:
+    pnpm --filter @emailflare/dashboard preview
 
 # Apply remote migrations and deploy unified Worker to Cloudflare
-web-deploy:
-    pnpm --filter @emailflare/web deploy
+dashboard-deploy:
+    pnpm --filter @emailflare/dashboard deploy
 
-# Set or update a remote secret in the web Worker (e.g. just web-secret SESSION_SECRET)
-web-secret key:
-    cd apps/web && pnpm exec wrangler secret put {{key}}
+alias deploy := dashboard-deploy
 
-# ── Database Migrations (apps/web/migrations) ────────────────────────────────
+# Set or update a remote secret in the dashboard Worker (e.g. just dashboard-secret SESSION_SECRET)
+dashboard-secret key:
+    cd apps/dashboard && pnpm exec wrangler secret put {{key}}
+
+# ── Database Migrations (apps/dashboard/migrations) ─────────────────────────
 
 # Apply D1 migrations to the local database
-web-migrate:
-    pnpm --filter @emailflare/web migrations:apply:local
+dashboard-migrate:
+    pnpm --filter @emailflare/dashboard migrations:apply:local
+
+alias migrate := dashboard-migrate
 
 # Apply D1 migrations to the remote production database
-web-migrate-remote:
-    pnpm --filter @emailflare/web migrations:apply
+dashboard-migrate-remote:
+    pnpm --filter @emailflare/dashboard migrations:apply
 
 # ── Quality, Testing & Formatting ────────────────────────────────────────────
 

@@ -3,10 +3,10 @@
 	"private": true,
 	"packageManager": "pnpm@11.8.0",
 	"scripts": {
-		"build": "pnpm --filter @emailflare/web build",
-		"build:web": "pnpm --filter @emailflare/web build",
-		"test": "tsx --test apps/web/test/*.test.ts",
-		"typecheck": "pnpm --filter @emailflare/web exec tsc --noEmit",
+		"build": "pnpm --filter @emailflare/dashboard build",
+		"build:dashboard": "pnpm --filter @emailflare/dashboard build",
+		"test": "tsx --test apps/dashboard/test/*.test.ts",
+		"typecheck": "pnpm --filter @emailflare/dashboard exec tsc --noEmit",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"audit": "pnpm audit --audit-level=high"

@@ -1667,7 +1667,7 @@ import { Icon } from "astro-icon/components";
 							</p>
 							<div class="ix-code-block">
 								<span>
-									<span class="ix-cb-cmd">just web-deploy</span>
+									<span class="ix-cb-cmd">just dashboard-deploy</span>
 								</span>
 							</div>
 						</div>
@@ -1722,7 +1722,7 @@ import { Icon } from "astro-icon/components";
 					</a>
 					<a
 						class="btn btn-ghost"
-						href="https://github.com/0xdps/emailflare/tree/staging/apps/web"
+						href="https://github.com/0xdps/emailflare/tree/staging/apps/dashboard"
 						target="_blank"
 						rel="noopener"
 					>
@@ -1851,9 +1851,9 @@ import { Icon } from "astro-icon/components";
 							<div class="qs-step">
 								<div class="qs-num">4</div>
 								<div class="qs-body">
-									<strong>Run the deploy script</strong> — <code>just web-deploy</code>. The script
-									applies D1 migrations remotely, builds the Next.js React Server Components, and
-									deploys the unified Worker.
+									<strong>Run the deploy script</strong> — <code>just dashboard-deploy</code>. The
+									script applies D1 migrations remotely, builds the Next.js React Server Components,
+									and deploys the unified Worker.
 								</div>
 							</div>
 							<div class="qs-step">
@@ -2027,8 +2027,8 @@ import { Icon } from "astro-icon/components";
 					<div class="doc-body">
 						<p>
 							All secrets are set as Cloudflare Worker secrets via <code>wrangler secret put</code>. The
-							deploy script handles this automatically; use <code>just web-secret SECRET_NAME</code> to
-							update a single secret later.
+							deploy script handles this automatically; use <code>just dashboard-secret SECRET_NAME</code>{" "}
+							to update a single secret later.
 						</p>
 
 						<div class="table-wrap">
@@ -2104,10 +2104,10 @@ import { Icon } from "astro-icon/components";
 						<h3>Updating a secret</h3>
 						<div class="code-block">
 							<span class="cb-cmt"># Interactive (prompts without echoing)</span>
-							<span class="cb-cmd">just web-secret SESSION_SECRET</span>
+							<span class="cb-cmd">just dashboard-secret SESSION_SECRET</span>
 
 							<span class="cb-cmt"># Or directly with wrangler</span>
-							<span class="cb-cmd">cd apps/web</span>
+							<span class="cb-cmd">cd apps/dashboard</span>
 							<span class="cb-cmd">echo "new-value" | npx wrangler secret put SESSION_SECRET</span>
 						</div>
 					</div>
@@ -2299,8 +2299,8 @@ import { Icon } from "astro-icon/components";
 					</div>
 					<div class="doc-body">
 						<p>
-							Pull the latest code and re-deploy. The <code>web-deploy</code> just recipe runs remote D1
-							migrations before deploying so schema changes are applied atomically.
+							Pull the latest code and re-deploy. The <code>dashboard-deploy</code> just recipe runs
+							remote D1 migrations before deploying so schema changes are applied atomically.
 						</p>
 
 						<div class="code-block">
@@ -2309,16 +2309,13 @@ import { Icon } from "astro-icon/components";
 							<span class="cb-cmd">just install</span>
 
 							<span class="cb-cmt"># Apply any new migrations + rebuild + redeploy</span>
-							<span class="cb-cmd">just web-deploy</span>
+							<span class="cb-cmd">just dashboard-deploy</span>
 						</div>
 
 						<h3>
-							What <code>just web-deploy</code> does
+							What <code>just dashboard-deploy</code> does
 						</h3>
 						<ul>
-							<li>
-								Runs <code>pnpm run build:shared</code> to compile all shared core libraries.
-							</li>
 							<li>
 								Runs <code>wrangler d1 migrations apply DB --remote</code> to apply pending SQL
 								migrations to the live database.
@@ -2334,7 +2331,7 @@ import { Icon } from "astro-icon/components";
 							<span class="callout-icon">✅</span>
 							<span>
 								Migrations are idempotent — already-applied migrations are skipped automatically. You
-								can safely run <code>just web-deploy</code> at any time without risk of data loss.
+								can safely run <code>just dashboard-deploy</code> at any time without risk of data loss.
 							</span>
 						</div>
 					</div>

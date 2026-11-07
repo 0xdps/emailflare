@@ -7,7 +7,7 @@ dist/
 *.local
 .vscode/
 
-apps/web/worker-configuration.d.ts
+apps/dashboard/worker-configuration.d.ts
 .DS_Store
 *.log
 .tanstack/

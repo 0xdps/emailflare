@@ -23,13 +23,13 @@ cd emailflare
 just install
 
 # 3. Setup local secrets
-cp apps/web/.dev.vars.example apps/web/.dev.vars
+cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars
 
 # 4. Apply migrations to the local D1 database
-just web-migrate
+just dashboard-migrate
 
 # 5. Start the local development server
-just web-dev
+just dashboard-dev
 ```
 
 The application runs locally on Miniflare bindings. **You do not need Docker, Redis, or a local mail server.**
@@ -38,7 +38,7 @@ The application runs locally on Miniflare bindings. **You do not need Docker, Re
 
 ## Monorepo Layout
 
-- `apps/web`: The unified Cloudflare Worker bundle containing the Next.js frontend, Hono REST backend, D1 database migrations, queue consumers, email handlers, React Email templates, and core logic.
+- `apps/dashboard`: The unified Cloudflare Worker bundle containing the Next.js frontend, Hono REST backend, D1 database migrations, queue consumers, email handlers, React Email templates, and core logic.
 - `apps/landing`: The public marketing website (`emailflare.dev`) built with Astro.
 
 ---

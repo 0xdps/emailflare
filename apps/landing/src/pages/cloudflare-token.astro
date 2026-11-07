@@ -607,7 +607,7 @@ import Base from "../layouts/Base.astro";
 						<h3>Add credentials to your Worker</h3>
 						<p>
 							For production deployment, set Worker secrets using Wrangler. For local development with
-							Miniflare, add them to <code>apps/web/.dev.vars</code>.
+							Miniflare, add them to <code>apps/dashboard/.dev.vars</code>.
 						</p>
 
 						<p>
@@ -616,14 +616,14 @@ import Base from "../layouts/Base.astro";
 							</strong>
 						</p>
 						<div class="env-block">
-							<span class="ev-cmt"># In apps/web directory:</span>
+							<span class="ev-cmt"># In apps/dashboard directory:</span>
 							<span class="ev-key">pnpm exec wrangler secret put CF_API_TOKEN</span>
 							<span class="ev-key">pnpm exec wrangler secret put CF_ACCOUNT_ID</span>
 						</div>
 
 						<p>
 							<strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">
-								Local Development (apps/web/.dev.vars)
+								Local Development (apps/dashboard/.dev.vars)
 							</strong>
 						</p>
 						<div class="env-block">
@@ -635,9 +635,9 @@ import Base from "../layouts/Base.astro";
 						<div class="info-box info-tip">
 							<span class="info-box-icon">✅</span>
 							<span>
-								That's it. Run <code>just web-deploy</code> to deploy or <code>just web-dev</code> for
-								local testing — EmailFlare will use these credentials for all Cloudflare Email Sending
-								and Routing operations.
+								That's it. Run <code>just dashboard-deploy</code> to deploy or{" "}
+								<code>just dashboard-dev</code> for local testing — EmailFlare will use these
+								credentials for all Cloudflare Email Sending and Routing operations.
 							</span>
 						</div>
 					</div>

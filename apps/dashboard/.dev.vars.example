@@ -1,5 +1,5 @@
-# Local secrets for `pnpm --filter @emailflare/web dev`.
-# Copy to apps/web/.dev.vars. Never commit real values.
+# Local secrets for `pnpm --filter @emailflare/dashboard dev`.
+# Copy to apps/dashboard/.dev.vars. Never commit real values.
 
 # Secrets prompted by Deploy to Cloudflare. Generate SESSION_SECRET with:
 #   openssl rand -hex 32

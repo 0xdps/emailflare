@@ -544,7 +544,7 @@ import { Icon } from "astro-icon/components";
 							<span class="tt-cmt"># 3. One-command deploy</span>
 						</div>
 						<div>
-							<span class="tt-prompt">$</span> <span class="tt-cmd">just web-deploy</span>
+							<span class="tt-prompt">$</span> <span class="tt-cmd">just dashboard-deploy</span>
 						</div>
 						<div style="margin-top:10px;">
 							<span class="tt-ok">✓</span>{" "}
@@ -610,8 +610,8 @@ import { Icon } from "astro-icon/components";
 					</span>
 					<h3>One command from zero to deployed</h3>
 					<p>
-						<code>just web-deploy</code> creates your D1 database tables, applies composite indexes, builds
-						the Next.js app with Server Actions, and deploys the unified Worker — all automatically.
+						<code>just dashboard-deploy</code> creates your D1 database tables, applies composite indexes,
+						builds the Next.js app with Server Actions, and deploys the unified Worker — all automatically.
 					</p>
 				</div>
 				<div class="why-card">
@@ -701,16 +701,17 @@ import { Icon } from "astro-icon/components";
 						>
 							Wrangler CLI · Developer Control
 						</span>
-						<h3>just web-deploy</h3>
+						<h3>just dashboard-deploy</h3>
 						<p>Command-line precision with offline Miniflare emulation and full scriptable access.</p>
 					</div>
 					<ul class="cmp-list">
 						<li>
-							<span class="ci ci-ok">✓</span> Offline local development with <code>just web-dev</code>
+							<span class="ci ci-ok">✓</span> Offline local development with{" "}
+							<code>just dashboard-dev</code>
 						</li>
 						<li>
 							<span class="ci ci-ok">✓</span> Local D1 database migrations via{" "}
-							<code>just web-migrate</code>
+							<code>just dashboard-migrate</code>
 						</li>
 						<li>
 							<span class="ci ci-ok">✓</span> Direct secret management via{" "}
@@ -726,7 +727,8 @@ import { Icon } from "astro-icon/components";
 							<span class="ci ci-ok">✓</span> Multi-account and custom domain routing support
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> One-command production push: <code>just web-deploy</code>
+							<span class="ci ci-ok">✓</span> One-command production push:{" "}
+							<code>just dashboard-deploy</code>
 						</li>
 					</ul>
 				</div>
@@ -886,16 +888,16 @@ import { Icon } from "astro-icon/components";
 						<h3>Deploy the unified Worker</h3>
 						<p>
 							<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
-								just web-deploy
+								just dashboard-deploy
 							</code>{" "}
 							does the full build and deploy — automatically:
 						</p>
 						<div class="code-block">
-							<span class="c-cmd">just web-deploy</span>
+							<span class="c-cmd">just dashboard-deploy</span>
 							<span>&nbsp;</span>
 							<span>
 								<span class="c-ok">✓</span>{" "}
-								<span style="color:oklch(62% 0.01 58);">Shared packages compiled</span>
+								<span style="color:oklch(62% 0.01 58);">D1 migrations applied to remote database</span>
 							</span>
 							<span>
 								<span class="c-ok">✓</span>{" "}

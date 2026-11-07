@@ -8,16 +8,16 @@ EmailFlare uses [`just`](https://github.com/casey/just) as the workspace command
 
 ### `just install`
 
-Installs dependencies for all monorepo workspaces (`apps/web` and `apps/landing`).
+Installs dependencies for all monorepo workspaces (`apps/dashboard` and `apps/landing`).
 
 ```bash
 just install
-cp apps/web/.dev.vars.example apps/web/.dev.vars
+cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars
 ```
 
 ### `just clean`
 
-Removes build artifacts and temporary compilation directories across all workspaces (`apps/web/dist` and `apps/landing/dist`).
+Removes build artifacts and temporary compilation directories across all workspaces (`apps/dashboard/dist` and `apps/landing/dist`).
 
 ```bash
 just clean
@@ -25,9 +25,9 @@ just clean
 
 ---
 
-## Unified Web App & Worker (`apps/web`)
+## Unified Dashboard App & Worker (`apps/dashboard`)
 
-### `just web-dev`
+### `just dashboard-dev` _(alias: `just dev`)_
 
 Starts the unified Cloudflare Worker development server with Miniflare local emulation for D1, KV, Durable Objects, and R2.
 
@@ -36,60 +36,68 @@ Starts the unified Cloudflare Worker development server with Miniflare local emu
 - **Email Sandboxing:** Inbound email previews and live updates
 
 ```bash
-just web-dev
+just dashboard-dev
+# or simply:
+just dev
 ```
 
-### `just web-build`
+### `just dashboard-build` _(alias: `just build`)_
 
-Compiles the Next.js App Router and Worker bundle with Vite and vinext (`apps/web/dist`).
+Compiles the Next.js App Router and Worker bundle with Vite and vinext (`apps/dashboard/dist`).
 
 ```bash
-just web-build
+just dashboard-build
+# or simply:
+just build
 ```
 
-### `just web-preview`
+### `just dashboard-preview`
 
 Builds and starts a local Miniflare preview environment that runs the compiled production bundle directly through Wrangler.
 
 ```bash
-just web-preview
+just dashboard-preview
 ```
 
-### `just web-deploy`
+### `just dashboard-deploy` _(alias: `just deploy`)_
 
 Builds the application, applies any pending D1 schema migrations to the remote database, and deploys the unified Worker bundle to Cloudflare.
 
 ```bash
-just web-deploy
+just dashboard-deploy
+# or simply:
+just deploy
 ```
 
-### `just web-secret <KEY>`
+### `just dashboard-secret <KEY>`
 
 Interactively sets or updates an encrypted environment secret on the live Cloudflare Worker without storing it in configuration files.
 
 ```bash
-just web-secret SESSION_SECRET
-just web-secret CF_API_TOKEN
+just dashboard-secret SESSION_SECRET
+just dashboard-secret CF_API_TOKEN
 ```
 
 ---
 
-## Database Migrations (`apps/web/migrations`)
+## Database Migrations (`apps/dashboard/migrations`)
 
-### `just web-migrate`
+### `just dashboard-migrate` _(alias: `just migrate`)_
 
-Applies all local SQL migrations from `apps/web/migrations/` to your local Miniflare D1 database. Required on first setup before accessing the dashboard.
+Applies all local SQL migrations from `apps/dashboard/migrations/` to your local Miniflare D1 database. Required on first setup before accessing the dashboard.
 
 ```bash
-just web-migrate
+just dashboard-migrate
+# or simply:
+just migrate
 ```
 
-### `just web-migrate-remote`
+### `just dashboard-migrate-remote`
 
 Applies pending D1 schema migrations directly to the live remote Cloudflare D1 database without triggering a full worker redeploy.
 
 ```bash
-just web-migrate-remote
+just dashboard-migrate-remote
 ```
 
 ---
@@ -98,7 +106,7 @@ just web-migrate-remote
 
 ### `just test`
 
-Runs the Node.js test runner across all unit test suites (`apps/web/test/*.test.ts`) covering bounce parsing, delivery queues, password verification, address parsing, and templates.
+Runs the Node.js test runner across all unit test suites (`apps/dashboard/test/*.test.ts`) covering bounce parsing, delivery queues, password verification, address parsing, and templates.
 
 ```bash
 just test

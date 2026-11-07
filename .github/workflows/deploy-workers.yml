@@ -1,6 +1,6 @@
 name: Deploy Cloudflare Workers
 
-# Deploys the unified EmailFlare Worker (apps/web).
+# Deploys the unified EmailFlare Worker (apps/dashboard).
 #
 # Trigger manually via "Run workflow". Cloudflare resources (D1, KV, R2, Queue,
 # Durable Object) and secrets must already exist. This workflow builds the
@@ -37,5 +37,5 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Build, migrate, and deploy
-              working-directory: apps/web
+              working-directory: apps/dashboard
               run: pnpm run deploy

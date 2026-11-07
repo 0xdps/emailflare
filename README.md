@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://emailflare.dev">
-    <img src="./apps/web/public/favicon.svg" width="72" height="72" alt="EmailFlare logo" />
+    <img src="./apps/dashboard/public/favicon.svg" width="72" height="72" alt="EmailFlare logo" />
   </a>
 </p>
 
@@ -108,14 +108,14 @@ Outbound Email ───┼─────────────┴───�
                   └────────────────────────────────────────────────────────┘
 ```
 
-| Cloudflare Primitive    | Role in EmailFlare                                                                                                 |
-| :---------------------- | :----------------------------------------------------------------------------------------------------------------- |
-| **Worker** (`apps/web`) | Hosts the Next.js web application, Hono REST backend, queue consumers, and cron jobs in one bundle.                |
-| **D1**                  | Serverless relational database for users, domains, mailboxes, threads, contacts, API keys, logs, and suppressions. |
-| **R2**                  | Object storage for raw inbound email MIME bodies and attachments.                                                  |
-| **Queues**              | Asynchronous message queuing for high-throughput, reliable outbound email dispatch.                                |
-| **KV**                  | Edge caching and distributed rate-limiting.                                                                        |
-| **Durable Objects**     | Live WebSocket connections for instant inbox message synchronization.                                              |
+| Cloudflare Primitive          | Role in EmailFlare                                                                                                 |
+| :---------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| **Worker** (`apps/dashboard`) | Hosts the Next.js web application, Hono REST backend, queue consumers, and cron jobs in one bundle.                |
+| **D1**                        | Serverless relational database for users, domains, mailboxes, threads, contacts, API keys, logs, and suppressions. |
+| **R2**                        | Object storage for raw inbound email MIME bodies and attachments.                                                  |
+| **Queues**                    | Asynchronous message queuing for high-throughput, reliable outbound email dispatch.                                |
+| **KV**                        | Edge caching and distributed rate-limiting.                                                                        |
+| **Durable Objects**           | Live WebSocket connections for instant inbox message synchronization.                                              |
 
 ---
 
@@ -197,13 +197,13 @@ cd emailflare
 just install
 
 # 3. Configure local environment variables
-cp apps/web/.dev.vars.example apps/web/.dev.vars
+cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars
 
 # 4. Apply database migrations to local D1
-just web-migrate
+just dashboard-migrate
 
 # 5. Start the local dev server
-just web-dev
+just dashboard-dev
 ```
 
 Open `http://localhost:5173` (or `http://localhost:3000`) in your browser. The initial visit will route to `/setup` where you can create your workspace administrator account.
@@ -213,7 +213,7 @@ Open `http://localhost:5173` (or `http://localhost:3000`) in your browser. The i
 ## Repository Layout
 
 ```text
-apps/web              Unified Cloudflare Worker (Next.js Dashboard + Hono API + D1 Migrations + Emails)
+apps/dashboard        Unified Cloudflare Worker (Next.js Dashboard + Hono API + D1 Migrations + Emails)
 apps/landing          EmailFlare public marketing website (https://emailflare.dev)
 docs                  Architecture deep dives, template guides, and deployment recipes
 ```

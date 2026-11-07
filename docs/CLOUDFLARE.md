@@ -14,26 +14,26 @@ When connecting your repository to Cloudflare Workers Builds, verify the followi
 
 | Setting               | Value               | Notes                                                  |
 | :-------------------- | :------------------ | :----------------------------------------------------- |
-| **Root directory**    | `apps/web`          | Location of the unified Worker                         |
+| **Root directory**    | `apps/dashboard`    | Location of the unified Worker                         |
 | **Build command**     | _(leave empty)_     | Handled automatically by `predeploy` in `package.json` |
 | **Deploy command**    | `pnpm run deploy`   | Applies D1 migrations to `DB` binding, then deploys    |
 | **Production branch** | `staging` or `main` | Set to your primary repository branch                  |
 
-`pnpm run deploy` automatically applies database migrations from `apps/web/migrations/` to the `DB` binding prior to worker deployment.
+`pnpm run deploy` automatically applies database migrations from `apps/dashboard/migrations/` to the `DB` binding prior to worker deployment.
 
 ---
 
 ## What Gets Deployed
 
-| Resource                | Binding         | Purpose                                                                                                                                                        |
-| :---------------------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Worker** (`apps/web`) | —               | Next.js dashboard (`/inbox`, `/developer/*`, `/settings/*`), Hono REST API (`/api/*`, `/v1/*`), and background handlers (`email()`, `scheduled()`, `queue()`). |
-| **D1 Database**         | `DB`            | Relational storage for users, mailboxes, threads, contacts, templates, API keys, domains, logs, and suppressions.                                              |
-| **R2 Bucket**           | `ATTACHMENTS`   | Object storage for raw inbound email MIME messages and file attachments.                                                                                       |
-| **Queue**               | `SEND_QUEUE`    | Outbound email queue producer and consumer for high-throughput, reliable delivery.                                                                             |
-| **KV Namespace**        | `RATE_LIMIT_KV` | Distributed rate limiting and short-lived token storage.                                                                                                       |
-| **Durable Object**      | `NOTIFICATIONS` | `NotificationsHub` Durable Object managing persistent real-time WebSocket feeds for the inbox.                                                                 |
-| **Email Sending**       | `EMAIL`         | Cloudflare's native MTA binding for dispatching outbound emails.                                                                                               |
+| Resource                      | Binding         | Purpose                                                                                                                                                        |
+| :---------------------------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Worker** (`apps/dashboard`) | —               | Next.js dashboard (`/inbox`, `/developer/*`, `/settings/*`), Hono REST API (`/api/*`, `/v1/*`), and background handlers (`email()`, `scheduled()`, `queue()`). |
+| **D1 Database**               | `DB`            | Relational storage for users, mailboxes, threads, contacts, templates, API keys, domains, logs, and suppressions.                                              |
+| **R2 Bucket**                 | `ATTACHMENTS`   | Object storage for raw inbound email MIME messages and file attachments.                                                                                       |
+| **Queue**                     | `SEND_QUEUE`    | Outbound email queue producer and consumer for high-throughput, reliable delivery.                                                                             |
+| **KV Namespace**              | `RATE_LIMIT_KV` | Distributed rate limiting and short-lived token storage.                                                                                                       |
+| **Durable Object**            | `NOTIFICATIONS` | `NotificationsHub` Durable Object managing persistent real-time WebSocket feeds for the inbox.                                                                 |
+| **Email Sending**             | `EMAIL`         | Cloudflare's native MTA binding for dispatching outbound emails.                                                                                               |
 
 ---
 
@@ -49,7 +49,7 @@ Once the initial deploy completes:
    In your Cloudflare dashboard (or using `wrangler secret put`), configure:
 
     ```bash
-    cd apps/web
+    cd apps/dashboard
     pnpm exec wrangler secret put SESSION_SECRET   # 32+ char random string for session tokens
     pnpm exec wrangler secret put CF_API_TOKEN      # Cloudflare API token with Email Routing & Email Sending permissions
     pnpm exec wrangler secret put CF_ACCOUNT_ID     # Your Cloudflare Account ID
@@ -73,13 +73,13 @@ For local testing, the application runs on Miniflare with emulated D1, KV, and R
 just install
 
 # 2. Configure local secrets
-cp apps/web/.dev.vars.example apps/web/.dev.vars
+cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars
 
 # 3. Apply migrations to local SQLite/D1
-just web-migrate
+just dashboard-migrate
 
 # 4. Start local development server
-just web-dev
+just dashboard-dev
 ```
 
 The app is accessible locally at `http://localhost:5173`.
