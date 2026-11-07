@@ -8,79 +8,85 @@ EmailFlare uses [`just`](https://github.com/casey/just) as the workspace command
 
 ### `just install`
 
-Installs dependencies for all monorepo workspaces.
+Installs dependencies for all monorepo workspaces (`apps/web` and `apps/landing`).
 
 ```bash
 just install
 cp apps/web/.dev.vars.example apps/web/.dev.vars
 ```
 
+### `just clean`
+
+Removes build artifacts and temporary compilation directories across all workspaces (`apps/web/dist` and `apps/landing/dist`).
+
+```bash
+just clean
+```
+
 ---
 
-## Local Development
+## Unified Web App & Worker (`apps/web`)
 
 ### `just web-dev`
 
-Starts the unified Cloudflare Worker dev server with Miniflare local emulation for D1, KV, and R2.
+Starts the unified Cloudflare Worker development server with Miniflare local emulation for D1, KV, Durable Objects, and R2.
 
-- Web Dashboard: `http://localhost:5173` (or `http://localhost:3000`)
-- Backend & Public API: `/api/*` and `/v1/*` on the same host
+- **Web Dashboard:** `http://localhost:5173`
+- **REST & Sending APIs:** `/api/*` and `/v1/*` served by the same Worker
+- **Email Sandboxing:** Inbound email previews and live updates
 
 ```bash
 just web-dev
 ```
 
-### `just web-migrate`
-
-Applies all SQL migrations from `apps/web/migrations/` to the local D1 database. Required on first run before completing the `/setup` wizard.
-
-```bash
-just web-migrate
-```
-
 ### `just web-build`
 
-Runs typechecks and compiles the production Worker bundle (`apps/web/dist`).
+Compiles the Next.js App Router and Worker bundle with Vite and vinext (`apps/web/dist`).
 
 ```bash
 just web-build
 ```
 
----
+### `just web-preview`
 
-## Quality & Testing
-
-### `just test`
-
-Executes unit test suites across all core packages (`@emailflare/email-core` and `@emailflare/inbox-core`).
+Builds and starts a local Miniflare preview environment that runs the compiled production bundle directly through Wrangler.
 
 ```bash
-just test
+just web-preview
 ```
-
-### `just typecheck`
-
-Runs strict TypeScript compilation checks across all monorepo packages.
-
-```bash
-just typecheck
-```
-
----
-
-## Production Deployment
 
 ### `just web-deploy`
 
-Builds shared packages, applies pending migrations to the remote Cloudflare D1 database, and deploys the unified Worker bundle via Wrangler.
+Builds the application, applies any pending D1 schema migrations to the remote database, and deploys the unified Worker bundle to Cloudflare.
 
 ```bash
 just web-deploy
 ```
 
+### `just web-secret <KEY>`
+
+Interactively sets or updates an encrypted environment secret on the live Cloudflare Worker without storing it in configuration files.
+
+```bash
+just web-secret SESSION_SECRET
+just web-secret CF_API_TOKEN
+```
+
+---
+
+## Database Migrations (`apps/web/migrations`)
+
+### `just web-migrate`
+
+Applies all local SQL migrations from `apps/web/migrations/` to your local Miniflare D1 database. Required on first setup before accessing the dashboard.
+
+```bash
+just web-migrate
+```
+
 ### `just web-migrate-remote`
 
-Applies pending D1 schema migrations directly to the remote production database without redeploying Worker code.
+Applies pending D1 schema migrations directly to the live remote Cloudflare D1 database without triggering a full worker redeploy.
 
 ```bash
 just web-migrate-remote
@@ -88,11 +94,57 @@ just web-migrate-remote
 
 ---
 
-## Marketing Website
+## Quality, Testing & Formatting
 
-The marketing site (`apps/landing`) is built with Astro and deployed as an independent Worker:
+### `just test`
+
+Runs the Node.js test runner across all unit test suites (`apps/web/test/*.test.ts`) covering bounce parsing, delivery queues, password verification, address parsing, and templates.
 
 ```bash
-just landing-dev    # Start local Astro dev server
-just landing-build  # Build static/edge production assets
+just test
+```
+
+### `just typecheck`
+
+Executes strict TypeScript type-checking (`tsc --noEmit`) across the codebase.
+
+```bash
+just typecheck
+```
+
+### `just format`
+
+Formats code across all files using Prettier.
+
+```bash
+just format
+```
+
+### `just format-check`
+
+Verifies that all files conform to Prettier formatting rules without modifying them (used in CI).
+
+```bash
+just format-check
+```
+
+### `just audit`
+
+Audits dependencies for high and critical security vulnerabilities across the workspace.
+
+```bash
+just audit
+```
+
+---
+
+## Marketing Website (`apps/landing`)
+
+The public marketing and documentation site (`apps/landing`) is built with Astro and deployed as an independent Worker:
+
+```bash
+just landing-dev      # Start local Astro dev server (http://localhost:4321)
+just landing-build    # Build static/edge production assets
+just landing-preview  # Preview production build locally
+just landing-deploy   # Deploy marketing site to Cloudflare Workers
 ```

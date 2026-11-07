@@ -1852,8 +1852,8 @@ import { Icon } from "astro-icon/components";
 								<div class="qs-num">4</div>
 								<div class="qs-body">
 									<strong>Run the deploy script</strong> — <code>just web-deploy</code>. The script
-									compiles shared packages, applies D1 migrations remotely, builds the Next.js React
-									Server Components, and deploys the unified Worker.
+									applies D1 migrations remotely, builds the Next.js React Server Components, and
+									deploys the unified Worker.
 								</div>
 							</div>
 							<div class="qs-step">
@@ -2027,7 +2027,7 @@ import { Icon } from "astro-icon/components";
 					<div class="doc-body">
 						<p>
 							All secrets are set as Cloudflare Worker secrets via <code>wrangler secret put</code>. The
-							deploy script handles this automatically; use <code>just inbox-secret SECRET_NAME</code> to
+							deploy script handles this automatically; use <code>just web-secret SECRET_NAME</code> to
 							update a single secret later.
 						</p>
 
@@ -2104,7 +2104,7 @@ import { Icon } from "astro-icon/components";
 						<h3>Updating a secret</h3>
 						<div class="code-block">
 							<span class="cb-cmt"># Interactive (prompts without echoing)</span>
-							<span class="cb-cmd">just inbox-secret SESSION_SECRET</span>
+							<span class="cb-cmd">just web-secret SESSION_SECRET</span>
 
 							<span class="cb-cmt"># Or directly with wrangler</span>
 							<span class="cb-cmd">cd apps/web</span>

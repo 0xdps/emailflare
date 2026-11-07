@@ -55,7 +55,10 @@ just test
 just typecheck
 
 # Code formatting (Prettier)
-pnpm exec prettier --write .
+just format
+
+# Dependency security audit
+just audit
 ```
 
 Lefthook pre-commit hooks run automatically on staged files to check secrets, format with Prettier, and verify TypeScript types.
