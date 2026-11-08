@@ -35,15 +35,21 @@ function AccessBadges({ accessTypes, userType }: { accessTypes: AccessType[]; us
 		return <span className="text-xs text-muted-foreground italic">Full access (all capabilities)</span>;
 	}
 
-	const list = accessTypes ?? ["inbox"];
+	const list = accessTypes ?? [];
+	if (list.length === 0) {
+		return <span className="text-xs text-muted-foreground italic">No capabilities</span>;
+	}
+
 	return (
 		<div className="flex items-center gap-1.5 flex-wrap">
-			<Badge
-				variant="outline"
-				className="text-[10px] h-4 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
-			>
-				inbox
-			</Badge>
+			{list.includes("inbox") && (
+				<Badge
+					variant="outline"
+					className="text-[10px] h-4 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
+				>
+					inbox
+				</Badge>
+			)}
 			{list.includes("api") && (
 				<Badge
 					variant="outline"
@@ -77,6 +83,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 	const [inviteOpen, setInviteOpen] = useState(false);
 	const [inviteEmail, setInviteEmail] = useState("");
 	const [inviteUserType, setInviteUserType] = useState<UserType>("member");
+	const [inviteCanInbox, setInviteCanInbox] = useState(true);
 	const [inviteCanApi, setInviteCanApi] = useState(false);
 	const [inviteCanTest, setInviteCanTest] = useState(false);
 	const [inviteUrl, setInviteUrl] = useState("");
@@ -87,6 +94,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 	// Edit user permissions state
 	const [editUser, setEditUser] = useState<User | null>(null);
 	const [editUserType, setEditUserType] = useState<UserType>("member");
+	const [editCanInbox, setEditCanInbox] = useState(true);
 	const [editCanApi, setEditCanApi] = useState(false);
 	const [editCanTest, setEditCanTest] = useState(false);
 	const [savingPermissions, setSavingPermissions] = useState(false);
@@ -108,7 +116,8 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 		setInviteError("");
 		setInviting(true);
 		try {
-			const accessTypes: AccessType[] = ["inbox"];
+			const accessTypes: AccessType[] = [];
+			if (inviteCanInbox) accessTypes.push("inbox");
 			if (inviteCanApi) accessTypes.push("api");
 			if (inviteCanTest) accessTypes.push("tester");
 
@@ -127,6 +136,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 		setInviteOpen(false);
 		setInviteEmail("");
 		setInviteUserType("member");
+		setInviteCanInbox(true);
 		setInviteCanApi(false);
 		setInviteCanTest(false);
 		setInviteUrl("");
@@ -144,6 +154,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 		setEditUser(user);
 		setEditUserType(user.user_type);
 		const acts = Array.isArray(user.access_types) ? user.access_types : [];
+		setEditCanInbox(acts.includes("inbox"));
 		setEditCanApi(acts.includes("api"));
 		setEditCanTest(acts.includes("tester"));
 		setEditError("");
@@ -154,7 +165,8 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 		setSavingPermissions(true);
 		setEditError("");
 		try {
-			const accessTypes: AccessType[] = ["inbox"];
+			const accessTypes: AccessType[] = [];
+			if (editCanInbox) accessTypes.push("inbox");
 			if (editCanApi) accessTypes.push("api");
 			if (editCanTest) accessTypes.push("tester");
 
@@ -231,7 +243,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 						<TableBody>
 							{users.map((user) => {
 								const userType: UserType = user.user_type;
-								const accessTypes = user.access_types ?? ["inbox"];
+								const accessTypes = user.access_types ?? [];
 								const isSelf = currentUser?.id === user.id;
 
 								return (
@@ -323,14 +335,18 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 									</Label>
 									<div className="space-y-2.5 rounded-lg border border-border p-3">
 										<div className="flex items-center gap-2.5">
-											<Checkbox id="edit-cap-inbox" checked disabled />
+											<Checkbox
+												id="edit-cap-inbox"
+												checked={editCanInbox}
+												onCheckedChange={(checked) => setEditCanInbox(!!checked)}
+											/>
 											<label
 												htmlFor="edit-cap-inbox"
-												className="text-xs font-medium cursor-not-allowed"
+												className="text-xs font-medium cursor-pointer"
 											>
 												Production Inbox{" "}
 												<span className="text-muted-foreground font-normal">
-													(Included by default)
+													(Mailbox, threads, compose)
 												</span>
 											</label>
 										</div>
@@ -440,14 +456,18 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 									</Label>
 									<div className="space-y-2.5 rounded-lg border border-border p-3">
 										<div className="flex items-center gap-2.5">
-											<Checkbox id="invite-cap-inbox" checked disabled />
+											<Checkbox
+												id="invite-cap-inbox"
+												checked={inviteCanInbox}
+												onCheckedChange={(checked) => setInviteCanInbox(!!checked)}
+											/>
 											<label
 												htmlFor="invite-cap-inbox"
-												className="text-xs font-medium cursor-not-allowed"
+												className="text-xs font-medium cursor-pointer"
 											>
 												Production Inbox{" "}
 												<span className="text-muted-foreground font-normal">
-													(Included by default)
+													(Mailbox, threads, compose)
 												</span>
 											</label>
 										</div>

@@ -89,10 +89,7 @@ app.patch(
 		"json",
 		z.object({
 			user_type: z.enum(["admin", "member"]),
-			access_types: z
-				.array(z.enum(["inbox", "api", "tester"]))
-				.optional()
-				.default(["inbox"]),
+			access_types: z.array(z.enum(["inbox", "api", "tester"])).optional(),
 		}),
 	),
 	async (c) => {
@@ -121,9 +118,13 @@ app.patch(
 			}
 		}
 
-		let accessTypes = rawAccessTypes ?? [];
+		let accessTypes: ("inbox" | "api" | "tester")[];
 		if (isTargetAdmin) {
 			accessTypes = ["inbox", "api", "tester"];
+		} else if (rawAccessTypes !== undefined) {
+			accessTypes = rawAccessTypes;
+		} else {
+			accessTypes = ["inbox"];
 		}
 
 		await c.env.DB.prepare("UPDATE users SET user_type = ?, access_types = ? WHERE id = ?")

@@ -15,7 +15,12 @@ export async function markReadAction(personId: string) {
 			UPDATE inbox_emails
 			SET is_read = 1
 			WHERE person_id = ?
-			  AND inbox_id IN (SELECT inbox_email FROM inbox_members WHERE user_id = ?)
+			  AND inbox_address IN (
+			    SELECT i.email
+			    FROM inboxes i
+			    JOIN inbox_members im ON i.id = im.inbox_id
+			    WHERE im.user_id = ?
+			  )
 		`,
 		)
 			.bind(personId, session.userId)
@@ -35,7 +40,12 @@ export async function markThreadReadAction(threadId: string) {
 			UPDATE inbox_emails
 			SET is_read = 1
 			WHERE thread_id = ?
-			  AND inbox_id IN (SELECT inbox_email FROM inbox_members WHERE user_id = ?)
+			  AND inbox_address IN (
+			    SELECT i.email
+			    FROM inboxes i
+			    JOIN inbox_members im ON i.id = im.inbox_id
+			    WHERE im.user_id = ?
+			  )
 		`,
 		)
 			.bind(threadId, session.userId)

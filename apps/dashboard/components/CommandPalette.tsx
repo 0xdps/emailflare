@@ -46,7 +46,7 @@ interface CommandPaletteProps {
 
 export default function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 	const router = useRouter();
-	const { isAdmin, canAccessApi, canAccessTester } = usePermissions();
+	const { isAdmin, canAccessApi, canAccessTester, canAccessInbox } = usePermissions();
 	const [query, setQuery] = useState("");
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const listRef = useRef<HTMLDivElement>(null);
@@ -63,37 +63,41 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 
 	// Build available commands list based on RBAC permissions
 	const commands = useMemo<CommandItem[]>(() => {
-		const items: CommandItem[] = [
-			// ── Inbox Dashboard ──
-			{
-				id: "inbox-all",
-				title: "All Inboxes",
-				subtitle: "View conversations across all mailboxes",
-				category: "Inbox",
-				icon: Mail,
-				href: "/inbox",
-				shortcut: "G I",
-				keywords: ["messages", "threads", "conversations", "email"],
-			},
-			{
-				id: "inbox-contacts",
-				title: "Contacts & Leads",
-				subtitle: "Manage CRM people and counterparties",
-				category: "Inbox",
-				icon: Users,
-				href: "/inbox/people",
-				keywords: ["people", "customers", "crm", "contacts"],
-			},
-			{
-				id: "inbox-sequences",
-				title: "Email Sequences",
-				subtitle: "Automated outbound campaign sequences",
-				category: "Inbox",
-				icon: ListOrdered,
-				href: "/inbox/sequences",
-				keywords: ["campaigns", "outreach", "drip", "automation"],
-			},
-		];
+		const items: CommandItem[] = [];
+
+		// ── Inbox Dashboard ──
+		if (canAccessInbox) {
+			items.push(
+				{
+					id: "inbox-all",
+					title: "All Inboxes",
+					subtitle: "View conversations across all mailboxes",
+					category: "Inbox",
+					icon: Mail,
+					href: "/inbox",
+					shortcut: "G I",
+					keywords: ["messages", "threads", "conversations", "email"],
+				},
+				{
+					id: "inbox-contacts",
+					title: "Contacts & Leads",
+					subtitle: "Manage CRM people and counterparties",
+					category: "Inbox",
+					icon: Users,
+					href: "/inbox/people",
+					keywords: ["people", "customers", "crm", "contacts"],
+				},
+				{
+					id: "inbox-sequences",
+					title: "Email Sequences",
+					subtitle: "Automated outbound campaign sequences",
+					category: "Inbox",
+					icon: ListOrdered,
+					href: "/inbox/sequences",
+					keywords: ["campaigns", "outreach", "drip", "automation"],
+				},
+			);
+		}
 
 		// Sandbox Test Mailbox (tester additive permission)
 		if (canAccessTester) {

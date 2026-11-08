@@ -7,6 +7,8 @@ interface UserContextValue {
 	user: User | null;
 	loading: boolean;
 	error: Error | null;
+	isVerified: boolean;
+	isCached: boolean;
 	refreshUser: () => Promise<User | null>;
 }
 
@@ -14,6 +16,8 @@ const UserContext = createContext<UserContextValue>({
 	user: null,
 	loading: true,
 	error: null,
+	isVerified: false,
+	isCached: false,
 	refreshUser: async () => null,
 });
 
@@ -41,7 +45,10 @@ function getStoredUser(): User | null {
 export function UserProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(() => getStoredUser());
 	const [loading, setLoading] = useState<boolean>(() => !getStoredUser());
+	const [isVerified, setIsVerified] = useState<boolean>(false);
 	const [error, setError] = useState<Error | null>(null);
+
+	const isCached = !isVerified && !!user;
 
 	async function refreshUser(showLoading = false): Promise<User | null> {
 		if (showLoading) setLoading(true);
@@ -49,6 +56,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 			const u = await me();
 			memoryUser = u;
 			setUser(u);
+			setIsVerified(true);
 			setError(null);
 			if (typeof window !== "undefined") {
 				try {
@@ -59,6 +67,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 		} catch (err: any) {
 			memoryUser = null;
 			setUser(null);
+			setIsVerified(false);
 			setError(err);
 			if (typeof window !== "undefined") {
 				try {
@@ -82,7 +91,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
 		refreshUser(!hasCached);
 	}, []);
 
-	return <UserContext.Provider value={{ user, loading, error, refreshUser }}>{children}</UserContext.Provider>;
+	return (
+		<UserContext.Provider value={{ user, loading, error, isVerified, isCached, refreshUser }}>
+			{children}
+		</UserContext.Provider>
+	);
 }
 
 /** Read the current user from context. Never re-fetches. */
@@ -92,32 +105,38 @@ export function useUser(): UserContextValue {
 
 /** Hook for checking user administrative privileges and product capabilities. */
 export function usePermissions() {
-	const { user, loading } = useUser();
+	const { user, loading, isVerified, isCached } = useUser();
 
-	const isAdmin = user?.user_type === "admin";
+	// Destinations and capabilities must NEVER be rendered from a cached/unverified user
+	const verified = isVerified && !loading;
+	const isAdmin = verified && user?.user_type === "admin";
 
 	const rawAccess = user?.access_types;
-	let accessTypes: ("inbox" | "api" | "tester")[] = ["inbox"];
-	if (isAdmin) {
-		accessTypes = ["inbox", "api", "tester"];
-	} else if (Array.isArray(rawAccess)) {
-		accessTypes = rawAccess;
-	} else if (typeof rawAccess === "string") {
-		try {
-			const parsed = JSON.parse(rawAccess);
-			if (Array.isArray(parsed)) accessTypes = parsed;
-		} catch {
-			accessTypes = [];
+	let accessTypes: ("inbox" | "api" | "tester")[] = [];
+	if (verified) {
+		if (isAdmin) {
+			accessTypes = ["inbox", "api", "tester"];
+		} else if (Array.isArray(rawAccess)) {
+			accessTypes = rawAccess;
+		} else if (typeof rawAccess === "string") {
+			try {
+				const parsed = JSON.parse(rawAccess);
+				if (Array.isArray(parsed)) accessTypes = parsed;
+			} catch {
+				accessTypes = [];
+			}
 		}
 	}
 
-	const canAccessInbox = isAdmin || accessTypes.includes("inbox");
-	const canAccessApi = isAdmin || accessTypes.includes("api");
-	const canAccessTester = isAdmin || accessTypes.includes("tester");
-	const canAccessAdmin = isAdmin;
+	const canAccessInbox = verified && (isAdmin || accessTypes.includes("inbox"));
+	const canAccessApi = verified && (isAdmin || accessTypes.includes("api"));
+	const canAccessTester = verified && (isAdmin || accessTypes.includes("tester"));
+	const canAccessAdmin = verified && isAdmin;
 
 	return {
 		loading,
+		isVerified: verified,
+		isCached,
 		user,
 		isAdmin,
 		userType: (isAdmin ? "admin" : "member") as "admin" | "member",
@@ -126,6 +145,6 @@ export function usePermissions() {
 		canAccessApi,
 		canAccessTester,
 		canAccessAdmin,
-		hasAccess: (type: "inbox" | "api" | "tester") => type === "inbox" || isAdmin || accessTypes.includes(type),
+		hasAccess: (type: "inbox" | "api" | "tester") => verified && (isAdmin || accessTypes.includes(type)),
 	};
 }

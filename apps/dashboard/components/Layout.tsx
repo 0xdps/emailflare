@@ -105,11 +105,13 @@ function NavSection({ label }: { label: string }) {
 
 function DashboardNavLinks({
 	activeDashboard,
+	canAccessInbox = true,
 	canAccessTester,
 	isAdmin,
 	onItemClick,
 }: {
 	activeDashboard: "inbox" | "api" | "admin";
+	canAccessInbox?: boolean;
 	canAccessTester: boolean;
 	isAdmin: boolean;
 	onItemClick?: () => void;
@@ -119,8 +121,12 @@ function DashboardNavLinks({
 			{/* ── CASE 1: INBOX DASHBOARD ── */}
 			{activeDashboard === "inbox" && (
 				<>
-					<NavSection label="Mailboxes" />
-					<NavItem to="/inbox" icon={Mail} label="All Inboxes" exact onClick={onItemClick} />
+					{canAccessInbox && (
+						<>
+							<NavSection label="Mailboxes" />
+							<NavItem to="/inbox" icon={Mail} label="All Inboxes" exact onClick={onItemClick} />
+						</>
+					)}
 
 					{canAccessTester && (
 						<>
@@ -134,9 +140,13 @@ function DashboardNavLinks({
 						</>
 					)}
 
-					<NavSection label="Workflows" />
-					<NavItem to="/inbox/sequences" icon={ListOrdered} label="Sequences" onClick={onItemClick} />
-					<NavItem to="/inbox/people" icon={Users} label="Contacts" onClick={onItemClick} />
+					{canAccessInbox && (
+						<>
+							<NavSection label="Workflows" />
+							<NavItem to="/inbox/sequences" icon={ListOrdered} label="Sequences" onClick={onItemClick} />
+							<NavItem to="/inbox/people" icon={Users} label="Contacts" onClick={onItemClick} />
+						</>
+					)}
 				</>
 			)}
 
@@ -181,7 +191,7 @@ function DashboardNavLinks({
 export default function Layout({ children }: { children: React.ReactNode }) {
 	const router = useRouter();
 	const pathname = usePathname();
-	const { user, loading, isAdmin, canAccessApi, canAccessTester } = usePermissions();
+	const { user, loading, isVerified, isAdmin, canAccessApi, canAccessTester, canAccessInbox } = usePermissions();
 	const { connected } = useNotifications();
 
 	const [commandOpen, setCommandOpen] = useState(false);
@@ -297,51 +307,57 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					<div className="hidden md:block h-4 w-px bg-border mx-1" />
 
 					{/* ── 3 Dashboards Switcher (Desktop / Tablet) ── */}
-					<nav className="hidden md:flex items-center p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 gap-0.5">
-						{/* 1. Inbox Dashboard (Always available) */}
-						<Link
-							href="/inbox"
-							className={cn(
-								"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
-								activeDashboard === "inbox"
-									? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
-									: "text-zinc-500 hover:text-zinc-900 hover:bg-white/50 dark:text-zinc-400 dark:hover:text-zinc-200",
-							)}
-						>
-							<Inbox size={13} className="shrink-0" />
-							<span>Inbox</span>
-						</Link>
-
-						{/* 2. API Dashboard (Available if canAccessApi) */}
-						{canAccessApi && (
-							<Link
-								href="/developer/overview"
-								className={cn(
-									"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
-									activeDashboard === "api"
-										? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
-										: "text-zinc-500 hover:text-zinc-900 hover:bg-white/50 dark:text-zinc-400 dark:hover:text-zinc-200",
+					<nav className="hidden md:flex items-center p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 gap-0.5 min-h-[30px]">
+						{!isVerified ? null : (
+							<>
+								{/* 1. Inbox Dashboard */}
+								{(canAccessInbox || canAccessTester) && (
+									<Link
+										href={canAccessInbox ? "/inbox" : "/test-emails"}
+										className={cn(
+											"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
+											activeDashboard === "inbox"
+												? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
+												: "text-zinc-500 hover:text-zinc-900 hover:bg-white/50 dark:text-zinc-400 dark:hover:text-zinc-200",
+										)}
+									>
+										<Inbox size={13} className="shrink-0" />
+										<span>{canAccessInbox ? "Inbox" : "Test Mailbox"}</span>
+									</Link>
 								)}
-							>
-								<Radio size={13} className="shrink-0 text-orange-500" />
-								<span>API</span>
-							</Link>
-						)}
 
-						{/* 3. Admin Dashboard (Available only to admins) */}
-						{isAdmin && (
-							<Link
-								href="/settings/users"
-								className={cn(
-									"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
-									activeDashboard === "admin"
-										? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
-										: "text-zinc-500 hover:text-zinc-900 hover:bg-white/50 dark:text-zinc-400 dark:hover:text-zinc-200",
+								{/* 2. API Dashboard (Available if canAccessApi) */}
+								{canAccessApi && (
+									<Link
+										href="/developer/overview"
+										className={cn(
+											"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
+											activeDashboard === "api"
+												? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
+												: "text-zinc-500 hover:text-zinc-900 hover:bg-white/50 dark:text-zinc-400 dark:hover:text-zinc-200",
+										)}
+									>
+										<Radio size={13} className="shrink-0 text-orange-500" />
+										<span>API</span>
+									</Link>
 								)}
-							>
-								<Settings size={13} className="shrink-0" />
-								<span>Admin</span>
-							</Link>
+
+								{/* 3. Admin Dashboard (Available only to admins) */}
+								{isAdmin && (
+									<Link
+										href="/settings/users"
+										className={cn(
+											"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
+											activeDashboard === "admin"
+												? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
+												: "text-zinc-500 hover:text-zinc-900 hover:bg-white/50 dark:text-zinc-400 dark:hover:text-zinc-200",
+										)}
+									>
+										<Settings size={13} className="shrink-0" />
+										<span>Admin</span>
+									</Link>
+								)}
+							</>
 						)}
 					</nav>
 				</div>
@@ -414,6 +430,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					<nav className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-0.5">
 						<DashboardNavLinks
 							activeDashboard={activeDashboard}
+							canAccessInbox={canAccessInbox}
 							canAccessTester={canAccessTester}
 							isAdmin={isAdmin}
 						/>
@@ -463,51 +480,57 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 						<p className="px-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
 							Dashboard
 						</p>
-						<div className="flex flex-col gap-1 p-1 bg-muted/50 rounded-lg">
-							<Link
-								href="/inbox"
-								onClick={() => setMobileMenuOpen(false)}
-								className={cn(
-									"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-									activeDashboard === "inbox"
-										? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
-										: "text-zinc-500 hover:text-zinc-900",
-								)}
-							>
-								<Inbox size={14} />
-								<span>Inbox</span>
-							</Link>
-
-							{canAccessApi && (
-								<Link
-									href="/developer/overview"
-									onClick={() => setMobileMenuOpen(false)}
-									className={cn(
-										"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-										activeDashboard === "api"
-											? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
-											: "text-zinc-500 hover:text-zinc-900",
+						<div className="flex flex-col gap-1 p-1 bg-muted/50 rounded-lg min-h-[36px]">
+							{!isVerified ? null : (
+								<>
+									{(canAccessInbox || canAccessTester) && (
+										<Link
+											href={canAccessInbox ? "/inbox" : "/test-emails"}
+											onClick={() => setMobileMenuOpen(false)}
+											className={cn(
+												"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+												activeDashboard === "inbox"
+													? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
+													: "text-zinc-500 hover:text-zinc-900",
+											)}
+										>
+											<Inbox size={14} />
+											<span>{canAccessInbox ? "Inbox" : "Test Mailbox"}</span>
+										</Link>
 									)}
-								>
-									<Radio size={14} className="text-orange-500" />
-									<span>API Dashboard</span>
-								</Link>
-							)}
 
-							{isAdmin && (
-								<Link
-									href="/settings/users"
-									onClick={() => setMobileMenuOpen(false)}
-									className={cn(
-										"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
-										activeDashboard === "admin"
-											? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
-											: "text-zinc-500 hover:text-zinc-900",
+									{canAccessApi && (
+										<Link
+											href="/developer/overview"
+											onClick={() => setMobileMenuOpen(false)}
+											className={cn(
+												"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+												activeDashboard === "api"
+													? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
+													: "text-zinc-500 hover:text-zinc-900",
+											)}
+										>
+											<Radio size={14} className="text-orange-500" />
+											<span>API Dashboard</span>
+										</Link>
 									)}
-								>
-									<Settings size={14} />
-									<span>Admin</span>
-								</Link>
+
+									{isAdmin && (
+										<Link
+											href="/settings/users"
+											onClick={() => setMobileMenuOpen(false)}
+											className={cn(
+												"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
+												activeDashboard === "admin"
+													? "bg-white text-zinc-900 font-semibold shadow-xs dark:bg-zinc-700 dark:text-zinc-100"
+													: "text-zinc-500 hover:text-zinc-900",
+											)}
+										>
+											<Settings size={14} />
+											<span>Admin</span>
+										</Link>
+									)}
+								</>
 							)}
 						</div>
 					</div>
@@ -516,6 +539,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					<nav className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-0.5">
 						<DashboardNavLinks
 							activeDashboard={activeDashboard}
+							canAccessInbox={canAccessInbox}
 							canAccessTester={canAccessTester}
 							isAdmin={isAdmin}
 							onItemClick={() => setMobileMenuOpen(false)}

@@ -96,7 +96,7 @@ export async function revokeUserAction(id: string): Promise<{ deleted: boolean }
 export async function changeUserPermissionsAction(
 	id: string,
 	user_type: "admin" | "member",
-	access_types: ("inbox" | "api" | "tester")[],
+	access_types?: ("inbox" | "api" | "tester")[],
 ): Promise<{ updated: boolean }> {
 	const session = await requireAdmin();
 	const workerEnv = env as unknown as Env;
@@ -121,9 +121,13 @@ export async function changeUserPermissionsAction(
 		}
 	}
 
-	let finalAccess = [...access_types];
+	let finalAccess: ("inbox" | "api" | "tester")[];
 	if (user_type === "admin") {
 		finalAccess = ["inbox", "api", "tester"];
+	} else if (access_types !== undefined) {
+		finalAccess = [...access_types];
+	} else {
+		finalAccess = ["inbox"];
 	}
 
 	await workerEnv.DB.prepare("UPDATE users SET user_type = ?, access_types = ? WHERE id = ?")

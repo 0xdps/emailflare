@@ -30,7 +30,7 @@ interface InboxClientProps {
 }
 
 export default function InboxClient({ initialThreads, initialInboxes }: InboxClientProps) {
-	const { canAccessTester } = usePermissions();
+	const { canAccessTester, canAccessInbox } = usePermissions();
 	const [activeFolder, setActiveFolder] = useState<"inbox" | "test">("inbox");
 	const [selectedInbox, setSelectedInbox] = useState<string | null>(null);
 
@@ -53,16 +53,18 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 	const threadsRef = useRef<ThreadSummary[]>(threads);
 	threadsRef.current = threads;
 
-	// Sync folder from URL if provided (e.g. ?folder=test)
+	// Sync folder from URL if provided (e.g. ?folder=test) or default to test for tester-only
 	useEffect(() => {
 		if (typeof window !== "undefined") {
 			const params = new URLSearchParams(window.location.search);
 			const folder = params.get("folder");
 			if (folder === "test" && canAccessTester) {
 				setActiveFolder("test");
+			} else if (!canAccessInbox && canAccessTester) {
+				setActiveFolder("test");
 			}
 		}
-	}, [canAccessTester]);
+	}, [canAccessTester, canAccessInbox]);
 
 	// Select a conversation thread
 	const selectThread = useCallback(async (id: string) => {
@@ -231,6 +233,7 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 					onSelectInbox={setSelectedInbox}
 					activeFolder={activeFolder}
 					onSelectFolder={setActiveFolder}
+					canAccessInbox={canAccessInbox}
 					canAccessTester={canAccessTester}
 					unreadTotal={unreadTotal}
 					onComposeClick={() => setComposeOpen(true)}

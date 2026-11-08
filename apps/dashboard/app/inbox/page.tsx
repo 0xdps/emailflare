@@ -12,14 +12,16 @@ export default async function RoutePage() {
 	}
 
 	const hasInbox = session.userType === "admin" || session.accessTypes.includes("inbox");
-	if (!hasInbox) {
+	const hasTester = session.userType === "admin" || session.accessTypes.includes("tester");
+
+	if (!hasInbox && !hasTester) {
 		const hasApi = session.accessTypes.includes("api");
 		redirect(hasApi ? "/developer/overview" : "/login");
 	}
 
 	const [initialThreads, initialInboxes] = await Promise.all([
-		getThreadsList().catch(() => []),
-		getInboxesList().catch(() => []),
+		hasInbox ? getThreadsList().catch(() => []) : Promise.resolve([]),
+		hasInbox ? getInboxesList().catch(() => []) : Promise.resolve([]),
 	]);
 
 	return (

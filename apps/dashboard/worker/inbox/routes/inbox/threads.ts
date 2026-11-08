@@ -217,18 +217,15 @@ app.get("/:id", async (c) => {
 	`;
 
 	const rows = await c.env.DB.prepare(sql).bind(threadId, threadId).all();
-	const messages = rows.results ?? [];
+	let messages = rows.results ?? [];
+
+	// Filter returned rows to assigned addresses for non-admin members
+	if (!isAdmin) {
+		messages = messages.filter((m: any) => assignedEmails.includes(m.inbox_address));
+	}
 
 	if (messages.length === 0) {
 		return c.json({ error: "Thread not found" }, 404);
-	}
-
-	// Verify mailbox access for non-admin members
-	if (!isAdmin) {
-		const hasAccess = messages.some((m: any) => assignedEmails.includes(m.inbox_address));
-		if (!hasAccess) {
-			return c.json({ error: "Forbidden: You are not assigned to this mailbox" }, 403);
-		}
 	}
 
 	// Resolve counterparty details
@@ -270,7 +267,7 @@ app.post("/:id/mark-read", async (c) => {
 	if (!isAdmin) {
 		const assignedEmails = await getAssignedInboxes(c.env.DB, userId);
 		if (assignedEmails.length === 0) {
-			return c.json({ error: "Forbidden" }, 403);
+			return c.json({ error: "Thread not found" }, 404);
 		}
 		const placeholders = assignedEmails.map(() => "?").join(",");
 		const emailInThread = await c.env.DB.prepare(
@@ -280,8 +277,15 @@ app.post("/:id/mark-read", async (c) => {
 			.first();
 
 		if (!emailInThread) {
-			return c.json({ error: "Forbidden: You are not assigned to this mailbox" }, 403);
+			return c.json({ error: "Thread not found" }, 404);
 		}
+
+		await c.env.DB.prepare(
+			`UPDATE inbox_emails SET is_read = 1 WHERE thread_id = ? AND inbox_address IN (${placeholders})`,
+		)
+			.bind(threadId, ...assignedEmails)
+			.run();
+		return c.json({ ok: true });
 	}
 
 	await c.env.DB.prepare("UPDATE inbox_emails SET is_read = 1 WHERE thread_id = ?").bind(threadId).run();

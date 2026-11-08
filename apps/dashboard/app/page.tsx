@@ -19,5 +19,10 @@ export default async function RootPage() {
 		redirect("/developer/overview");
 	}
 
+	const hasTester = session.accessTypes.includes("tester");
+	if (hasTester) {
+		redirect("/test-emails");
+	}
+
 	redirect("/login");
 }

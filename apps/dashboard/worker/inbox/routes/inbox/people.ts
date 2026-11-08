@@ -195,14 +195,21 @@ app.post("/:id/mark-read", async (c) => {
 
 	if (!isAdmin) {
 		const assignedEmails = await getAssignedInboxes(c.env.DB, userId);
-		if (assignedEmails.length === 0) return c.json({ error: "Forbidden" }, 403);
+		if (assignedEmails.length === 0) return c.json({ error: "Person not found" }, 404);
 		const placeholders = assignedEmails.map(() => "?").join(",");
 		const memberCheck = await c.env.DB.prepare(
 			`SELECT 1 FROM inbox_emails WHERE person_id = ? AND inbox_address IN (${placeholders}) LIMIT 1`,
 		)
 			.bind(personId, ...assignedEmails)
 			.first();
-		if (!memberCheck) return c.json({ error: "Forbidden" }, 403);
+		if (!memberCheck) return c.json({ error: "Person not found" }, 404);
+
+		await c.env.DB.prepare(
+			`UPDATE inbox_emails SET is_read = 1 WHERE person_id = ? AND inbox_address IN (${placeholders})`,
+		)
+			.bind(personId, ...assignedEmails)
+			.run();
+		return c.json({ ok: true });
 	}
 
 	await c.env.DB.prepare("UPDATE inbox_emails SET is_read = 1 WHERE person_id = ?").bind(personId).run();
