@@ -1,0 +1,18 @@
+apps/dashboard/lib/server/queries.ts
+  h_95aea6b4aa8772 408,411-412,418,461-463,493,496-497,503
+apps/dashboard/worker/inbox/routes/inbox/people.ts
+  h_95aea6b4aa8772 92-98,100,115,117,130,132-136,163,166-223,227-236,239,254,256
+apps/dashboard/worker/inbox/routes/inbox/threads.ts
+  h_95aea6b4aa8772 235-238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "56ee0cd6c7e773120f0b3979fe0c59b66bded17e",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
