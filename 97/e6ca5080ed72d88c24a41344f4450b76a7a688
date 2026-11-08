@@ -1,0 +1,22 @@
+apps/dashboard/app/actions/sequences.ts
+  h_95aea6b4aa8772 7,16,34,61,85
+apps/dashboard/components/pages/inbox/Sequences.tsx
+  h_95aea6b4aa8772 16,86-96,106-120,154,239-244,255-259,267
+apps/dashboard/lib/server/queries.ts
+  h_95aea6b4aa8772 441-456,462-464,473
+apps/dashboard/worker/inbox/routes/inbox/people.ts
+  h_95aea6b4aa8772 61-76,84-86,101
+apps/dashboard/worker/inbox/routes/inbox/sequences.ts
+  h_95aea6b4aa8772 25-28,40-43,63-66,85-100,118-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "97e6ca5080ed72d88c24a41344f4450b76a7a688",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
