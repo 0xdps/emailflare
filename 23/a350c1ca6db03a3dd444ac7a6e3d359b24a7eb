@@ -1,0 +1,38 @@
+apps/dashboard/app/actions/inbox.ts
+  h_95aea6b4aa8772 18-23,43-48
+apps/dashboard/app/actions/users.ts
+  h_95aea6b4aa8772 99,124,127-130
+apps/dashboard/app/inbox/page.tsx
+  h_95aea6b4aa8772 15-17,23-24
+apps/dashboard/app/page.tsx
+  h_95aea6b4aa8772 22-26
+apps/dashboard/components/CommandPalette.tsx
+  h_95aea6b4aa8772 49,66-100
+apps/dashboard/components/Layout.tsx
+  h_95aea6b4aa8772 108,114,124-129,143-149,194,310-342,345-358,360,433,483-515,518-531,533,542
+apps/dashboard/components/modules/inbox/InboxClient.tsx
+  h_95aea6b4aa8772 33,56,63-64,67,236
+apps/dashboard/components/modules/inbox/InboxNav.tsx
+  h_95aea6b4aa8772 27,40,51-65,68-92,94-128,158-171
+apps/dashboard/components/pages/settings/Users.tsx
+  h_95aea6b4aa8772 38-42,45-52,86,97,119-120,139,157,168-169,246,338-342,345,349,459-463,466,470
+apps/dashboard/lib/UserContext.tsx
+  h_95aea6b4aa8772 10-11,19-20,48,51-52,59,70,94-98,108,110-112,115-127,131-134,138-139,148
+apps/dashboard/worker/inbox/routes/admin/users.ts
+  h_95aea6b4aa8772 92,121,124-127
+apps/dashboard/worker/inbox/routes/inbox/people.ts
+  h_95aea6b4aa8772 198,205-212
+apps/dashboard/worker/inbox/routes/inbox/threads.ts
+  h_95aea6b4aa8772 220,222-224,227-228,270,280,282-288
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "23a350c1ca6db03a3dd444ac7a6e3d359b24a7eb",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
