@@ -89,8 +89,15 @@ app.get("/", async (c) => {
 			.first<{ total: number }>(),
 	]);
 
+	const results = (data.results ?? []).map((p: any) => ({
+		...p,
+		inbox_address:
+			!isAdmin && p.inbox_address && !assignedEmails.includes(p.inbox_address) ? null : p.inbox_address,
+		latest_inbox: !isAdmin && p.latest_inbox && !assignedEmails.includes(p.latest_inbox) ? null : p.latest_inbox,
+	}));
+
 	return c.json({
-		data: data.results,
+		data: results,
 		total: count?.total ?? 0,
 		page,
 		limit,
@@ -105,8 +112,9 @@ app.get("/:id", async (c) => {
 	const userType = c.get("userType");
 	const isAdmin = userType === "admin";
 
+	let assignedEmails: string[] = [];
 	if (!isAdmin) {
-		const assignedEmails = await getAssignedInboxes(c.env.DB, userId);
+		assignedEmails = await getAssignedInboxes(c.env.DB, userId);
 		if (assignedEmails.length === 0) return c.json({ error: "Person not found" }, 404);
 		const placeholders = assignedEmails.map(() => "?").join(",");
 		const memberCheck = await c.env.DB.prepare(
@@ -119,8 +127,13 @@ app.get("/:id", async (c) => {
 		if (!memberCheck) return c.json({ error: "Person not found" }, 404);
 	}
 
-	const person = await c.env.DB.prepare("SELECT * FROM people WHERE id = ? LIMIT 1").bind(personId).first();
+	const person = await c.env.DB.prepare("SELECT * FROM people WHERE id = ? LIMIT 1").bind(personId).first<any>();
 	if (!person) return c.json({ error: "Person not found" }, 404);
+
+	if (!isAdmin && person.inbox_address && !assignedEmails.includes(person.inbox_address)) {
+		person.inbox_address = null;
+	}
+
 	return c.json(person);
 });
 
@@ -147,38 +160,83 @@ app.get("/:id/thread", async (c) => {
 		if (!memberCheck) return c.json({ error: "Person not found" }, 404);
 	}
 
-	const person = await c.env.DB.prepare("SELECT * FROM people WHERE id = ? LIMIT 1").bind(personId).first();
+	const person = await c.env.DB.prepare("SELECT * FROM people WHERE id = ? LIMIT 1").bind(personId).first<any>();
 	if (!person) return c.json({ error: "Person not found" }, 404);
 
-	// Merge received + sent, ordered by time
-	const thread = await c.env.DB.prepare(
-		`
-    SELECT id, 'inbound' AS direction, subject, body_html, body_text, body_r2_key,
-           message_id, in_reply_to, "references", thread_id, is_read, received_at AS timestamp, inbox_address,
-           spf, dkim, dmarc
-    FROM inbox_emails WHERE person_id = ?
-    UNION ALL
-    SELECT id, 'outbound' AS direction, subject, NULL, body_text, NULL,
-           message_id, in_reply_to, "references", thread_id, 1, sent_at AS timestamp, from_address AS inbox_address,
-           NULL AS spf, NULL AS dkim, NULL AS dmarc
-    FROM sent_inbox_emails WHERE person_id = ?
-    ORDER BY timestamp DESC LIMIT ? OFFSET ?
-  `,
-	)
-		.bind(personId, personId, limit, offset)
-		.all();
+	if (!isAdmin && person.inbox_address && !assignedEmails.includes(person.inbox_address)) {
+		person.inbox_address = null;
+	}
 
-	const [count] = await Promise.all([
-		c.env.DB.prepare(
-			"SELECT (SELECT COUNT(*) FROM inbox_emails WHERE person_id = ?) + (SELECT COUNT(*) FROM sent_inbox_emails WHERE person_id = ?) AS total",
-		)
-			.bind(personId, personId)
+	let sql = "";
+	let countSql = "";
+	const queryParams: unknown[] = [];
+	const countParams: unknown[] = [];
+
+	if (!isAdmin) {
+		const placeholders = assignedEmails.map(() => "?").join(",");
+		sql = `
+			SELECT id, 'inbound' AS direction, subject, body_html, body_text, body_r2_key,
+			       message_id, in_reply_to, "references", thread_id, is_read, received_at AS timestamp, inbox_address,
+			       spf, dkim, dmarc
+			FROM inbox_emails WHERE person_id = ? AND inbox_address IN (${placeholders})
+			UNION ALL
+			SELECT id, 'outbound' AS direction, subject, NULL, body_text, NULL,
+			       message_id, in_reply_to, "references", thread_id, 1, sent_at AS timestamp, from_address AS inbox_address,
+			       NULL AS spf, NULL AS dkim, NULL AS dmarc
+			FROM sent_inbox_emails WHERE person_id = ? AND from_address IN (${placeholders})
+			ORDER BY timestamp DESC LIMIT ? OFFSET ?
+		`;
+		queryParams.push(personId, ...assignedEmails, personId, ...assignedEmails, limit, offset);
+
+		countSql = `
+			SELECT (SELECT COUNT(*) FROM inbox_emails WHERE person_id = ? AND inbox_address IN (${placeholders})) +
+			       (SELECT COUNT(*) FROM sent_inbox_emails WHERE person_id = ? AND from_address IN (${placeholders})) AS total
+		`;
+		countParams.push(personId, ...assignedEmails, personId, ...assignedEmails);
+	} else {
+		sql = `
+			SELECT id, 'inbound' AS direction, subject, body_html, body_text, body_r2_key,
+			       message_id, in_reply_to, "references", thread_id, is_read, received_at AS timestamp, inbox_address,
+			       spf, dkim, dmarc
+			FROM inbox_emails WHERE person_id = ?
+			UNION ALL
+			SELECT id, 'outbound' AS direction, subject, NULL, body_text, NULL,
+			       message_id, in_reply_to, "references", thread_id, 1, sent_at AS timestamp, from_address AS inbox_address,
+			       NULL AS spf, NULL AS dkim, NULL AS dmarc
+			FROM sent_inbox_emails WHERE person_id = ?
+			ORDER BY timestamp DESC LIMIT ? OFFSET ?
+		`;
+		queryParams.push(personId, personId, limit, offset);
+
+		countSql = `
+			SELECT (SELECT COUNT(*) FROM inbox_emails WHERE person_id = ?) +
+			       (SELECT COUNT(*) FROM sent_inbox_emails WHERE person_id = ?) AS total
+		`;
+		countParams.push(personId, personId);
+	}
+
+	const [thread, count] = await Promise.all([
+		c.env.DB.prepare(sql)
+			.bind(...queryParams)
+			.all(),
+		c.env.DB.prepare(countSql)
+			.bind(...countParams)
 			.first<{ total: number }>(),
 	]);
 
+	let messages = thread.results ?? [];
+
+	// Filter returned rows to assigned addresses for non-admin members
+	if (!isAdmin) {
+		messages = messages.filter((m: any) => assignedEmails.includes(m.inbox_address));
+		if (messages.length === 0) {
+			return c.json({ error: "Person not found" }, 404);
+		}
+	}
+
 	return c.json({
 		person,
-		thread: thread.results,
+		thread: messages,
 		total: count?.total ?? 0,
 		page,
 		limit,
@@ -193,8 +251,9 @@ app.post("/:id/mark-read", async (c) => {
 	const userType = c.get("userType");
 	const isAdmin = userType === "admin";
 
+	let assignedEmails: string[] = [];
 	if (!isAdmin) {
-		const assignedEmails = await getAssignedInboxes(c.env.DB, userId);
+		assignedEmails = await getAssignedInboxes(c.env.DB, userId);
 		if (assignedEmails.length === 0) return c.json({ error: "Person not found" }, 404);
 		const placeholders = assignedEmails.map(() => "?").join(",");
 		const memberCheck = await c.env.DB.prepare(

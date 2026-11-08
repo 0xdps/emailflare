@@ -232,7 +232,10 @@ app.get("/:id", async (c) => {
 	const personId = messages.find((m: any) => m.person_id)?.person_id;
 	let person: any = null;
 	if (personId) {
-		person = await c.env.DB.prepare("SELECT * FROM people WHERE id = ? LIMIT 1").bind(personId).first();
+		person = await c.env.DB.prepare("SELECT * FROM people WHERE id = ? LIMIT 1").bind(personId).first<any>();
+		if (person && !isAdmin && person.inbox_address && !assignedEmails.includes(person.inbox_address)) {
+			person.inbox_address = null;
+		}
 	}
 
 	const subject = messages.find((m: any) => m.subject)?.subject || "(No subject)";

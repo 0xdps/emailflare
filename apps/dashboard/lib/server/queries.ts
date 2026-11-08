@@ -405,15 +405,17 @@ export async function getPeopleList(search?: string, unread?: boolean, inbox?: s
 
 	const conditions: string[] = [];
 	const params: unknown[] = [];
+	let assignedEmails: string[] = [];
 
 	const session = await getServerSession().catch(() => null);
-	if (session && session.userType !== "admin") {
+	const isAdmin = session?.userType === "admin";
+	if (session && !isAdmin) {
 		const assignedRows = await workerEnv.DB.prepare(
 			"SELECT i.email FROM inboxes i JOIN inbox_members im ON i.id = im.inbox_id WHERE im.user_id = ?",
 		)
 			.bind(session.userId)
 			.all<{ email: string }>();
-		const assignedEmails = (assignedRows.results ?? []).map((r) => r.email);
+		assignedEmails = (assignedRows.results ?? []).map((r) => r.email);
 		if (assignedEmails.length === 0) return [];
 		if (inbox && !assignedEmails.includes(inbox)) return [];
 
@@ -456,6 +458,9 @@ export async function getPeopleList(search?: string, unread?: boolean, inbox?: s
 		.all<Person>();
 	return (data.results ?? []).map((r) => ({
 		...r,
+		inbox_address:
+			!isAdmin && r.inbox_address && !assignedEmails.includes(r.inbox_address) ? null : r.inbox_address,
+		latest_inbox: !isAdmin && r.latest_inbox && !assignedEmails.includes(r.latest_inbox) ? null : r.latest_inbox,
 		unread_count: Number(r.unread_count ?? 0),
 		total_count: Number(r.total_count ?? 0),
 	}));
@@ -485,15 +490,17 @@ export async function getThreadsList(search?: string, unread?: boolean, inbox?: 
 
 	const conditions: string[] = [];
 	const params: unknown[] = [];
+	let assignedEmails: string[] = [];
 
 	const session = await getServerSession().catch(() => null);
-	if (session && session.userType !== "admin") {
+	const isAdmin = session?.userType === "admin";
+	if (session && !isAdmin) {
 		const assignedRows = await workerEnv.DB.prepare(
 			"SELECT i.email FROM inboxes i JOIN inbox_members im ON i.id = im.inbox_id WHERE im.user_id = ?",
 		)
 			.bind(session.userId)
 			.all<{ email: string }>();
-		const assignedEmails = (assignedRows.results ?? []).map((r) => r.email);
+		assignedEmails = (assignedRows.results ?? []).map((r) => r.email);
 		if (assignedEmails.length === 0) return [];
 		if (inbox && !assignedEmails.includes(inbox)) return [];
 
