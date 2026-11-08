@@ -22,6 +22,10 @@ app.get("/", async (c) => {
 
 // POST /api/inbox/sequences
 app.post("/", zValidator("json", sequenceSchema), async (c) => {
+	const userType = c.get("userType");
+	if (userType !== "admin") {
+		return c.json({ error: "Forbidden: Admin access required" }, 403);
+	}
 	const { name, steps } = c.req.valid("json");
 	const id = generateId();
 	const now = new Date().toISOString();
@@ -33,6 +37,10 @@ app.post("/", zValidator("json", sequenceSchema), async (c) => {
 
 // PUT /api/inbox/sequences/:id
 app.put("/:id", zValidator("json", sequenceSchema.partial()), async (c) => {
+	const userType = c.get("userType");
+	if (userType !== "admin") {
+		return c.json({ error: "Forbidden: Admin access required" }, 403);
+	}
 	const row = await c.env.DB.prepare("SELECT id FROM sequences WHERE id = ? LIMIT 1").bind(c.req.param("id")).first();
 	if (!row) return c.json({ error: "Sequence not found" }, 404);
 
@@ -52,6 +60,10 @@ app.put("/:id", zValidator("json", sequenceSchema.partial()), async (c) => {
 
 // DELETE /api/inbox/sequences/:id
 app.delete("/:id", async (c) => {
+	const userType = c.get("userType");
+	if (userType !== "admin") {
+		return c.json({ error: "Forbidden: Admin access required" }, 403);
+	}
 	const row = await c.env.DB.prepare("SELECT id FROM sequences WHERE id = ? LIMIT 1").bind(c.req.param("id")).first();
 	if (!row) return c.json({ error: "Sequence not found" }, 404);
 	await c.env.DB.prepare("DELETE FROM sequences WHERE id = ?").bind(c.req.param("id")).run();
@@ -70,6 +82,22 @@ app.post("/:id/enroll", zValidator("json", enrollSchema), async (c) => {
 	if (!seq) return c.json({ error: "Sequence not found" }, 404);
 
 	const { personId, fromAddress, variables } = c.req.valid("json");
+
+	const userId = c.get("userId");
+	const userType = c.get("userType");
+	const isAdmin = userType === "admin";
+
+	if (!isAdmin) {
+		const memberRow = await c.env.DB.prepare(
+			"SELECT 1 FROM inboxes i JOIN inbox_members im ON i.id = im.inbox_id WHERE im.user_id = ? AND i.email = ?",
+		)
+			.bind(userId, fromAddress)
+			.first();
+		if (!memberRow) {
+			return c.json({ error: `Forbidden: You do not have access to send from ${fromAddress}` }, 403);
+		}
+	}
+
 	const person = await c.env.DB.prepare("SELECT id FROM people WHERE id = ? LIMIT 1").bind(personId).first();
 	if (!person) return c.json({ error: "Person not found" }, 404);
 
@@ -87,6 +115,15 @@ app.post("/:id/enroll", zValidator("json", enrollSchema), async (c) => {
 
 // DELETE /api/inbox/sequences/enrollments/:enrollmentId
 app.delete("/enrollments/:enrollmentId", async (c) => {
+	const userType = c.get("userType");
+	if (userType !== "admin") {
+		return c.json({ error: "Forbidden: Admin access required" }, 403);
+	}
+	const row = await c.env.DB.prepare("SELECT id FROM sequence_enrollments WHERE id = ? LIMIT 1")
+		.bind(c.req.param("enrollmentId"))
+		.first();
+	if (!row) return c.json({ error: "Enrollment not found" }, 404);
+
 	await c.env.DB.prepare(`UPDATE sequence_enrollments SET status = 'cancelled' WHERE id = ?`)
 		.bind(c.req.param("enrollmentId"))
 		.run();

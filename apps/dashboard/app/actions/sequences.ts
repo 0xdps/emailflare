@@ -4,7 +4,7 @@ import { env } from "cloudflare:workers";
 import { z } from "zod";
 import { generateId, sequenceSchema } from "@/lib/core";
 import type { Env } from "@/worker/inbox/env";
-import { requireInbox } from "./auth";
+import { requireAdmin, requireInbox } from "./auth";
 
 const enrollSchema = z.object({
 	personId: z.string(),
@@ -13,7 +13,7 @@ const enrollSchema = z.object({
 });
 
 export async function createSequenceAction(data: { name: string; steps: any[] }) {
-	await requireInbox();
+	await requireAdmin();
 	const parsed = sequenceSchema.safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid sequence" };
@@ -31,7 +31,7 @@ export async function createSequenceAction(data: { name: string; steps: any[] })
 }
 
 export async function updateSequenceAction(id: string, data: { name?: string; steps?: any[] }) {
-	await requireInbox();
+	await requireAdmin();
 	const parsed = sequenceSchema.partial().safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid sequence update" };
@@ -58,7 +58,7 @@ export async function updateSequenceAction(id: string, data: { name?: string; st
 }
 
 export async function deleteSequenceAction(id: string) {
-	await requireInbox();
+	await requireAdmin();
 	const workerEnv = env as unknown as Env;
 	const row = await workerEnv.DB.prepare("SELECT id FROM sequences WHERE id = ? LIMIT 1").bind(id).first();
 	if (!row) {
@@ -82,7 +82,7 @@ export async function enrollInSequenceAction(
 	const workerEnv = env as unknown as Env;
 	if (session.userType !== "admin") {
 		const membership = await workerEnv.DB.prepare(
-			"SELECT 1 FROM inbox_members WHERE user_id = ? AND inbox_email = ? LIMIT 1",
+			"SELECT 1 FROM inboxes i JOIN inbox_members im ON i.id = im.inbox_id WHERE im.user_id = ? AND i.email = ? LIMIT 1",
 		)
 			.bind(session.userId, parsed.data.fromAddress)
 			.first();

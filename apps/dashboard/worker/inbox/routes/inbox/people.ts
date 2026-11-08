@@ -58,6 +58,22 @@ app.get("/", async (c) => {
 	}
 	if (unread) conditions.push("ie.is_read = 0");
 
+	let subqueryFilter = "";
+	const subqueryParams: unknown[] = [];
+	if (!isAdmin) {
+		if (selectedInbox) {
+			subqueryFilter = "AND inbox_address = ?";
+			subqueryParams.push(selectedInbox, selectedInbox, selectedInbox);
+		} else {
+			const placeholders = assignedEmails.map(() => "?").join(",");
+			subqueryFilter = `AND inbox_address IN (${placeholders})`;
+			subqueryParams.push(...assignedEmails, ...assignedEmails, ...assignedEmails);
+		}
+	} else if (selectedInbox) {
+		subqueryFilter = "AND inbox_address = ?";
+		subqueryParams.push(selectedInbox, selectedInbox, selectedInbox);
+	}
+
 	let sql = `
     SELECT p.id, p.email, p.name, p.inbox_address, p.created_at,
            COUNT(DISTINCT ie.id) AS email_count,
@@ -65,9 +81,9 @@ app.get("/", async (c) => {
            SUM(CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END) AS unread_count,
            MAX(ie.received_at) AS last_activity_at,
            MAX(ie.received_at) AS last_email_at,
-           (SELECT subject FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_subject,
-           (SELECT body_text FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_snippet,
-           (SELECT inbox_address FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_inbox
+           (SELECT subject FROM inbox_emails WHERE person_id = p.id ${subqueryFilter} ORDER BY received_at DESC LIMIT 1) as latest_subject,
+           (SELECT body_text FROM inbox_emails WHERE person_id = p.id ${subqueryFilter} ORDER BY received_at DESC LIMIT 1) as latest_snippet,
+           (SELECT inbox_address FROM inbox_emails WHERE person_id = p.id ${subqueryFilter} ORDER BY received_at DESC LIMIT 1) as latest_inbox
     FROM people p
     LEFT JOIN inbox_emails ie ON ie.person_id = p.id
   `;
@@ -82,7 +98,7 @@ app.get("/", async (c) => {
 
 	const [data, count] = await Promise.all([
 		c.env.DB.prepare(sql)
-			.bind(...params)
+			.bind(...subqueryParams, ...params)
 			.all(),
 		c.env.DB.prepare(countSql)
 			.bind(...params.slice(0, -2))

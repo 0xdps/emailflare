@@ -438,14 +438,30 @@ export async function getPeopleList(search?: string, unread?: boolean, inbox?: s
 	}
 	if (unread) conditions.push("ie.is_read = 0");
 
+	let subqueryFilter = "";
+	const subqueryParams: unknown[] = [];
+	if (!isAdmin) {
+		if (inbox) {
+			subqueryFilter = "AND inbox_address = ?";
+			subqueryParams.push(inbox, inbox, inbox);
+		} else {
+			const placeholders = assignedEmails.map(() => "?").join(",");
+			subqueryFilter = `AND inbox_address IN (${placeholders})`;
+			subqueryParams.push(...assignedEmails, ...assignedEmails, ...assignedEmails);
+		}
+	} else if (inbox) {
+		subqueryFilter = "AND inbox_address = ?";
+		subqueryParams.push(inbox, inbox, inbox);
+	}
+
 	let sql = `
     SELECT p.id, p.email, p.name, p.inbox_address, p.created_at,
            COUNT(DISTINCT ie.id) AS total_count,
            SUM(CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END) AS unread_count,
            MAX(ie.received_at) AS last_email_at,
-           (SELECT subject FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_subject,
-           (SELECT body_text FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_snippet,
-           (SELECT inbox_address FROM inbox_emails WHERE person_id = p.id ORDER BY received_at DESC LIMIT 1) as latest_inbox
+           (SELECT subject FROM inbox_emails WHERE person_id = p.id ${subqueryFilter} ORDER BY received_at DESC LIMIT 1) as latest_subject,
+           (SELECT body_text FROM inbox_emails WHERE person_id = p.id ${subqueryFilter} ORDER BY received_at DESC LIMIT 1) as latest_snippet,
+           (SELECT inbox_address FROM inbox_emails WHERE person_id = p.id ${subqueryFilter} ORDER BY received_at DESC LIMIT 1) as latest_inbox
     FROM people p
     LEFT JOIN inbox_emails ie ON ie.person_id = p.id
   `;
@@ -454,7 +470,7 @@ export async function getPeopleList(search?: string, unread?: boolean, inbox?: s
 	sql += " GROUP BY p.id ORDER BY last_email_at DESC NULLS LAST LIMIT 50";
 
 	const data = await workerEnv.DB.prepare(sql)
-		.bind(...params)
+		.bind(...subqueryParams, ...params)
 		.all<Person>();
 	return (data.results ?? []).map((r) => ({
 		...r,

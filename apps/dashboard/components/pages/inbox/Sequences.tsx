@@ -13,6 +13,7 @@ import OwnerAccessBanner from "@/components/OwnerAccessBanner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePermissions } from "@/lib/UserContext";
 
 // ── Step editor ───────────────────────────────────────────────────────────────
 
@@ -82,7 +83,17 @@ function StepRow({
 
 // ── Sequence card ─────────────────────────────────────────────────────────────
 
-function SequenceCard({ seq, onEdit, onDelete }: { seq: Sequence; onEdit: () => void; onDelete: () => void }) {
+function SequenceCard({
+	seq,
+	isAdmin,
+	onEdit,
+	onDelete,
+}: {
+	seq: Sequence;
+	isAdmin?: boolean;
+	onEdit: () => void;
+	onDelete: () => void;
+}) {
 	return (
 		<div className="bg-card rounded-xl p-5 flex flex-col gap-3 shadow-[0_1px_3px_oklch(0.138_0.012_50/0.08)]">
 			<div className="flex items-start justify-between gap-2">
@@ -92,14 +103,21 @@ function SequenceCard({ seq, onEdit, onDelete }: { seq: Sequence; onEdit: () => 
 						{seq.steps.length} step{seq.steps.length !== 1 ? "s" : ""}
 					</p>
 				</div>
-				<div className="flex gap-1.5">
-					<Button size="sm" variant="ghost" onClick={onEdit} className="h-7 px-2">
-						<Pencil size={13} />
-					</Button>
-					<Button size="sm" variant="ghost" onClick={onDelete} className="h-7 px-2 hover:text-destructive">
-						<Trash2 size={13} />
-					</Button>
-				</div>
+				{isAdmin && (
+					<div className="flex gap-1.5">
+						<Button size="sm" variant="ghost" onClick={onEdit} className="h-7 px-2">
+							<Pencil size={13} />
+						</Button>
+						<Button
+							size="sm"
+							variant="ghost"
+							onClick={onDelete}
+							className="h-7 px-2 hover:text-destructive"
+						>
+							<Trash2 size={13} />
+						</Button>
+					</div>
+				)}
 			</div>
 
 			{seq.steps.length > 0 && (
@@ -133,6 +151,7 @@ function SequenceCard({ seq, onEdit, onDelete }: { seq: Sequence; onEdit: () => 
 const emptyStep = (): SequenceStep => ({ templateSlug: "", delayDays: 0, delayAfter: "enrollment" });
 
 export default function Sequences({ initialSequences }: { initialSequences?: Sequence[] }) {
+	const { isAdmin } = usePermissions();
 	const [sequences, setSequences] = useState<Sequence[]>(initialSequences ?? []);
 	const [loading, setLoading] = useState(initialSequences === undefined);
 	const [sheetOpen, setSheetOpen] = useState(false);
@@ -217,10 +236,12 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 						<h1 className="text-[18px] font-semibold text-foreground tracking-tight">Sequences</h1>
 						<p className="text-sm text-muted-foreground mt-0.5">Automate multi-step email campaigns</p>
 					</div>
-					<Button size="sm" onClick={openCreate}>
-						<Plus size={14} />
-						New sequence
-					</Button>
+					{isAdmin && (
+						<Button size="sm" onClick={openCreate}>
+							<Plus size={14} />
+							New sequence
+						</Button>
+					)}
 				</div>
 
 				{loading ? (
@@ -231,9 +252,11 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 					<div className="flex flex-col items-center gap-3 py-20 text-muted-foreground">
 						<ListOrdered size={36} className="opacity-20" />
 						<p className="text-sm">No sequences yet</p>
-						<Button size="sm" variant="outline" onClick={openCreate}>
-							Create your first sequence
-						</Button>
+						{isAdmin && (
+							<Button size="sm" variant="outline" onClick={openCreate}>
+								Create your first sequence
+							</Button>
+						)}
 					</div>
 				) : (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -241,6 +264,7 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 							<SequenceCard
 								key={seq.id}
 								seq={seq}
+								isAdmin={isAdmin}
 								onEdit={() => openEdit(seq)}
 								onDelete={() => setDeleteId(seq.id)}
 							/>
