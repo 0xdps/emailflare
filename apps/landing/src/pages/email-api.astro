@@ -5,7 +5,7 @@ import { Icon } from "astro-icon/components";
 
 <Base
 	title="Email API — EmailFlare"
-	description="A REST email sending API built on Cloudflare Email Sending. Scoped API keys, React Email templates, domain management, send history, and a full admin UI — ready in minutes."
+	description="A REST email sending API built on Cloudflare Email Sending. Scoped API keys, React Email templates, domain management, send history, and Workspace for domains and keys."
 	keywords="emailflare email api, cloudflare email sending api, transactional email cloudflare, react email templates, self-hosted email api, open source email api"
 	canonical="https://emailflare.dev/email-api"
 	ogUrl="https://emailflare.dev/email-api"
@@ -671,7 +671,7 @@ import { Icon } from "astro-icon/components";
 				</h1>
 				<p class="ea-hero-sub">
 					A clean REST API built on Cloudflare Email Sending. Scoped keys, React Email templates, domain
-					management, send history, and a full admin UI — ready in minutes.
+					management, send history, and Workspace for domains and keys.
 				</p>
 				<div class="hero-actions">
 					<a class="btn btn-primary" href="#deploy">
@@ -892,7 +892,7 @@ import { Icon } from "astro-icon/components";
 					<h3>Domain management without the CLI</h3>
 					<p>
 						Provision Cloudflare sending subdomains, inspect DKIM and return-path DNS records, and verify
-						domain status — all from the admin dashboard instead of juggling API calls.
+						domain status — all from Workspace and the API pages instead of juggling Cloudflare calls.
 					</p>
 				</div>
 				<div class="why-card">
@@ -911,8 +911,8 @@ import { Icon } from "astro-icon/components";
 					</span>
 					<h3>One Worker, not an ops project</h3>
 					<p>
-						Backend, Next.js admin dashboard, collaborative team inbox, and D1 SQLite storage are bundled in
-						one Cloudflare Worker — no servers to maintain, no external databases, and zero ops overhead.
+						Inbox, Workspace, the sending API, and D1 are bundled in one Cloudflare Worker — no servers to
+						maintain, no external databases, and zero ops overhead.
 					</p>
 				</div>
 			</div>
@@ -1065,7 +1065,7 @@ import { Icon } from "astro-icon/components";
 						</div>
 						<div class="vs-row">
 							<span class="vs-icon">✓</span>
-							<span class="vs-row-label">Full Next.js admin dashboard &amp; team inbox on the edge</span>
+							<span class="vs-row-label">Inbox, Workspace, and API on the edge</span>
 						</div>
 					</div>
 				</div>
@@ -1162,7 +1162,7 @@ import { Icon } from "astro-icon/components";
 					</span>
 					<h3>Playground &amp; Preview</h3>
 					<p>
-						Test email sends and preview rendered templates right from the admin UI before they hit a real
+						Test email sends and preview rendered templates from the API playground before they hit a real
 						recipient. Catch rendering issues without burning send quota.
 					</p>
 					<span class="feature-tag">Developer UX</span>
@@ -1197,7 +1197,7 @@ import { Icon } from "astro-icon/components";
 					<p>
 						Create a <strong>test API key</strong> (<code>eftest_</code>) and all sends are captured in the
 						in-house Test Mailbox — no Cloudflare credentials required. Browse, preview HTML, and manage
-						test emails from the admin dashboard.
+						test emails in the Test Mailbox folder.
 					</p>
 					<span class="feature-tag">Local Dev</span>
 				</div>
@@ -1336,7 +1336,7 @@ import { Icon } from "astro-icon/components";
 							<div>
 								<div class="do-step-label">You're live</div>
 								<p class="do-step-desc">
-									Next.js admin dashboard and REST API are served from your Workers subdomain.
+									Inbox, Workspace, and the API are served from this Worker's URL.
 								</p>
 								<div class="code-block">
 									<span>
@@ -1398,7 +1398,9 @@ import { Icon } from "astro-icon/components";
 							<div class="do-step-num">3</div>
 							<div>
 								<div class="do-step-label">Live at your subdomain</div>
-								<p class="do-step-desc">Access the Next.js admin dashboard and REST API immediately.</p>
+								<p class="do-step-desc">
+									Open /setup, enable a zone, then use Inbox or the API playground.
+								</p>
 								<div class="code-block">
 									<span>
 										<span class="cb-url">https://emailflare.your-subdomain.workers.dev</span>

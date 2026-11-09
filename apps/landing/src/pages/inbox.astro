@@ -4,8 +4,8 @@ import { Icon } from "astro-icon/components";
 ---
 
 <Base
-	title="Inbox — Self-hosted email CRM on Cloudflare Workers"
-	description="EmailFlare Inbox is a self-hosted CRM inbox built on a Cloudflare Worker. Every inbound email lands in a clean contact thread with sequences, real-time push, and a polished dashboard — deployed with one command."
+	title="Inbox — Shared email client on Cloudflare Workers"
+	description="EmailFlare Inbox is a three-pane mail client on a Cloudflare Worker. Threads, mailbox filters, assignment, and a Test Mailbox folder. Contacts and Sequences sit beside it."
 	keywords="emailflare inbox, self-hosted crm inbox, cloudflare workers email crm, inbound email cloudflare, email sequences worker, email thread management"
 	canonical="https://emailflare.dev/inbox"
 	ogUrl="https://emailflare.dev/inbox"
@@ -1322,12 +1322,12 @@ import { Icon } from "astro-icon/components";
 						EmailFlare Inbox — Cloudflare Worker
 					</div>
 					<h1>
-						Self-hosted email <em>CRM inbox</em> — deployed to the edge.
+						A shared <em>inbox</em>, not a contact list.
 					</h1>
 					<p class="ix-hero-sub">
-						Every inbound email that hits your Cloudflare Email Routing rules lands in a clean contact
-						thread with sequences, real-time push notifications, and a polished dashboard. No external
-						service. No monthly seat fees. One command setup.
+						Mail arrives through Email Routing and lands in a thread. Filter by mailbox, assign it, mark it
+						open or done, and reply in place. Contacts and Sequences stay next to Inbox. Test mail stays in
+						a folder.
 					</p>
 					<div class="ix-actions">
 						<a class="btn btn-primary" href="#deploy">
@@ -1357,7 +1357,7 @@ import { Icon } from "astro-icon/components";
 							<span class="ix-dot ixd-r"></span>
 							<span class="ix-dot ixd-y"></span>
 							<span class="ix-dot ixd-g"></span>
-							<span class="ix-bar-title">emailflare-inbox.workers.dev/inbox</span>
+							<span class="ix-bar-title">inbox / support@acme.io</span>
 						</div>
 						<div class="ix-ui-body">
 							<!-- Contact list -->
@@ -1404,7 +1404,7 @@ import { Icon } from "astro-icon/components";
 										<div class="ix-thread-name">Jane Doe</div>
 										<div class="ix-thread-sub">jane@acme.io</div>
 									</div>
-									<div class="ix-thread-badge">3 emails</div>
+									<div class="ix-thread-badge">Open</div>
 								</div>
 
 								<div class="ix-email-card">
@@ -1466,8 +1466,8 @@ import { Icon } from "astro-icon/components";
 					Everything your team needs, <em>nothing you don't.</em>
 				</h2>
 				<p class="section-sub">
-					Inbox is a complete inbound email CRM — not a thin wrapper. Built specifically for Cloudflare
-					Workers with D1, R2, Queues, and Durable Objects.
+					Inbox is the mail client. Workspace is where admins enable zones, mailboxes, and the team. API
+					access is a separate permission.
 				</p>
 			</div>
 
@@ -1476,10 +1476,10 @@ import { Icon } from "astro-icon/components";
 					<div class="ix-feat-icon">
 						<Icon name="lucide:inbox" />
 					</div>
-					<h3>Contact threads</h3>
+					<h3>Conversation threads</h3>
 					<p>
-						Inbound emails are automatically grouped into per-contact conversation threads. Gmail-style view
-						with expandable email cards.
+						Inbound mail is grouped into threads, not a contact list. Open one, read the messages, and reply
+						without leaving the pane.
 					</p>
 				</div>
 
@@ -1521,10 +1521,10 @@ import { Icon } from "astro-icon/components";
 					<div class="ix-feat-icon">
 						<Icon name="lucide:users" />
 					</div>
-					<h3>Multi-user with roles</h3>
+					<h3>Admin, member, and extra access</h3>
 					<p>
-						Admin and member roles, invite-link onboarding. Secure session-based auth with login rate
-						limiting via Workers KV.
+						Admins run Workspace. Members use Inbox. API and tester are extra permissions: API opens the
+						developer pages, tester adds the Test Mailbox folder.
 					</p>
 				</div>
 
@@ -1563,8 +1563,8 @@ import { Icon } from "astro-icon/components";
 					<div class="ix-flow-num">1</div>
 					<h4>Email Routing</h4>
 					<p>
-						Configure a catch-all or address-specific rule in your Cloudflare dashboard to forward inbound
-						mail to the inbox Worker.
+						Enable a zone in Workspace. When the token can, EmailFlare writes the catch-all to this Worker.
+						When it cannot, the page shows the rule to add by hand.
 					</p>
 				</div>
 				<div class="ix-flow-step">
@@ -1573,17 +1573,17 @@ import { Icon } from "astro-icon/components";
 					<h4>email() handler</h4>
 					<p>
 						The inbox Worker's <code style="font-size:11px">email()</code> handler fires for every inbound
-						message. It parses MIME, stores the raw email and attachments in R2, and writes the contact +
-						thread row to D1.
+						message. It parses MIME, stores the raw email and attachments in R2, and writes the thread to
+						D1.
 					</p>
 				</div>
 				<div class="ix-flow-step">
 					<div class="ix-flow-tag ix-tag-db">D1 + R2</div>
 					<div class="ix-flow-num">3</div>
-					<h4>Contacts &amp; threads</h4>
+					<h4>Threads and mailboxes</h4>
 					<p>
-						D1 holds contacts, email metadata, users, inboxes, and sequence schedules. R2 stores raw email
-						bodies and attachments with secure per-request signed URLs.
+						D1 holds threads, mailboxes, users, and sequence schedules. R2 stores raw email bodies and
+						attachments. Contacts stay a separate list.
 					</p>
 				</div>
 				<div class="ix-flow-step">
@@ -1655,19 +1655,12 @@ import { Icon } from "astro-icon/components";
 					<div class="ix-do-step">
 						<div class="ix-do-step-num">2</div>
 						<div>
-							<div class="ix-do-step-label">Generate VAPID keys</div>
+							<div class="ix-do-step-label">Set this install's names</div>
 							<p class="ix-do-step-desc">
-								Inbox uses Web Push for real-time browser notifications. Generate a key pair for push
-								notifications.
+								Copy <code>wrangler.local.example.jsonc</code> to <code>wrangler.local.jsonc</code> if
+								the Worker, database, bucket, or queue name should differ. Secrets stay in{" "}
+								<code>.dev.vars</code>.
 							</p>
-							<div class="ix-code-block">
-								<span>
-									<span class="ix-cb-cmd">npx web-push generate-vapid-keys</span>
-								</span>
-								<span>
-									<span class="ix-cb-cmt"># store VAPID_PUBLIC_KEY &amp; VAPID_PRIVATE_KEY</span>
-								</span>
-							</div>
 						</div>
 					</div>
 					<div class="ix-do-step">
@@ -1688,16 +1681,14 @@ import { Icon } from "astro-icon/components";
 					<div class="ix-do-step">
 						<div class="ix-do-step-num">4</div>
 						<div>
-							<div class="ix-do-step-label">
-								Open <code>/setup</code> and create your admin
-							</div>
+							<div class="ix-do-step-label">Open /setup and enable a zone</div>
 							<p class="ix-do-step-desc">
-								Visit your Worker URL at <code>/setup</code> to create the first admin account. Then add
-								inboxes, invite teammates, and configure Cloudflare Email Routing.
+								Create the admin, pick a zone the token can read, and add the first mailbox. Setup opens
+								Workspace.
 							</p>
 							<div class="ix-code-block">
 								<span>
-									<span class="ix-cb-url">https://your-inbox.workers.dev/setup</span>
+									<span class="ix-cb-url">https://your-worker.workers.dev/setup</span>
 								</span>
 							</div>
 						</div>
@@ -1817,9 +1808,8 @@ import { Icon } from "astro-icon/components";
 						<div class="callout callout-green">
 							<span class="callout-icon">ℹ️</span>
 							<span>
-								Inbox shares the same <code>emailflare</code> D1 database as the main worker. If you
-								already have the main worker deployed, the inbox deploy script will detect and reuse the
-								existing database.
+								Inbox, Workspace, and the API are the same Worker and the same D1 database. There is no
+								separate inbox deploy.
 							</span>
 						</div>
 					</div>
@@ -1838,60 +1828,41 @@ import { Icon } from "astro-icon/components";
 							<div class="qs-step">
 								<div class="qs-num">1</div>
 								<div class="qs-body">
-									<strong>Install dependencies</strong> — from the repo root run{" "}
-									<code>just install</code>. This installs all workspace dependencies for the
-									dashboard app and marketing site.
+									<strong>Install and configure</strong> — from the repo root run{" "}
+									<code>just install</code>, then
+									<code>cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars</code>. Set
+									<code>SESSION_SECRET</code>. Add <code>CF_API_TOKEN</code> and{" "}
+									<code>CF_ACCOUNT_ID</code> when you want zone setup. Resource names go in{" "}
+									<code>wrangler.local.jsonc</code>, not in secrets.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">2</div>
 								<div class="qs-body">
-									<strong>Configure local environment</strong> —{" "}
-									<code>cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars</code>. For
-									production, set secrets via <code>just dashboard-secret &lt;KEY&gt;</code>.
+									<strong>Deploy</strong> — <code>just dashboard-deploy</code> applies D1 migrations
+									and deploys the Worker. For a local reset, use <code>just fresh</code>.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">3</div>
 								<div class="qs-body">
-									<strong>Generate VAPID keys</strong> — run{" "}
-									<code>npx web-push generate-vapid-keys</code> and configure Web Push keys.
+									<strong>Create the admin</strong> — open <code>/setup</code> on the Worker URL. The
+									first account is an admin. This page closes after that account exists.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">4</div>
 								<div class="qs-body">
-									<strong>Run the deploy script</strong> — <code>just dashboard-deploy</code>. The
-									script applies D1 migrations remotely, builds the Next.js React Server Components,
-									and deploys the unified Worker.
+									<strong>Enable a zone</strong> — the next screen lists zones the token can read.
+									Pick one and enable it. Do not paste a zone ID. DNS and the catch-all are written
+									when the token can.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">5</div>
 								<div class="qs-body">
-									<strong>Create your admin account</strong> — visit{" "}
-									<code>https://&lt;your-worker&gt;.workers.dev/setup</code> (or your custom domain).
-									Fill in admin name, email, and password. This endpoint is disabled after the first
-									account is created.
-								</div>
-							</div>
-							<div class="qs-step">
-								<div class="qs-num">6</div>
-								<div class="qs-body">
-									<strong>Add inboxes</strong> — in the dashboard, go to <em>Inboxes</em> and create
-									one per email address you want to receive mail on (e.g.{" "}
-									<code>support@yourdomain.com</code>). Note the generated inbox address — you'll use
-									it in the Email Routing rule.
-								</div>
-							</div>
-							<div class="qs-step">
-								<div class="qs-num">7</div>
-								<div class="qs-body">
-									<strong>Configure Email Routing</strong> — see the{" "}
-									<a href="#email-routing" style="color:var(--green);text-decoration:none;">
-										Email Routing section →
-									</a>{" "}
-									for exact steps.
+									<strong>Create the first mailbox</strong> — same screen. Add an address such as
+									<code>support@yourdomain.com</code>. Setup then opens Workspace, not an empty inbox.
 								</div>
 							</div>
 						</div>
@@ -1926,8 +1897,8 @@ import { Icon } from "astro-icon/components";
 					</div>
 					<div class="doc-body">
 						<p>
-							Inbox receives mail by registering the Worker as an Email Routing worker. You need to do
-							this in the Cloudflare dashboard for each domain you want to receive mail on.
+							Enabling a zone writes the catch-all when the token has Email Routing permission. Use the
+							steps below only when Workspace says the rule still needs to be added by hand.
 						</p>
 
 						<h3>Add the routing rule</h3>
@@ -1943,8 +1914,8 @@ import { Icon } from "astro-icon/components";
 								<div class="qs-num">2</div>
 								<div class="qs-body">
 									Click <strong>Create address</strong>. Set the action to{" "}
-									<strong>Send to a Worker</strong> and choose <code>emailflare-inbox</code> from the
-									worker list.
+									<strong>Send to a Worker</strong> and choose <code>emailflare</code> from the worker
+									list.
 								</div>
 							</div>
 							<div class="qs-step">
@@ -1957,8 +1928,8 @@ import { Icon } from "astro-icon/components";
 							<div class="qs-step">
 								<div class="qs-num">4</div>
 								<div class="qs-body">
-									Send a test email to the address and verify it appears in the Inbox dashboard under
-									the correct contact thread.
+									Send a test email to a mailbox you created. It should appear as a thread in Inbox,
+									under that mailbox.
 								</div>
 							</div>
 						</div>
@@ -1966,9 +1937,8 @@ import { Icon } from "astro-icon/components";
 						<div class="callout callout-orange">
 							<span class="callout-icon">💡</span>
 							<span>
-								The inbox address the Worker reads from is determined by the <code>to</code> header of
-								the incoming email. Make sure the address matches one of your configured inboxes in the
-								dashboard, or it will be filed under a default inbox.
+								The Worker files mail by the <code>to</code> address. It must match a mailbox in
+								Workspace. Mail to an unknown address is not given a default mailbox.
 							</span>
 						</div>
 
@@ -2069,13 +2039,13 @@ import { Icon } from "astro-icon/components";
 											<code>VAPID_PUBLIC_KEY</code>
 										</td>
 										<td>
-											<span class="pill pill-req">required</span>
+											<span class="pill">unused</span>
 										</td>
 										<td>
-											VAPID public key for Web Push. Generate with{" "}
-											<code>npx web-push generate-vapid-keys</code>. Also stored in{" "}
-											<code>wrangler.jsonc</code> as <code>VAPID_PUBLIC_KEY</code> var (served to
-											the frontend).
+											Unused. Live inbox updates use a Durable Object WebSocket, not Web Push.
+											Leave unset. Generate with <code>npx web-push generate-vapid-keys</code>.
+											Also stored in <code>wrangler.jsonc</code> as <code>VAPID_PUBLIC_KEY</code>{" "}
+											var (served to the frontend).
 										</td>
 									</tr>
 									<tr>
@@ -2083,9 +2053,9 @@ import { Icon } from "astro-icon/components";
 											<code>VAPID_PRIVATE_KEY</code>
 										</td>
 										<td>
-											<span class="pill pill-req">required</span>
+											<span class="pill">unused</span>
 										</td>
-										<td>VAPID private key. Never exposed to the frontend. Keep this secret.</td>
+										<td>Unused. Do not set this unless a future Web Push feature asks for it.</td>
 									</tr>
 								</tbody>
 							</table>

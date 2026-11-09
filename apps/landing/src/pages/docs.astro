@@ -632,23 +632,25 @@ import Base from "../layouts/Base.astro";
 							<div class="qs-step">
 								<div class="qs-num">2</div>
 								<div class="qs-body">
-									<strong>Add a sending domain</strong> — go to the Domains page in the admin UI,
-									enter your domain, and complete the DNS verification steps Cloudflare provides.
+									<strong>Enable a zone</strong> — open Workspace, pick a zone the token can read, and
+									enable it. Do not paste a zone ID. DNS is written when the token can, and listed
+									when it cannot.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">3</div>
 								<div class="qs-body">
-									<strong>Create an API key</strong> — go to the Keys page in the admin UI, click{" "}
-									<em>New key</em>, and choose a scope. Copy the key — it won't be shown again.
+									<strong>Create an API key</strong> — in Workspace, open API keys and create one. A
+									test key starts with
+									<code>eftest_</code>. Copy it. It is not shown again.
 								</div>
 							</div>
 							<div class="qs-step">
 								<div class="qs-num">4</div>
 								<div class="qs-body">
-									<strong>Send your first email</strong> — <code>POST /v1/send</code> with your key in
-									the <code>Authorization: Bearer</code> header. Start with a test key and{" "}
-									<code>eftest_</code> prefix to skip Cloudflare credentials.
+									<strong>Send from the playground</strong> — open API, then Playground. A test key
+									lands in the Test Mailbox folder. A live key calls <code>POST /v1/send</code>{" "}
+									through Cloudflare Email Sending.
 								</div>
 							</div>
 						</div>
@@ -657,7 +659,7 @@ import Base from "../layouts/Base.astro";
 							<a class="guide-card" href="/cloudflare">
 								<div class="gc-label">Deploy</div>
 								<h4>Cloudflare Workers setup</h4>
-								<p>One-command deploy to the edge with D1, KV, and the admin UI.</p>
+								<p>Deploy the Worker, then enable a zone from Workspace.</p>
 							</a>
 							<a class="guide-card" href="/cloudflare-token">
 								<div class="gc-label">Required</div>
@@ -694,9 +696,9 @@ import Base from "../layouts/Base.astro";
 							<div class="key-type-card">
 								<div class="key-badge key-badge-test">⚗ test key</div>
 								<p>
-									Prefix: <code>eftest_</code>. Sends are stored in the admin dashboard — no
-									Cloudflare credentials required. Browse, preview HTML, and manage test emails from
-									the built-in Test Mailbox page.
+									Prefix: <code>eftest_</code>. Sends land in the Test Mailbox folder — no Cloudflare
+									credentials required. Browse, preview HTML, and manage test emails from the built-in
+									Test Mailbox page.
 								</p>
 							</div>
 							<div class="key-type-card">
@@ -1207,7 +1209,7 @@ const data = await res.json();</span></code></pre>
 						<h3>401 on /v1/send</h3>
 						<p>
 							Confirm the header is exactly <code>Authorization: Bearer &lt;key&gt;</code> with no extra
-							spaces. Verify the key is marked active on the Keys page.
+							spaces. Verify the key is active under API keys in Workspace.
 						</p>
 
 						<h3>403 with a domain-scoped key</h3>
@@ -1238,8 +1240,7 @@ const data = await res.json();</span></code></pre>
 							</a>
 						</p>
 						<p style="margin-top:8px;">
-							Test emails are stored in the built-in Test Mailbox page in the admin UI — no external
-							service needed.
+							Test emails are stored in the Test Mailbox folder inside Inbox — no external service needed.
 						</p>
 
 						<h3>Database migrations</h3>

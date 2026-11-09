@@ -8,7 +8,7 @@ const structuredData = {
 	name: "EmailFlare",
 	url: "https://emailflare.dev",
 	description:
-		"EmailFlare is an open-source, edge-native email engine on Cloudflare: transactional email sending API, collaborative team inbox with email routing, 50 React Email templates, and a Next.js admin dashboard in a single unified worker bundle.",
+		"EmailFlare is an open-source email engine on Cloudflare: a team inbox, a workspace for domains and mailboxes, and a transactional sending API. One Worker. Pick a zone to enable it.",
 	applicationCategory: "DeveloperApplication",
 	operatingSystem: "Cloudflare Workers",
 	license: "https://github.com/0xdps/emailflare/blob/trunk/LICENSE",
@@ -18,8 +18,8 @@ const structuredData = {
 ---
 
 <Base
-	title="EmailFlare — Email API & Team Inbox for Cloudflare"
-	description="The complete email engine for Cloudflare. Send transactional emails via REST API, collaborate on inbound conversations with a shared team inbox, and render 50 React Email templates — all in one single deployment."
+	title="EmailFlare — Inbox, workspace, and email API for Cloudflare"
+	description="Open-source email for Cloudflare. A team inbox, a workspace for domains and mailboxes, and a sending API — one Worker. Enable a zone instead of typing a zone ID."
 	keywords="emailflare, self-hosted email, cloudflare email sending, transactional email, open source email api, cloudflare inbox, team inbox cloudflare, email routing inbox, react email templates, nextjs cloudflare worker"
 	canonical="https://emailflare.dev/"
 	ogUrl="https://emailflare.dev/"
@@ -2125,15 +2125,14 @@ const structuredData = {
 					</div>
 
 					<h1>
-						<em>Transactional email</em> &amp;
+						<em>Inbox, workspace, and API.</em>
 						<br />
-						<em style="color:var(--green)">team inbox</em> in one bundle.
+						One Cloudflare Worker.
 					</h1>
 
 					<p class="hero-sub">
-						The complete open-source email engine for Cloudflare. Send transactional emails via REST API,
-						collaborate on inbound conversations with a shared team inbox, and render 50 React Email
-						templates — all deployed as a single Cloudflare Worker.
+						Read mail in a shared inbox. Manage domains, mailboxes, and the team in Workspace. Send from the
+						API. After deploy, pick a Cloudflare zone and enable it. No zone ID to paste.
 					</p>
 
 					<div class="hero-actions">
@@ -2278,9 +2277,9 @@ const structuredData = {
 											</div>
 											<span class="branch-status branch-status-sync">Synced</span>
 										</div>
-										<div class="branch-title">Team Inbox &amp; DO Hub</div>
+										<div class="branch-title">Inbox thread updated</div>
 										<div class="branch-meta">
-											<span class="bm-target">Thread updated</span>
+											<span class="bm-target">support@acme.io</span>
 											<span class="bm-time">WebSocket live</span>
 										</div>
 									</div>
@@ -2315,15 +2314,15 @@ const structuredData = {
 	<section id="features">
 		<div class="container">
 			<div class="section-head">
-				<div class="section-eyebrow">One Unified Bundle</div>
+				<div class="section-eyebrow">Three places, one Worker</div>
 				<h2 class="section-title">
-					Everything you need.
+					Inbox for mail.
 					<br />
-					One single deployment.
+					Workspace for setup. API for send.
 				</h2>
 				<p class="section-sub">
-					No more running separate microservices or juggling multiple Cloudflare workers. EmailFlare combines
-					transactional sending, collaborative team inboxes, and a Next.js admin UI in one cohesive package.
+					People land in Inbox. Admins open Workspace for domains, mailboxes, team, and API keys. API access
+					is a permission, not a second app. Tester access adds a Test Mailbox folder inside Inbox.
 				</p>
 			</div>
 			<div class="products-split">
@@ -2367,26 +2366,26 @@ const structuredData = {
 				<!-- Inbox card -->
 				<div class="product-card product-card-inbox">
 					<div class="product-card-head">
-						<span class="product-eyebrow product-eyebrow-inbox">Team Inbox & CRM</span>
+						<span class="product-eyebrow product-eyebrow-inbox">Inbox</span>
 						<h3>
-							Collaborative inbox
+							A shared inbox,
 							<br />
-							on Cloudflare Routing.
+							not a contact list.
 						</h3>
 						<p>
-							A multi-user inbox powered by Cloudflare Email Routing. Receive emails, reply with
-							threading, assign conversations, and orchestrate automated drip sequences.
+							Three panes: mailboxes, threads, and the conversation. Reply in place. Filter by mailbox,
+							assign a thread, and mark it open or done. Contacts and Sequences stay beside Inbox.
 						</p>
 					</div>
 					<ul class="product-feat-list">
 						<li>
-							<span class="pf-check pf-check-inbox">✓</span>Zero mail servers — Cloudflare Email Routing
+							<span class="pf-check pf-check-inbox">✓</span>Thread list, not a contact CRM
 						</li>
 						<li>
-							<span class="pf-check pf-check-inbox">✓</span>Shared team inbox · thread assignment
+							<span class="pf-check pf-check-inbox">✓</span>Multi-mailbox filter, assignment, and status
 						</li>
 						<li>
-							<span class="pf-check pf-check-inbox">✓</span>Auto-reply sequences with delivery tracking
+							<span class="pf-check pf-check-inbox">✓</span>Test Mailbox folder for tester access
 						</li>
 						<li>
 							<span class="pf-check pf-check-inbox">✓</span>Live updates via Durable Object WebSockets
@@ -2455,10 +2454,11 @@ const structuredData = {
 		<div class="container">
 			<div class="section-head">
 				<div class="section-eyebrow">Deployment</div>
-				<h2 class="section-title">One command to deploy.</h2>
+				<h2 class="section-title">Deploy, then pick a zone.</h2>
 				<p class="section-sub">
-					Deploy the complete stack — Next.js admin dashboard, transactional sending API, team inbox, and
-					Durable Objects — to Cloudflare Workers in under two minutes.
+					Ship the Worker, set three secrets, then open <code>/setup</code>. The first admin enables a zone
+					the token can already see. DNS and catch-all are written when the token can, and shown when it
+					cannot.
 				</p>
 			</div>
 			<div class="deploy-cta-grid" style="grid-template-columns: 1fr 1fr;">
@@ -2471,8 +2471,8 @@ const structuredData = {
 					<div class="dcc-eyebrow">Workers Builds</div>
 					<div class="dcc-title">One-Click Deploy</div>
 					<p class="dcc-sub">
-						Connect your GitHub repository to Cloudflare Workers. Automatically provisions D1, KV, R2, and
-						Queue, then deploys to 300+ edge locations on every push.
+						Connect the repo to Workers Builds. Resource names for this account go in
+						<code>wrangler.local.jsonc</code>. The button does not invent a bucket or database for you.
 					</p>
 					<div class="dcc-cta">Deploy to Cloudflare →</div>
 				</a>
@@ -2482,8 +2482,8 @@ const structuredData = {
 					</div>
 					<div class="dcc-title">Command-Line Deploy</div>
 					<p class="dcc-sub">
-						Prefer the terminal? Run <code>just install</code>, configure secrets, and ship with{" "}
-						<code>just dashboard-deploy</code>. Supports full local offline development with Miniflare.
+						Run <code>just install</code>, copy <code>.dev.vars.example</code>, and ship with{" "}
+						<code>just dashboard-deploy</code>. Local reset is <code>just fresh</code>.
 					</p>
 					<div class="dcc-cta" style="color:var(--orange)">
 						Workers deploy guide →
@@ -2565,20 +2565,20 @@ const structuredData = {
 					<li>
 						<span class="ab-check">✓</span>
 						<div class="ab-text">
-							<strong>Cloudflare Email Sending for production</strong>
+							<strong>Live keys send. Test keys stay in Inbox.</strong>
 							<span>
-								Production API keys deliver via Cloudflare Email Sending. Test API keys capture emails
-								into the built-in Test Mailbox sandbox for safe local testing.
+								<code>eflive_</code> keys deliver through Cloudflare Email Sending. <code>eftest_</code>{" "}
+								keys land in the Test Mailbox folder for people with tester access.
 							</span>
 						</div>
 					</li>
 					<li>
 						<span class="ab-check">✓</span>
 						<div class="ab-text">
-							<strong>Inbound via Email Routing</strong>
+							<strong>Enable a zone. Don't paste a zone ID.</strong>
 							<span>
-								The unified Worker receives email natively through Cloudflare Email Routing rules — no
-								mail server, no bridge, no MX records to juggle.
+								Workspace lists zones the token can read. Enable writes DNS and the catch-all when it
+								can, and tells you what to add by hand when it cannot.
 							</span>
 						</div>
 					</li>

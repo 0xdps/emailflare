@@ -509,11 +509,12 @@ import Base from "../layouts/Base.astro";
 						<div class="info-box info-tip">
 							<span class="info-box-icon">💡</span>
 							<span>
-								<strong>Workers Scripts (Account · Edit)</strong> and{" "}
-								<strong>Email Routing Rules (Zone · Edit)</strong>
-								are required for the <em>Bounce Forwarding</em> feature — they let EmailFlare deploy the
-								forwarder Worker and configure catch-all routing rules automatically from the Settings
-								page. If you don't plan to use bounce forwarding you can omit those two.
+								<strong>Zone Read</strong> is required for the domain picker. Without it, Workspace
+								cannot list zones.
+								<strong>Email Routing Rules (Zone · Edit)</strong> and{" "}
+								<strong>Zone Settings (Zone · Edit)</strong>
+								let Enable write the catch-all. Without them, Enable still saves the domain and shows
+								the rule to add by hand.
 								<br />
 								<br />
 								<strong>DNS Edit</strong> is only needed if EmailFlare is managing your MX records
@@ -666,7 +667,7 @@ import Base from "../layouts/Base.astro";
 					<h3>Deploy to Cloudflare Workers</h3>
 					<p>
 						Use your new API token to deploy EmailFlare to the edge. One-command setup with D1, KV, and the
-						admin UI.
+						Workspace.
 					</p>
 				</a>
 				<a class="next-card" href="/docs">

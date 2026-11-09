@@ -559,8 +559,7 @@ import { Icon } from "astro-icon/components";
 							<span class="tt-out">Hono API &amp; Durable Objects bundled</span>
 						</div>
 						<div style="margin-top:6px;">
-							<span class="tt-ok">✓</span> <span class="tt-out">Deployed → </span>
-							<span class="tt-url">https://emailflare.workers.dev</span>
+							<span class="tt-ok">✓</span> <span class="tt-out">Deployed → your Worker URL</span>
 						</div>
 					</div>
 				</div>
@@ -620,8 +619,8 @@ import { Icon } from "astro-icon/components";
 					</span>
 					<h3>Admin panel included</h3>
 					<p>
-						The full Next.js admin dashboard and team inbox run on the same Worker with React Server
-						Components for zero-waterfall initial renders. No separate hosting needed.
+						Inbox, Workspace, and the API run on the same Worker with React Server Components for
+						zero-waterfall initial renders. No separate hosting needed.
 					</p>
 				</div>
 				<div class="why-card">
@@ -630,8 +629,8 @@ import { Icon } from "astro-icon/components";
 					</span>
 					<h3>Single Worker architecture</h3>
 					<p>
-						Sending API, inbound Email Routing, team inbox CRM, and Next.js UI all execute inside a single
-						Worker bundle on Cloudflare's edge.
+						Sending API, inbound Email Routing, Inbox, Workspace, and the sending API all execute inside a
+						single Worker bundle on Cloudflare's edge.
 					</p>
 				</div>
 				<div class="why-card">
@@ -674,7 +673,7 @@ import { Icon } from "astro-icon/components";
 							<span class="ci ci-ok">✓</span> Automatic deployments on Git push
 						</li>
 						<li>
-							<span class="ci ci-ok">✓</span> Auto-provisions D1, KV, R2, and Queue bindings
+							<span class="ci ci-ok">✓</span> Uses the resource names in wrangler.local.jsonc
 						</li>
 						<li>
 							<span class="ci ci-ok">✓</span> Zero local tooling or Node.js setup required
@@ -745,8 +744,8 @@ import { Icon } from "astro-icon/components";
 					Deploy to Workers in four steps.
 				</h2>
 				<p class="section-sub" style="color:oklch(58% 0.01 58);">
-					The setup script handles everything automatically — D1, KV, secrets, admin build, and deploy. You
-					just need your Cloudflare credentials ready.
+					Deploy applies migrations and ships the Worker. Secrets and resource names are set by you. The first
+					visit enables a zone.
 				</p>
 			</div>
 
@@ -882,7 +881,7 @@ import { Icon } from "astro-icon/components";
 							</span>
 							<span>
 								<span class="c-ok">✓</span> <span style="color:oklch(62% 0.01 58);">Deployed → </span>
-								<span class="c-url">https://emailflare.workers.dev</span>
+								<span class="c-url">your Worker URL</span>
 							</span>
 						</div>
 						<div class="tip-box">
@@ -890,12 +889,8 @@ import { Icon } from "astro-icon/components";
 								<Icon name="lucide:circle-check" />
 							</span>
 							<span>
-								That's it. Open your{" "}
-								<code style="background:oklch(22% 0.01 48);color:oklch(82% 0.06 48);border:none;font-size:11.5px;">
-									workers.dev
-								</code>{" "}
-								URL — the EmailFlare admin dashboard is live. Add a sending domain, generate an API key,
-								and start sending email from the edge.
+								Open <code>/setup</code> on the Worker URL. Create the admin, enable a zone the token
+								can read, and add the first mailbox. That lands in Workspace.
 							</span>
 						</div>
 					</div>

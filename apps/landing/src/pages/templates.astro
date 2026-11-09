@@ -1,5 +1,20 @@
 ---
 import Base from "../layouts/Base.astro";
+const samples = [
+	"<p>Hi {{name}},</p>\n<p>Order <strong>{{orderId}}</strong> is on its way.</p>",
+	'{\n  "to": "alex@example.com",\n  "templateSlug": "order-confirmation",\n  "variables": { "name": "Alex", "orderId": "ORD-1042" }\n}',
+	"{{#if items}}\n  <ul>\n    {{#each items}}\n      <li>{{name}} — {{price}}</li>\n    {{/each}}\n  </ul>\n{{else}}\n  <p>Your cart is empty.</p>\n{{/if}}",
+	'{\n  "templateSlug": "cart-summary",\n  "variables": {\n    "items": [\n      { "name": "Widget", "price": "$9.00" },\n      { "name": "Gadget", "price": "$14.50" }\n    ]\n  }\n}',
+	'<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">\n  <h1 style="color: #f97316;">Hello {{name}}</h1>\n  <p style="color: #333; line-height: 1.6;">Your order {{orderId}} is confirmed.</p>\n',
+	'<h1 style="color: {{primaryColor}}; font-family: {{font}};">Hello {{name}}</h1>',
+	'{\n  "variables": {\n    "name": "Alex",\n    "primaryColor": "#f97316",\n    "font": "Arial, sans-serif"\n  }\n}',
+	'{{#with theme}}\n  <div style="background: {{bg}}; color: {{text}};">\n    <h1 style="color: {{primary}};">Hello {{../name}}</h1>\n  </div>\n{{/with}}',
+	'{\n  "variables": {\n    "name": "Alex",\n    "theme": { "primary": "#f97316", "bg": "#fafafa", "text": "#333" }\n  }\n}',
+	'{\n  "to": "alex@example.com",\n  "templateSlug": "welcome",\n  "variables": { "name": "Alex", "appName": "Acme" }\n}',
+	"GET    /api/templates\nGET    /api/templates/:idOrSlug\nPOST   /api/templates\nPUT    /api/templates/:id\nDELETE /api/templates/:id\nPOST   /api/templates/:id/preview",
+	'{\n  "name": "Order confirmation",\n  "slug": "order-confirmation",\n  "subject": "Your order {{orderId}} is confirmed",\n  "htmlBody": "<p>Hi {{name}},</p><p>Order {{orderId}} is confirmed.</p>",\n  "textBody": "Hi {{name}}, your order {{orderId}} is confirmed."\n}',
+	'POST https://your-emailflare.com/v1/send\nAuthorization: Bearer eflive_xxx\n\n{\n  "from": "hello@yourdomain.com",\n  "to": "alex@example.com",\n  "templateSlug": "order-confirmation",\n  "variables": { "name": "Alex", "orderId": "ORD-1042" }\n}',
+];
 ---
 
 <Base
@@ -129,7 +144,8 @@ import Base from "../layouts/Base.astro";
 			border: 1px solid var(--border);
 			border-radius: var(--radius-lg);
 			overflow: hidden;
-			margin-bottom: 20px;
+			margin-bottom: 14px;
+			padding: 0;
 		}
 
 		.tpl-section-header {
@@ -160,7 +176,7 @@ import Base from "../layouts/Base.astro";
 		}
 
 		.tpl-body {
-			padding: 24px;
+			padding: 16px 20px 18px;
 		}
 		.tpl-body > p:first-child {
 			margin-top: 0;
@@ -253,13 +269,14 @@ import Base from "../layouts/Base.astro";
 			background: oklch(14% 0.016 48);
 			border: 1px solid oklch(24% 0.016 48);
 			border-radius: 8px;
-			padding: 16px 20px;
+			padding: 12px 14px;
 			font-family: var(--font-mono);
 			font-size: 12.5px;
-			line-height: 1.85;
+			line-height: 1.65;
 			overflow-x: auto;
-			margin: 14px 0;
-			white-space: pre-wrap;
+			margin: 10px 0;
+			white-space: pre;
+			color: oklch(92% 0.012 70);
 		}
 		.tc-cmd {
 			color: oklch(82% 0.06 58);
@@ -526,36 +543,9 @@ import Base from "../layouts/Base.astro";
 							<code>/v1/send</code>:
 						</p>
 
-						<div class="tpl-code">
-							<span class="tc-plain">&lt;p&gt;Hi </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">name</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">,&lt;/p&gt;</span>
-							<span class="tc-plain">&lt;p&gt;Order &lt;strong&gt;</span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">orderId</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;/strong&gt; is on its way.&lt;/p&gt;</span>
-						</div>
+						<pre class="tpl-code">{samples[0]}</pre>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;</span>
-							<span class="tc-key">"to"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"alex@example.com"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"templateSlug"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"order-confirmation"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"variables"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>{" "}
-							<span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Alex"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"orderId"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"ORD-1042"</span>{" "}
-							<span class="tc-punct">&#125;</span>
-							<span class="tc-punct">&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[1]}</pre>
 
 						<div class="tpl-callout tpl-callout-green">
 							<span class="tpl-callout-icon">💡</span>
@@ -590,63 +580,13 @@ import Base from "../layouts/Base.astro";
 							, so the full block syntax is available:
 						</p>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;&#123;#</span>
-							<span class="tc-key">if</span> <span class="tc-key">items</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;ul&gt;</span>
-							<span class="tc-punct">&#123;&#123;#</span>
-							<span class="tc-key">each</span> <span class="tc-key">items</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;li&gt;</span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">name</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain"> — </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">price</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;/li&gt;</span>
-							<span class="tc-punct">&#123;&#123;/</span>
-							<span class="tc-key">each</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;/ul&gt;</span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">else</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;p&gt;Your cart is empty.&lt;/p&gt;</span>
-							<span class="tc-punct">&#123;&#123;/</span>
-							<span class="tc-key">if</span>
-							<span class="tc-punct">&#125;&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[2]}</pre>
 
 						<p>
 							<code>variables</code> accepts nested objects and arrays, so the example above works with:
 						</p>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;</span>
-							<span class="tc-key">"templateSlug"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"cart-summary"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"variables"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>
-							<span class="tc-key">"items"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">[</span>
-							<span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Widget"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"price"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"$9.00"</span>{" "}
-							<span class="tc-punct">&#125;,</span>
-							<span class="tc-punct">&#123;</span> <span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Gadget"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"price"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"$14.50"</span>{" "}
-							<span class="tc-punct">&#125;</span>
-							<span class="tc-punct">]</span>
-							<span class="tc-punct">&#125;</span>
-							<span class="tc-punct">&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[3]}</pre>
 
 						<p>
 							Built-in helpers (<code>&#123;&#123;#unless&#125;&#125;</code>,{" "}
@@ -669,22 +609,7 @@ import Base from "../layouts/Base.astro";
 							This is the standard approach for HTML email and the most reliable across email clients:
 						</p>
 
-						<div class="tpl-code">
-							<span class="tc-plain">
-								&lt;div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"&gt;
-							</span>
-							<span class="tc-plain">&lt;h1 style="color: #f97316;"&gt;Hello </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">name</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;/h1&gt;</span>
-							<span class="tc-plain">&lt;p style="color: #333; line-height: 1.6;"&gt;Your order </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">orderId</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain"> is confirmed.&lt;/p&gt;</span>
-							<span class="tc-plain">&lt;/div&gt;</span>
-						</div>
+						<pre class="tpl-code">{samples[4]}</pre>
 
 						<p>
 							There is no separate theme system for custom templates — <code>themeId</code> on{" "}
@@ -695,86 +620,18 @@ import Base from "../layouts/Base.astro";
 						<h3>Style variables</h3>
 						<p>Pass colours and fonts as template variables:</p>
 
-						<div class="tpl-code">
-							<span class="tc-plain">&lt;h1 style="color: </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">primaryColor</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">; font-family: </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">font</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">;"&gt;Hello </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">name</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;/h1&gt;</span>
-						</div>
+						<pre class="tpl-code">{samples[5]}</pre>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;</span> <span class="tc-key">"variables"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>{" "}
-							<span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Alex"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"primaryColor"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"#f97316"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"font"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Arial, sans-serif"</span>{" "}
-							<span class="tc-punct">&#125;</span> <span class="tc-punct">&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[6]}</pre>
 
 						<h3>
 							Theme object with <code>&#123;&#123;#with&#125;&#125;</code>
 						</h3>
 						<p>Pass a nested theme object and scope into it:</p>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;&#123;#</span>
-							<span class="tc-key">with</span> <span class="tc-key">theme</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;div style="background: </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">bg</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">; color: </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">text</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">;"&gt;</span>
-							<span class="tc-plain">&lt;h1 style="color: </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">primary</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">;"&gt;Hello </span>
-							<span class="tc-punct">&#123;&#123;</span>
-							<span class="tc-key">../name</span>
-							<span class="tc-punct">&#125;&#125;</span>
-							<span class="tc-plain">&lt;/h1&gt;</span>
-							<span class="tc-plain">&lt;/div&gt;</span>
-							<span class="tc-punct">&#123;&#123;/</span>
-							<span class="tc-key">with</span>
-							<span class="tc-punct">&#125;&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[7]}</pre>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;</span>
-							<span class="tc-key">"variables"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>
-							<span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Alex"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"theme"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>{" "}
-							<span class="tc-key">"primary"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"#f97316"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"bg"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"#fafafa"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"text"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"#333"</span>{" "}
-							<span class="tc-punct">&#125;</span>
-							<span class="tc-punct">&#125;</span>
-							<span class="tc-punct">&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[8]}</pre>
 
 						<h3>Base layout in the template</h3>
 						<p>
@@ -799,19 +656,7 @@ import Base from "../layouts/Base.astro";
 							like custom templates:
 						</p>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;</span> <span class="tc-key">"to"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"alex@example.com"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"templateSlug"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"welcome"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"variables"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>{" "}
-							<span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Alex"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"appName"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Acme"</span>{" "}
-							<span class="tc-punct">&#125;</span> <span class="tc-punct">&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[9]}</pre>
 
 						<h3>Themes</h3>
 						<p>
@@ -861,51 +706,16 @@ import Base from "../layouts/Base.astro";
 					</div>
 					<div class="tpl-body">
 						<p>
-							Create and edit templates from the <strong>Templates</strong> page in the admin UI — the
-							live preview highlights resolved variables inline. Or use the admin API
-							(session-authenticated <code>/api/templates</code>):
+							Create and edit templates from the <strong>Templates</strong> page under API — the live
+							preview highlights resolved variables inline. Or use the admin API (session-authenticated{" "}
+							<code>/api/templates</code>):
 						</p>
 
-						<div class="tpl-code">
-							<span class="tc-cmd">GET /api/templates # list templates</span>
-							<span class="tc-cmd">GET /api/templates/:idOrSlug # fetch one (by id or slug)</span>
-							<span class="tc-cmd">POST /api/templates # create</span>
-							<span class="tc-cmd">PUT /api/templates/:id # update</span>
-							<span class="tc-cmd">DELETE /api/templates/:id # delete</span>
-							<span class="tc-cmd">
-								POST /api/templates/:id/preview # render with variables + optional themeId
-							</span>
-						</div>
+						<pre class="tpl-code">{samples[10]}</pre>
 
 						<p>Create example:</p>
 
-						<div class="tpl-code">
-							<span class="tc-punct">&#123;</span>
-							<span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Order confirmation"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"slug"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"order-confirmation"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"subject"</span>
-							<span class="tc-punct">:</span>{" "}
-							<span class="tc-str">"Your order &#123;&#123;orderId&#125;&#125; is confirmed"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"htmlBody"</span>
-							<span class="tc-punct">:</span>{" "}
-							<span class="tc-str">
-								"&lt;p&gt;Hi &#123;&#123;name&#125;&#125;,&lt;/p&gt;&lt;p&gt;Order
-								&#123;&#123;orderId&#125;&#125; is confirmed.&lt;/p&gt;"
-							</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"textBody"</span>
-							<span class="tc-punct">:</span>{" "}
-							<span class="tc-str">
-								"Hi &#123;&#123;name&#125;&#125;, your order &#123;&#123;orderId&#125;&#125; is
-								confirmed."
-							</span>
-							<span class="tc-punct">&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[11]}</pre>
 					</div>
 				</section>
 
@@ -920,29 +730,7 @@ import Base from "../layouts/Base.astro";
 					<div class="tpl-body">
 						<p>Send by slug (preferred) or by id:</p>
 
-						<div class="tpl-code">
-							<span class="tc-cmd">POST https://your-emailflare.com/v1/send</span>
-							<span class="tc-key">Authorization</span>
-							<span class="tc-punct">:</span> <span class="tc-str">Bearer eflive_xxx</span>
-							<span class="tc-punct">&#123;</span>
-							<span class="tc-key">"from"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"hello@yourdomain.com"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"to"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"alex@example.com"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"templateSlug"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"order-confirmation"</span>
-							<span class="tc-punct">,</span>
-							<span class="tc-key">"variables"</span>
-							<span class="tc-punct">:</span> <span class="tc-punct">&#123;</span>{" "}
-							<span class="tc-key">"name"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"Alex"</span>
-							<span class="tc-punct">,</span> <span class="tc-key">"orderId"</span>
-							<span class="tc-punct">:</span> <span class="tc-str">"ORD-1042"</span>{" "}
-							<span class="tc-punct">&#125;</span>
-							<span class="tc-punct">&#125;</span>
-						</div>
+						<pre class="tpl-code">{samples[12]}</pre>
 
 						<ul>
 							<li>
