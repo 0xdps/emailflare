@@ -14,6 +14,7 @@ interface ThreadListProps {
 	filter: "all" | "unread";
 	onFilterChange: (val: "all" | "unread") => void;
 	loading: boolean;
+	hasMailbox: boolean;
 	className?: string;
 }
 
@@ -50,6 +51,7 @@ export default function ThreadList({
 	filter,
 	onFilterChange,
 	loading,
+	hasMailbox,
 	className,
 }: ThreadListProps) {
 	const filtered = threads.filter((t) => {
@@ -118,14 +120,30 @@ export default function ThreadList({
 				) : filtered.length === 0 ? (
 					<div className="flex flex-col items-center justify-center h-64 px-4 text-center">
 						<Mail size={32} strokeWidth={1.5} className="text-muted-foreground/40 mb-2" />
-						<p className="text-xs font-medium text-foreground">No threads found</p>
+						<p className="text-xs font-medium text-foreground">
+							{search
+								? "No matching conversations"
+								: !hasMailbox
+									? "No mailbox yet"
+									: "No conversations yet"}
+						</p>
 						<p className="text-[11px] text-muted-foreground mt-0.5">
 							{search
-								? "Try adjusting your search query"
+								? "Try a different name or subject."
 								: filter === "unread"
-									? "You have read all messages"
-									: "Incoming email threads will appear here"}
+									? "Everything here is read."
+									: !hasMailbox
+										? "Create a mailbox before mail can arrive."
+										: "Mail sent to this mailbox will show up here."}
 						</p>
+						{!search && !hasMailbox && (
+							<a
+								href="/inbox/settings"
+								className="mt-3 text-xs font-medium text-orange-700 hover:underline"
+							>
+								Create a mailbox
+							</a>
+						)}
 					</div>
 				) : (
 					filtered.map((thread) => {

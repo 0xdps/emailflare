@@ -53,6 +53,15 @@ dashboard-migrate:
 
 alias migrate := dashboard-migrate
 
+# Delete the local Miniflare database, apply migrations, and start the dashboard
+dashboard-fresh:
+    rm -rf apps/dashboard/.wrangler
+    test -f apps/dashboard/.dev.vars || cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars
+    just dashboard-migrate
+    just dashboard-dev
+
+alias fresh := dashboard-fresh
+
 # Apply D1 migrations to the remote production database
 dashboard-migrate-remote:
     pnpm --filter @emailflare/dashboard migrations:apply

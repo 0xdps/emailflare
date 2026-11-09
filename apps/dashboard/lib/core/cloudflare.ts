@@ -166,6 +166,53 @@ export async function getSubdomainDnsRecords(
 	return cfFetch<CFDnsRecord[]>(`/zones/${zoneId}/email/sending/subdomains/${subdomainId}/dns`, cfApiToken);
 }
 
+export interface DnsWriteResult {
+	written: CFDnsRecord[];
+	failed: Array<CFDnsRecord & { error: string }>;
+}
+
+/**
+ * Write Email Sending DNS records into the zone. Existing identical records are
+ * treated as success. A failed write is returned, never thrown, so the caller
+ * can show the records instead of claiming they were published.
+ */
+export async function upsertDnsRecords(
+	zoneId: string,
+	records: CFDnsRecord[],
+	cfApiToken: string,
+): Promise<DnsWriteResult> {
+	const written: CFDnsRecord[] = [];
+	const failed: Array<CFDnsRecord & { error: string }> = [];
+
+	for (const record of records) {
+		try {
+			await cfFetch(`/zones/${zoneId}/dns_records`, cfApiToken, {
+				method: "POST",
+				body: JSON.stringify({
+					type: record.type,
+					name: record.name,
+					content: record.content,
+					ttl: record.ttl || 1,
+					...(record.priority != null ? { priority: record.priority } : {}),
+				}),
+			});
+			written.push(record);
+		} catch (err) {
+			const message = err instanceof Error ? err.message : "DNS write failed";
+			const alreadyExists =
+				err instanceof CloudflareApiError &&
+				(err.code === 81057 || err.code === 81058 || /already exists/i.test(message));
+			if (alreadyExists) {
+				written.push(record);
+			} else {
+				failed.push({ ...record, error: message });
+			}
+		}
+	}
+
+	return { written, failed };
+}
+
 // ── Email Routing (inbound) ──────────────────────────────────────────────────
 
 export interface CFEmailRoutingCatchAll {

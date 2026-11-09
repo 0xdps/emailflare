@@ -253,9 +253,9 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 							Mailboxes & Routing
 						</span>
 					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Inboxes & Cloudflare Routing</h1>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">Mailboxes</h1>
 					<p className="text-xs text-muted-foreground mt-0.5">
-						Configure shared receiving addresses, catch-all routing rules, and assign team members.
+						Addresses that receive mail, and the people who can open them.
 					</p>
 				</div>
 				<Button
@@ -303,9 +303,9 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 				) : (
 					<div className="flex flex-col items-center gap-3 py-20 text-muted-foreground">
 						<Inbox size={36} className="opacity-20" />
-						<p className="text-sm">No inboxes configured yet</p>
+						<p className="text-sm">No mailboxes yet</p>
 						<Button size="sm" variant="outline" onClick={openCreate}>
-							Create your first inbox
+							Create a mailbox
 						</Button>
 					</div>
 				)

@@ -54,17 +54,34 @@ export interface DnsRecord {
 	required: boolean;
 }
 
-export interface DomainsPageProps {
-	initialDomains?: Domain[];
+export interface CatalogZone {
+	zoneName: string;
+	enabled: boolean;
+	domainId: string | null;
+	sendingName: string | null;
+	sending: "ready" | "pending" | "off";
+	routing: "ready" | "pending" | "unknown";
+	dns: "written" | "manual" | "unknown";
 }
 
-export default function DomainsPage({ initialDomains }: DomainsPageProps = {}) {
+export interface DomainsPageProps {
+	initialDomains?: Domain[];
+	initialCatalog?: CatalogZone[];
+	catalogError?: string | null;
+}
+
+export default function DomainsPage({ initialDomains, initialCatalog, catalogError }: DomainsPageProps = {}) {
 	const [domains, setDomains] = useState<Domain[]>(initialDomains ?? []);
+	const [catalog, setCatalog] = useState<CatalogZone[]>(initialCatalog ?? []);
+	const [catalogNote, setCatalogNote] = useState<string | null>(catalogError ?? null);
 	const [loading, setLoading] = useState(!initialDomains);
-	const [creating, setCreating] = useState(false);
-	const [form, setForm] = useState({ name: "" });
+	const [manual, setManual] = useState(false);
+	const [form, setForm] = useState({ name: "", zoneName: "" });
+	const [sendingChoice, setSendingChoice] = useState<CatalogZone | null>(null);
+	const [sendingName, setSendingName] = useState("");
 	const [formError, setFormError] = useState<string | null>(null);
-	const [submitting, setSubmitting] = useState(false);
+	const [submitting, setSubmitting] = useState<string | null>(null);
+	const [manualRecords, setManualRecords] = useState<DnsRecord[] | null>(null);
 	const [verifying, setVerifying] = useState<string | null>(null);
 	const [dnsModal, setDnsModal] = useState<{ domain: Domain; records: DnsRecord[] } | null>(null);
 	const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -88,21 +105,34 @@ export default function DomainsPage({ initialDomains }: DomainsPageProps = {}) {
 		}
 	}, [initialDomains]);
 
-	async function handleCreate(e: React.FormEvent) {
-		e.preventDefault();
+	async function enable(name: string, zoneName: string) {
 		setFormError(null);
-		setSubmitting(true);
+		setSubmitting(zoneName);
+		setManualRecords(null);
 		try {
-			await createDomainAction({ name: form.name });
-			setForm({ name: "" });
-			setCreating(false);
-			load();
+			const result = await createDomainAction({ name, zoneName });
+			setSendingChoice(null);
+			setManual(false);
+			setForm({ name: "", zoneName: "" });
+			if (result.dns.status === "manual" && result.dns.records.length > 0) {
+				setManualRecords(result.dns.records.map((record) => ({ ...record, required: true })));
+			}
+			await load();
 		} catch (err: unknown) {
-			const msg = err instanceof Error ? err.message : "Failed to create domain";
-			setFormError(msg);
+			setFormError(err instanceof Error ? err.message : "Failed to enable domain");
 		} finally {
-			setSubmitting(false);
+			setSubmitting(null);
 		}
+	}
+
+	function startEnable(zone: CatalogZone) {
+		setFormError(null);
+		if (zone.sendingName && zone.sending !== "off") {
+			void enable(zone.sendingName, zone.zoneName);
+			return;
+		}
+		setSendingName(`mail.${zone.zoneName}`);
+		setSendingChoice(zone);
 	}
 
 	async function handleVerify(domain: Domain) {
@@ -118,8 +148,8 @@ export default function DomainsPage({ initialDomains }: DomainsPageProps = {}) {
 	}
 
 	async function handleDns(domain: Domain) {
-		const { data } = await api.get<{ records: DnsRecord[] }>(`/api/domains/${domain.id}/dns`);
-		setDnsModal({ domain, records: data.records });
+		const { data } = await api.get<DnsRecord[]>(`/api/domains/${domain.id}/dns`);
+		setDnsModal({ domain, records: data });
 	}
 
 	async function confirmDelete() {
@@ -158,51 +188,40 @@ export default function DomainsPage({ initialDomains }: DomainsPageProps = {}) {
 				</DialogContent>
 			</Dialog>
 
-			{/* Create Domain Dialog */}
-			<Dialog open={creating} onOpenChange={(open) => !open && setCreating(false)}>
+			<Dialog open={!!sendingChoice} onOpenChange={(open) => !open && setSendingChoice(null)}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle className="text-base font-semibold">Add Sending Domain</DialogTitle>
+						<DialogTitle className="text-base font-semibold">Choose the sending name</DialogTitle>
 						<DialogDescription className="text-xs">
-							Configure a root domain or subdomain for outbound transactional delivery.
+							{sendingChoice?.zoneName} has no Email Sending subdomain yet. Use the root, or a subdomain
+							such as mail.
 						</DialogDescription>
 					</DialogHeader>
-
 					{formError && (
 						<Alert variant="destructive" className="py-2 text-xs">
-							<AlertCircle size={14} className="mr-1.5" />
 							<AlertDescription>{formError}</AlertDescription>
 						</Alert>
 					)}
-
-					<form onSubmit={handleCreate} className="space-y-4 pt-2">
-						<div className="space-y-1.5">
-							<Label className="text-xs">Domain Name</Label>
-							<Input
-								value={form.name}
-								onChange={(e) => setForm({ name: e.target.value.toLowerCase().trim() })}
-								placeholder="e.g. mail.acme.com or acme.com"
-								className="h-8.5 text-xs font-mono"
-								required
-							/>
-							<p className="text-[11px] text-muted-foreground">
-								Using a dedicated subdomain (e.g. <code className="font-mono">mail.domain.com</code>) is
-								recommended to protect your primary domain reputation.
-							</p>
-						</div>
-
-						<DialogFooter className="pt-2">
-							<Button
-								type="button"
-								variant="ghost"
-								onClick={() => setCreating(false)}
-								className="h-8 text-xs"
-							>
+					<form
+						className="space-y-3"
+						onSubmit={(e) => {
+							e.preventDefault();
+							if (sendingChoice) void enable(sendingName, sendingChoice.zoneName);
+						}}
+					>
+						<Label className="text-xs">Sending domain</Label>
+						<Input
+							value={sendingName}
+							onChange={(e) => setSendingName(e.target.value.toLowerCase().trim())}
+							className="font-mono text-xs"
+							required
+						/>
+						<DialogFooter>
+							<Button type="button" variant="ghost" onClick={() => setSendingChoice(null)}>
 								Cancel
 							</Button>
-							<Button type="submit" disabled={submitting} className="h-8 text-xs gap-1.5">
-								{submitting && <Loader2 size={13} className="animate-spin" />}
-								<span>{submitting ? "Adding..." : "Add Domain"}</span>
+							<Button type="submit" disabled={!!submitting}>
+								Enable
 							</Button>
 						</DialogFooter>
 					</form>
@@ -220,14 +239,104 @@ export default function DomainsPage({ initialDomains }: DomainsPageProps = {}) {
 					</div>
 					<h1 className="text-2xl font-bold tracking-tight text-foreground">Domains</h1>
 					<p className="text-xs text-muted-foreground mt-0.5">
-						Authenticate sending domains with SPF, DKIM, and Cloudflare Email Routing records.
+						Turn on a Cloudflare zone. Sending and receiving are set up separately.
 					</p>
 				</div>
-				<Button onClick={() => setCreating(true)} className="gap-1.5 text-xs h-8.5 shadow-xs">
+				<Button variant="outline" onClick={() => setManual((open) => !open)} className="gap-1.5 text-xs h-8.5">
 					<Plus size={14} />
-					<span>Add Domain</span>
+					<span>Domain not listed?</span>
 				</Button>
 			</div>
+
+			{catalogNote && (
+				<Alert variant="destructive">
+					<AlertDescription>{catalogNote}</AlertDescription>
+				</Alert>
+			)}
+
+			<div className="rounded-xl border border-border bg-card overflow-hidden">
+				<div className="px-5 py-3.5 border-b border-border bg-muted/20">
+					<span className="text-xs font-semibold">Cloudflare zones</span>
+				</div>
+				{catalog.length === 0 ? (
+					<p className="p-5 text-xs text-muted-foreground">No active zones were returned for this token.</p>
+				) : (
+					<div className="divide-y divide-border">
+						{catalog.map((zone) => (
+							<div key={zone.zoneName} className="p-4 flex items-center justify-between gap-3">
+								<div>
+									<p className="text-sm font-mono font-semibold">{zone.zoneName}</p>
+									<p className="text-[11px] text-muted-foreground">
+										{zone.sending === "ready"
+											? "Ready to send"
+											: zone.sending === "pending"
+												? "Sending needs DNS"
+												: "Sending off"}
+										{" · "}
+										{zone.routing === "ready"
+											? "Ready to receive"
+											: zone.routing === "pending"
+												? "Receiving needs setup"
+												: "Receiving unknown"}
+										{zone.sendingName ? ` · ${zone.sendingName}` : ""}
+									</p>
+								</div>
+								{zone.enabled ? (
+									<Badge variant="outline">Enabled</Badge>
+								) : (
+									<Button
+										size="sm"
+										disabled={submitting === zone.zoneName}
+										onClick={() => startEnable(zone)}
+									>
+										{submitting === zone.zoneName && <Loader2 size={13} className="animate-spin" />}
+										Enable
+									</Button>
+								)}
+							</div>
+						))}
+					</div>
+				)}
+			</div>
+
+			{manual && (
+				<form
+					className="rounded-xl border border-border p-4 space-y-3"
+					onSubmit={(e) => {
+						e.preventDefault();
+						void enable(form.name, form.zoneName || form.name);
+					}}
+				>
+					<p className="text-xs text-muted-foreground">Only if the zone is missing from the list above.</p>
+					<Input
+						value={form.zoneName}
+						onChange={(e) => setForm({ ...form, zoneName: e.target.value.toLowerCase().trim() })}
+						placeholder="Zone name, e.g. acme.com"
+						className="font-mono text-xs"
+						required
+					/>
+					<Input
+						value={form.name}
+						onChange={(e) => setForm({ ...form, name: e.target.value.toLowerCase().trim() })}
+						placeholder="Sending name, e.g. mail.acme.com"
+						className="font-mono text-xs"
+						required
+					/>
+					{formError && <p className="text-xs text-destructive">{formError}</p>}
+					<Button type="submit" disabled={!!submitting}>
+						Enable this name
+					</Button>
+				</form>
+			)}
+
+			{manualRecords && (
+				<Alert>
+					<AlertDescription>
+						DNS was not written. Add these records in Cloudflare, then verify:{" "}
+						{manualRecords.map((record) => `${record.type} ${record.name}`).join(", ")}
+					</AlertDescription>
+				</Alert>
+			)}
 
 			{/* Domains Card */}
 			<div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -341,7 +450,7 @@ export default function DomainsPage({ initialDomains }: DomainsPageProps = {}) {
 					<DialogHeader>
 						<DialogTitle className="text-base font-semibold">DNS Configuration Records</DialogTitle>
 						<DialogDescription className="text-xs">
-							Add these DNS records to your DNS provider (Cloudflare, Route53, Namecheap, etc.) for{" "}
+							These records were not written automatically. Add them in Cloudflare DNS for{" "}
 							<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
 						</DialogDescription>
 					</DialogHeader>

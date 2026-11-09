@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Layout from "@/components/Layout";
 import DomainsPage from "@/components/pages/Domains";
-import { getDomainsList, getServerSession } from "@/lib/server/queries";
+import { getDomainCatalog, getDomainsList, getServerSession } from "@/lib/server/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +15,15 @@ export default async function RoutePage() {
 		redirect("/inbox");
 	}
 
-	const initialDomains = await getDomainsList();
+	const [initialDomains, catalog] = await Promise.all([getDomainsList(), getDomainCatalog()]);
 
 	return (
 		<Layout>
-			<DomainsPage initialDomains={initialDomains as any} />
+			<DomainsPage
+				initialDomains={initialDomains as any}
+				initialCatalog={catalog.zones}
+				catalogError={catalog.error}
+			/>
 		</Layout>
 	);
 }

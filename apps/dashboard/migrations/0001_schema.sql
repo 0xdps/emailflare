@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS domains (
   dkim_selector      TEXT,
   return_path_domain TEXT,
   verified           INTEGER NOT NULL DEFAULT 0,
+  dns_status         TEXT NOT NULL DEFAULT 'unknown'
+                      CHECK (dns_status IN ('written', 'manual', 'unknown')),
+  routing_status     TEXT NOT NULL DEFAULT 'unknown'
+                      CHECK (routing_status IN ('ready', 'pending', 'unknown')),
   created_at         TEXT NOT NULL
 );
 

@@ -258,6 +258,7 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 							filter={filter}
 							onFilterChange={setFilter}
 							loading={loadingThreads}
+							hasMailbox={inboxes.length > 0}
 							className={cn("w-full md:w-[320px] shrink-0", selectedThreadId ? "hidden md:flex" : "flex")}
 						/>
 

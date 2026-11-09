@@ -248,7 +248,7 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 							Credentials & Auth
 						</span>
 					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">API Keys</h1>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">API keys</h1>
 					<p className="text-xs text-muted-foreground mt-0.5">
 						Authenticate transactional HTTP requests to{" "}
 						<code className="text-foreground font-mono">POST /v1/send</code>.

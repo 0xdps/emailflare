@@ -70,8 +70,8 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 			items.push(
 				{
 					id: "inbox-all",
-					title: "All Inboxes",
-					subtitle: "View conversations across all mailboxes",
+					title: "Inbox",
+					subtitle: "Conversations across your mailboxes",
 					category: "Inbox",
 					icon: Mail,
 					href: "/inbox",
@@ -80,8 +80,8 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 				},
 				{
 					id: "inbox-contacts",
-					title: "Contacts & Leads",
-					subtitle: "Manage CRM people and counterparties",
+					title: "Contacts",
+					subtitle: "People you have emailed with",
 					category: "Inbox",
 					icon: Users,
 					href: "/inbox/people",
@@ -89,8 +89,8 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 				},
 				{
 					id: "inbox-sequences",
-					title: "Email Sequences",
-					subtitle: "Automated outbound campaign sequences",
+					title: "Sequences",
+					subtitle: "Follow-up emails sent on a schedule",
 					category: "Inbox",
 					icon: ListOrdered,
 					href: "/inbox/sequences",
@@ -180,9 +180,18 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 		if (isAdmin) {
 			items.push(
 				{
+					id: "admin-home",
+					title: "Workspace",
+					subtitle: "Domains, mailboxes, team, and API keys",
+					category: "Administration",
+					icon: Settings,
+					href: "/settings",
+					keywords: ["admin", "home", "setup", "workspace"],
+				},
+				{
 					id: "admin-users",
-					title: "Team Users & Permissions",
-					subtitle: "Manage organization members and RBAC dimensions",
+					title: "Team",
+					subtitle: "Invite people and set what they can open",
 					category: "Administration",
 					icon: Users,
 					href: "/settings/users",
@@ -191,8 +200,8 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 				},
 				{
 					id: "admin-inboxes",
-					title: "Mailboxes & Cloudflare Routing",
-					subtitle: "Configure addresses, member assignments and catch-all",
+					title: "Mailboxes",
+					subtitle: "Addresses that receive mail, and who can open them",
 					category: "Administration",
 					icon: Inbox,
 					href: "/inbox/settings",
@@ -200,8 +209,8 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 				},
 				{
 					id: "admin-domains",
-					title: "Domains & DNS Verification",
-					subtitle: "Configure DKIM, SPF, DMARC and custom sending domains",
+					title: "Domains",
+					subtitle: "Enable a Cloudflare zone for sending and receiving",
 					category: "Administration",
 					icon: Globe,
 					href: "/domains",
@@ -209,7 +218,7 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 				},
 				{
 					id: "admin-keys",
-					title: "API Keys",
+					title: "API keys",
 					subtitle: "Manage live and test API secret credentials",
 					category: "Administration",
 					icon: Key,

@@ -213,9 +213,9 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 							Access Control
 						</span>
 					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Team Users & Permissions</h1>
+					<h1 className="text-2xl font-bold tracking-tight text-foreground">Team</h1>
 					<p className="text-xs text-muted-foreground mt-0.5">
-						Manage administrative authority and additive capabilities for organization members.
+						Invite people and choose whether they can use the inbox, API, or test mailbox.
 					</p>
 				</div>
 				<Button onClick={() => setInviteOpen(true)} className="gap-1.5 text-xs h-8.5 shadow-xs">

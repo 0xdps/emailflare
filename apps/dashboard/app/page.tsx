@@ -21,7 +21,7 @@ export default async function RootPage() {
 
 	const hasTester = session.accessTypes.includes("tester");
 	if (hasTester) {
-		redirect("/test-emails");
+		redirect("/inbox?folder=test");
 	}
 
 	redirect("/login");

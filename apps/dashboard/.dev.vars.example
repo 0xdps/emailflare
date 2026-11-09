@@ -1,8 +1,28 @@
-# Local secrets for `pnpm --filter @emailflare/dashboard dev`.
+# Local Worker config for `just dev`.
 # Copy to apps/dashboard/.dev.vars. Never commit real values.
+#
+# Bindings (DB, RATE_LIMIT_KV, ATTACHMENTS, NOTIFICATIONS, EMAIL_QUEUE,
+# RATE_LIMITER, ASSETS) come from wrangler.jsonc. Miniflare creates them.
+# Apply the local schema with `just migrate`.
 
-# Secrets prompted by Deploy to Cloudflare. Generate SESSION_SECRET with:
-#   openssl rand -hex 32
-SESSION_SECRET=change-me
+# Required for login, setup, and invites.
+# Generate with: openssl rand -hex 32
+SESSION_SECRET=
+
+# Cloudflare API token used to list zones, enable sending, write DNS,
+# and point Email Routing at this Worker.
+# Required scopes: Zone Read, DNS Write, Email Sending, Email Routing.
+# Leave empty to use the inbox without domain setup.
 CF_API_TOKEN=
+
+# Account that owns the token. Dashboard → Workers & Pages → Account ID.
+# Required for token status, sending, and the API playground.
 CF_ACCOUNT_ID=
+
+# Origin used in invite and unsubscribe links.
+# Use the local dev origin, not the production workers.dev URL.
+PUBLIC_URL=http://localhost:5173
+
+# Worker name written into the zone catch-all rule.
+# Local mail is not delivered here. This only matters when enabling a real zone.
+INBOX_WORKER_NAME=emailflare

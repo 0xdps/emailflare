@@ -19,6 +19,10 @@ function isApiRequest(request: Request): boolean {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		const { pathname } = new URL(request.url);
+		if (pathname === "/favicon.ico") {
+			return fetch(new URL("/favicon.svg", request.url), request);
+		}
 		if (isApiRequest(request)) {
 			return api.fetch(request, env, ctx);
 		}

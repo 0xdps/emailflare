@@ -35,6 +35,8 @@ export interface DomainRow {
 	dkim_selector: string | null;
 	return_path_domain: string | null;
 	verified: number; // 0 | 1
+	dns_status?: "written" | "manual" | "unknown";
+	routing_status?: "ready" | "pending" | "unknown";
 	created_at: string;
 }
 
@@ -152,10 +154,10 @@ export const sendSchema = z
 
 export type SendInput = z.infer<typeof sendSchema>;
 
-/** POST /api/domains — create a sending domain. */
+/** POST /api/domains — create a sending domain. Zone ID is resolved server-side. */
 export const domainCreateSchema = z.object({
 	name: z.string().min(3),
-	cfZoneId: z.string().optional(),
+	zoneName: z.string().min(3).optional(),
 });
 
 export type DomainCreateInput = z.infer<typeof domainCreateSchema>;

@@ -460,6 +460,9 @@ export default function People({
 			<div className="flex flex-1 overflow-hidden">
 				{/* ── Left: contact list ── */}
 				<div className="w-[272px] shrink-0 flex flex-col border-r border-border h-full">
+					<div className="px-3 pt-3">
+						<h1 className="text-sm font-semibold tracking-tight">Contacts</h1>
+					</div>
 					{/* Compose (global) */}
 					<div className="px-3 pt-3 shrink-0">
 						<button

@@ -4,7 +4,12 @@ import { getServerSession } from "@/app/actions/auth";
 import { makeDb, D1Db } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
 import { enrich } from "@/lib/core";
-import { getCloudflareTokenStatus as fetchCfStatus } from "@/worker/inbox/services/cloudflare";
+import {
+	getCloudflareTokenStatus as fetchCfStatus,
+	listAllZones,
+	listSendingSubdomains,
+	getCatchAllRule,
+} from "@/worker/inbox/services/cloudflare";
 import type { Env } from "@/worker/inbox/env";
 
 const CF_DAILY_LIMIT = 1000;
@@ -291,6 +296,84 @@ export async function getDomainsList() {
 	if (!workerEnv?.DB) return [];
 	const { domains } = makeDb(workerEnv.DB);
 	return await domains.find({ orderBy: [{ column: "created_at", direction: "desc" }] });
+}
+
+export interface DomainCatalogEntry {
+	zoneName: string;
+	enabled: boolean;
+	domainId: string | null;
+	sendingName: string | null;
+	sending: "ready" | "pending" | "off";
+	routing: "ready" | "pending" | "unknown";
+	dns: "written" | "manual" | "unknown";
+}
+
+export async function getDomainCatalog(): Promise<{
+	zones: DomainCatalogEntry[];
+	truncated: boolean;
+	error: string | null;
+}> {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.CF_API_TOKEN || !workerEnv.DB) {
+		return { zones: [], truncated: false, error: "CF_API_TOKEN is not configured." };
+	}
+	try {
+		const zones = await listAllZones(workerEnv.CF_API_TOKEN);
+		const capped = zones.slice(0, 25);
+		const { domains } = makeDb(workerEnv.DB);
+		const stored = await domains.find();
+		const entries = await Promise.all(
+			capped.map(async (zone) => {
+				const row = stored.find(
+					(domain) =>
+						domain.cf_zone_id === zone.id ||
+						domain.name === zone.name ||
+						domain.name.endsWith(`.${zone.name}`),
+				);
+				let sending: DomainCatalogEntry["sending"] = row?.verified ? "ready" : "off";
+				let sendingName = row?.name ?? null;
+				let routing: DomainCatalogEntry["routing"] =
+					row?.routing_status === "ready" || row?.routing_status === "pending"
+						? row.routing_status
+						: "unknown";
+				try {
+					const subs = await listSendingSubdomains(zone.id, workerEnv.CF_API_TOKEN);
+					const match =
+						subs.find((sub) => sub.name === row?.name) ?? subs.find((sub) => sub.enabled) ?? subs[0];
+					sending = match ? (match.enabled ? "ready" : "pending") : "off";
+					sendingName = match?.name ?? sendingName;
+				} catch {
+					/* keep stored state */
+				}
+				try {
+					const rule = await getCatchAllRule(zone.id, workerEnv.CF_API_TOKEN);
+					const worker = rule.actions?.find((action) => action.type === "worker");
+					routing =
+						rule.enabled && worker?.value?.includes(workerEnv.INBOX_WORKER_NAME) ? "ready" : "pending";
+				} catch {
+					/* keep stored state */
+				}
+				return {
+					zoneName: zone.name,
+					enabled: !!row,
+					domainId: row?.id ?? null,
+					sendingName,
+					sending,
+					routing,
+					dns: (row?.dns_status === "written" || row?.dns_status === "manual"
+						? row.dns_status
+						: "unknown") as DomainCatalogEntry["dns"],
+				};
+			}),
+		);
+		return { zones: entries, truncated: zones.length > capped.length, error: null };
+	} catch (error) {
+		return {
+			zones: [],
+			truncated: false,
+			error: error instanceof Error ? error.message : "Could not list Cloudflare zones.",
+		};
+	}
 }
 
 export async function getUsersList() {

@@ -124,7 +124,7 @@ function DashboardNavLinks({
 					{canAccessInbox && (
 						<>
 							<NavSection label="Mailboxes" />
-							<NavItem to="/inbox" icon={Mail} label="All Inboxes" exact onClick={onItemClick} />
+							<NavItem to="/inbox" icon={Mail} label="Inbox" exact onClick={onItemClick} />
 						</>
 					)}
 
@@ -176,10 +176,11 @@ function DashboardNavLinks({
 			{activeDashboard === "admin" && (
 				<>
 					<NavSection label="Administration" />
-					<NavItem to="/settings/users" icon={Users} label="Team Users" onClick={onItemClick} />
-					<NavItem to="/inbox/settings" icon={Inbox} label="Mailboxes & Routing" onClick={onItemClick} />
-					<NavItem to="/domains" icon={Globe} label="Domains & DNS" onClick={onItemClick} />
-					<NavItem to="/keys" icon={Key} label="API Keys" onClick={onItemClick} />
+					<NavItem to="/settings" icon={Settings} label="Workspace" exact onClick={onItemClick} />
+					<NavItem to="/domains" icon={Globe} label="Domains" onClick={onItemClick} />
+					<NavItem to="/inbox/settings" icon={Inbox} label="Mailboxes" onClick={onItemClick} />
+					<NavItem to="/settings/users" icon={Users} label="Team" onClick={onItemClick} />
+					<NavItem to="/keys" icon={Key} label="API keys" onClick={onItemClick} />
 				</>
 			)}
 		</>
@@ -203,14 +204,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 		pathname === "/inbox/settings" ||
 		pathname.startsWith("/domains") ||
 		pathname.startsWith("/keys");
-	const isApiPath =
-		pathname.startsWith("/developer") ||
-		pathname.startsWith("/overview") ||
-		pathname.startsWith("/logs") ||
-		pathname.startsWith("/templates") ||
-		pathname.startsWith("/playground") ||
-		pathname.startsWith("/lists") ||
-		pathname.startsWith("/suppressions");
+	const isApiPath = pathname.startsWith("/developer");
 
 	const activeDashboard: "inbox" | "api" | "admin" = isAdminPath ? "admin" : isApiPath ? "api" : "inbox";
 
@@ -313,7 +307,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 								{/* 1. Inbox Dashboard */}
 								{(canAccessInbox || canAccessTester) && (
 									<Link
-										href={canAccessInbox ? "/inbox" : "/test-emails"}
+										href={canAccessInbox ? "/inbox" : "/inbox?folder=test"}
 										className={cn(
 											"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
 											activeDashboard === "inbox"
@@ -345,7 +339,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 								{/* 3. Admin Dashboard (Available only to admins) */}
 								{isAdmin && (
 									<Link
-										href="/settings/users"
+										href="/settings"
 										className={cn(
 											"flex items-center gap-1.5 px-3 py-1 rounded-md text-[12px] font-medium transition-all select-none",
 											activeDashboard === "admin"
@@ -485,7 +479,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 								<>
 									{(canAccessInbox || canAccessTester) && (
 										<Link
-											href={canAccessInbox ? "/inbox" : "/test-emails"}
+											href={canAccessInbox ? "/inbox" : "/inbox?folder=test"}
 											onClick={() => setMobileMenuOpen(false)}
 											className={cn(
 												"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",
@@ -517,7 +511,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 									{isAdmin && (
 										<Link
-											href="/settings/users"
+											href="/settings"
 											onClick={() => setMobileMenuOpen(false)}
 											className={cn(
 												"flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors",

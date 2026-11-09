@@ -437,7 +437,7 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 				</div>
 				<div className="flex items-center gap-2 shrink-0 flex-wrap">
 					<Link
-						href="/playground"
+						href="/developer/playground"
 						className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition-colors"
 					>
 						<FlaskConical size={13} className="text-purple-600 dark:text-purple-400" />
@@ -448,7 +448,7 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 						className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition-colors"
 					>
 						<Key size={13} className="text-orange-500" />
-						<span>API Keys</span>
+						<span>API keys</span>
 					</Link>
 					<Link
 						href="/developer/logs"

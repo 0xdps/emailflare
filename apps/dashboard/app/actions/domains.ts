@@ -7,42 +7,58 @@ import {
 	CloudflareApiError,
 	createSendingSubdomain,
 	listSendingSubdomains,
+	listAllZones,
+	getSubdomainDnsRecords,
 	getSendingSubdomain,
-	getZoneByHostname,
+	upsertDnsRecords,
+	enableEmailRouting,
+	setCatchAllToWorker,
+	type CFDnsRecord,
+	type CFZone,
 } from "@/worker/inbox/services/cloudflare";
 import { requireAdmin } from "./auth";
 import type { Env } from "@/worker/inbox/env";
 
-export async function createDomainAction(input: { name: string; cfZoneId?: string }) {
+async function resolveZone(name: string, zoneName: string | undefined, token: string): Promise<CFZone | null> {
+	const zones = await listAllZones(token);
+	const host = name.toLowerCase();
+	const root = (zoneName ?? name).toLowerCase();
+	return (
+		zones.find(
+			(zone) =>
+				zone.name.toLowerCase() === root &&
+				(host === zone.name.toLowerCase() || host.endsWith(`.${zone.name.toLowerCase()}`)),
+		) ?? null
+	);
+}
+
+export async function createDomainAction(input: { name: string; zoneName?: string }) {
 	await requireAdmin();
-	const { name, cfZoneId } = domainCreateSchema.parse(input);
+	const { name, zoneName } = domainCreateSchema.parse(input);
 	const workerEnv = env as unknown as Env;
 	const { domains } = makeDb(workerEnv.DB);
 	const token = workerEnv.CF_API_TOKEN;
+	if (!token) throw new Error("CF_API_TOKEN is not configured.");
 
 	const existing = await domains.findOne({ where: { name } });
 	if (existing) throw new Error(`Domain "${name}" is already registered`);
 
-	let zoneId = cfZoneId;
-	if (!zoneId) {
-		const zone = await getZoneByHostname(name, token);
-		if (!zone) {
-			throw new Error(
-				`No active Cloudflare zone found for "${name}". Make sure the root domain is added to your Cloudflare account.`,
-			);
-		}
-		zoneId = zone.id;
+	const zone = await resolveZone(name, zoneName, token);
+	if (!zone) {
+		throw new Error(
+			`No active Cloudflare zone found for "${name}". Add the domain to this Cloudflare account, or use a name the token can read.`,
+		);
 	}
 
 	let cfResult;
 	try {
-		const allSubdomains = await listSendingSubdomains(zoneId, token);
-		cfResult = allSubdomains.find((s) => s.name === name) ?? (await createSendingSubdomain(zoneId, name, token));
+		const allSubdomains = await listSendingSubdomains(zone.id, token);
+		cfResult = allSubdomains.find((s) => s.name === name) ?? (await createSendingSubdomain(zone.id, name, token));
 	} catch (error) {
 		if (error instanceof CloudflareApiError) {
 			if (error.code === 10000 || error.code === 9109 || error.status === 401 || error.status === 403) {
 				throw new Error(
-					"Cloudflare token is missing permission for Email Sending Subdomains. Required: Account: Email Security Edit; Zone: Email Routing Rules Edit; Zone: Zone Read; Zone: DNS Read/Write.",
+					"Cloudflare token is missing a required permission. Enable needs Zone Read, DNS Write, Email Sending, and Email Routing.",
 				);
 			}
 			throw new Error(error.message);
@@ -50,18 +66,46 @@ export async function createDomainAction(input: { name: string; cfZoneId?: strin
 		throw error;
 	}
 
+	let dnsStatus: "written" | "manual" = "written";
+	let dnsRecords: CFDnsRecord[] = [];
+	try {
+		dnsRecords = await getSubdomainDnsRecords(zone.id, cfResult.tag, token);
+		if (dnsRecords.length > 0) {
+			const write = await upsertDnsRecords(zone.id, dnsRecords, token);
+			dnsStatus = write.failed.length === 0 ? "written" : "manual";
+		}
+	} catch (error) {
+		dnsStatus = "manual";
+		if (!(error instanceof CloudflareApiError)) throw error;
+	}
+
+	let routingStatus: "ready" | "pending" = "pending";
+	try {
+		await enableEmailRouting(zone.id, token);
+		await setCatchAllToWorker(zone.id, workerEnv.INBOX_WORKER_NAME, token);
+		routingStatus = "ready";
+	} catch {
+		routingStatus = "pending";
+	}
+
 	const row = await domains.insert({
 		id: generateId(),
 		name,
-		cf_zone_id: zoneId,
+		cf_zone_id: zone.id,
 		cf_subdomain_id: cfResult.tag,
 		dkim_selector: cfResult.dkim_selector ?? null,
 		return_path_domain: cfResult.return_path_domain ?? null,
 		verified: cfResult.enabled ? 1 : 0,
+		dns_status: dnsStatus,
+		routing_status: routingStatus,
 		created_at: new Date().toISOString(),
 	});
 
-	return row;
+	return {
+		...row,
+		dns: { status: dnsStatus, records: dnsStatus === "manual" ? dnsRecords : [] },
+		routing: routingStatus,
+	};
 }
 
 export async function verifyDomainAction(id: string): Promise<{ verified: boolean }> {
