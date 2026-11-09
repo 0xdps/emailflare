@@ -1,0 +1,49 @@
+apps/dashboard/worker/inbox/routes/inbox/compose.ts
+  s_c6414e19edded4::t_4ae1308ccf2f45 111
+apps/dashboard/lib/core/email.ts
+  s_c6414e19edded4::t_763d516954c190 531
+apps/dashboard/lib/UserContext.tsx
+  s_c6414e19edded4::t_e3f365c782b4e4 46-47,89-91
+apps/dashboard/lib/core/cloudflare.ts
+  s_c6414e19edded4::t_c092de79576213 358,373,378
+apps/dashboard/lib/api.ts
+  s_c6414e19edded4::t_195cf65ef18ce7 263
+apps/dashboard/components/modules/inbox/InboxClient.tsx
+  s_c6414e19edded4::t_37368489c13c22 178-184
+  s_c6414e19edded4::t_5df4dae5cb439a 57-66,68,71-77,360-366
+  s_c6414e19edded4::t_c0d9b032999e9a 78
+apps/dashboard/lib/core/inbox.ts
+  s_c6414e19edded4::t_92eccfefd5ae8b 229-238
+apps/dashboard/components/Layout.tsx
+  s_c6414e19edded4::t_d98b2a72dd9e5f 154-175,261-267
+  s_c6414e19edded4::t_ee9f1c8cf8ec7c 3,56-75,82,90
+  s_c6414e19edded4::t_27d029c4c6bbe4 21,28,248
+  s_c6414e19edded4::t_9f35eb5e97e116 5,95,97
+  s_c6414e19edded4::t_08ef7c3df8c546 93-94,96,596
+  s_c6414e19edded4::t_3abb18266b0323 137,144,486
+apps/dashboard/components/modules/inbox/ComposeModal.tsx
+  s_c6414e19edded4::t_87b877bb7e2dd4 4,17-24,27-35,39,45-47,72,77
+  s_c6414e19edded4::t_663237b8038512 100,181-182,187-236
+  s_c6414e19edded4::t_61f1bf80929142 237-238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fb21f679568e815d3ccb3c9616b67d43b54a0a84",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_c6414e19edded4": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "86c80093-d2ba-4db5-9a41-6b830758ee50",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
