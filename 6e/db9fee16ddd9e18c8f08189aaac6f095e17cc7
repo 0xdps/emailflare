@@ -1,0 +1,47 @@
+apps/dashboard/package.json
+  s_c6414e19edded4::t_3b8d4ee7112cf5 85
+.gitignore
+  s_c6414e19edded4::t_0b4dd3b62704a5 8
+apps/dashboard/app/actions/inboxes.ts
+  s_c6414e19edded4::t_4b9162786856fe 7,39,66
+apps/dashboard/wrangler.local.example.jsonc
+  s_c6414e19edded4::t_e21337bdc28082 1-4,7-10,13-52,54,56-58
+  s_c6414e19edded4::t_5089c9790680de 5-6,11-12,53,55
+apps/dashboard/worker/inbox/routes/domains.ts
+  s_c6414e19edded4::t_273bb8bd5c3918 19,115,207
+apps/dashboard/wrangler.jsonc
+  s_c6414e19edded4::t_769c783ff05991 87-89
+  s_c6414e19edded4::t_39571c77c14702 27-28
+apps/dashboard/worker/inbox/routes/inbox/inboxes.ts
+  s_c6414e19edded4::t_87c8645d10a661 17,86,113
+apps/dashboard/worker/inbox/env.ts
+  s_c6414e19edded4::t_281296822dc5c1 41,45-48
+  s_c6414e19edded4::t_901b161d962b1c 44,49
+docs/CLOUDFLARE.md
+  s_c6414e19edded4::t_bb0d103c114a0c 7
+  s_c6414e19edded4::t_b0e45415a15bc1 33,36,58-62,65-66
+apps/dashboard/.dev.vars.example
+  s_c6414e19edded4::t_b36b15fab43a4d 4
+  s_c6414e19edded4::t_e21337bdc28082 5-6,23,27
+apps/dashboard/app/actions/domains.ts
+  s_c6414e19edded4::t_1a68262c8351ab 20,85
+apps/dashboard/lib/server/queries.ts
+  s_c6414e19edded4::t_f6d6a771c33050 13
+  s_c6414e19edded4::t_ab2a5933974b7e 351
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6edb9fee16ddd9e18c8f08189aaac6f095e17cc7",
+  "prompts": {},
+  "sessions": {
+    "s_c6414e19edded4": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "86c80093-d2ba-4db5-9a41-6b830758ee50",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
