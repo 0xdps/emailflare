@@ -1,0 +1,30 @@
+apps/dashboard/worker/index.ts
+  s_c6414e19edded4::t_5d998612020e79 20-36,46-47
+apps/dashboard/worker/inbox/routes/auth.ts
+  s_c6414e19edded4::t_4afc545bbf528f 6
+apps/dashboard/components/pages/Login.tsx
+  s_c6414e19edded4::t_44e44654fb2415 3,6
+apps/dashboard/worker/inbox/routes/inbox/compose.ts
+  s_c6414e19edded4::t_52745284ff754c 60-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "78c2b354eab37fe52df83fd2429e6b50ade19a6d",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_c6414e19edded4": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "86c80093-d2ba-4db5-9a41-6b830758ee50",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
