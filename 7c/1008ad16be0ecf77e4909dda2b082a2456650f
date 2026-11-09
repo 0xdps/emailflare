@@ -1,0 +1,107 @@
+apps/dashboard/app/setup/ready/page.tsx
+  s_c6414e19edded4::t_320e65e50e0b7f 10
+  s_c6414e19edded4::t_0f72c6c1893fc2 1-9,11-12
+apps/dashboard/components/pages/Domains.tsx
+  s_c6414e19edded4::t_084e1581a82847 260-262
+  s_c6414e19edded4::t_76ee076416207c 57-66,69-70,73,75-76,78-81,83-84,108,110-111,113-117,119-120,122,124-132,134-135
+  s_c6414e19edded4::t_b252ccd2465d15 151-152
+  s_c6414e19edded4::t_b40dfa0221d920 118
+  s_c6414e19edded4::t_51fd8bbbbd4099 191,194,196-197,205-220,223-224,242,245,247,251-259,263-302,305,315-316,324-326
+  s_c6414e19edded4::t_4c00e9dab8de2b 303-304
+  s_c6414e19edded4::t_0bf8db6e587775 306-308,312-314
+  s_c6414e19edded4::t_8e6bd902eed98c 317-319,321-323
+  s_c6414e19edded4::t_6d8d91301da773 327-329
+apps/dashboard/components/CommandPalette.tsx
+  s_c6414e19edded4::t_ca4fc5660cf244 73-74,83-84,92-93,182-190,193-194,203-204
+  s_c6414e19edded4::t_837a3c1f681c61 212-213,221
+apps/dashboard/app/domains/page.tsx
+  s_c6414e19edded4::t_69073c13b78139 4,18,22
+  s_c6414e19edded4::t_d1f76ee1cabff0 23-25
+apps/dashboard/app/settings/page.tsx
+  s_c6414e19edded4::t_29c73828e548d5 1-31
+apps/dashboard/components/modules/inbox/InboxNav.tsx
+  s_c6414e19edded4::t_9cc335962024df 75
+apps/dashboard/components/pages/inbox/InboxSettings.tsx
+  s_c6414e19edded4::t_d8c9ea3cb4fa8d 256,258,306,308
+apps/dashboard/components/pages/inbox/People.tsx
+  s_c6414e19edded4::t_bc8cba7e4538f3 463-465
+apps/dashboard/components/Layout.tsx
+  s_c6414e19edded4::t_e881a0b8973b75 207
+  s_c6414e19edded4::t_a3885f7bbe8461 482
+  s_c6414e19edded4::t_4878a04a80eb05 127,179-183,342,514
+  s_c6414e19edded4::t_fa7b40618c92cb 310
+apps/dashboard/components/modules/inbox/InboxClient.tsx
+  s_c6414e19edded4::t_a5205dfea72b46 261
+apps/dashboard/components/pages/Dashboard.tsx
+  s_c6414e19edded4::t_9e5d090cf31c70 440,451
+apps/dashboard/worker/index.ts
+  s_c6414e19edded4::t_300ff7d4317388 22-25
+apps/dashboard/lib/core/cloudflare.ts
+  s_c6414e19edded4::t_34d7300784041b 169-215
+apps/dashboard/components/pages/Setup.tsx
+  s_c6414e19edded4::t_61f6fee503c022 49
+apps/dashboard/migrations/0001_schema.sql
+  s_c6414e19edded4::t_28ff0c98ea82cf 24-27
+apps/dashboard/components/pages/settings/AdminHome.tsx
+  s_c6414e19edded4::t_c463bb82061230 1-73
+  s_c6414e19edded4::t_0e0da7ee621745 74-76
+apps/dashboard/app/layout.tsx
+  s_c6414e19edded4::t_f57e98120d0fdf 8-10
+justfile
+  s_c6414e19edded4::t_3ce750b44fe4c8 56-64
+apps/dashboard/app/page.tsx
+  s_c6414e19edded4::t_86d898dc5acfc0 24
+apps/dashboard/components/pages/Readiness.tsx
+  s_c6414e19edded4::t_02f9f333de07c9 1-93,95,97-125,127-147,149-152
+  s_c6414e19edded4::t_4d1752294886f1 94,96,126
+  s_c6414e19edded4::t_b4a15e28db940f 148
+  s_c6414e19edded4::t_f28a8221d547a4 153-155
+apps/dashboard/components/pages/Keys.tsx
+  s_c6414e19edded4::t_147b81e270ef11 251
+apps/dashboard/lib/core/email.ts
+  s_c6414e19edded4::t_de0b4667c30cf1 38-39
+  s_c6414e19edded4::t_f6242a7faf1ab1 157,160
+apps/dashboard/components/modules/inbox/ThreadList.tsx
+  s_c6414e19edded4::t_168659d5d0c333 17,54,123-129,132,134-137,139
+  s_c6414e19edded4::t_4030b702304ca8 140-142
+apps/dashboard/app/actions/domains.ts
+  s_c6414e19edded4::t_66b15c0b749f45 10-11,13-17,22-35,37,41,46-50,55-56,61,69-90,94,99-100,104-108
+apps/dashboard/lib/server/queries.ts
+  s_c6414e19edded4::t_2062f8765eea6e 7-12,301-345,347-354,357
+  s_c6414e19edded4::t_29335010709655 346
+  s_c6414e19edded4::t_efbe00d1d9d7eb 355-356
+  s_c6414e19edded4::t_289fa2472ecc7f 358-360
+apps/dashboard/.dev.vars.example
+  s_c6414e19edded4::t_66da238b6b64cf 1,3-6,8-15,17-19,21-28
+apps/dashboard/worker/inbox/routes/domains.ts
+  s_c6414e19edded4::t_0273a2267e198c 8,11-17,24-125,129,132,136,140,212,216,227
+  s_c6414e19edded4::t_2c26104e206452 157-158,160,163,168-175,178,180-181,184-185,191-211
+  s_c6414e19edded4::t_61d6ac74b69d71 126-128
+  s_c6414e19edded4::t_2c093f88734c02 130-131
+  s_c6414e19edded4::t_e6248b04080dfa 133-135
+  s_c6414e19edded4::t_71951d2eef5009 137-139
+  s_c6414e19edded4::t_e6aa0730613499 141
+  s_c6414e19edded4::t_a1f4e78a7dbe51 226
+  s_c6414e19edded4::t_6f534a401b0562 228-230
+apps/dashboard/app/actions/setup.ts
+  s_c6414e19edded4::t_2cbc98f3e8210d 1-55
+  s_c6414e19edded4::t_474ce92aff3942 56-57
+apps/dashboard/components/pages/settings/Users.tsx
+  s_c6414e19edded4::t_4c5988953f72f3 216,218
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7c1008ad16be0ecf77e4909dda2b082a2456650f",
+  "prompts": {},
+  "sessions": {
+    "s_c6414e19edded4": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "86c80093-d2ba-4db5-9a41-6b830758ee50",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
