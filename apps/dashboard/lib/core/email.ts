@@ -528,6 +528,7 @@ export interface SendWithLogMessage {
 	text?: string;
 	replyTo?: string;
 	headers?: Record<string, string>;
+	attachments?: Array<{ content: string; filename: string; type: string; disposition: "attachment" }>;
 }
 
 export interface SendWithLogOptions {

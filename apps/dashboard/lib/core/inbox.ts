@@ -226,6 +226,16 @@ export const composeSchema = z.object({
 	inReplyTo: z.string().optional(),
 	references: z.string().optional(),
 	personId: z.string().optional(),
+	attachments: z
+		.array(
+			z.object({
+				filename: z.string().min(1).max(180),
+				content: z.string().min(1),
+				type: z.string().min(1).max(120),
+			}),
+		)
+		.max(10)
+		.optional(),
 });
 
 export type ComposeInput = z.infer<typeof composeSchema>;

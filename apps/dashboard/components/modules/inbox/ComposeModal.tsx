@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Send, Loader2, Sparkles, X, ChevronDown } from "lucide-react";
+import { Send, Loader2, Sparkles, X, ChevronDown, Paperclip } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,23 +14,37 @@ interface ComposeModalProps {
 	onOpenChange: (open: boolean) => void;
 	inboxes: InboxType[];
 	defaultTo?: string;
-	onSend: (payload: { from: string; to: string; subject: string; text: string }) => Promise<void>;
+	defaultFrom?: string;
+	onSend: (payload: {
+		from: string;
+		to: string;
+		subject: string;
+		text: string;
+		attachments?: Array<{ filename: string; content: string; type: string }>;
+	}) => Promise<void>;
 }
 
-export default function ComposeModal({ open, onOpenChange, inboxes, defaultTo = "", onSend }: ComposeModalProps) {
-	const [from, setFrom] = useState(inboxes[0]?.email || "");
+export default function ComposeModal({
+	open,
+	onOpenChange,
+	inboxes,
+	defaultTo = "",
+	defaultFrom,
+	onSend,
+}: ComposeModalProps) {
+	const [from, setFrom] = useState(defaultFrom || inboxes[0]?.email || "");
 	const [to, setTo] = useState(defaultTo);
 	const [subject, setSubject] = useState("");
 	const [body, setBody] = useState("");
+	const [files, setFiles] = useState<Array<{ filename: string; content: string; type: string }>>([]);
 	const [sending, setSending] = useState(false);
 	const [templates, setTemplates] = useState<InboxTemplate[]>([]);
 	const [showTemplates, setShowTemplates] = useState(false);
 
 	useEffect(() => {
-		if (inboxes.length > 0 && !from) {
-			setFrom(inboxes[0].email);
-		}
-	}, [inboxes, from]);
+		if (defaultFrom) setFrom(defaultFrom);
+		else if (inboxes.length > 0 && !from) setFrom(inboxes[0].email);
+	}, [inboxes, from, defaultFrom]);
 
 	useEffect(() => {
 		if (defaultTo) setTo(defaultTo);
@@ -55,10 +69,12 @@ export default function ComposeModal({ open, onOpenChange, inboxes, defaultTo = 
 				to: to.trim(),
 				subject: subject.trim(),
 				text: body.trim(),
+				attachments: files.length ? files : undefined,
 			});
 			setTo("");
 			setSubject("");
 			setBody("");
+			setFiles([]);
 			onOpenChange(false);
 		} finally {
 			setSending(false);
@@ -81,7 +97,7 @@ export default function ComposeModal({ open, onOpenChange, inboxes, defaultTo = 
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-xl p-0 overflow-hidden">
+			<DialogContent className="sm:max-w-3xl p-0 overflow-hidden">
 				<DialogHeader className="px-5 py-3.5 border-b border-border bg-muted/20">
 					<DialogTitle className="text-sm font-semibold">New Message</DialogTitle>
 				</DialogHeader>
@@ -162,10 +178,62 @@ export default function ComposeModal({ open, onOpenChange, inboxes, defaultTo = 
 							value={body}
 							onChange={(e) => setBody(e.target.value)}
 							onKeyDown={handleKeyDown}
-							rows={8}
-							className="text-xs leading-relaxed resize-none p-3"
+							rows={14}
+							className="min-h-64 text-sm leading-relaxed resize-y p-3"
 							required
 						/>
+					</div>
+
+					<div className="flex flex-col gap-2">
+						<label className="inline-flex w-fit items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer">
+							<Paperclip size={13} />
+							Attach files
+							<input
+								type="file"
+								multiple
+								className="sr-only"
+								onChange={async (e) => {
+									const selected = Array.from(e.target.files ?? []);
+									const encoded = await Promise.all(
+										selected.map(
+											(file) =>
+												new Promise<{ filename: string; content: string; type: string }>(
+													(resolve, reject) => {
+														const reader = new FileReader();
+														reader.onload = () => {
+															const result = String(reader.result ?? "");
+															resolve({
+																filename: file.name,
+																content: result.slice(result.indexOf(",") + 1),
+																type: file.type || "application/octet-stream",
+															});
+														};
+														reader.onerror = () => reject(reader.error);
+														reader.readAsDataURL(file);
+													},
+												),
+										),
+									);
+									setFiles((current) => [...current, ...encoded].slice(0, 10));
+									e.target.value = "";
+								}}
+							/>
+						</label>
+						{files.length > 0 && (
+							<div className="flex flex-wrap gap-1.5">
+								{files.map((file) => (
+									<button
+										key={file.filename}
+										type="button"
+										onClick={() => setFiles((current) => current.filter((item) => item !== file))}
+										className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px]"
+									>
+										{file.filename}
+										<X size={10} />
+									</button>
+								))}
+							</div>
+						)}
 					</div>
 
 					<DialogFooter className="pt-2 border-t border-border mt-2">

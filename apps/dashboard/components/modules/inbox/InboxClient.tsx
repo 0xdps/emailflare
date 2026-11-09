@@ -16,7 +16,6 @@ import {
 } from "@/lib/api";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePermissions } from "@/lib/UserContext";
-import InboxNav from "./InboxNav";
 import ThreadList from "./ThreadList";
 import ThreadReader from "./ThreadReader";
 import ComposeModal from "./ComposeModal";
@@ -55,16 +54,27 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 
 	// Sync folder from URL if provided (e.g. ?folder=test) or default to test for tester-only
 	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const params = new URLSearchParams(window.location.search);
-			const folder = params.get("folder");
-			if (folder === "test" && canAccessTester) {
-				setActiveFolder("test");
-			} else if (!canAccessInbox && canAccessTester) {
-				setActiveFolder("test");
-			}
+		if (typeof window === "undefined") return;
+		const params = new URLSearchParams(window.location.search);
+		const folder = params.get("folder");
+		const mailbox = params.get("mailbox");
+		if (folder === "test" && canAccessTester) {
+			setActiveFolder("test");
+		} else if (!canAccessInbox && canAccessTester) {
+			setActiveFolder("test");
+		} else {
+			setActiveFolder("inbox");
 		}
+		setSelectedInbox(mailbox);
 	}, [canAccessTester, canAccessInbox]);
+
+	useEffect(() => {
+		function openCompose() {
+			setComposeOpen(true);
+		}
+		window.addEventListener("emailflare:compose", openCompose);
+		return () => window.removeEventListener("emailflare:compose", openCompose);
+	}, []);
 
 	// Select a conversation thread
 	const selectThread = useCallback(async (id: string) => {
@@ -165,7 +175,13 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 	}
 
 	// Handle new compose from modal
-	async function handleModalSend(payload: { from: string; to: string; subject: string; text: string }) {
+	async function handleModalSend(payload: {
+		from: string;
+		to: string;
+		subject: string;
+		text: string;
+		attachments?: Array<{ filename: string; content: string; type: string }>;
+	}) {
 		const result = await composeSend(payload);
 		fetchThreads();
 		if (result.threadId) {
@@ -226,20 +242,6 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 			<OwnerAccessBanner />
 
 			<div className="flex flex-1 min-h-0 overflow-hidden">
-				{/* ── Pane 1: Mailbox & Folder Navigation (Desktop: 200px) ── */}
-				<InboxNav
-					inboxes={inboxes}
-					selectedInbox={selectedInbox}
-					onSelectInbox={setSelectedInbox}
-					activeFolder={activeFolder}
-					onSelectFolder={setActiveFolder}
-					canAccessInbox={canAccessInbox}
-					canAccessTester={canAccessTester}
-					unreadTotal={unreadTotal}
-					onComposeClick={() => setComposeOpen(true)}
-					className="hidden md:flex w-[200px] shrink-0"
-				/>
-
 				{/* ── Condition: Test Mailbox Folder Selected ── */}
 				{activeFolder === "test" ? (
 					<div className="flex-1 min-w-0 h-full overflow-hidden">
@@ -355,7 +357,13 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 			</div>
 
 			{/* ── Standalone Compose Modal (Shortcut 'C') ── */}
-			<ComposeModal open={composeOpen} onOpenChange={setComposeOpen} inboxes={inboxes} onSend={handleModalSend} />
+			<ComposeModal
+				open={composeOpen}
+				onOpenChange={setComposeOpen}
+				inboxes={inboxes}
+				defaultFrom={selectedInbox ?? undefined}
+				onSend={handleModalSend}
+			/>
 		</div>
 	);
 }

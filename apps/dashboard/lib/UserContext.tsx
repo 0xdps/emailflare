@@ -43,8 +43,8 @@ function getStoredUser(): User | null {
  * Layout and other components read from context instead of re-fetching.
  */
 export function UserProvider({ children }: { children: ReactNode }) {
-	const [user, setUser] = useState<User | null>(() => getStoredUser());
-	const [loading, setLoading] = useState<boolean>(() => !getStoredUser());
+	const [user, setUser] = useState<User | null>(null);
+	const [loading, setLoading] = useState(true);
 	const [isVerified, setIsVerified] = useState<boolean>(false);
 	const [error, setError] = useState<Error | null>(null);
 
@@ -86,9 +86,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
 			setLoading(false);
 			return;
 		}
-		// If we already have a user in memory/storage, revalidate in background without setting loading=true
-		const hasCached = !!getStoredUser();
-		refreshUser(!hasCached);
+		const cached = getStoredUser();
+		if (cached) setUser(cached);
+		refreshUser(!cached);
 	}, []);
 
 	return (

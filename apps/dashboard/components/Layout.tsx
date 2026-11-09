@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
 	LayoutDashboard,
 	Globe,
@@ -18,13 +18,14 @@ import {
 	Users,
 	ListOrdered,
 	Mail,
+	PenLine,
 	ShieldOff,
 	Settings,
 	Radio,
 	Menu,
 	Search,
 } from "lucide-react";
-import api from "@/lib/api";
+import api, { getInboxes, type Inbox as InboxType } from "@/lib/api";
 import { usePermissions } from "@/lib/UserContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
@@ -52,14 +53,7 @@ function AppLogo({ size = 26 }: { size?: number }) {
 
 // ─── Nav item ─────────────────────────────────────────────────────────────────
 
-function NavItem({
-	to,
-	icon: Icon,
-	label,
-	badge,
-	exact = false,
-	onClick,
-}: {
+function NavItem(props: {
 	to: string;
 	icon: React.ElementType;
 	label: string;
@@ -67,8 +61,40 @@ function NavItem({
 	exact?: boolean;
 	onClick?: () => void;
 }) {
+	return (
+		<Suspense fallback={<NavItemView {...props} search="" />}>
+			<NavItemWithSearch {...props} />
+		</Suspense>
+	);
+}
+
+function NavItemWithSearch(props: React.ComponentProps<typeof NavItemView>) {
+	return <NavItemView {...props} search={useSearchParams().toString()} />;
+}
+
+function NavItemView({
+	to,
+	icon: Icon,
+	label,
+	badge,
+	exact = false,
+	onClick,
+	search,
+}: {
+	to: string;
+	icon: React.ElementType;
+	label: string;
+	badge?: number | string;
+	exact?: boolean;
+	onClick?: () => void;
+	search: string;
+}) {
 	const pathname = usePathname();
-	const active = exact || to === "/" ? pathname === to : pathname === to || pathname.startsWith(to + "/");
+	const [path, query] = to.split("?");
+	const active = query
+		? pathname === path && search === query
+		: (exact || path === "/" ? pathname === path : pathname === path || pathname.startsWith(path + "/")) &&
+			!search.includes("mailbox=");
 	return (
 		<Link
 			href={to}
@@ -108,12 +134,14 @@ function DashboardNavLinks({
 	canAccessInbox = true,
 	canAccessTester,
 	isAdmin,
+	mailboxes = [],
 	onItemClick,
 }: {
 	activeDashboard: "inbox" | "api" | "admin";
 	canAccessInbox?: boolean;
 	canAccessTester: boolean;
 	isAdmin: boolean;
+	mailboxes?: InboxType[];
 	onItemClick?: () => void;
 }) {
 	return (
@@ -123,8 +151,28 @@ function DashboardNavLinks({
 				<>
 					{canAccessInbox && (
 						<>
-							<NavSection label="Mailboxes" />
-							<NavItem to="/inbox" icon={Mail} label="Inbox" exact onClick={onItemClick} />
+							<NavSection label="Inbox" />
+							<button
+								type="button"
+								onClick={() => {
+									onItemClick?.();
+									window.dispatchEvent(new CustomEvent("emailflare:compose"));
+								}}
+								className="flex w-full items-center gap-2.5 h-[34px] px-2.5 rounded-lg bg-orange-600 text-[13px] font-medium text-white hover:bg-orange-700"
+							>
+								<PenLine size={14} />
+								Compose
+							</button>
+							<NavItem to="/inbox" icon={Mail} label="All mailboxes" exact onClick={onItemClick} />
+							{mailboxes.map((mailbox) => (
+								<NavItem
+									key={mailbox.id}
+									to={`/inbox?mailbox=${encodeURIComponent(mailbox.email)}`}
+									icon={Inbox}
+									label={mailbox.display_name || mailbox.email}
+									onClick={onItemClick}
+								/>
+							))}
 						</>
 					)}
 
@@ -197,6 +245,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [mailboxes, setMailboxes] = useState<InboxType[]>([]);
 
 	// Determine active dashboard mode
 	const isAdminPath =
@@ -209,6 +258,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 	const activeDashboard: "inbox" | "api" | "admin" = isAdminPath ? "admin" : isApiPath ? "api" : "inbox";
 
 	// Global Keyboard Shortcut: ⌘K or Ctrl+K to toggle Command Palette
+	useEffect(() => {
+		if (activeDashboard !== "inbox" || !canAccessInbox) return;
+		getInboxes()
+			.then(setMailboxes)
+			.catch(() => setMailboxes([]));
+	}, [activeDashboard, canAccessInbox]);
+
 	useEffect(() => {
 		function handleKeyDown(e: KeyboardEvent) {
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -427,6 +483,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 							canAccessInbox={canAccessInbox}
 							canAccessTester={canAccessTester}
 							isAdmin={isAdmin}
+							mailboxes={mailboxes}
 						/>
 					</nav>
 
@@ -536,6 +593,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 							canAccessInbox={canAccessInbox}
 							canAccessTester={canAccessTester}
 							isAdmin={isAdmin}
+							mailboxes={mailboxes}
 							onItemClick={() => setMobileMenuOpen(false)}
 						/>
 					</nav>

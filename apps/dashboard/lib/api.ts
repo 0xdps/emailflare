@@ -260,6 +260,7 @@ export async function composeSend(params: {
 	subject: string;
 	text: string;
 	personId?: string;
+	attachments?: Array<{ filename: string; content: string; type: string }>;
 }): Promise<{ ok: boolean; id: string; threadId: string; personId?: string }> {
 	const { data } = await api.post("/api/inbox/compose", params);
 	return data;
