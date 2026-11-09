@@ -91,6 +91,7 @@ adminApp.use("/*", requireAdmin);
 adminApp.route("/domains", domainsRouter);
 adminApp.route("/keys", keysRouter);
 adminApp.route("/admin/users", adminUsersRouter);
+adminApp.route("/suppressions", suppressionsRouter);
 adminApp.post("/seed", async (c) => {
 	await seedSystemTemplates(c.env.DB);
 	return c.json({ ok: true });
@@ -105,7 +106,6 @@ apiApp.route("/templates", templatesRouter);
 apiApp.route("/stats", statsRouter);
 apiApp.route("/cloudflare", cloudflareRouter);
 apiApp.route("/lists", listsRouter);
-apiApp.route("/suppressions", suppressionsRouter);
 apiApp.route("/playground", playgroundRouter);
 sessionApp.route("/", apiApp);
 

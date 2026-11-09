@@ -61,6 +61,88 @@ export interface CFZone {
 	status: string;
 }
 
+export interface DomainCatalogZone {
+	zoneName: string;
+	enabled: boolean;
+	domainId: string | null;
+	sendingName: string | null;
+	sending: "ready" | "pending" | "off";
+	routing: "ready" | "pending" | "unknown";
+	dns: "written" | "manual" | "unknown";
+}
+
+export interface StoredDomainCatalogRow {
+	id: string;
+	name: string;
+	cf_zone_id: string | null;
+	verified: boolean | number | null;
+	routing_status: string | null;
+	dns_status: string | null;
+}
+
+const CATALOG_ZONE_CAP = 25;
+
+function catalogDns(status: string | null | undefined): DomainCatalogZone["dns"] {
+	return status === "written" || status === "manual" ? status : "unknown";
+}
+
+/**
+ * Zones the token can see, joined with stored domains. `detailed` adds two
+ * Cloudflare calls per zone (sending subdomain + catch-all). Setup does not
+ * need those, and they dominate the first-run page.
+ */
+export async function buildDomainCatalog(
+	cfApiToken: string,
+	stored: StoredDomainCatalogRow[],
+	workerName: string,
+	detailed: boolean,
+): Promise<{ zones: DomainCatalogZone[]; truncated: boolean; total: number }> {
+	const all = await listAllZones(cfApiToken);
+	const capped = all.slice(0, CATALOG_ZONE_CAP);
+	const zones = await Promise.all(
+		capped.map(async (zone) => {
+			const row = stored.find(
+				(domain) =>
+					domain.cf_zone_id === zone.id || domain.name === zone.name || domain.name.endsWith(`.${zone.name}`),
+			);
+			let sending: DomainCatalogZone["sending"] = row?.verified ? "ready" : "off";
+			let sendingName = row?.name ?? null;
+			let routing: DomainCatalogZone["routing"] =
+				row?.routing_status === "ready" || row?.routing_status === "pending" ? row.routing_status : "unknown";
+
+			if (detailed) {
+				try {
+					const subs = await listSendingSubdomains(zone.id, cfApiToken);
+					const match =
+						subs.find((sub) => sub.name === row?.name) ?? subs.find((sub) => sub.enabled) ?? subs[0];
+					sending = match ? (match.enabled ? "ready" : "pending") : "off";
+					sendingName = match?.name ?? sendingName;
+				} catch {
+					/* keep stored state */
+				}
+				try {
+					const rule = await getCatchAllRule(zone.id, cfApiToken);
+					const worker = rule.actions?.find((action) => action.type === "worker");
+					routing = rule.enabled && worker?.value?.includes(workerName) ? "ready" : "pending";
+				} catch {
+					/* keep stored state */
+				}
+			}
+
+			return {
+				zoneName: zone.name,
+				enabled: !!row,
+				domainId: row?.id ?? null,
+				sendingName,
+				sending,
+				routing,
+				dns: catalogDns(row?.dns_status),
+			};
+		}),
+	);
+	return { zones, truncated: all.length > capped.length, total: all.length };
+}
+
 /** Fetch every active zone on the account (handles pagination). */
 export async function listAllZones(cfApiToken: string): Promise<CFZone[]> {
 	const all: CFZone[] = [];
@@ -184,31 +266,33 @@ export async function upsertDnsRecords(
 	const written: CFDnsRecord[] = [];
 	const failed: Array<CFDnsRecord & { error: string }> = [];
 
-	for (const record of records) {
-		try {
-			await cfFetch(`/zones/${zoneId}/dns_records`, cfApiToken, {
-				method: "POST",
-				body: JSON.stringify({
-					type: record.type,
-					name: record.name,
-					content: record.content,
-					ttl: record.ttl || 1,
-					...(record.priority != null ? { priority: record.priority } : {}),
-				}),
-			});
-			written.push(record);
-		} catch (err) {
-			const message = err instanceof Error ? err.message : "DNS write failed";
-			const alreadyExists =
-				err instanceof CloudflareApiError &&
-				(err.code === 81057 || err.code === 81058 || /already exists/i.test(message));
-			if (alreadyExists) {
+	await Promise.all(
+		records.map(async (record) => {
+			try {
+				await cfFetch(`/zones/${zoneId}/dns_records`, cfApiToken, {
+					method: "POST",
+					body: JSON.stringify({
+						type: record.type,
+						name: record.name,
+						content: record.content,
+						ttl: record.ttl || 1,
+						...(record.priority != null ? { priority: record.priority } : {}),
+					}),
+				});
 				written.push(record);
-			} else {
-				failed.push({ ...record, error: message });
+			} catch (err) {
+				const message = err instanceof Error ? err.message : "DNS write failed";
+				const alreadyExists =
+					err instanceof CloudflareApiError &&
+					(err.code === 81057 || err.code === 81058 || /already exists/i.test(message));
+				if (alreadyExists) {
+					written.push(record);
+				} else {
+					failed.push({ ...record, error: message });
+				}
 			}
-		}
-	}
+		}),
+	);
 
 	return { written, failed };
 }
@@ -338,10 +422,13 @@ export async function getCloudflareTokenStatus(cfApiToken: string, cfAccountId: 
 		};
 	}
 
-	let verify: CFTokenVerifyResult;
-	try {
-		verify = await cfFetch<CFTokenVerifyResult>("/user/tokens/verify", cfApiToken);
-	} catch (error) {
+	const [verifyResult, accountResult] = await Promise.allSettled([
+		cfFetch<CFTokenVerifyResult>("/user/tokens/verify", cfApiToken),
+		cfFetch<CFAccountResult>(`/accounts/${cfAccountId}`, cfApiToken),
+	]);
+
+	if (verifyResult.status === "rejected") {
+		const error = verifyResult.reason;
 		return {
 			configured: true,
 			active: false,
@@ -355,16 +442,16 @@ export async function getCloudflareTokenStatus(cfApiToken: string, cfAccountId: 
 		};
 	}
 
+	const verify = verifyResult.value;
 	let accountName: string | null = null;
 	let message =
 		verify.status === "active"
 			? "Cloudflare token is active."
 			: `Cloudflare token is not active (${verify.status}).`;
 
-	try {
-		const account = await cfFetch<CFAccountResult>(`/accounts/${cfAccountId}`, cfApiToken);
-		accountName = account.name;
-	} catch {
+	if (accountResult.status === "fulfilled") {
+		accountName = accountResult.value.name;
+	} else {
 		message += " Account lookup failed (check Account permissions or CF_ACCOUNT_ID).";
 	}
 

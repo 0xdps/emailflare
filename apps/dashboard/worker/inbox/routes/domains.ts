@@ -5,10 +5,10 @@ import {
 	CloudflareApiError,
 	createSendingSubdomain,
 	listSendingSubdomains,
-	listAllZones,
+	getZoneByHostname,
+	buildDomainCatalog,
 	getSubdomainDnsRecords,
 	getSendingSubdomain,
-	getCatchAllRule,
 	upsertDnsRecords,
 	enableEmailRouting,
 	setCatchAllToWorker,
@@ -21,8 +21,6 @@ import { domainCreateSchema, generateId } from "@/lib/core";
 
 const app = new Hono<HonoEnv>();
 
-const CATALOG_ZONE_CAP = 25;
-
 export interface DomainCatalogEntry {
 	zoneName: string;
 	enabled: boolean;
@@ -33,32 +31,11 @@ export interface DomainCatalogEntry {
 	dns: "written" | "manual" | "unknown";
 }
 
-function sendingState(sub: CFSubdomain | undefined): "ready" | "pending" | "off" {
-	if (!sub) return "off";
-	return sub.enabled ? "ready" : "pending";
-}
-
-function routingState(
-	rule: { enabled?: boolean; actions?: Array<{ type: string; value?: string[] }> } | null,
-	workerName: string,
-): "ready" | "pending" | "unknown" {
-	if (!rule) return "unknown";
-	const worker = rule.actions?.find((action) => action.type === "worker");
-	if (rule.enabled && worker?.value?.includes(workerName)) return "ready";
-	return "pending";
-}
-
 async function resolveZone(name: string, zoneName: string | undefined, token: string): Promise<CFZone | null> {
-	const zones = await listAllZones(token);
 	const host = name.toLowerCase();
 	const root = (zoneName ?? name).toLowerCase();
-	return (
-		zones.find(
-			(zone) =>
-				zone.name.toLowerCase() === root &&
-				(host === zone.name.toLowerCase() || host.endsWith(`.${zone.name.toLowerCase()}`)),
-		) ?? null
-	);
+	if (host !== root && !host.endsWith(`.${root}`)) return null;
+	return getZoneByHostname(root, token);
 }
 
 function permissionMessage(error: CloudflareApiError): string | null {
@@ -74,9 +51,13 @@ app.get("/catalog", async (c) => {
 	const token = c.env.CF_API_TOKEN;
 	if (!token) return c.json({ error: "CF_API_TOKEN is not configured." }, 422);
 
-	let zones: CFZone[];
+	const { domains } = makeDb(c.env.DB);
+	const stored = await domains.find({ orderBy: [{ column: "created_at", direction: "desc" }] });
+	// Setup only needs names. Sending and routing status are two Cloudflare calls
+	// per zone, so skip them unless the caller asks for the full catalog.
 	try {
-		zones = await listAllZones(token);
+		const catalog = await buildDomainCatalog(token, stored, inboxWorkerName(c.env), c.req.query("view") === "full");
+		return c.json(catalog);
 	} catch (error) {
 		if (error instanceof CloudflareApiError) {
 			return c.json(
@@ -86,57 +67,6 @@ app.get("/catalog", async (c) => {
 		}
 		throw error;
 	}
-
-	const capped = zones.slice(0, CATALOG_ZONE_CAP);
-	const { domains } = makeDb(c.env.DB);
-	const stored = await domains.find({ orderBy: [{ column: "created_at", direction: "desc" }] });
-
-	const entries: DomainCatalogEntry[] = await Promise.all(
-		capped.map(async (zone) => {
-			const row = stored.find(
-				(domain) =>
-					domain.cf_zone_id === zone.id || domain.name === zone.name || domain.name.endsWith(`.${zone.name}`),
-			);
-			let sending: DomainCatalogEntry["sending"] = "off";
-			let sendingName: string | null = row?.name ?? null;
-			let routing: DomainCatalogEntry["routing"] = "unknown";
-
-			try {
-				const subs = await listSendingSubdomains(zone.id, token);
-				const match = subs.find((sub) => sub.name === row?.name) ?? subs.find((sub) => sub.enabled) ?? subs[0];
-				sending = sendingState(match);
-				sendingName = match?.name ?? sendingName;
-			} catch {
-				sending = row?.verified ? "ready" : "off";
-			}
-
-			try {
-				const rule = await getCatchAllRule(zone.id, token);
-				routing = routingState(rule, inboxWorkerName(c.env));
-			} catch {
-				routing =
-					row?.routing_status === "ready" || row?.routing_status === "pending"
-						? row.routing_status
-						: "unknown";
-			}
-
-			return {
-				zoneName: zone.name,
-				enabled: !!row,
-				domainId: row?.id ?? null,
-				sendingName,
-				sending,
-				routing,
-				dns: row?.dns_status === "written" || row?.dns_status === "manual" ? row.dns_status : "unknown",
-			};
-		}),
-	);
-
-	return c.json({
-		zones: entries,
-		truncated: zones.length > capped.length,
-		total: zones.length,
-	});
 });
 
 // GET /api/domains
@@ -188,27 +118,30 @@ app.post("/", zValidator("json", domainCreateSchema), async (c) => {
 		throw error;
 	}
 
-	let dnsStatus: "written" | "manual" = "written";
-	let dnsRecords: CFDnsRecord[] = [];
-	try {
-		dnsRecords = await getSubdomainDnsRecords(zone.id, cfResult.tag, token);
-		if (dnsRecords.length > 0) {
-			const write = await upsertDnsRecords(zone.id, dnsRecords, token);
-			dnsStatus = write.failed.length === 0 ? "written" : "manual";
-		}
-	} catch (error) {
-		dnsStatus = "manual";
-		if (!(error instanceof CloudflareApiError)) throw error;
-	}
-
-	let routingStatus: "ready" | "pending" = "pending";
-	try {
-		await enableEmailRouting(zone.id, token);
-		await setCatchAllToWorker(zone.id, inboxWorkerName(c.env), token);
-		routingStatus = "ready";
-	} catch {
-		routingStatus = "pending";
-	}
+	const [dnsOutcome, routingStatus] = await Promise.all([
+		(async (): Promise<{ status: "written" | "manual"; records: CFDnsRecord[] }> => {
+			try {
+				const records = await getSubdomainDnsRecords(zone.id, cfResult.tag, token);
+				if (records.length === 0) return { status: "written", records };
+				const write = await upsertDnsRecords(zone.id, records, token);
+				return { status: write.failed.length === 0 ? "written" : "manual", records };
+			} catch (error) {
+				if (!(error instanceof CloudflareApiError)) throw error;
+				return { status: "manual", records: [] };
+			}
+		})(),
+		(async (): Promise<"ready" | "pending"> => {
+			try {
+				await enableEmailRouting(zone.id, token);
+				await setCatchAllToWorker(zone.id, inboxWorkerName(c.env), token);
+				return "ready";
+			} catch {
+				return "pending";
+			}
+		})(),
+	]);
+	const dnsStatus = dnsOutcome.status;
+	const dnsRecords = dnsOutcome.records;
 
 	const row = await domains.insert({
 		id: generateId(),

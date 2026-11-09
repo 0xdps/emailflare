@@ -13,7 +13,9 @@ api.interceptors.response.use(
 			err.response?.status === 401 &&
 			!path.startsWith("/login") &&
 			!path.startsWith("/setup") &&
-			!path.startsWith("/invite")
+			!path.startsWith("/invite") &&
+			!path.startsWith("/forgot-password") &&
+			!path.startsWith("/reset-password")
 		) {
 			window.location.href = "/login";
 		}
@@ -36,6 +38,15 @@ export async function setup(name: string, email: string, password: string): Prom
 
 export async function login(email: string, password: string): Promise<void> {
 	await api.post("/api/auth/login", { email, password });
+}
+
+export async function forgotPassword(email: string): Promise<string> {
+	const { data } = await api.post<{ message: string }>("/api/auth/forgot-password", { email });
+	return data.message;
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+	await api.post("/api/auth/reset-password", { token, password });
 }
 
 export async function logout(): Promise<void> {

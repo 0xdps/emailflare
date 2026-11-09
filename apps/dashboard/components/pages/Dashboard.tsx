@@ -370,10 +370,18 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 	if (!stats) return <DashboardSkeleton />;
 
 	const totalToday = stats.sentToday + stats.failedToday;
-	const deliveryRate = totalToday > 0 ? (stats.sentToday / totalToday) * 100 : 100;
-	const deliveryPct = deliveryRate.toFixed(1);
-	const rateColor = deliveryRate >= 95 ? "#10b981" : deliveryRate >= 80 ? "#f59e0b" : "#ef4444";
-	const rateLabel = deliveryRate >= 95 ? "Healthy" : deliveryRate >= 80 ? "Degraded" : "Critical";
+	const deliveryRate = totalToday > 0 ? (stats.sentToday / totalToday) * 100 : null;
+	const deliveryPct = deliveryRate === null ? "—" : deliveryRate.toFixed(1);
+	const rateColor =
+		deliveryRate === null ? "#71717a" : deliveryRate >= 95 ? "#10b981" : deliveryRate >= 80 ? "#f59e0b" : "#ef4444";
+	const rateLabel =
+		deliveryRate === null
+			? "No sends"
+			: deliveryRate >= 95
+				? "Healthy"
+				: deliveryRate >= 80
+					? "Degraded"
+					: "Critical";
 
 	const limitPct = Math.min(100, (stats.sentToday / stats.cfDailyLimit) * 100);
 	const limitRemaining = stats.cfDailyLimit - stats.sentToday;
@@ -554,20 +562,23 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 						className="text-[26px] font-bold tabular-nums tracking-tight leading-none"
 						style={{ color: rateColor }}
 					>
-						{deliveryPct}%
+						{deliveryPct}
+						{deliveryRate !== null ? "%" : ""}
 					</p>
 					<div className="mt-2">
 						<span
 							className={cn(
 								"inline-flex items-center gap-1 text-[10.5px] font-semibold px-1.5 py-0.5 rounded-md",
-								deliveryRate >= 95
-									? "bg-emerald-50 text-emerald-700"
-									: deliveryRate >= 80
-										? "bg-amber-50 text-amber-700"
-										: "bg-red-50 text-red-700",
+								deliveryRate === null
+									? "bg-muted text-muted-foreground"
+									: deliveryRate >= 95
+										? "bg-emerald-50 text-emerald-700"
+										: deliveryRate >= 80
+											? "bg-amber-50 text-amber-700"
+											: "bg-red-50 text-red-700",
 							)}
 						>
-							{deliveryRate < 95 && <AlertTriangle size={9} />}
+							{deliveryRate !== null && deliveryRate < 95 && <AlertTriangle size={9} />}
 							{rateLabel}
 						</span>
 					</div>
@@ -582,10 +593,10 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 						<p className="text-[11px] font-semibold text-muted-foreground">Daily quota</p>
 					</div>
 					<p className="text-[26px] font-bold tabular-nums tracking-tight leading-none text-foreground">
-						{fmt(stats.sentToday)}
+						{fmt(Math.max(0, limitRemaining))}
 					</p>
 					<p className="text-[11.5px] text-muted-foreground mt-2">
-						{fmt(limitRemaining)} of {fmt(stats.cfDailyLimit)} remaining
+						{fmt(stats.sentToday)} sent · {fmt(stats.cfDailyLimit)} daily limit
 					</p>
 					<div className="mt-2.5">
 						<div className="h-1 bg-muted rounded-full overflow-hidden">

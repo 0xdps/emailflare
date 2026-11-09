@@ -175,12 +175,14 @@ export default function Login() {
 							{loading ? "Signing in…" : "Sign in"}
 						</button>
 
-						<p className="text-[12px] text-zinc-400 text-center mt-3">
-							First time here?{" "}
-							<Link href="/setup" className="text-orange-500 hover:text-orange-600 font-medium">
+						<div className="flex items-center justify-between text-[12px] mt-3">
+							<Link href="/forgot-password" className="text-orange-500 hover:text-orange-600 font-medium">
+								Forgot password
+							</Link>
+							<Link href="/setup" className="text-zinc-400 hover:text-zinc-600">
 								Set up workspace
 							</Link>
-						</p>
+						</div>
 					</form>
 				</div>
 			</div>

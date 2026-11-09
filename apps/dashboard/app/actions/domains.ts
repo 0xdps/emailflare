@@ -7,7 +7,7 @@ import {
 	CloudflareApiError,
 	createSendingSubdomain,
 	listSendingSubdomains,
-	listAllZones,
+	getZoneByHostname,
 	getSubdomainDnsRecords,
 	getSendingSubdomain,
 	upsertDnsRecords,
@@ -20,16 +20,10 @@ import { requireAdmin } from "./auth";
 import { inboxWorkerName, type Env } from "@/worker/inbox/env";
 
 async function resolveZone(name: string, zoneName: string | undefined, token: string): Promise<CFZone | null> {
-	const zones = await listAllZones(token);
 	const host = name.toLowerCase();
 	const root = (zoneName ?? name).toLowerCase();
-	return (
-		zones.find(
-			(zone) =>
-				zone.name.toLowerCase() === root &&
-				(host === zone.name.toLowerCase() || host.endsWith(`.${zone.name.toLowerCase()}`)),
-		) ?? null
-	);
+	if (host !== root && !host.endsWith(`.${root}`)) return null;
+	return getZoneByHostname(root, token);
 }
 
 export async function createDomainAction(input: { name: string; zoneName?: string }) {
@@ -66,27 +60,30 @@ export async function createDomainAction(input: { name: string; zoneName?: strin
 		throw error;
 	}
 
-	let dnsStatus: "written" | "manual" = "written";
-	let dnsRecords: CFDnsRecord[] = [];
-	try {
-		dnsRecords = await getSubdomainDnsRecords(zone.id, cfResult.tag, token);
-		if (dnsRecords.length > 0) {
-			const write = await upsertDnsRecords(zone.id, dnsRecords, token);
-			dnsStatus = write.failed.length === 0 ? "written" : "manual";
-		}
-	} catch (error) {
-		dnsStatus = "manual";
-		if (!(error instanceof CloudflareApiError)) throw error;
-	}
-
-	let routingStatus: "ready" | "pending" = "pending";
-	try {
-		await enableEmailRouting(zone.id, token);
-		await setCatchAllToWorker(zone.id, inboxWorkerName(workerEnv), token);
-		routingStatus = "ready";
-	} catch {
-		routingStatus = "pending";
-	}
+	const [dnsOutcome, routingStatus] = await Promise.all([
+		(async (): Promise<{ status: "written" | "manual"; records: CFDnsRecord[] }> => {
+			try {
+				const records = await getSubdomainDnsRecords(zone.id, cfResult.tag, token);
+				if (records.length === 0) return { status: "written", records };
+				const write = await upsertDnsRecords(zone.id, records, token);
+				return { status: write.failed.length === 0 ? "written" : "manual", records };
+			} catch (error) {
+				if (!(error instanceof CloudflareApiError)) throw error;
+				return { status: "manual", records: [] };
+			}
+		})(),
+		(async (): Promise<"ready" | "pending"> => {
+			try {
+				await enableEmailRouting(zone.id, token);
+				await setCatchAllToWorker(zone.id, inboxWorkerName(workerEnv), token);
+				return "ready";
+			} catch {
+				return "pending";
+			}
+		})(),
+	]);
+	const dnsStatus = dnsOutcome.status;
+	const dnsRecords = dnsOutcome.records;
 
 	const row = await domains.insert({
 		id: generateId(),
