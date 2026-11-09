@@ -1,0 +1,69 @@
+apps/dashboard/lib/core/cloudflare.ts
+  s_c6414e19edded4::t_eb4179f10d5561 425-431,445,452-454
+  s_c6414e19edded4::t_78f3acd1604e7b 269-281,283-292,294-295
+  s_c6414e19edded4::t_d4c93c53f75a9b 64-145
+apps/dashboard/worker/inbox/index.ts
+  s_c6414e19edded4::t_8b0524febb564c 94
+apps/dashboard/components/pages/Login.tsx
+  s_c6414e19edded4::t_07254ce2304319 178-182,185
+apps/dashboard/app/forgot-password/page.tsx
+  s_c6414e19edded4::t_7d9e654cdbad95 1-7
+apps/dashboard/app/reset-password/page.tsx
+  s_c6414e19edded4::t_a1fc8e3ce9969d 1-12
+apps/dashboard/worker/inbox/routes/auth.ts
+  s_c6414e19edded4::t_ce4c0fd550217f 6,9,11,91-158
+  s_c6414e19edded4::t_592ede2d21b280 159-160
+apps/dashboard/components/pages/Dashboard.tsx
+  s_c6414e19edded4::t_6eaab82276bddb 373
+  s_c6414e19edded4::t_9f8db18261fbfb 374-384,565-566,572-575
+  s_c6414e19edded4::t_5d944494dcf63e 576-578
+apps/dashboard/components/pages/ResetPassword.tsx
+  s_c6414e19edded4::t_b4133370e4185b 1-94
+apps/dashboard/components/pages/Readiness.tsx
+  s_c6414e19edded4::t_eecaabc496a213 65,67,106,111
+  s_c6414e19edded4::t_4af210cac6c23c 6
+apps/dashboard/app/actions/domains.ts
+  s_c6414e19edded4::t_f8c41a686a0e45 10,25-26
+  s_c6414e19edded4::t_14e2af424fcb8f 63-86
+apps/dashboard/app/actions/suppressions.ts
+  s_c6414e19edded4::t_53ec4d9f2883b6 21,48
+  s_c6414e19edded4::t_e4523a2aa0e499 8
+apps/dashboard/lib/api.ts
+  s_c6414e19edded4::t_c7498a097f32e2 43-51
+  s_c6414e19edded4::t_77328d6863625a 16-18
+apps/dashboard/lib/server/queries.ts
+  s_c6414e19edded4::t_34cc2911f18d7b 318-319
+apps/landing/src/pages/cloudflare.astro
+  s_c6414e19edded4::t_b8956a3a495838 892-893
+apps/landing/src/pages/inbox.astro
+  s_c6414e19edded4::t_5a4d043e31ca52 1686,1864-1865
+apps/dashboard/worker/inbox/routes/domains.ts
+  s_c6414e19edded4::t_3b1c360166fe38 54-57,59-60
+  s_c6414e19edded4::t_9bfdcb9ea60d7c 8,37-38
+  s_c6414e19edded4::t_389de8a3835526 9
+  s_c6414e19edded4::t_9994f138e31ac6 122-144
+  s_c6414e19edded4::t_a9ff861389d444 121
+apps/dashboard/components/pages/ForgotPassword.tsx
+  s_c6414e19edded4::t_930fb5b721d36b 1-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3ab48d7f68f6929b041d3386f9b38846c76f83f7",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_c6414e19edded4": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "86c80093-d2ba-4db5-9a41-6b830758ee50",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
