@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { login, getSetupStatus } from "@/lib/api";
+import { login } from "@/lib/api";
 
 function AppLogo({ size = 28 }: { size?: number }) {
 	return (
@@ -24,22 +23,11 @@ function AppLogo({ size = 28 }: { size?: number }) {
 }
 
 export default function Login() {
-	const router = useRouter();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
-
-	useEffect(() => {
-		getSetupStatus()
-			.then(({ initialized }) => {
-				if (!initialized) {
-					router.replace("/setup");
-				}
-			})
-			.catch(() => {});
-	}, [router]);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();

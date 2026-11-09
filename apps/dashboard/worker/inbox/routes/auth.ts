@@ -3,6 +3,7 @@
 
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
 import { hashPassword, verifyPassword } from "../lib/password.ts";
 import { getSession, saveSession, clearSession } from "../middleware/auth.ts";
 import { checkLoginRateLimit } from "../middleware/loginRateLimit.ts";

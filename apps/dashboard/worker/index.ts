@@ -17,6 +17,23 @@ function isApiRequest(request: Request): boolean {
 	return pathname === "/health" || pathname.startsWith("/api/") || pathname.startsWith("/v1/");
 }
 
+async function hasAdmin(env: Env): Promise<boolean> {
+	const row = await env.DB.prepare("SELECT id FROM users LIMIT 1").first();
+	return !!row;
+}
+
+// First-run routing stays here. These pages are client components, and a server
+// redirect inside them renders through vinext, which this Worker cannot do.
+async function setupRedirect(request: Request, env: Env): Promise<Response | null> {
+	const url = new URL(request.url);
+	if (url.pathname !== "/" && url.pathname !== "/login" && url.pathname !== "/setup") return null;
+	const ready = await hasAdmin(env);
+	const target = ready ? "/login" : "/setup";
+	if (url.pathname === target) return null;
+	if (ready && url.pathname === "/") return null;
+	return Response.redirect(new URL(target, url), 302);
+}
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const { pathname } = new URL(request.url);
@@ -26,6 +43,8 @@ export default {
 		if (isApiRequest(request)) {
 			return api.fetch(request, env, ctx);
 		}
+		const redirect = await setupRedirect(request, env);
+		if (redirect) return redirect;
 		return vinextHandler.fetch(request, env, ctx);
 	},
 

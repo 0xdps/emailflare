@@ -57,9 +57,11 @@ app.post("/", zValidator("json", composeSchema), async (c) => {
 		const replyToAddress = buildReplyToAddress(body.from, threadToken);
 		const threadId = await resolveThreadId(db, body.inReplyTo, { generateId });
 
-		const fromField: CFSendEmailParams["from"] = body.fromName
-			? { address: body.from, name: body.fromName }
-			: body.from;
+		const mailbox = await c.env.DB.prepare("SELECT display_name FROM inboxes WHERE email = ? LIMIT 1")
+			.bind(body.from)
+			.first<{ display_name: string }>();
+		const fromName = body.fromName?.trim() || mailbox?.display_name?.trim();
+		const fromField: CFSendEmailParams["from"] = fromName ? { address: body.from, name: fromName } : body.from;
 
 		// Forward threading headers so replies thread correctly in the recipient's
 		// client too (In-Reply-To / References are allowlisted by CF). Reply-To is a
