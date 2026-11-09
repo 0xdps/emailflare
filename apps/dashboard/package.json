@@ -82,7 +82,7 @@
 				"description": "Public origin used in unsubscribe links. Change this after you attach a custom domain."
 			},
 			"INBOX_WORKER_NAME": {
-				"description": "Worker name Email Routing should deliver to. Must match the Worker name (`emailflare`)."
+				"description": "Worker name Email Routing should deliver to. Keep this equal to the Worker name. Override both in wrangler.local.jsonc when this install uses a different name."
 			}
 		}
 	}

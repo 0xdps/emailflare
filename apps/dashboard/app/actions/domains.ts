@@ -17,7 +17,7 @@ import {
 	type CFZone,
 } from "@/worker/inbox/services/cloudflare";
 import { requireAdmin } from "./auth";
-import type { Env } from "@/worker/inbox/env";
+import { inboxWorkerName, type Env } from "@/worker/inbox/env";
 
 async function resolveZone(name: string, zoneName: string | undefined, token: string): Promise<CFZone | null> {
 	const zones = await listAllZones(token);
@@ -82,7 +82,7 @@ export async function createDomainAction(input: { name: string; zoneName?: strin
 	let routingStatus: "ready" | "pending" = "pending";
 	try {
 		await enableEmailRouting(zone.id, token);
-		await setCatchAllToWorker(zone.id, workerEnv.INBOX_WORKER_NAME, token);
+		await setCatchAllToWorker(zone.id, inboxWorkerName(workerEnv), token);
 		routingStatus = "ready";
 	} catch {
 		routingStatus = "pending";

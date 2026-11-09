@@ -38,10 +38,15 @@ export interface Env {
 	VAPID_PRIVATE_KEY: string;
 
 	// ── Public URL of this Worker (for unsubscribe links) ───────────────────────
-	PUBLIC_URL: string;
+	PUBLIC_URL?: string;
 
 	// ── Worker name used as the Email Routing catch-all destination ─────────────
-	INBOX_WORKER_NAME: string;
+	// Optional. When unset, routing uses the Worker name from wrangler config.
+	INBOX_WORKER_NAME?: string;
+}
+
+export function inboxWorkerName(env: Pick<Env, "INBOX_WORKER_NAME">): string {
+	return env.INBOX_WORKER_NAME?.trim() || "emailflare";
 }
 
 export type UserType = "admin" | "member";

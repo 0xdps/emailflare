@@ -1,0 +1,58 @@
+{
+	// Copy to wrangler.local.jsonc. That file is gitignored and overrides
+	// wrangler.jsonc for this install.
+	//
+	// Change names and IDs here. Do not change binding names
+	// (DB, RATE_LIMIT_KV, ATTACHMENTS, EMAIL_QUEUE, NOTIFICATIONS).
+	//
+	// Secrets do not go here. Put SESSION_SECRET, CF_API_TOKEN, and
+	// CF_ACCOUNT_ID in .dev.vars locally, or set them with `wrangler secret put`.
+
+	// Worker name on Cloudflare. INBOX_WORKER_NAME below must match it,
+	// unless Email Routing should deliver to a different Worker.
+	"name": "emailflare",
+
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "emailflare",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "RATE_LIMIT_KV",
+			"id": "00000000000000000000000000000000"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "ATTACHMENTS",
+			"bucket_name": "emailflare-attachments"
+		}
+	],
+	"queues": {
+		"producers": [
+			{
+				"binding": "EMAIL_QUEUE",
+				"queue": "emailflare-sequences"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "emailflare-sequences",
+				"max_batch_size": 10,
+				"max_batch_timeout": 30
+			}
+		]
+	},
+
+	// Plain vars. .dev.vars overrides these during local dev.
+	"vars": {
+		// Origin used in invite and unsubscribe links. No trailing slash.
+		"PUBLIC_URL": "http://localhost:5173",
+		// Email Routing catch-all target. Must be a Worker in this account.
+		"INBOX_WORKER_NAME": "emailflare"
+	}
+}

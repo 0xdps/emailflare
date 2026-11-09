@@ -14,7 +14,7 @@ import { z } from "zod";
 import { generateId, inboxSchema } from "@/lib/core";
 import { enableEmailRouting, setCatchAllToWorker, getZoneByHostname } from "../../services/cloudflare.ts";
 import { requireAdmin } from "../../middleware/auth.ts";
-import type { HonoEnv } from "../../env.ts";
+import { inboxWorkerName, type HonoEnv } from "../../env.ts";
 
 const app = new Hono<HonoEnv>();
 
@@ -83,7 +83,7 @@ app.post("/", requireAdmin, zValidator("json", inboxSchema), async (c) => {
 	// Configure Email Routing (catch-all → this Worker). If the token can't
 	// configure routing we still create the inbox, but persist the failure so
 	// the UI can offer a "Setup routing" retry.
-	const routing = await configureRouting(body.email, c.env.CF_API_TOKEN, c.env.INBOX_WORKER_NAME);
+	const routing = await configureRouting(body.email, c.env.CF_API_TOKEN, inboxWorkerName(c.env));
 
 	const id = generateId();
 	await c.env.DB.prepare(
@@ -110,7 +110,7 @@ app.post("/:id/routing", requireAdmin, async (c) => {
 		.first();
 	if (!row) return c.json({ error: "Inbox not found" }, 404);
 
-	const routing = await configureRouting(row.email as string, c.env.CF_API_TOKEN, c.env.INBOX_WORKER_NAME);
+	const routing = await configureRouting(row.email as string, c.env.CF_API_TOKEN, inboxWorkerName(c.env));
 
 	await c.env.DB.prepare("UPDATE inboxes SET routing_configured = ?, routing_error = ? WHERE id = ?")
 		.bind(routing.configured ? 1 : 0, routing.error ?? null, c.req.param("id"))

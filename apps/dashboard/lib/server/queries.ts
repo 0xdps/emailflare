@@ -10,7 +10,7 @@ import {
 	listSendingSubdomains,
 	getCatchAllRule,
 } from "@/worker/inbox/services/cloudflare";
-import type { Env } from "@/worker/inbox/env";
+import { inboxWorkerName, type Env } from "@/worker/inbox/env";
 
 const CF_DAILY_LIMIT = 1000;
 
@@ -348,8 +348,7 @@ export async function getDomainCatalog(): Promise<{
 				try {
 					const rule = await getCatchAllRule(zone.id, workerEnv.CF_API_TOKEN);
 					const worker = rule.actions?.find((action) => action.type === "worker");
-					routing =
-						rule.enabled && worker?.value?.includes(workerEnv.INBOX_WORKER_NAME) ? "ready" : "pending";
+					routing = rule.enabled && worker?.value?.includes(inboxWorkerName(workerEnv)) ? "ready" : "pending";
 				} catch {
 					/* keep stored state */
 				}

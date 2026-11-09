@@ -4,7 +4,7 @@ import { env } from "cloudflare:workers";
 import { generateId, inboxSchema } from "@/lib/core";
 import { enableEmailRouting, setCatchAllToWorker, getZoneByHostname } from "@/worker/inbox/services/cloudflare";
 import { requireAdmin } from "./auth";
-import type { Env } from "@/worker/inbox/env";
+import { inboxWorkerName, type Env } from "@/worker/inbox/env";
 
 async function configureRouting(
 	email: string,
@@ -36,7 +36,7 @@ export async function createInboxAction(input: { email: string; display_name: st
 		.first();
 	if (existing) throw new Error("Inbox already exists");
 
-	const routing = await configureRouting(body.email, workerEnv.CF_API_TOKEN, workerEnv.INBOX_WORKER_NAME);
+	const routing = await configureRouting(body.email, workerEnv.CF_API_TOKEN, inboxWorkerName(workerEnv));
 	const id = generateId();
 
 	await workerEnv.DB.prepare(
@@ -63,7 +63,7 @@ export async function retryInboxRoutingAction(id: string) {
 	const row = await workerEnv.DB.prepare("SELECT id, email FROM inboxes WHERE id = ? LIMIT 1").bind(id).first();
 	if (!row) throw new Error("Inbox not found");
 
-	const routing = await configureRouting(row.email as string, workerEnv.CF_API_TOKEN, workerEnv.INBOX_WORKER_NAME);
+	const routing = await configureRouting(row.email as string, workerEnv.CF_API_TOKEN, inboxWorkerName(workerEnv));
 
 	await workerEnv.DB.prepare("UPDATE inboxes SET routing_configured = ?, routing_error = ? WHERE id = ?")
 		.bind(routing.configured ? 1 : 0, routing.error ?? null, id)

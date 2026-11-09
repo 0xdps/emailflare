@@ -4,7 +4,7 @@ EmailFlare deploys as **one single Cloudflare Worker** containing the Next.js we
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/0xdps/emailflare)
 
-The 1-Click Deploy button automatically provisions a fresh D1 database, KV namespace, R2 bucket, and queue in your Cloudflare account, then builds and deploys the unified Worker.
+The 1-Click Deploy button builds and deploys the Worker. Copy `wrangler.local.example.jsonc` to `wrangler.local.jsonc` first if this account needs its own Worker, database, bucket, or queue name. A manual deploy also needs those resources to exist.
 
 ---
 
@@ -30,10 +30,10 @@ When connecting your repository to Cloudflare Workers Builds, verify the followi
 | **Worker** (`apps/dashboard`) | —               | Next.js dashboard (`/inbox`, `/developer/*`, `/settings/*`), Hono REST API (`/api/*`, `/v1/*`), and background handlers (`email()`, `scheduled()`, `queue()`). |
 | **D1 Database**               | `DB`            | Relational storage for users, mailboxes, threads, contacts, templates, API keys, domains, logs, and suppressions.                                              |
 | **R2 Bucket**                 | `ATTACHMENTS`   | Object storage for raw inbound email MIME messages and file attachments.                                                                                       |
-| **Queue**                     | `SEND_QUEUE`    | Outbound email queue producer and consumer for high-throughput, reliable delivery.                                                                             |
+| **Queue**                     | `EMAIL_QUEUE`   | Sequence delivery jobs. The queue name is set per install in `wrangler.local.jsonc`.                                                                           |
 | **KV Namespace**              | `RATE_LIMIT_KV` | Distributed rate limiting and short-lived token storage.                                                                                                       |
 | **Durable Object**            | `NOTIFICATIONS` | `NotificationsHub` Durable Object managing persistent real-time WebSocket feeds for the inbox.                                                                 |
-| **Email Sending**             | `EMAIL`         | Cloudflare's native MTA binding for dispatching outbound emails.                                                                                               |
+| **R2 bucket name**            | —               | Set `bucket_name` on the `ATTACHMENTS` binding in `wrangler.local.jsonc`. Create the bucket before a manual deploy.                                            |
 
 ---
 
@@ -55,12 +55,15 @@ Once the initial deploy completes:
     pnpm exec wrangler secret put CF_ACCOUNT_ID     # Your Cloudflare Account ID
     ```
 
-3. **Set `PUBLIC_URL` (Optional):**
-    - If hosting on a custom domain (e.g., `https://mail.yourcompany.com`), set the `PUBLIC_URL` environment variable in your Worker configuration so links in invite and notification emails resolve correctly.
+3. **Set install-specific names** in `wrangler.local.jsonc` (copy from `wrangler.local.example.jsonc`):
+    - `name`: Worker name, if `emailflare` is already taken.
+    - `PUBLIC_URL`: public origin, such as `https://mail.yourcompany.com`. Invite and unsubscribe links use this.
+    - `INBOX_WORKER_NAME`: Worker that receives catch-all mail. Keep it equal to `name`.
+    - `bucket_name`, `database_name`, and `queue`: only if this account should not use the defaults.
 
 4. **Connect Cloudflare Email Routing:**
-    - In the Cloudflare dashboard for your zone, navigate to **Email** > **Email Routing**.
-    - Create a catch-all rule (or specific addresses like `support@yourdomain.com`, `billing@...`) and set the action to **Send to Worker**, choosing `emailflare`.
+    - Domain enable does this when the token can write Email Routing.
+    - Otherwise, in the zone, open **Email** > **Email Routing**, create a catch-all, and send it to the Worker named in `INBOX_WORKER_NAME`.
 
 ---
 

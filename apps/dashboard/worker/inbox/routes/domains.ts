@@ -16,7 +16,7 @@ import {
 	type CFSubdomain,
 	type CFZone,
 } from "../services/cloudflare.ts";
-import type { HonoEnv } from "../env.ts";
+import { inboxWorkerName, type HonoEnv } from "../env.ts";
 import { domainCreateSchema, generateId } from "@/lib/core";
 
 const app = new Hono<HonoEnv>();
@@ -112,7 +112,7 @@ app.get("/catalog", async (c) => {
 
 			try {
 				const rule = await getCatchAllRule(zone.id, token);
-				routing = routingState(rule, c.env.INBOX_WORKER_NAME);
+				routing = routingState(rule, inboxWorkerName(c.env));
 			} catch {
 				routing =
 					row?.routing_status === "ready" || row?.routing_status === "pending"
@@ -204,7 +204,7 @@ app.post("/", zValidator("json", domainCreateSchema), async (c) => {
 	let routingStatus: "ready" | "pending" = "pending";
 	try {
 		await enableEmailRouting(zone.id, token);
-		await setCatchAllToWorker(zone.id, c.env.INBOX_WORKER_NAME, token);
+		await setCatchAllToWorker(zone.id, inboxWorkerName(c.env), token);
 		routingStatus = "ready";
 	} catch {
 		routingStatus = "pending";

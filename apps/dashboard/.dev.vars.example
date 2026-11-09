@@ -1,9 +1,9 @@
 # Local Worker config for `just dev`.
 # Copy to apps/dashboard/.dev.vars. Never commit real values.
 #
-# Bindings (DB, RATE_LIMIT_KV, ATTACHMENTS, NOTIFICATIONS, EMAIL_QUEUE,
-# RATE_LIMITER, ASSETS) come from wrangler.jsonc. Miniflare creates them.
-# Apply the local schema with `just migrate`.
+# Resource names (Worker, database, bucket, queue, public URL) are not secrets.
+# Set those in wrangler.local.jsonc. See wrangler.local.example.jsonc.
+# Miniflare creates local resources. Apply the schema with `just migrate`.
 
 # Required for login, setup, and invites.
 # Generate with: openssl rand -hex 32
@@ -20,9 +20,10 @@ CF_API_TOKEN=
 CF_ACCOUNT_ID=
 
 # Origin used in invite and unsubscribe links.
-# Use the local dev origin, not the production workers.dev URL.
+# Use the local dev origin, not a production URL.
 PUBLIC_URL=http://localhost:5173
 
 # Worker name written into the zone catch-all rule.
+# Omit to use the Worker name from wrangler.local.jsonc.
 # Local mail is not delivered here. This only matters when enabling a real zone.
 INBOX_WORKER_NAME=emailflare

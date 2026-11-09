@@ -24,8 +24,8 @@
 		"run_worker_first": ["/*", "!/_next/static/*", "!/*/_next/static/*"],
 	},
 
-	// Placeholder IDs are required so Deploy to Cloudflare can provision a
-	// fresh database and rewrite this file with the real ID.
+	// Binding names are part of the app. Resource names and IDs are per install
+	// and belong in wrangler.local.jsonc. Zero IDs are local placeholders only.
 	"d1_databases": [
 		{
 			"binding": "DB",
@@ -45,7 +45,6 @@
 	"r2_buckets": [
 		{
 			"binding": "ATTACHMENTS",
-			"bucket_name": "emailflare-attachments",
 		},
 	],
 
@@ -85,8 +84,10 @@
 		"crons": ["*/5 * * * *"],
 	},
 
+	// PUBLIC_URL is per install (wrangler.local.jsonc or .dev.vars).
+	// INBOX_WORKER_NAME defaults to the Worker name above. Override it only
+	// when Email Routing should deliver to a different Worker.
 	"vars": {
-		"PUBLIC_URL": "https://emailflare.workers.dev",
 		"INBOX_WORKER_NAME": "emailflare",
 	},
 

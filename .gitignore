@@ -5,6 +5,7 @@ dist/
 .dev.vars
 !.dev.vars.example
 *.local
+wrangler.local.jsonc
 .vscode/
 
 apps/dashboard/worker-configuration.d.ts
