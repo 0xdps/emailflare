@@ -1,0 +1,34 @@
+apps/dashboard/components/pages/Dashboard.tsx
+  s_c6414e19edded4::t_34bf3d50953d6a 270,279
+apps/dashboard/app/developer/overview/page.tsx
+  s_c6414e19edded4::t_ef739dcb56c298 4,19,23
+apps/dashboard/components/Layout.tsx
+  s_c6414e19edded4::t_fab3a1097ab5ca 253-260,484-516
+apps/dashboard/components/modules/inbox/HtmlEmailViewer.tsx
+  s_c6414e19edded4::t_89dfbcd55d05b3 3,35-42,165,168-171
+apps/dashboard/components/modules/inbox/ThreadReader.tsx
+  s_c6414e19edded4::t_98d7a4e1f94a5d 89-92,95-100,103-110,113-121,173,245,248-249
+  s_c6414e19edded4::t_88ea9f21af830e 3,14
+  s_c6414e19edded4::t_754285546e596a 87-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d88f63afb6466dd9ffa72e202330fad4168e6f50",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_c6414e19edded4": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "86c80093-d2ba-4db5-9a41-6b830758ee50",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
