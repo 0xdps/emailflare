@@ -1,57 +1,4 @@
-import { render } from "@react-email/render";
-import { THEMES, themeToTailwindConfig } from "./themes.js";
-import { runWithTheme } from "./ThemeContext.js";
-import { Welcome } from "./layouts/Welcome.js";
-import { MagicLink } from "./layouts/MagicLink.js";
-import { Notification } from "./layouts/Notification.js";
-import { OTP } from "./layouts/OTP.js";
-import { EmailVerify } from "./layouts/EmailVerify.js";
-import { PasswordReset } from "./layouts/PasswordReset.js";
-import { PasswordChanged } from "./layouts/PasswordChanged.js";
-import { NewLogin } from "./layouts/NewLogin.js";
-import { OrderConfirm } from "./layouts/OrderConfirm.js";
-import { Invoice } from "./layouts/Invoice.js";
-import { SubscriptionStarted } from "./layouts/SubscriptionStarted.js";
-import { SubscriptionCancelled } from "./layouts/SubscriptionCancelled.js";
-import { TrialEnding } from "./layouts/TrialEnding.js";
-import { TeamInvite } from "./layouts/TeamInvite.js";
-import { Alert } from "./layouts/Alert.js";
-import { Digest } from "./layouts/Digest.js";
-import { Announcement } from "./layouts/Announcement.js";
-import { Feedback } from "./layouts/Feedback.js";
-import { AccountDeleted } from "./layouts/AccountDeleted.js";
-import { Plain } from "./layouts/Plain.js";
-import { VerificationSuccess } from "./layouts/VerificationSuccess.js";
-import { SubscriptionConfirmation } from "./layouts/SubscriptionConfirmation.js";
-import { PaymentFailed } from "./layouts/PaymentFailed.js";
-import { RenewalUpcoming } from "./layouts/RenewalUpcoming.js";
-import { SubscriptionResumed } from "./layouts/SubscriptionResumed.js";
-import { RefundApproved } from "./layouts/RefundApproved.js";
-import { PlanUpgraded } from "./layouts/PlanUpgraded.js";
-import { PlanDowngraded } from "./layouts/PlanDowngraded.js";
-import { OAuthLinked } from "./layouts/OAuthLinked.js";
-import { DatabaseCreated } from "./layouts/DatabaseCreated.js";
-import { DatabaseDeleted } from "./layouts/DatabaseDeleted.js";
-import { UsageThreshold } from "./layouts/UsageThreshold.js";
-import { ApiKeyCreated } from "./layouts/ApiKeyCreated.js";
-import { ApiKeyRevoked } from "./layouts/ApiKeyRevoked.js";
-import { PlanLimitReached } from "./layouts/PlanLimitReached.js";
-import { EmailChangeRequested } from "./layouts/EmailChangeRequested.js";
-import { EmailChangeConfirmed } from "./layouts/EmailChangeConfirmed.js";
-import { PhoneVerify } from "./layouts/PhoneVerify.js";
-import { AccountLocked } from "./layouts/AccountLocked.js";
-import { AccountUnlocked } from "./layouts/AccountUnlocked.js";
-import { BackupReady } from "./layouts/BackupReady.js";
-import { ExportReady } from "./layouts/ExportReady.js";
-import { ImportCompleted } from "./layouts/ImportCompleted.js";
-import { MaintenanceScheduled } from "./layouts/MaintenanceScheduled.js";
-import { IncidentUpdate } from "./layouts/IncidentUpdate.js";
-import { FeatureAccessGranted } from "./layouts/FeatureAccessGranted.js";
-import { FeatureAccessRevoked } from "./layouts/FeatureAccessRevoked.js";
-import { BillingReceipt } from "./layouts/BillingReceipt.js";
-import { PaymentMethodExpiring } from "./layouts/PaymentMethodExpiring.js";
-import { SupportTicketReply } from "./layouts/SupportTicketReply.js";
-import React from "react";
+import { THEMES, type EmailTheme } from "./themes.js";
 
 export type LayoutName =
 	| "welcome"
@@ -295,65 +242,115 @@ export async function renderLayout(
 	variables: Record<string, unknown>,
 	themeId?: string,
 ): Promise<string> {
+	const spec = LAYOUTS[layout];
+	if (!spec) throw new Error(`Unknown layout: ${layout}`);
 	const theme = THEMES[themeId ?? "default"] ?? THEMES["default"];
-	const tailwindConfig = themeToTailwindConfig(theme);
-	const components: Record<LayoutName, React.FC<Record<string, string>>> = {
-		welcome: Welcome as React.FC<Record<string, string>>,
-		"magic-link": MagicLink as React.FC<Record<string, string>>,
-		notification: Notification as React.FC<Record<string, string>>,
-		otp: OTP as React.FC<Record<string, string>>,
-		"email-verify": EmailVerify as React.FC<Record<string, string>>,
-		"password-reset": PasswordReset as React.FC<Record<string, string>>,
-		"password-changed": PasswordChanged as React.FC<Record<string, string>>,
-		"new-login": NewLogin as React.FC<Record<string, string>>,
-		"order-confirm": OrderConfirm as React.FC<Record<string, string>>,
-		invoice: Invoice as React.FC<Record<string, string>>,
-		"subscription-started": SubscriptionStarted as React.FC<Record<string, string>>,
-		"subscription-cancelled": SubscriptionCancelled as React.FC<Record<string, string>>,
-		"trial-ending": TrialEnding as React.FC<Record<string, string>>,
-		"team-invite": TeamInvite as React.FC<Record<string, string>>,
-		alert: Alert as React.FC<Record<string, string>>,
-		digest: Digest as React.FC<Record<string, string>>,
-		announcement: Announcement as React.FC<Record<string, string>>,
-		feedback: Feedback as React.FC<Record<string, string>>,
-		"account-deleted": AccountDeleted as React.FC<Record<string, string>>,
-		plain: Plain as React.FC<Record<string, string>>,
-		"verification-success": VerificationSuccess as React.FC<Record<string, string>>,
-		"subscription-confirmation": SubscriptionConfirmation as React.FC<Record<string, string>>,
-		"payment-failed": PaymentFailed as React.FC<Record<string, string>>,
-		"renewal-upcoming": RenewalUpcoming as React.FC<Record<string, string>>,
-		"subscription-resumed": SubscriptionResumed as React.FC<Record<string, string>>,
-		"refund-approved": RefundApproved as React.FC<Record<string, string>>,
-		"plan-upgraded": PlanUpgraded as React.FC<Record<string, string>>,
-		"plan-downgraded": PlanDowngraded as React.FC<Record<string, string>>,
-		"oauth-linked": OAuthLinked as React.FC<Record<string, string>>,
-		"database-created": DatabaseCreated as React.FC<Record<string, string>>,
-		"database-deleted": DatabaseDeleted as React.FC<Record<string, string>>,
-		"usage-threshold": UsageThreshold as React.FC<Record<string, string>>,
-		"api-key-created": ApiKeyCreated as React.FC<Record<string, string>>,
-		"api-key-revoked": ApiKeyRevoked as React.FC<Record<string, string>>,
-		"plan-limit-reached": PlanLimitReached as React.FC<Record<string, string>>,
-		"email-change-requested": EmailChangeRequested as React.FC<Record<string, string>>,
-		"email-change-confirmed": EmailChangeConfirmed as React.FC<Record<string, string>>,
-		"phone-verify": PhoneVerify as React.FC<Record<string, string>>,
-		"account-locked": AccountLocked as React.FC<Record<string, string>>,
-		"account-unlocked": AccountUnlocked as React.FC<Record<string, string>>,
-		"backup-ready": BackupReady as React.FC<Record<string, string>>,
-		"export-ready": ExportReady as React.FC<Record<string, string>>,
-		"import-completed": ImportCompleted as React.FC<Record<string, string>>,
-		"maintenance-scheduled": MaintenanceScheduled as React.FC<Record<string, string>>,
-		"incident-update": IncidentUpdate as React.FC<Record<string, string>>,
-		"feature-access-granted": FeatureAccessGranted as React.FC<Record<string, string>>,
-		"feature-access-revoked": FeatureAccessRevoked as React.FC<Record<string, string>>,
-		"billing-receipt": BillingReceipt as React.FC<Record<string, string>>,
-		"payment-method-expiring": PaymentMethodExpiring as React.FC<Record<string, string>>,
-		"support-ticket-reply": SupportTicketReply as React.FC<Record<string, string>>,
+	return renderTemplateHtml(spec.label, spec.variables, variables, theme);
+}
+
+function renderTemplateHtml(
+	label: string,
+	fields: string[],
+	variables: Record<string, unknown>,
+	theme: EmailTheme,
+): string {
+	const value = (key: string) => {
+		const raw = variables[key];
+		if (raw == null || raw === "") return "";
+		return escapeHtml(String(raw));
 	};
+	const name = value("name") || "there";
+	const appName = value("appName") || "EmailFlare";
+	const title = value("title") || value("subject") || label;
+	const body =
+		value("body") ||
+		value("message") ||
+		value("messageSnippet") ||
+		value("latestUpdate") ||
+		`Hi ${name}, this is a preview of the ${escapeHtml(label)} template from ${appName}.`;
+	const actionUrl = firstValue(variables, [
+		"loginUrl",
+		"ctaUrl",
+		"actionUrl",
+		"magicUrl",
+		"verifyUrl",
+		"resetUrl",
+		"supportUrl",
+		"secureUrl",
+		"trackingUrl",
+		"payUrl",
+		"dashboardUrl",
+		"resubscribeUrl",
+		"upgradeUrl",
+		"inviteUrl",
+		"surveyUrl",
+		"invoiceUrl",
+		"docsUrl",
+		"downloadUrl",
+		"reportUrl",
+		"statusPageUrl",
+		"receiptUrl",
+		"updatePaymentUrl",
+		"ticketUrl",
+	]);
+	const actionLabel = value("ctaLabel") || value("actionLabel") || (actionUrl ? "Open" : "");
+	const code = value("code");
+	const details = fields
+		.filter(
+			(field) =>
+				!["name", "appName", "body", "message", "subject", "title", "ctaLabel", "actionLabel"].includes(field),
+		)
+		.map((field) => {
+			const shown = value(field);
+			return shown
+				? `<tr><td style="padding:6px 12px 6px 0;color:${theme.muted};font-size:13px;">${escapeHtml(labelize(field))}</td><td style="padding:6px 0;color:${theme.strong};font-size:13px;">${shown}</td></tr>`
+				: "";
+		})
+		.join("");
 
-	const Component = components[layout];
-	if (!Component) throw new Error(`Unknown layout: ${layout}`);
+	return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head>
+<body style="margin:0;background:${theme.bodyBg};font-family:ui-sans-serif,system-ui,sans-serif;padding:32px 16px;">
+  <div style="max-width:600px;margin:0 auto;background:${theme.surface};border:1px solid ${theme.border};border-radius:16px;padding:40px 32px;">
+    <p style="margin:0 0 12px;color:${theme.primary};font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">${escapeHtml(label)}</p>
+    <h1 style="margin:0 0 16px;color:${theme.heading};font-size:24px;line-height:1.3;">${title}</h1>
+    <p style="margin:0 0 8px;color:${theme.body};font-size:16px;line-height:1.6;">Hi ${name},</p>
+    <p style="margin:0 0 20px;color:${theme.body};font-size:16px;line-height:1.6;white-space:pre-line;">${body}</p>
+    ${code ? `<p style="margin:24px 0;text-align:center;font-family:ui-monospace,monospace;font-size:32px;font-weight:700;letter-spacing:.3em;color:${theme.primary};background:${theme.primarySubtle};border-radius:12px;padding:24px;">${code}</p>` : ""}
+    ${actionUrl ? `<p style="margin:24px 0;"><a href="${escapeHtml(actionUrl)}" style="display:inline-block;background:${theme.primary};color:${theme.primaryFg};text-decoration:none;font-weight:600;border-radius:8px;padding:12px 24px;">${actionLabel} →</a></p>` : ""}
+    ${details ? `<table style="width:100%;border-top:1px solid ${theme.border};margin-top:24px;padding-top:12px;">${details}</table>` : ""}
+    <p style="margin:28px 0 0;color:${theme.muted};font-size:13px;">Sent by ${appName}.</p>
+  </div>
+</body>
+</html>`;
+}
 
-	return runWithTheme(tailwindConfig, () =>
-		render(React.createElement(Component, variables as Record<string, string>)),
-	);
+function firstValue(variables: Record<string, unknown>, keys: string[]): string {
+	for (const key of keys) {
+		const raw = variables[key];
+		if (typeof raw === "string" && raw) return raw;
+	}
+	return "";
+}
+
+function labelize(key: string): string {
+	return key.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase());
+}
+
+function escapeHtml(value: string): string {
+	return value.replace(/[&<>"']/g, (char) => {
+		switch (char) {
+			case "&":
+				return "&" + "amp;";
+			case "<":
+				return "&" + "lt;";
+			case ">":
+				return "&" + "gt;";
+			case '"':
+				return "&" + "quot;";
+			default:
+				return "&" + "#39;";
+		}
+	});
 }

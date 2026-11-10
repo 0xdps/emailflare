@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Layout from "@/components/Layout";
 import Dashboard from "@/components/pages/Dashboard";
-import { getDashboardStats, getDashboardLogs, getCloudflareStatus, getServerSession } from "@/lib/server/queries";
+import { getDashboardStats, getCloudflareStatus, getServerSession } from "@/lib/server/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +16,11 @@ export default async function RoutePage() {
 		redirect("/inbox");
 	}
 
-	const [stats, logs, cfStatus] = await Promise.all([
-		getDashboardStats("7d"),
-		getDashboardLogs(10),
-		getCloudflareStatus(),
-	]);
+	const [stats, cfStatus] = await Promise.all([getDashboardStats("7d"), getCloudflareStatus()]);
 
 	return (
 		<Layout>
-			<Dashboard initialStats={stats} initialLogs={logs} initialCfStatus={cfStatus} />
+			<Dashboard initialStats={stats} initialCfStatus={cfStatus} />
 		</Layout>
 	);
 }

@@ -2,25 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-	Globe,
-	Send,
-	RefreshCw,
-	CheckCircle2,
-	XCircle,
-	ArrowRight,
-	TrendingUp,
-	AlertTriangle,
-	Mail,
-	Activity,
-	FlaskConical,
-	Key,
-} from "lucide-react";
+import { RefreshCw, TrendingUp, AlertTriangle, Mail, Activity, FlaskConical, Key } from "lucide-react";
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -65,52 +51,16 @@ interface CFTokenStatus {
 	message: string;
 }
 
-interface LogRow {
-	id: string;
-	to_address: string;
-	from_address: string;
-	subject: string;
-	status: "sent" | "failed";
-	error: string | null;
-	sent_at: string;
-}
-
 const RANGES = ["1d", "7d", "30d"] as const;
 type Range = (typeof RANGES)[number];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function domainHealth(
-	sent: number,
-	bounces: number,
-	complaints: number,
-): {
-	label: string;
-	color: string;
-	bg: string;
-} {
-	if (sent === 0) return { label: "No data", color: "#6b7280", bg: "rgba(107,114,128,0.1)" };
-	const br = bounces / sent;
-	const cr = complaints / sent;
-	if (br < 0.02 && cr < 0.001) return { label: "Excellent", color: "#10b981", bg: "rgba(16,185,129,0.1)" };
-	if (br < 0.05 && cr < 0.003) return { label: "Good", color: "#3b82f6", bg: "rgba(59,130,246,0.1)" };
-	if (br < 0.1 && cr < 0.01) return { label: "Fair", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" };
-	return { label: "Poor", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
-}
 
 function fmt(n: number): string {
 	if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
 	if (n >= 10_000) return `${Math.round(n / 1_000)}k`;
 	if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
 	return n.toLocaleString();
-}
-
-function timeAgo(iso: string): string {
-	const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-	if (secs < 60) return `${secs}s ago`;
-	if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
-	if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
-	return `${Math.floor(secs / 86400)}d ago`;
 }
 
 function shortDate(iso: string): string {
@@ -319,10 +269,6 @@ function DashboardSkeleton() {
 				))}
 			</div>
 			<Skeleton className="h-[260px] rounded-xl" />
-			<div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-				<Skeleton className="lg:col-span-3 h-[240px] rounded-xl" />
-				<Skeleton className="lg:col-span-2 h-[240px] rounded-xl" />
-			</div>
 		</div>
 	);
 }
@@ -331,13 +277,11 @@ function DashboardSkeleton() {
 
 export interface DashboardProps {
 	initialStats?: Stats | null;
-	initialLogs?: LogRow[];
 	initialCfStatus?: CFTokenStatus | null;
 }
 
-export default function Dashboard({ initialStats, initialLogs = [], initialCfStatus }: DashboardProps = {}) {
+export default function Dashboard({ initialStats, initialCfStatus }: DashboardProps = {}) {
 	const [stats, setStats] = useState<Stats | null>(initialStats ?? null);
-	const [logs, setLogs] = useState<LogRow[]>(initialLogs);
 	const [cfStatus, setCfStatus] = useState<CFTokenStatus | null>(initialCfStatus ?? null);
 	const [refreshing, setRefreshing] = useState(false);
 	const [range, setRange] = useState<Range>("7d");
@@ -346,13 +290,11 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 	async function load(r: Range = range) {
 		setRefreshing(true);
 		try {
-			const [s, l, cf] = await Promise.all([
+			const [s, cf] = await Promise.all([
 				api.get<Stats>(`/api/stats?range=${r}`),
-				api.get<{ data: LogRow[] }>("/api/logs?limit=10&page=1"),
 				api.get<CFTokenStatus>("/api/cloudflare/status").catch(() => null),
 			]);
 			setStats(s.data);
-			setLogs(l.data.data ?? []);
 			setCfStatus(cf?.data ?? null);
 		} finally {
 			setRefreshing(false);
@@ -631,160 +573,6 @@ export default function Dashboard({ initialStats, initialLogs = [], initialCfSta
 				</div>
 				<AreaChart daily={stats.daily} />
 			</Card>
-
-			{/* ── Bottom 2-col ────────────────────────────────────────────────────── */}
-			<div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-				{/* Domain breakdown */}
-				<Card className="lg:col-span-3 overflow-hidden p-0 gap-0">
-					<div className="flex items-center justify-between px-5 py-[14px] border-b border-border">
-						<div>
-							<p className="text-sm font-medium">Domains</p>
-							<p className="text-xs text-muted-foreground mt-0.5">
-								{stats.totalDomains} total · {stats.verifiedDomains} verified
-							</p>
-						</div>
-						<Link
-							href="/domains"
-							className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
-						>
-							Manage <ArrowRight size={10} />
-						</Link>
-					</div>
-
-					{stats.domainBreakdown.length === 0 ? (
-						<div className="py-12 flex flex-col items-center gap-2 text-muted-foreground">
-							<Globe size={18} className="opacity-40" />
-							<span className="text-xs">No domains configured yet</span>
-						</div>
-					) : (
-						<div className="divide-y divide-border">
-							{stats.domainBreakdown.map((d) => {
-								const total = d.sent + d.failed;
-								const rate = total > 0 ? Math.round((d.sent / total) * 100) : null;
-								const health = domainHealth(d.sent, d.bounces, d.complaints);
-								return (
-									<div key={d.name} className="px-5 py-3.5 hover:bg-muted/50 transition-colors">
-										<div className="flex items-center justify-between gap-3">
-											<div className="flex items-center gap-2 min-w-0">
-												<span
-													className={`size-1.5 rounded-full flex-shrink-0 ${d.verified ? "bg-emerald-500" : "bg-amber-500/60"}`}
-												/>
-												<span className="text-[13px] text-foreground font-mono truncate">
-													{d.name}
-												</span>
-											</div>
-											<div className="flex items-center gap-3 text-xs flex-shrink-0">
-												{/* health rating badge */}
-												<span
-													className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-													style={{ color: health.color, backgroundColor: health.bg }}
-												>
-													{health.label}
-												</span>
-												{total === 0 ? (
-													<span className="text-muted-foreground tabular-nums">
-														No emails yet
-													</span>
-												) : (
-													<>
-														<span className="text-muted-foreground tabular-nums">
-															{d.sent.toLocaleString()} sent
-														</span>
-														{d.bounces > 0 && (
-															<span className="text-amber-600 tabular-nums">
-																{d.bounces} bounce{d.bounces !== 1 ? "s" : ""}
-															</span>
-														)}
-														{d.complaints > 0 && (
-															<span className="text-red-500 tabular-nums">
-																{d.complaints} complaint{d.complaints !== 1 ? "s" : ""}
-															</span>
-														)}
-														{rate !== null && (
-															<span
-																className="font-medium tabular-nums"
-																style={{ color: rate >= 95 ? "#10b981" : "#f59e0b" }}
-															>
-																{rate}%
-															</span>
-														)}
-													</>
-												)}
-											</div>
-										</div>
-									</div>
-								);
-							})}
-						</div>
-					)}
-
-					{stats.totalDomains > stats.verifiedDomains && (
-						<div className="px-5 py-3 border-t border-border flex items-center gap-2">
-							<span className="size-1.5 rounded-full bg-amber-500/60 flex-shrink-0" />
-							<span className="text-xs text-muted-foreground">
-								{stats.totalDomains - stats.verifiedDomains} domain
-								{stats.totalDomains - stats.verifiedDomains !== 1 ? "s" : ""} pending DNS verification
-							</span>
-						</div>
-					)}
-				</Card>
-
-				{/* Recent activity */}
-				<Card className="lg:col-span-2 overflow-hidden p-0 gap-0">
-					<div className="flex items-center justify-between px-5 py-[14px] border-b border-border">
-						<p className="text-sm font-medium">Recent activity</p>
-						<Link
-							href="/developer/logs"
-							className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
-						>
-							All logs <ArrowRight size={10} />
-						</Link>
-					</div>
-
-					{logs.length === 0 ? (
-						<div className="py-12 flex flex-col items-center gap-2 text-muted-foreground">
-							<Send size={18} className="opacity-40" />
-							<span className="text-xs">No emails sent yet</span>
-						</div>
-					) : (
-						<div className="divide-y divide-border">
-							{logs.map((log) => (
-								<div
-									key={log.id}
-									className="flex items-start gap-3 px-5 py-3 hover:bg-muted/40 transition-colors"
-								>
-									<div className="mt-0.5 flex-shrink-0">
-										{log.status === "sent" ? (
-											<CheckCircle2 size={13} className="text-emerald-500" />
-										) : (
-											<XCircle size={13} className="text-destructive" />
-										)}
-									</div>
-									<div className="min-w-0 flex-1">
-										<p className="text-[13px] text-foreground truncate leading-tight">
-											{log.subject || "(no subject)"}
-										</p>
-										<p className="text-[11px] text-muted-foreground font-mono truncate mt-0.5">
-											{log.to_address}
-										</p>
-										{log.error && (
-											<p className="text-[11px] text-destructive/80 truncate mt-0.5">
-												{log.error}
-											</p>
-										)}
-									</div>
-									<Badge
-										variant="outline"
-										className="text-[10px] text-muted-foreground/50 whitespace-nowrap flex-shrink-0 mt-0.5 border-0 px-0"
-									>
-										{timeAgo(log.sent_at)}
-									</Badge>
-								</div>
-							))}
-						</div>
-					)}
-				</Card>
-			</div>
 		</div>
 	);
 }
