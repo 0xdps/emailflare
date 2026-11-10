@@ -1,24 +1,17 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
-	Reply,
 	ShieldCheck,
 	ShieldAlert,
-	Clock,
-	Mail,
-	ArrowUpRight,
-	ArrowDownLeft,
 	Paperclip,
-	CheckCircle2,
 	ChevronDown,
 	ChevronRight,
 	User as UserIcon,
 	FileText,
 	ArrowLeft,
 } from "lucide-react";
-import { Thread, ThreadItem, Person, Inbox as InboxType } from "@/lib/api";
-import { groupThread, ThreadGroup } from "@/lib/threading";
+import { Thread, ThreadItem, Inbox as InboxType } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import HtmlEmailViewer from "./HtmlEmailViewer";
@@ -38,17 +31,6 @@ interface ThreadReaderProps {
 	}) => Promise<void>;
 	onMarkUnread?: () => void;
 	onBack?: () => void;
-}
-
-function initials(name: string | null, email: string) {
-	if (name)
-		return name
-			.split(" ")
-			.map((s) => s[0])
-			.join("")
-			.slice(0, 2)
-			.toUpperCase();
-	return email[0].toUpperCase();
 }
 
 function stripQuotedReply(body: string | null | undefined): { content: string; quote: string | null } {
@@ -97,97 +79,46 @@ function SecurityBadge({ type, status }: { type: "SPF" | "DKIM" | "DMARC"; statu
 	);
 }
 
-function MessageCard({
-	item,
-	isLatest,
-	onReplyClick,
-}: {
-	item: ThreadItem;
-	isLatest: boolean;
-	onReplyClick: () => void;
-}) {
+function MessageCard({ item, person }: { item: ThreadItem; person: { name: string | null; email: string } }) {
 	const [expandedQuote, setExpandedQuote] = useState(false);
 	const isInbound = item.direction === "inbound";
 	const date = new Date(item.timestamp);
 	const { content, quote } = stripQuotedReply(item.body_text);
+	const sender = isInbound
+		? person.name
+			? `${person.name} <${person.email}>`
+			: person.email
+		: item.inbox_address || "You";
+	const hasAuth = isInbound && (item.spf || item.dkim || item.dmarc);
 
 	return (
-		<div
-			className={cn(
-				"rounded-xl border transition-all overflow-hidden",
-				isInbound ? "bg-card border-border/80 shadow-xs" : "bg-muted/30 border-border/60",
-			)}
-		>
-			{/* Message Header */}
-			<div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-border/50 bg-muted/15">
-				<div className="flex items-center gap-2.5 min-w-0">
-					<div
-						className={cn(
-							"size-8 rounded-full flex items-center justify-center shrink-0 text-xs font-semibold",
-							isInbound
-								? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
-								: "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-						)}
-					>
-						{isInbound ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
-					</div>
-
-					<div className="min-w-0">
-						<div className="flex items-center gap-2">
-							<span className="text-[13px] font-semibold text-foreground truncate">
-								{isInbound
-									? item.inbox_address
-										? `Received from counterparty`
-										: "Customer"
-									: "Team Reply"}
-							</span>
-							{item.inbox_address && (
-								<Badge
-									variant="outline"
-									className="text-[10px] h-4 px-1.5 font-normal text-muted-foreground"
-								>
-									via {item.inbox_address}
-								</Badge>
-							)}
-						</div>
-						<div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-							<Clock size={11} />
-							<span>
-								{date.toLocaleString(undefined, {
-									month: "short",
-									day: "numeric",
-									year: "numeric",
-									hour: "numeric",
-									minute: "2-digit",
-								})}
-							</span>
-						</div>
-					</div>
-				</div>
-
-				{/* Security Badges & Reply button */}
-				<div className="flex items-center gap-1.5 shrink-0">
-					{isInbound && (
-						<>
-							<SecurityBadge type="SPF" status={item.spf} />
-							<SecurityBadge type="DKIM" status={item.dkim} />
-							<SecurityBadge type="DMARC" status={item.dmarc} />
-						</>
+		<article className="border-b border-border/60 pb-5 last:border-b-0 last:pb-0">
+			<div className="mb-3 flex items-baseline justify-between gap-3">
+				<div className="min-w-0">
+					<p className="truncate text-[13px] font-semibold text-foreground">{sender}</p>
+					{isInbound && item.inbox_address && (
+						<p className="truncate text-[11px] text-muted-foreground">to {item.inbox_address}</p>
 					)}
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={onReplyClick}
-						className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-					>
-						<Reply size={12} className="mr-1" />
-						Reply
-					</Button>
 				</div>
+				<time dateTime={item.timestamp} className="shrink-0 text-[11px] text-muted-foreground">
+					{date.toLocaleString(undefined, {
+						month: "short",
+						day: "numeric",
+						hour: "numeric",
+						minute: "2-digit",
+					})}
+				</time>
 			</div>
 
-			{/* Message Content */}
-			<div className="p-4">
+			{hasAuth && (
+				<div className="mb-3 flex flex-wrap items-center gap-1.5">
+					<SecurityBadge type="SPF" status={item.spf} />
+					<SecurityBadge type="DKIM" status={item.dkim} />
+					<SecurityBadge type="DMARC" status={item.dmarc} />
+				</div>
+			)}
+
+			<div>
 				{item.body_html ? (
 					<HtmlEmailViewer html={item.body_html} text={item.body_text} />
 				) : (
@@ -239,7 +170,7 @@ function MessageCard({
 					</div>
 				)}
 			</div>
-		</div>
+		</article>
 	);
 }
 
@@ -252,7 +183,6 @@ export default function ThreadReader({
 	onBack,
 }: ThreadReaderProps) {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const groups = groupThread(thread.thread);
 	const latestItem = thread.thread[0] || null;
 	const mainSubject = latestItem?.subject || "(No subject)";
 
@@ -312,25 +242,17 @@ export default function ThreadReader({
 			</div>
 
 			{/* Conversation Messages Timeline */}
-			<div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
-				{/* Flattened items chronological */}
+			<div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
 				{[...thread.thread]
 					.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-					.map((item, idx, arr) => (
-						<MessageCard
-							key={item.id}
-							item={item}
-							isLatest={idx === arr.length - 1}
-							onReplyClick={() => {
-								messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-							}}
-						/>
+					.map((item) => (
+						<MessageCard key={item.id} item={item} person={person} />
 					))}
 				<div ref={messagesEndRef} />
 			</div>
 
 			{/* Docked Inline Composer at Bottom */}
-			<div className="p-4 border-t border-border bg-muted/20 shrink-0">
+			<div className="sticky bottom-0 z-10 p-4 border-t border-border bg-background shrink-0">
 				<InlineComposer
 					to={person.email}
 					defaultSubject={mainSubject}

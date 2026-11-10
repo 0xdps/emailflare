@@ -250,6 +250,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [mailboxes, setMailboxes] = useState<InboxType[]>([]);
+	const [tokenActive, setTokenActive] = useState<boolean | null>(null);
+
+	useEffect(() => {
+		if (!isAdmin) return;
+		api.get<{ active: boolean }>("/api/cloudflare/status")
+			.then((res) => setTokenActive(res.data.active))
+			.catch(() => setTokenActive(false));
+	}, [isAdmin]);
 
 	// Determine active dashboard mode
 	const isAdminPath =
@@ -473,15 +481,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 								</span>
 							</div>
 							<div className="mx-2 my-1 h-px bg-border" />
-							<p className="flex items-center gap-2 px-2 py-1.5 text-[12px] text-muted-foreground">
-								<span
-									className={cn(
-										"size-1.5 rounded-full",
-										connected ? "bg-emerald-500" : "bg-amber-400",
-									)}
-								/>
-								{connected ? "Live notifications" : "Reconnecting"}
-							</p>
+							<div className="px-2 py-1.5">
+								<p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+									Status
+								</p>
+								<p className="flex items-center gap-2 py-1 text-[12px] text-muted-foreground">
+									<span
+										className={cn(
+											"size-1.5 rounded-full",
+											connected ? "bg-emerald-500" : "bg-amber-400",
+										)}
+									/>
+									{connected ? "Notifications live" : "Notifications reconnecting"}
+								</p>
+								{isAdmin && (
+									<p className="flex items-center gap-2 py-1 text-[12px] text-muted-foreground">
+										<span
+											className={cn(
+												"size-1.5 rounded-full",
+												tokenActive === null
+													? "bg-zinc-300"
+													: tokenActive
+														? "bg-emerald-500"
+														: "bg-red-500",
+											)}
+										/>
+										{tokenActive === null
+											? "Cloudflare token checking"
+											: tokenActive
+												? "Cloudflare token active"
+												: "Cloudflare token inactive"}
+									</p>
+								)}
+							</div>
 							<button
 								type="button"
 								onClick={handleLogout}

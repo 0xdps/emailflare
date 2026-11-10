@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Code, Eye, FileText, ShieldAlert, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,14 @@ function stripRemoteResources(html: string): string {
 export default function HtmlEmailViewer({ html, text, className }: HtmlEmailViewerProps) {
 	const [viewMode, setViewMode] = useState<"html" | "text" | "source">(html ? "html" : "text");
 	const [showImages, setShowImages] = useState(false);
+	const [frameHeight, setFrameHeight] = useState(160);
+	const frameRef = useRef<HTMLIFrameElement>(null);
+
+	function resizeFrame() {
+		const doc = frameRef.current?.contentDocument;
+		const next = doc?.documentElement?.scrollHeight ?? doc?.body?.scrollHeight;
+		if (next) setFrameHeight(Math.max(120, next));
+	}
 
 	// Reset image loading when email changes
 	useEffect(() => {
@@ -154,10 +162,13 @@ export default function HtmlEmailViewer({ html, text, className }: HtmlEmailView
 			<div className="relative overflow-hidden">
 				{viewMode === "html" && html ? (
 					<iframe
+						ref={frameRef}
 						title="Email Content"
 						srcDoc={srcDocContent}
-						sandbox="allow-popups"
-						className="w-full border-0 block min-h-[480px]"
+						sandbox="allow-popups allow-same-origin"
+						onLoad={resizeFrame}
+						style={{ height: frameHeight }}
+						className="w-full border-0 block"
 					/>
 				) : viewMode === "source" && html ? (
 					<pre className="p-4 text-xs font-mono text-zinc-700 dark:text-zinc-300 bg-muted/40 overflow-x-auto whitespace-pre-wrap max-h-[500px]">

@@ -6,7 +6,6 @@ import { RefreshCw, TrendingUp, AlertTriangle, Mail, Activity, FlaskConical, Key
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -38,18 +37,6 @@ interface Stats {
 	cfDailyLimit: number;
 	domainBreakdown: DomainBreakdown[];
 	daily: DailyBucket[];
-}
-
-interface CFTokenStatus {
-	configured: boolean;
-	active: boolean;
-	tokenStatus: string | null;
-	tokenId: string | null;
-	notBefore: string | null;
-	expiresOn: string | null;
-	accountId: string | null;
-	accountName: string | null;
-	message: string;
 }
 
 const RANGES = ["1d", "7d", "30d"] as const;
@@ -278,12 +265,10 @@ function DashboardSkeleton() {
 
 export interface DashboardProps {
 	initialStats?: Stats | null;
-	initialCfStatus?: CFTokenStatus | null;
 }
 
-export default function Dashboard({ initialStats, initialCfStatus }: DashboardProps = {}) {
+export default function Dashboard({ initialStats }: DashboardProps = {}) {
 	const [stats, setStats] = useState<Stats | null>(initialStats ?? null);
-	const [cfStatus, setCfStatus] = useState<CFTokenStatus | null>(initialCfStatus ?? null);
 	const [refreshing, setRefreshing] = useState(false);
 	const [range, setRange] = useState<Range>("7d");
 	const isFirstMount = useRef(true);
@@ -291,12 +276,8 @@ export default function Dashboard({ initialStats, initialCfStatus }: DashboardPr
 	async function load(r: Range = range) {
 		setRefreshing(true);
 		try {
-			const [s, cf] = await Promise.all([
-				api.get<Stats>(`/api/stats?range=${r}`),
-				api.get<CFTokenStatus>("/api/cloudflare/status").catch(() => null),
-			]);
+			const s = await api.get<Stats>(`/api/stats?range=${r}`);
 			setStats(s.data);
-			setCfStatus(cf?.data ?? null);
 		} finally {
 			setRefreshing(false);
 		}
@@ -410,49 +391,6 @@ export default function Dashboard({ initialStats, initialCfStatus }: DashboardPr
 					</Link>
 				</div>
 			</div>
-
-			{/* ── Cloudflare token status ───────────────────────────────────────── */}
-			<Card className="px-5 py-4">
-				<div className="flex items-start justify-between gap-3">
-					<div>
-						<p className="text-sm font-medium">Cloudflare token</p>
-						<p className="text-xs text-muted-foreground mt-0.5">Connection state and account ownership</p>
-					</div>
-					{cfStatus?.active ? (
-						<Badge className="bg-emerald-600 hover:bg-emerald-600 text-white">Active</Badge>
-					) : (
-						<Badge variant="destructive">Inactive</Badge>
-					)}
-				</div>
-
-				{cfStatus ? (
-					<div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-						<div className="rounded-lg border border-border p-3 bg-muted/20">
-							<p className="text-muted-foreground mb-1">Account</p>
-							<p className="font-medium text-foreground break-all">
-								{cfStatus.accountName ?? "Unknown account"}
-							</p>
-							<p className="text-muted-foreground/80 mt-1 break-all">
-								{cfStatus.accountId ?? "No account id configured"}
-							</p>
-						</div>
-						<div className="rounded-lg border border-border p-3 bg-muted/20">
-							<p className="text-muted-foreground mb-1">Token status</p>
-							<p className="font-medium text-foreground">
-								{cfStatus.tokenStatus ?? (cfStatus.configured ? "unknown" : "not configured")}
-							</p>
-							{cfStatus.expiresOn && (
-								<p className="text-muted-foreground/80 mt-1">
-									Expires: {new Date(cfStatus.expiresOn).toLocaleString()}
-								</p>
-							)}
-						</div>
-						<p className="text-muted-foreground md:col-span-2">{cfStatus.message}</p>
-					</div>
-				) : (
-					<p className="text-xs text-muted-foreground mt-3">Unable to fetch Cloudflare token status.</p>
-				)}
-			</Card>
 
 			{/* ── KPI tiles ──────────────────────────────────────────────────────── */}
 			<div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
