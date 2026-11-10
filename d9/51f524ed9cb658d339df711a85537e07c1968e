@@ -1,0 +1,31 @@
+apps/dashboard/components/Layout.tsx
+  s_c6414e19edded4::t_a1fbd3800e8bf5 173
+  s_c6414e19edded4::t_c3a4d6abfec78b 428-436,440-448,451,454-457,466,468-482
+  s_c6414e19edded4::t_ed822e69b772d0 458-465,467
+  s_c6414e19edded4::t_ae236a0252b19d 94-95,97,99
+  s_c6414e19edded4::t_ee6350987b8673 483-485
+apps/dashboard/components/pages/Dashboard.tsx
+  s_c6414e19edded4::t_2826d6e92f4c43 9
+  s_c6414e19edded4::t_8e9c7828d6f1a1 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d951f524ed9cb658d339df711a85537e07c1968e",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_c6414e19edded4": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "86c80093-d2ba-4db5-9a41-6b830758ee50",
+        "model": "openrouter/OpenRouter/x-ai/grok-4.7"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
