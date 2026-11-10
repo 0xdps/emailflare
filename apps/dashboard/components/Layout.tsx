@@ -91,10 +91,12 @@ function NavItemView({
 }) {
 	const pathname = usePathname();
 	const [path, query] = to.split("?");
+	const current = new URLSearchParams(search);
+	const expected = new URLSearchParams(query ?? "");
 	const active = query
-		? pathname === path && search === query
+		? pathname === path && [...expected.keys()].every((key) => current.get(key) === expected.get(key))
 		: (exact || path === "/" ? pathname === path : pathname === path || pathname.startsWith(path + "/")) &&
-			!search.includes("mailbox=");
+			!current.has("mailbox");
 	return (
 		<Link
 			href={to}
@@ -168,7 +170,7 @@ function DashboardNavLinks({
 								{mailboxes.map((mailbox) => (
 									<NavItem
 										key={mailbox.id}
-										to={`/inbox?mailbox=${encodeURIComponent(mailbox.email)}`}
+										to={`/inbox?mailbox=${mailbox.email}`}
 										icon={Inbox}
 										label={mailbox.display_name || mailbox.email}
 										onClick={onItemClick}
@@ -343,21 +345,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 						</span>
 					</Link>
 
-					<div
-						className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] text-zinc-500 font-medium"
-						title={connected ? "Live notifications active" : "Reconnecting to live feed"}
-					>
-						<span
-							className={cn(
-								"size-1.5 rounded-full",
-								connected ? "bg-emerald-500 animate-pulse" : "bg-amber-400",
-							)}
-						/>
-						<span>{connected ? "Live" : "Connecting"}</span>
-					</div>
-
-					<div className="hidden md:block h-4 w-px bg-border mx-1" />
-
 					{/* ── 3 Dashboards Switcher (Desktop / Tablet) ── */}
 					<nav className="hidden md:flex items-center p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 gap-0.5 min-h-[30px]">
 						{!isVerified ? null : (
@@ -438,40 +425,74 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					</button>
 				</div>
 
-				{/* Right: User Profile & Logout */}
-				<div className="flex items-center gap-2 sm:gap-3">
-					<div className="flex items-center gap-2 px-1.5 sm:px-2 py-1 rounded-lg">
-						<div className="size-6 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center shrink-0">
+				{/* Right: Profile menu */}
+				<div className="relative group/profile">
+					<button
+						type="button"
+						className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+						aria-haspopup="menu"
+						aria-label="Account menu"
+					>
+						<span className="relative size-7 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center shrink-0">
 							<span className="text-[10px] font-bold text-orange-700 dark:text-orange-300">
 								{initials}
 							</span>
-						</div>
-						<div className="hidden lg:flex flex-col text-left leading-none">
-							<span className="text-[12px] font-semibold text-foreground truncate max-w-[130px]">
+							<span
+								className={cn(
+									"absolute -bottom-0.5 -right-0.5 size-2 rounded-full ring-2 ring-background",
+									connected ? "bg-emerald-500" : "bg-amber-400",
+								)}
+							/>
+						</span>
+						<span className="hidden lg:block text-left leading-none">
+							<span className="block text-[12px] font-semibold text-foreground truncate max-w-[130px]">
 								{user?.name ?? "User"}
 							</span>
-							<span className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[130px]">
+							<span className="block text-[10px] text-muted-foreground mt-0.5 truncate max-w-[130px]">
 								{user?.email ?? ""}
 							</span>
-						</div>
-						{isAdmin ? (
-							<span className="text-[9px] font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded px-1.5 py-0.5 dark:bg-orange-950/60 dark:border-orange-800">
-								admin
-							</span>
-						) : (
-							<span className="text-[9px] font-medium text-zinc-600 bg-zinc-100 rounded px-1.5 py-0.5 dark:bg-zinc-800 dark:text-zinc-300">
-								member
-							</span>
-						)}
-					</div>
-
-					<button
-						onClick={handleLogout}
-						title="Sign out"
-						className="size-7 inline-flex items-center justify-center rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-					>
-						<LogOut size={14} />
+						</span>
 					</button>
+					<div className="invisible absolute right-0 top-full z-30 w-60 pt-1 opacity-0 transition-opacity group-hover/profile:visible group-hover/profile:opacity-100 group-focus-within/profile:visible group-focus-within/profile:opacity-100">
+						<div
+							className="rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg"
+							role="menu"
+						>
+							<div className="px-2 py-1.5">
+								<p className="truncate text-[12px] font-semibold">{user?.name ?? "User"}</p>
+								<p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
+								<span
+									className={cn(
+										"mt-1.5 inline-flex h-5 items-center rounded-full border px-2 text-[10px] font-semibold",
+										isAdmin
+											? "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950/60 dark:text-orange-300"
+											: "border-border bg-muted text-muted-foreground",
+									)}
+								>
+									{isAdmin ? "Admin" : "Member"}
+								</span>
+							</div>
+							<div className="mx-2 my-1 h-px bg-border" />
+							<p className="flex items-center gap-2 px-2 py-1.5 text-[12px] text-muted-foreground">
+								<span
+									className={cn(
+										"size-1.5 rounded-full",
+										connected ? "bg-emerald-500" : "bg-amber-400",
+									)}
+								/>
+								{connected ? "Live notifications" : "Reconnecting"}
+							</p>
+							<button
+								type="button"
+								onClick={handleLogout}
+								className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+								role="menuitem"
+							>
+								<LogOut size={13} />
+								Sign out
+							</button>
+						</div>
+					</div>
 				</div>
 			</header>
 

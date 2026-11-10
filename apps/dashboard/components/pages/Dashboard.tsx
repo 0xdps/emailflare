@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { RefreshCw, TrendingUp, AlertTriangle, Mail, Activity, FlaskConical, Key } from "lucide-react";
+import { RefreshCw, TrendingUp, AlertTriangle, Mail, Activity, FlaskConical, Key, Send } from "lucide-react";
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
