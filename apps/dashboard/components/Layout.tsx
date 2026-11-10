@@ -100,7 +100,7 @@ function NavItemView({
 			href={to}
 			onClick={onClick}
 			className={cn(
-				"flex items-center gap-2.5 h-[34px] px-2.5 rounded-lg text-[13px] font-medium transition-colors",
+				"flex shrink-0 items-center gap-2.5 h-8.5 px-2.5 rounded-lg text-[13px] font-medium transition-colors",
 				active
 					? "text-orange-700 bg-orange-50 font-semibold dark:bg-orange-950/40 dark:text-orange-300"
 					: "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800/60",
@@ -150,7 +150,7 @@ function DashboardNavLinks({
 			{activeDashboard === "inbox" && (
 				<>
 					{canAccessInbox && (
-						<>
+						<div className="flex min-h-0 flex-1 flex-col">
 							<NavSection label="Inbox" />
 							<button
 								type="button"
@@ -158,22 +158,24 @@ function DashboardNavLinks({
 									onItemClick?.();
 									window.dispatchEvent(new CustomEvent("emailflare:compose"));
 								}}
-								className="flex w-full items-center gap-2.5 h-[34px] px-2.5 rounded-lg bg-orange-600 text-[13px] font-medium text-white hover:bg-orange-700"
+								className="flex h-8.5 w-full shrink-0 items-center gap-2.5 rounded-lg bg-orange-600 px-2.5 text-[13px] font-medium text-white hover:bg-orange-700"
 							>
 								<PenLine size={14} />
 								Compose
 							</button>
 							<NavItem to="/inbox" icon={Mail} label="All mailboxes" exact onClick={onItemClick} />
-							{mailboxes.map((mailbox) => (
-								<NavItem
-									key={mailbox.id}
-									to={`/inbox?mailbox=${encodeURIComponent(mailbox.email)}`}
-									icon={Inbox}
-									label={mailbox.display_name || mailbox.email}
-									onClick={onItemClick}
-								/>
-							))}
-						</>
+							<div className="mt-0.5 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain">
+								{mailboxes.map((mailbox) => (
+									<NavItem
+										key={mailbox.id}
+										to={`/inbox?mailbox=${encodeURIComponent(mailbox.email)}`}
+										icon={Inbox}
+										label={mailbox.display_name || mailbox.email}
+										onClick={onItemClick}
+									/>
+								))}
+							</div>
+						</div>
 					)}
 
 					{canAccessTester && (
@@ -477,7 +479,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 			<div className="flex flex-1 overflow-hidden">
 				{/* ── Contextual Left Sidebar (Desktop Only: md:flex) ── */}
 				<aside className="hidden md:flex w-56 shrink-0 h-full flex-col border-r border-border bg-sidebar">
-					<nav className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-0.5">
+					<nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-hidden px-2 py-3">
 						<DashboardNavLinks
 							activeDashboard={activeDashboard}
 							canAccessInbox={canAccessInbox}
@@ -587,7 +589,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					</div>
 
 					{/* Mobile Contextual Nav Links */}
-					<nav className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-0.5">
+					<nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-hidden px-2 py-3">
 						<DashboardNavLinks
 							activeDashboard={activeDashboard}
 							canAccessInbox={canAccessInbox}
