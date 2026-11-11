@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe, Inbox, Key, Users } from "lucide-react";
+import { Globe, Inbox, Key, ScrollText, Shield, Users, Radio } from "lucide-react";
 
 interface AdminHomeProps {
 	domains: number;
@@ -38,6 +38,9 @@ const cards = [
 		icon: Key,
 		detail: (props: AdminHomeProps) => (props.keys === 0 ? "No active keys" : `${props.keys} active`),
 	},
+	{ href: "/settings/webhooks", title: "Webhooks", icon: Radio, detail: () => "Delivery event endpoints" },
+	{ href: "/settings/audit", title: "Audit log", icon: ScrollText, detail: () => "Admin changes" },
+	{ href: "/settings/security", title: "Security", icon: Shield, detail: () => "Authenticator and backup codes" },
 ] as const;
 
 export default function AdminHome(props: AdminHomeProps) {

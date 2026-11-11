@@ -5,6 +5,7 @@ import { z } from "zod";
 import { generateId } from "@/lib/core";
 import { makeDb } from "@/worker/inbox/db";
 import type { Env } from "@/worker/inbox/env";
+import { writeAudit } from "@/worker/inbox/lib/audit";
 import { requireAdmin } from "./auth";
 
 const addSchema = z.object({
@@ -18,7 +19,7 @@ export async function createSuppressionAction(data: {
 	reason?: "hard_bounce" | "soft_bounce" | "complaint" | "manual" | "unsubscribed";
 	domain_id?: string;
 }) {
-	await requireAdmin();
+	const session = await requireAdmin();
 	const parsed = addSchema.safeParse(data);
 	if (!parsed.success) {
 		return { error: parsed.error.issues[0]?.message ?? "Invalid suppression parameters" };
@@ -34,6 +35,12 @@ export async function createSuppressionAction(data: {
        VALUES (?, ?, ?, ?, NULL, ?)`,
 			[generateId(), parsed.data.email.toLowerCase(), parsed.data.reason, parsed.data.domain_id ?? null, now],
 		);
+		await writeAudit(workerEnv.DB, {
+			actorId: session.userId,
+			action: "suppression.create",
+			targetType: "suppression",
+			detail: parsed.data.email.toLowerCase(),
+		});
 		return { success: true };
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : "Unknown error";
@@ -45,12 +52,18 @@ export async function createSuppressionAction(data: {
 }
 
 export async function deleteSuppressionAction(id: string) {
-	await requireAdmin();
+	const session = await requireAdmin();
 	const workerEnv = env as unknown as Env;
 	const { db } = makeDb(workerEnv.DB);
 
 	try {
 		await db.run("DELETE FROM suppressions WHERE id = ?", [id]);
+		await writeAudit(workerEnv.DB, {
+			actorId: session.userId,
+			action: "suppression.delete",
+			targetType: "suppression",
+			targetId: id,
+		});
 		return { success: true };
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : "Failed to delete suppression";

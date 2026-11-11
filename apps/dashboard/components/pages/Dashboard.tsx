@@ -94,14 +94,16 @@ function AreaChart({ daily }: { daily: DailyBucket[] }) {
 		);
 	}
 
-	const maxVal = Math.max(...daily.map((d) => d.sent), 1);
+	const maxVal = Math.max(...daily.map((d) => Math.max(d.sent, d.failed)), 1);
 	const pts = daily.map((d, i) => ({
 		x: padX + (daily.length > 1 ? (i / (daily.length - 1)) * plotW : plotW / 2),
 		y: padY + (1 - d.sent / maxVal) * plotH,
+		failedY: padY + (1 - d.failed / maxVal) * plotH,
 		...d,
 	}));
 
 	const linePath = smoothPath(pts);
+	const failedPath = smoothPath(pts.map((point) => ({ x: point.x, y: point.failedY })));
 	const first = pts[0],
 		last = pts[pts.length - 1];
 	const areaPath = `${linePath} L ${last.x.toFixed(2)} ${(H - padBottom).toFixed(2)} L ${first.x.toFixed(2)} ${(H - padBottom).toFixed(2)} Z`;
@@ -157,6 +159,15 @@ function AreaChart({ daily }: { daily: DailyBucket[] }) {
 				})}
 
 				<path d={areaPath} fill="url(#areaFill)" />
+				<path
+					d={failedPath}
+					stroke="#ef4444"
+					strokeWidth="1.5"
+					strokeOpacity="0.85"
+					fill="none"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				/>
 				<path
 					d={linePath}
 					stroke="url(#lineGrad)"
@@ -354,6 +365,20 @@ export default function Dashboard({ initialStats }: DashboardProps = {}) {
 				</div>
 			</div>
 
+			{stats.totalEmails === 0 && (
+				<div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-950 dark:border-orange-900 dark:bg-orange-950/40 dark:text-orange-100">
+					No mail sent yet.{" "}
+					<Link href="/developer/playground" className="font-medium underline">
+						Send a test from the playground
+					</Link>{" "}
+					or{" "}
+					<Link href="/keys" className="font-medium underline">
+						create an API key
+					</Link>
+					.
+				</div>
+			)}
+
 			{/* ── Transactional Send API Quickstart ───────────────────────────────── */}
 			<div className="rounded-xl border border-border bg-gradient-to-r from-orange-500/5 via-purple-500/5 to-transparent p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div className="space-y-1">
@@ -505,9 +530,15 @@ export default function Dashboard({ initialStats }: DashboardProps = {}) {
 							{range === "1d" ? "past 24h" : range === "7d" ? "past 7 days" : "past 30 days"}
 						</p>
 					</div>
-					<div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-						<span className="w-3 h-[2px] bg-primary rounded inline-block" />
-						Sent
+					<div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+						<span className="flex items-center gap-1.5">
+							<span className="w-3 h-[2px] bg-primary rounded inline-block" />
+							Sent
+						</span>
+						<span className="flex items-center gap-1.5">
+							<span className="w-3 h-[2px] bg-red-500 rounded inline-block" />
+							Failed
+						</span>
 					</div>
 				</div>
 				<AreaChart daily={stats.daily} />

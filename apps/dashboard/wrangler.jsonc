@@ -89,6 +89,8 @@
 	// when Email Routing should deliver to a different Worker.
 	"vars": {
 		"INBOX_WORKER_NAME": "emailflare",
+		// Override per install in wrangler.local.jsonc. Overview uses this as the daily quota.
+		"CF_DAILY_LIMIT": "1000",
 	},
 
 	// Workers Rate Limiting (100 req / 60s per API key). Requires Workers Paid.

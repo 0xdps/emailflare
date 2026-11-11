@@ -8,7 +8,6 @@ import {
 	Globe,
 	FileText,
 	Key,
-	ScrollText,
 	LogOut,
 	FlaskConical,
 	BookOpen,
@@ -22,6 +21,9 @@ import {
 	ShieldOff,
 	Settings,
 	Radio,
+	Activity,
+	ScrollText,
+	ScrollText as AuditIcon,
 	Menu,
 	Search,
 } from "lucide-react";
@@ -31,25 +33,8 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import CommandPalette from "@/components/CommandPalette";
-
-// ─── Logo ─────────────────────────────────────────────────────────────────────
-
-function AppLogo({ size = 26 }: { size?: number }) {
-	return (
-		<svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<defs>
-				<linearGradient id="ef-bg" x1="0" y1="1" x2="1" y2="0">
-					<stop offset="0%" stopColor="#9a3412" />
-					<stop offset="55%" stopColor="#ea580c" />
-					<stop offset="100%" stopColor="#fb923c" />
-				</linearGradient>
-			</defs>
-			<rect width="64" height="64" rx="14" fill="url(#ef-bg)" />
-			<path d="M53 11 L9 28 L23 38 Z" fill="white" />
-			<path d="M53 11 L23 38 L9 53 Z" fill="white" opacity="0.82" />
-		</svg>
-	);
-}
+import AppLogo from "@/components/AppLogo";
+import NotificationBell from "@/components/NotificationBell";
 
 // ─── Nav item ─────────────────────────────────────────────────────────────────
 
@@ -68,7 +53,7 @@ function NavItem(props: {
 	);
 }
 
-function NavItemWithSearch(props: React.ComponentProps<typeof NavItemView>) {
+function NavItemWithSearch(props: Omit<React.ComponentProps<typeof NavItemView>, "search">) {
 	return <NavItemView {...props} search={useSearchParams().toString()} />;
 }
 
@@ -221,6 +206,12 @@ function DashboardNavLinks({
 					<NavSection label="Audiences & Lists" />
 					<NavItem to="/developer/lists" icon={Users} label="Audiences" onClick={onItemClick} />
 					<NavItem to="/developer/suppressions" icon={ShieldOff} label="Suppressions" onClick={onItemClick} />
+					<NavItem
+						to="/developer/deliverability"
+						icon={Activity}
+						label="Deliverability"
+						onClick={onItemClick}
+					/>
 				</>
 			)}
 
@@ -233,6 +224,9 @@ function DashboardNavLinks({
 					<NavItem to="/inbox/settings" icon={Inbox} label="Mailboxes" onClick={onItemClick} />
 					<NavItem to="/settings/users" icon={Users} label="Team" onClick={onItemClick} />
 					<NavItem to="/keys" icon={Key} label="API keys" onClick={onItemClick} />
+					<NavItem to="/settings/webhooks" icon={Radio} label="Webhooks" onClick={onItemClick} />
+					<NavItem to="/settings/audit" icon={AuditIcon} label="Audit log" onClick={onItemClick} />
+					<NavItem to="/settings/security" icon={ShieldOff} label="Security" onClick={onItemClick} />
 				</>
 			)}
 		</>
@@ -264,7 +258,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 		pathname.startsWith("/settings") ||
 		pathname === "/inbox/settings" ||
 		pathname.startsWith("/domains") ||
-		pathname.startsWith("/keys");
+		pathname.startsWith("/keys") ||
+		pathname.startsWith("/settings");
 	const isApiPath = pathname.startsWith("/developer");
 
 	const activeDashboard: "inbox" | "api" | "admin" = isAdminPath ? "admin" : isApiPath ? "api" : "inbox";
@@ -278,16 +273,51 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 	}, [activeDashboard, canAccessInbox]);
 
 	useEffect(() => {
+		let pendingGo = false;
+		let goTimer: ReturnType<typeof setTimeout> | undefined;
+		const destinations: Record<string, string> = {
+			i: "/inbox",
+			t: "/inbox?folder=test",
+			d: "/developer/overview",
+			l: "/developer/logs",
+			p: "/developer/playground",
+			u: "/settings/users",
+			k: "/keys",
+		};
 		function handleKeyDown(e: KeyboardEvent) {
 			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
 				e.preventDefault();
 				setCommandOpen((prev) => !prev);
+				return;
+			}
+			const target = e.target as HTMLElement | null;
+			if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable))
+				return;
+			if (e.metaKey || e.ctrlKey || e.altKey) return;
+			if (e.key.toLowerCase() === "g" && !pendingGo) {
+				pendingGo = true;
+				goTimer = setTimeout(() => {
+					pendingGo = false;
+				}, 800);
+				return;
+			}
+			if (pendingGo) {
+				pendingGo = false;
+				clearTimeout(goTimer);
+				const href = destinations[e.key.toLowerCase()];
+				if (href) {
+					e.preventDefault();
+					router.push(href);
+				}
 			}
 		}
 
 		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, []);
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			clearTimeout(goTimer);
+		};
+	}, [router]);
 
 	async function handleLogout() {
 		await api.post("/api/auth/logout").catch((err) => {
@@ -433,96 +463,99 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					</button>
 				</div>
 
-				{/* Right: Profile menu */}
-				<div className="relative group/profile">
-					<button
-						type="button"
-						className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-						aria-haspopup="menu"
-						aria-label="Account menu"
-					>
-						<span className="relative size-7 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center shrink-0">
-							<span className="text-[10px] font-bold text-orange-700 dark:text-orange-300">
-								{initials}
-							</span>
-							<span
-								className={cn(
-									"absolute -bottom-0.5 -right-0.5 size-2 rounded-full ring-2 ring-background",
-									connected ? "bg-emerald-500" : "bg-amber-400",
-								)}
-							/>
-						</span>
-						<span className="hidden lg:block text-left leading-none">
-							<span className="block text-[12px] font-semibold text-foreground truncate max-w-[130px]">
-								{user?.name ?? "User"}
-							</span>
-							<span className="block text-[10px] text-muted-foreground mt-0.5 truncate max-w-[130px]">
-								{user?.email ?? ""}
-							</span>
-						</span>
-					</button>
-					<div className="invisible absolute right-0 top-full z-30 w-60 pt-1 opacity-0 transition-opacity group-hover/profile:visible group-hover/profile:opacity-100 group-focus-within/profile:visible group-focus-within/profile:opacity-100">
-						<div
-							className="rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg"
-							role="menu"
+				{/* Right: Notifications + profile */}
+				<div className="flex items-center gap-1">
+					<NotificationBell />
+					<div className="relative group/profile">
+						<button
+							type="button"
+							className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+							aria-haspopup="menu"
+							aria-label="Account menu"
 						>
-							<div className="px-2 py-1.5">
-								<p className="truncate text-[12px] font-semibold">{user?.name ?? "User"}</p>
-								<p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
+							<span className="relative size-7 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center shrink-0">
+								<span className="text-[10px] font-bold text-orange-700 dark:text-orange-300">
+									{initials}
+								</span>
 								<span
 									className={cn(
-										"mt-1.5 inline-flex h-5 items-center rounded-full border px-2 text-[10px] font-semibold",
-										isAdmin
-											? "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950/60 dark:text-orange-300"
-											: "border-border bg-muted text-muted-foreground",
+										"absolute -bottom-0.5 -right-0.5 size-2 rounded-full ring-2 ring-background",
+										connected ? "bg-emerald-500" : "bg-amber-400",
 									)}
-								>
-									{isAdmin ? "Admin" : "Member"}
+								/>
+							</span>
+							<span className="hidden lg:block text-left leading-none">
+								<span className="block text-[12px] font-semibold text-foreground truncate max-w-[130px]">
+									{user?.name ?? "User"}
 								</span>
-							</div>
-							<div className="mx-2 my-1 h-px bg-border" />
-							<div className="px-2 py-1.5">
-								<p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-									Status
-								</p>
-								<p className="flex items-center gap-2 py-1 text-[12px] text-muted-foreground">
+								<span className="block text-[10px] text-muted-foreground mt-0.5 truncate max-w-[130px]">
+									{user?.email ?? ""}
+								</span>
+							</span>
+						</button>
+						<div className="invisible absolute right-0 top-full z-30 w-60 pt-1 opacity-0 transition-opacity group-hover/profile:visible group-hover/profile:opacity-100 group-focus-within/profile:visible group-focus-within/profile:opacity-100">
+							<div
+								className="rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg"
+								role="menu"
+							>
+								<div className="px-2 py-1.5">
+									<p className="truncate text-[12px] font-semibold">{user?.name ?? "User"}</p>
+									<p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
 									<span
 										className={cn(
-											"size-1.5 rounded-full",
-											connected ? "bg-emerald-500" : "bg-amber-400",
+											"mt-1.5 inline-flex h-5 items-center rounded-full border px-2 text-[10px] font-semibold",
+											isAdmin
+												? "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950/60 dark:text-orange-300"
+												: "border-border bg-muted text-muted-foreground",
 										)}
-									/>
-									{connected ? "Notifications live" : "Notifications reconnecting"}
-								</p>
-								{isAdmin && (
+									>
+										{isAdmin ? "Admin" : "Member"}
+									</span>
+								</div>
+								<div className="mx-2 my-1 h-px bg-border" />
+								<div className="px-2 py-1.5">
+									<p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+										Status
+									</p>
 									<p className="flex items-center gap-2 py-1 text-[12px] text-muted-foreground">
 										<span
 											className={cn(
 												"size-1.5 rounded-full",
-												tokenActive === null
-													? "bg-zinc-300"
-													: tokenActive
-														? "bg-emerald-500"
-														: "bg-red-500",
+												connected ? "bg-emerald-500" : "bg-amber-400",
 											)}
 										/>
-										{tokenActive === null
-											? "Cloudflare token checking"
-											: tokenActive
-												? "Cloudflare token active"
-												: "Cloudflare token inactive"}
+										{connected ? "Notifications live" : "Notifications reconnecting"}
 									</p>
-								)}
+									{isAdmin && (
+										<p className="flex items-center gap-2 py-1 text-[12px] text-muted-foreground">
+											<span
+												className={cn(
+													"size-1.5 rounded-full",
+													tokenActive === null
+														? "bg-zinc-300"
+														: tokenActive
+															? "bg-emerald-500"
+															: "bg-red-500",
+												)}
+											/>
+											{tokenActive === null
+												? "Cloudflare token checking"
+												: tokenActive
+													? "Cloudflare token active"
+													: "Cloudflare token inactive"}
+										</p>
+									)}
+								</div>
+								<button
+									type="button"
+									onClick={handleLogout}
+									className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+									role="menuitem"
+								>
+									<LogOut size={13} />
+									Sign out
+								</button>
 							</div>
-							<button
-								type="button"
-								onClick={handleLogout}
-								className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-								role="menuitem"
-							>
-								<LogOut size={13} />
-								Sign out
-							</button>
 						</div>
 					</div>
 				</div>

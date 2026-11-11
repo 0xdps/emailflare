@@ -4,23 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { login } from "@/lib/api";
-
-function AppLogo({ size = 28 }: { size?: number }) {
-	return (
-		<svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-			<defs>
-				<linearGradient id="lg-bg" x1="0" y1="1" x2="1" y2="0">
-					<stop offset="0%" stopColor="#9a3412" />
-					<stop offset="58%" stopColor="#ea580c" />
-					<stop offset="100%" stopColor="#fb923c" />
-				</linearGradient>
-			</defs>
-			<rect width="64" height="64" rx="13" fill="url(#lg-bg)" />
-			<path d="M53 11 L9 28 L23 38 Z" fill="white" />
-			<path d="M53 11 L23 38 L9 53 Z" fill="white" opacity="0.82" />
-		</svg>
-	);
-}
+import AppLogo from "@/components/AppLogo";
 
 export default function Login() {
 	const [email, setEmail] = useState("");
@@ -28,16 +12,27 @@ export default function Login() {
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
+	const [otp, setOtp] = useState("");
+	const [needsOtp, setNeedsOtp] = useState(false);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		setError("");
 		setLoading(true);
 		try {
-			await login(email, password);
+			await login(email, password, otp || undefined);
 			window.location.href = "/inbox";
-		} catch {
-			setError("Invalid email or password.");
+		} catch (err: unknown) {
+			const code =
+				err && typeof err === "object" && "response" in err
+					? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+					: undefined;
+			if (code === "totp_required") {
+				setNeedsOtp(true);
+				setError("Enter the code from your authenticator or a backup code.");
+			} else {
+				setError("Invalid email or password.");
+			}
 		} finally {
 			setLoading(false);
 		}
@@ -93,13 +88,18 @@ export default function Login() {
 					</div>
 
 					<div className="mb-7">
-						<h2 className="text-xl font-semibold text-zinc-900 tracking-tight">Sign in</h2>
+						<h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
+							Sign in
+						</h2>
 						<p className="text-[13px] text-zinc-400 mt-1">Enter your email and password to continue.</p>
 					</div>
 
 					<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 						<div className="flex flex-col gap-1.5">
-							<label htmlFor="email" className="text-[12.5px] font-medium text-zinc-700">
+							<label
+								htmlFor="email"
+								className="text-[12.5px] font-medium text-zinc-700 dark:text-zinc-300"
+							>
 								Email
 							</label>
 							<input
@@ -113,12 +113,15 @@ export default function Login() {
 								autoFocus
 								className="h-9 px-3 rounded-md border border-zinc-200 bg-white text-[13px] text-zinc-900
                   placeholder:text-zinc-400 outline-none focus:border-orange-400 focus:ring-2
-                  focus:ring-orange-100 transition-colors"
+                  focus:ring-orange-100 transition-colors dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:ring-orange-900"
 							/>
 						</div>
 
 						<div className="flex flex-col gap-1.5">
-							<label htmlFor="password" className="text-[12.5px] font-medium text-zinc-700">
+							<label
+								htmlFor="password"
+								className="text-[12.5px] font-medium text-zinc-700 dark:text-zinc-300"
+							>
 								Password
 							</label>
 							<div className="relative">
@@ -132,7 +135,7 @@ export default function Login() {
 									autoComplete="current-password"
 									className="w-full h-9 px-3 pr-9 rounded-md border border-zinc-200 bg-white text-[13px] text-zinc-900
                     placeholder:text-zinc-400 outline-none focus:border-orange-400 focus:ring-2
-                    focus:ring-orange-100 transition-colors"
+                    focus:ring-orange-100 transition-colors dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:ring-orange-900"
 								/>
 								<button
 									type="button"
@@ -146,8 +149,27 @@ export default function Login() {
 							</div>
 						</div>
 
+						{needsOtp && (
+							<div className="flex flex-col gap-1.5">
+								<label
+									htmlFor="otp"
+									className="text-[12.5px] font-medium text-zinc-700 dark:text-zinc-300"
+								>
+									Authenticator code
+								</label>
+								<input
+									id="otp"
+									value={otp}
+									onChange={(e) => setOtp(e.target.value)}
+									autoComplete="one-time-code"
+									placeholder="123456"
+									className="h-9 px-3 rounded-md border border-zinc-200 bg-white text-[13px] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+								/>
+							</div>
+						)}
+
 						{error && (
-							<p className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
+							<p className="text-[12px] text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2 dark:bg-red-950/40 dark:border-red-900 dark:text-red-300">
 								{error}
 							</p>
 						)}

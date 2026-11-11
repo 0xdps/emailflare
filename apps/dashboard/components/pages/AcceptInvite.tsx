@@ -8,23 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-function AppLogo({ size = 30 }: { size?: number }) {
-	return (
-		<svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-			<defs>
-				<linearGradient id="inv-bg" x1="0" y1="1" x2="1" y2="0">
-					<stop offset="0%" stopColor="#9a3412" />
-					<stop offset="58%" stopColor="#ea580c" />
-					<stop offset="100%" stopColor="#fb923c" />
-				</linearGradient>
-			</defs>
-			<rect width="64" height="64" rx="13" fill="url(#inv-bg)" />
-			<path d="M53 11 L9 28 L23 38 Z" fill="white" />
-			<path d="M53 11 L23 38 L9 53 Z" fill="white" opacity="0.82" />
-		</svg>
-	);
-}
+import AppLogo from "@/components/AppLogo";
 
 export default function AcceptInvite({ token }: { token: string }) {
 	const router = useRouter();
@@ -60,8 +44,11 @@ export default function AcceptInvite({ token }: { token: string }) {
 		try {
 			await acceptInvite(token, name.trim(), password);
 			router.replace("/inbox");
-		} catch (err: any) {
-			const msg = err?.response?.data?.error;
+		} catch (err: unknown) {
+			const msg =
+				err && typeof err === "object" && "response" in err
+					? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+					: undefined;
 			if (msg === "invite_expired") setError("This invite has expired.");
 			else if (msg === "invite_not_found") setError("Invite not found or already used.");
 			else setError("Something went wrong. Please try again.");

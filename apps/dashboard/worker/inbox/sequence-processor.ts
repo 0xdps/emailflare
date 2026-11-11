@@ -6,7 +6,8 @@
 
 import { sendEmail } from "./services/cloudflare.ts";
 import { generateId, listUnsubscribeHeaders, applyVariables, createLogger } from "@/lib/core";
-import type { Env, SequenceQueueMessage } from "./env.ts";
+import type { Env, ScheduledSendMessage, SequenceQueueMessage } from "./env.ts";
+import { dispatchWebhooks } from "./lib/webhooks.ts";
 
 const log = createLogger("sequence-processor");
 
@@ -140,5 +141,52 @@ export async function handleSequenceQueueMessage(msg: SequenceQueueMessage, env:
 		// Log failure but don't crash the worker; message will be retried by queue
 		log.error("sequence step send failed", err);
 		throw err; // re-throw so queue retries
+	}
+}
+
+/** Deliver one previously accepted scheduled send. */
+export async function deliverScheduledSend(msg: ScheduledSendMessage, env: Env): Promise<void> {
+	const row = await env.DB.prepare(
+		"SELECT id, payload, idempotency_key, status FROM scheduled_sends WHERE id = ? LIMIT 1",
+	)
+		.bind(msg.id)
+		.first<{ id: string; payload: string; idempotency_key: string | null; status: string }>();
+	if (!row || row.status !== "pending") return;
+	const claimed = await env.DB.prepare(
+		"UPDATE scheduled_sends SET status = 'sending' WHERE id = ? AND status = 'pending'",
+	)
+		.bind(row.id)
+		.run();
+	if (!claimed.meta.changes) return;
+	const body = JSON.parse(row.payload) as {
+		from: string;
+		fromName?: string;
+		to: string | string[];
+		subject?: string;
+		html?: string;
+		text?: string;
+		replyTo?: string;
+	};
+	const recipients = Array.isArray(body.to) ? body.to : [body.to];
+	try {
+		for (const to of recipients) {
+			await sendEmail(
+				{
+					from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
+					to,
+					subject: body.subject ?? "",
+					html: body.html,
+					text: body.text,
+					replyTo: body.replyTo,
+				},
+				env.CF_API_TOKEN,
+				env.CF_ACCOUNT_ID,
+			);
+		}
+		await env.DB.prepare("UPDATE scheduled_sends SET status = 'sent' WHERE id = ?").bind(row.id).run();
+		await dispatchWebhooks(env, "email.sent", { scheduledId: row.id, to: recipients });
+	} catch (err) {
+		await env.DB.prepare("UPDATE scheduled_sends SET status = 'pending' WHERE id = ?").bind(row.id).run();
+		throw err;
 	}
 }

@@ -57,7 +57,8 @@ Once the initial deploy completes:
 
 3. **Set install-specific names** in `wrangler.local.jsonc` (copy from `wrangler.local.example.jsonc`):
     - `name`: Worker name, if `emailflare` is already taken.
-    - `PUBLIC_URL`: public origin, such as `https://mail.yourcompany.com`. Invite and unsubscribe links use this.
+    - `PUBLIC_URL`: public origin, such as `https://mail.yourcompany.com`. Invite, password reset, unsubscribe, and tracking links use this. Set it before inviting teammates; without it, links fall back to the request origin.
+    - `CF_DAILY_LIMIT`: daily send ceiling shown on the overview. Defaults to `1000`. Override it in `wrangler.local.jsonc` without a redeploy of application code.
     - `INBOX_WORKER_NAME`: Worker that receives catch-all mail. Keep it equal to `name`.
     - `bucket_name`, `database_name`, and `queue`: only if this account should not use the defaults.
 

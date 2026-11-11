@@ -55,7 +55,13 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 	const [copied, setCopied] = useState(false);
 	const [copiedPrefixId, setCopiedPrefixId] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
-	const [form, setForm] = useState({ name: "", type: "live" as "test" | "live", scope: "global" as const });
+	const [domains, setDomains] = useState<{ id: string; name: string }[]>([]);
+	const [form, setForm] = useState({
+		name: "",
+		type: "live" as "test" | "live",
+		scope: "global" as "global" | "domain" | "multi",
+		domainIds: [] as string[],
+	});
 	const [revokeId, setRevokeId] = useState<string | null>(null);
 
 	async function load() {
@@ -74,6 +80,9 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 		if (!initialKeys) {
 			load();
 		}
+		api.get<{ id: string; name: string }[]>("/api/domains")
+			.then((res) => setDomains(res.data))
+			.catch(() => setDomains([]));
 	}, [initialKeys]);
 
 	async function handleCreate(e: React.FormEvent) {
@@ -83,7 +92,7 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 			const data = await createApiKeyAction(form);
 			setNewKey(data);
 			setCreating(false);
-			setForm({ name: "", type: "live", scope: "global" });
+			setForm({ name: "", type: "live", scope: "global", domainIds: [] });
 			load();
 		} finally {
 			setSubmitting(false);
@@ -218,8 +227,35 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 									<SelectItem value="domain" className="text-xs">
 										Domain Restricted
 									</SelectItem>
+									<SelectItem value="multi" className="text-xs">
+										Multi-domain
+									</SelectItem>
 								</SelectContent>
 							</Select>
+							{form.scope !== "global" && (
+								<div className="space-y-1 pt-1">
+									{domains.map((domain) => (
+										<label key={domain.id} className="flex items-center gap-2 text-xs">
+											<input
+												type="checkbox"
+												checked={form.domainIds.includes(domain.id)}
+												onChange={(e) =>
+													setForm((current) => ({
+														...current,
+														domainIds: e.target.checked
+															? [...current.domainIds, domain.id]
+															: current.domainIds.filter((id) => id !== domain.id),
+													}))
+												}
+											/>
+											<span className="font-mono">{domain.name}</span>
+										</label>
+									))}
+									{domains.length === 0 && (
+										<p className="text-[11px] text-muted-foreground">Enable a domain first.</p>
+									)}
+								</div>
+							)}
 						</div>
 
 						<DialogFooter className="pt-2">

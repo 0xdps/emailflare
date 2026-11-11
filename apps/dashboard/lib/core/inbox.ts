@@ -91,6 +91,8 @@ export interface SentInboxEmailRow {
 	from_address: string;
 	to_address: string;
 	subject: string;
+	body_text: string | null;
+	body_html: string | null;
 	status: "pending" | "sent" | "failed";
 	cf_message_id: string | null;
 	sent_at: string;
@@ -365,23 +367,142 @@ export async function upsertPerson(
 }
 
 /**
+ * Helper to strip angle brackets: "<msg@example.com>" -> "msg@example.com"
+ */
+function cleanMessageId(id: string): string {
+	const t = id.trim();
+	return t.startsWith("<") && t.endsWith(">") ? t.slice(1, -1) : t;
+}
+
+/**
+ * Extract an array of message IDs from an In-Reply-To or References header string or array.
+ */
+function parseRefMessageIds(refs: string | string[] | null | undefined): string[] {
+	if (!refs) return [];
+	const raw = Array.isArray(refs) ? refs.join(" ") : refs;
+	return raw
+		.split(/\s+/)
+		.map((s) => s.trim())
+		.filter(Boolean);
+}
+
+/**
+ * Normalize an email subject for fallback reply grouping.
+ * Returns null if the subject does not indicate a reply or forward.
+ */
+function normalizeReplySubject(subject: string | null | undefined): string | null {
+	if (!subject) return null;
+	const trimmed = subject.trim();
+	if (!/^(re|fwd?|fw)\s*:/i.test(trimmed)) {
+		return null;
+	}
+	const norm = trimmed
+		.replace(/^(re|fwd?|fw)\s*:\s*/gi, "")
+		.replace(/\s+/g, " ")
+		.trim()
+		.toLowerCase();
+	return norm.length > 0 ? norm : null;
+}
+
+/**
  * Resolve the thread_id a message belongs to. A reply inherits its parent's
- * thread (looked up by In-Reply-To Message-ID across received + sent emails);
- * a brand-new message gets a fresh thread id.
+ * thread (looked up by In-Reply-To, References, or fuzzy reply subject across
+ * received + sent emails); a brand-new message gets a fresh thread id.
  */
 export async function resolveThreadId(
 	db: InboxDbHandle,
 	inReplyTo: string | null | undefined,
-	opts: { generateId: () => string },
+	opts: {
+		generateId: () => string;
+		references?: string | string[] | null;
+		subject?: string | null;
+		personId?: string | null;
+		inboxAddress?: string | null;
+	},
 ): Promise<string> {
+	// 1. Direct In-Reply-To lookup (check both exact and clean/bracketed forms)
 	if (inReplyTo) {
-		const parent = await db.query("SELECT thread_id FROM inbox_emails WHERE message_id = ? LIMIT 1", [inReplyTo]);
+		const raw = inReplyTo.trim();
+		const clean = cleanMessageId(raw);
+		const bracketed = `<${clean}>`;
+
+		const parent = await db.query(
+			"SELECT thread_id FROM inbox_emails WHERE message_id = ? OR message_id = ? LIMIT 1",
+			[raw, raw === clean ? bracketed : clean],
+		);
 		if (parent.rows[0]?.thread_id) return parent.rows[0].thread_id as string;
 
-		const sent = await db.query("SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? LIMIT 1", [
-			inReplyTo,
-		]);
+		const sent = await db.query(
+			"SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? OR message_id = ? LIMIT 1",
+			[raw, raw === clean ? bracketed : clean],
+		);
 		if (sent.rows[0]?.thread_id) return sent.rows[0].thread_id as string;
 	}
+
+	// 2. References header chain lookup (walk latest references backwards)
+	if (opts.references) {
+		const refList = parseRefMessageIds(opts.references);
+		for (let i = refList.length - 1; i >= 0; i--) {
+			const ref = refList[i];
+			const clean = cleanMessageId(ref);
+			const bracketed = `<${clean}>`;
+
+			const parent = await db.query(
+				"SELECT thread_id FROM inbox_emails WHERE message_id = ? OR message_id = ? LIMIT 1",
+				[ref, ref === clean ? bracketed : clean],
+			);
+			if (parent.rows[0]?.thread_id) return parent.rows[0].thread_id as string;
+
+			const sent = await db.query(
+				"SELECT thread_id FROM sent_inbox_emails WHERE message_id = ? OR message_id = ? LIMIT 1",
+				[ref, ref === clean ? bracketed : clean],
+			);
+			if (sent.rows[0]?.thread_id) return sent.rows[0].thread_id as string;
+		}
+	}
+
+	// 3. Fallback: Re:/Fwd: subject match for the same person/contact
+	if (opts.subject && opts.personId) {
+		const normSub = normalizeReplySubject(opts.subject);
+		if (normSub) {
+			const recentInbound = await db.query(
+				"SELECT thread_id, subject FROM inbox_emails WHERE person_id = ? ORDER BY received_at DESC LIMIT 10",
+				[opts.personId],
+			);
+			for (const row of recentInbound.rows) {
+				const s = row.subject as string | null;
+				if (s) {
+					const cleanRowSub = s
+						.replace(/^(re|fwd?|fw)\s*:\s*/gi, "")
+						.replace(/\s+/g, " ")
+						.trim()
+						.toLowerCase();
+					if (cleanRowSub === normSub && row.thread_id) {
+						return row.thread_id as string;
+					}
+				}
+			}
+
+			const recentSent = await db.query(
+				"SELECT thread_id, subject FROM sent_inbox_emails WHERE person_id = ? ORDER BY sent_at DESC LIMIT 10",
+				[opts.personId],
+			);
+			for (const row of recentSent.rows) {
+				const s = row.subject as string | null;
+				if (s) {
+					const cleanRowSub = s
+						.replace(/^(re|fwd?|fw)\s*:\s*/gi, "")
+						.replace(/\s+/g, " ")
+						.trim()
+						.toLowerCase();
+					if (cleanRowSub === normSub && row.thread_id) {
+						return row.thread_id as string;
+					}
+				}
+			}
+		}
+	}
+
+	// 4. Brand-new conversation
 	return opts.generateId();
 }

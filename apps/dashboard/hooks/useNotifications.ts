@@ -19,7 +19,14 @@ export interface NotificationMessage {
 let sharedSocket: WebSocket | null = null;
 let sharedConnected = false;
 let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+let reconnectAttempt = 0;
 let currentUserId: string | null = null;
+
+function nextReconnectDelay(): number {
+	const base = Math.min(30_000, 1000 * 2 ** reconnectAttempt);
+	reconnectAttempt += 1;
+	return base + Math.floor(Math.random() * 400);
+}
 const listeners = new Set<(msg: NotificationMessage) => void>();
 const statusListeners = new Set<(connected: boolean) => void>();
 
@@ -49,6 +56,7 @@ function connectShared(userId: string) {
 		sharedSocket = new WebSocket(wsUrl);
 
 		sharedSocket.onopen = () => {
+			reconnectAttempt = 0;
 			notifyStatus(true);
 		};
 
@@ -70,7 +78,7 @@ function connectShared(userId: string) {
 				if (reconnectTimeout) clearTimeout(reconnectTimeout);
 				reconnectTimeout = setTimeout(() => {
 					if (currentUserId) connectShared(currentUserId);
-				}, 3000);
+				}, nextReconnectDelay());
 			}
 		};
 
@@ -82,12 +90,13 @@ function connectShared(userId: string) {
 		if (reconnectTimeout) clearTimeout(reconnectTimeout);
 		reconnectTimeout = setTimeout(() => {
 			if (currentUserId) connectShared(currentUserId);
-		}, 5000);
+		}, nextReconnectDelay());
 	}
 }
 
 function disconnectShared() {
 	currentUserId = null;
+	reconnectAttempt = 0;
 	if (reconnectTimeout) clearTimeout(reconnectTimeout);
 	if (sharedSocket) {
 		sharedSocket.close();

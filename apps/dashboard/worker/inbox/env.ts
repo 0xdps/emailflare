@@ -25,7 +25,7 @@ export interface Env {
 	NOTIFICATIONS: DurableObjectNamespace;
 
 	// ── Queue for sequence step delivery ─────────────────────────────────────
-	EMAIL_QUEUE: Queue<SequenceQueueMessage>;
+	EMAIL_QUEUE: Queue<SequenceQueueMessage | ScheduledSendMessage>;
 
 	// ── Assets binding (dashboard SPA) ───────────────────────────────────────
 	ASSETS: Fetcher;
@@ -39,6 +39,9 @@ export interface Env {
 
 	// ── Public URL of this Worker (for unsubscribe links) ───────────────────────
 	PUBLIC_URL?: string;
+
+	// Daily transactional send ceiling shown on the overview. Defaults to 1000.
+	CF_DAILY_LIMIT?: string;
 
 	// ── Worker name used as the Email Routing catch-all destination ─────────────
 	// Optional. When unset, routing uses the Worker name from wrangler config.
@@ -68,4 +71,9 @@ export interface SequenceQueueMessage {
 	type: "sequence_step";
 	enrollmentId: string;
 	stepIndex: number;
+}
+
+export interface ScheduledSendMessage {
+	type: "scheduled_send";
+	id: string;
 }

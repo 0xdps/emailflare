@@ -25,6 +25,12 @@ just clean
 
 ---
 
+## Inbox and delivery endpoints
+
+- `GET /api/inbox/people/:id/thread` returns the contact's inbound and outbound messages for mailboxes the caller can open.
+- `POST /v1/send` accepts optional `sendAt` (ISO-8601; queued until due) and `track: true` (open pixel and click redirects under `/v1/t`).
+- `POST /api/webhooks` registers an admin endpoint. Events: `email.sent`, `email.failed`, `email.opened`, `email.clicked`, `email.bounced`. Verify `X-EmailFlare-Signature` as HMAC-SHA256 of the raw body using the signing secret returned once at creation.
+
 ## Unified Dashboard App & Worker (`apps/dashboard`)
 
 ### `just dashboard-dev` _(alias: `just dev`)_

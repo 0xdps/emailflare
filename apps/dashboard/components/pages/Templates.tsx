@@ -173,6 +173,7 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 	const [templates, setTemplates] = useState<Template[]>(initialTemplates ?? []);
 	const [loading, setLoading] = useState(!initialTemplates);
 	const [search, setSearch] = useState("");
+	const [category, setCategory] = useState("all");
 	const [mode, setMode] = useState<Mode>("list");
 	const [editing, setEditing] = useState<Template | null>(null);
 	const [form, setForm] = useState(EMPTY_FORM);
@@ -315,23 +316,16 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 	const systemTemplates = templates.filter((t) => t.is_system === 1);
 	const customTemplates = templates.filter((t) => t.is_system === 0);
 
+	const categories = ["all", ...new Set(templates.map((t) => (t.slug ?? t.name).split("-")[0]).filter(Boolean))];
 	const q = search.trim().toLowerCase();
-	const filteredSystemTemplates = systemTemplates.filter((t) => {
-		if (!q) return true;
-		return (
-			t.name.toLowerCase().includes(q) ||
-			(t.slug ?? "").toLowerCase().includes(q) ||
-			t.subject.toLowerCase().includes(q)
-		);
-	});
-	const filteredCustomTemplates = customTemplates.filter((t) => {
-		if (!q) return true;
-		return (
-			t.name.toLowerCase().includes(q) ||
-			(t.slug ?? "").toLowerCase().includes(q) ||
-			t.subject.toLowerCase().includes(q)
-		);
-	});
+	const matches = (t: Template) => {
+		const text = `${t.name} ${t.slug ?? ""} ${t.subject}`.toLowerCase();
+		if (q && !text.includes(q)) return false;
+		if (category !== "all" && !(t.slug ?? t.name).startsWith(category)) return false;
+		return true;
+	};
+	const filteredSystemTemplates = systemTemplates.filter(matches);
+	const filteredCustomTemplates = customTemplates.filter(matches);
 
 	// ── Edit / Create view ───────────────────────────────────────────────────
 	if (mode !== "list") {
@@ -552,6 +546,21 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 						onChange={(e) => setSearch(e.target.value)}
 						placeholder="Search templates by name, slug, or subject..."
 					/>
+					<div className="mt-2 flex gap-1 overflow-x-auto">
+						{categories.slice(0, 8).map((item) => (
+							<button
+								key={item}
+								type="button"
+								onClick={() => setCategory(item)}
+								className={cn(
+									"rounded-full border px-2 py-0.5 text-[10px]",
+									category === item ? "border-orange-400 text-orange-600" : "text-muted-foreground",
+								)}
+							>
+								{item}
+							</button>
+						))}
+					</div>
 				</div>
 
 				<ScrollArea className="flex-1 min-h-0">

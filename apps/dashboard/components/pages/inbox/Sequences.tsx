@@ -29,7 +29,7 @@ function StepRow({
 	onRemove: () => void;
 }) {
 	return (
-		<div className="flex items-start gap-2 p-3 bg-muted/40 rounded-lg">
+		<div className="relative flex items-start gap-2 rounded-lg border-l-2 border-orange-200 bg-muted/40 p-3 pl-4">
 			<GripVertical size={14} className="mt-2.5 text-muted-foreground/40 shrink-0" />
 			<div className="flex-1 flex flex-col gap-2">
 				<div className="flex items-center gap-2">

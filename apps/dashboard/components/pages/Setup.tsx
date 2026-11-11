@@ -4,23 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { setup } from "@/lib/api";
-
-function AppLogo({ size = 28 }: { size?: number }) {
-	return (
-		<svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-			<defs>
-				<linearGradient id="setup-bg" x1="0" y1="1" x2="1" y2="0">
-					<stop offset="0%" stopColor="#9a3412" />
-					<stop offset="58%" stopColor="#ea580c" />
-					<stop offset="100%" stopColor="#fb923c" />
-				</linearGradient>
-			</defs>
-			<rect width="64" height="64" rx="13" fill="url(#setup-bg)" />
-			<path d="M53 11 L9 28 L23 38 Z" fill="white" />
-			<path d="M53 11 L23 38 L9 53 Z" fill="white" opacity="0.82" />
-		</svg>
-	);
-}
+import AppLogo from "@/components/AppLogo";
 
 export default function Setup() {
 	const router = useRouter();
@@ -47,8 +31,11 @@ export default function Setup() {
 		try {
 			await setup(name.trim(), email.trim(), password);
 			window.location.href = "/setup/ready";
-		} catch (err: any) {
-			const msg = err?.response?.data?.error;
+		} catch (err: unknown) {
+			const msg =
+				err && typeof err === "object" && "response" in err
+					? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+					: undefined;
 			setError(msg === "already_initialized" ? "Inbox is already set up." : "Setup failed. Please try again.");
 		} finally {
 			setLoading(false);

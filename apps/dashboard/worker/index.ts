@@ -7,8 +7,13 @@
 
 import vinextHandler from "vinext/server/fetch-handler";
 import { app as api } from "./inbox/index.ts";
-import { handleIncomingEmail, processDueSequenceSteps, handleSequenceQueueMessage } from "./inbox/index.ts";
-import type { Env, SequenceQueueMessage } from "./inbox/env.ts";
+import {
+	handleIncomingEmail,
+	processDueSequenceSteps,
+	handleSequenceQueueMessage,
+	deliverScheduledSend,
+} from "./inbox/index.ts";
+import type { Env, ScheduledSendMessage, SequenceQueueMessage } from "./inbox/env.ts";
 
 export { NotificationsHub } from "./inbox/do/NotificationsHub.ts";
 
@@ -59,7 +64,9 @@ export default {
 	async queue(batch: MessageBatch, env: Env): Promise<void> {
 		for (const msg of batch.messages) {
 			try {
-				await handleSequenceQueueMessage(msg.body as SequenceQueueMessage, env);
+				const body = msg.body as SequenceQueueMessage | ScheduledSendMessage;
+				if (body.type === "scheduled_send") await deliverScheduledSend(body, env);
+				else await handleSequenceQueueMessage(body, env);
 				msg.ack();
 			} catch {
 				msg.retry();

@@ -114,10 +114,15 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			setSendingChoice(null);
 			setManual(false);
 			setForm({ name: "", zoneName: "" });
-			if (result.dns.status === "manual" && result.dns.records.length > 0) {
-				setManualRecords(result.dns.records.map((record) => ({ ...record, required: true })));
-			}
 			await load();
+			if (result.dns.status === "manual" && result.dns.records.length > 0) {
+				const records = result.dns.records.map((record) => ({ ...record, required: true }));
+				setManualRecords(records);
+				const { data } = await api.get<Domain[]>("/api/domains");
+				setDomains(data);
+				const created = data.find((domain) => domain.name === name);
+				if (created) setDnsModal({ domain: created, records });
+			}
 		} catch (err: unknown) {
 			setFormError(err instanceof Error ? err.message : "Failed to enable domain");
 		} finally {
@@ -331,9 +336,23 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 
 			{manualRecords && (
 				<Alert>
-					<AlertDescription>
-						DNS was not written. Add these records in Cloudflare, then verify:{" "}
-						{manualRecords.map((record) => `${record.type} ${record.name}`).join(", ")}
+					<AlertDescription className="flex items-center justify-between gap-3">
+						<span>DNS was not written. Add the records, then verify.</span>
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							onClick={() => {
+								const domain = domains.find((item) =>
+									manualRecords.some(
+										(record) => record.name.endsWith(item.name) || record.name === item.name,
+									),
+								);
+								if (domain) setDnsModal({ domain, records: manualRecords });
+							}}
+						>
+							View DNS records
+						</Button>
 					</AlertDescription>
 				</Alert>
 			)}

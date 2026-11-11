@@ -9,6 +9,8 @@ import { z } from "zod";
 import { generateId } from "@/lib/core";
 import { requireSession, requireAdmin, saveSession } from "../middleware/auth.ts";
 import { hashPassword } from "../lib/password.ts";
+import { sendEmail } from "../services/cloudflare.ts";
+import { writeAudit } from "../lib/audit.ts";
 import type { HonoEnv } from "../env.ts";
 
 const app = new Hono<HonoEnv>();
@@ -66,8 +68,38 @@ app.post(
 			)
 			.run();
 
-		const origin = new URL(c.req.url).origin;
-		return c.json({ inviteUrl: `${origin}/invite/${rawToken}` }, 201);
+		const origin = (c.env.PUBLIC_URL || new URL(c.req.url).origin).replace(/\/$/, "");
+		const inviteUrl = `${origin}/invite/${rawToken}`;
+		const domain = await c.env.DB.prepare(
+			"SELECT name FROM domains WHERE verified = 1 ORDER BY created_at ASC LIMIT 1",
+		).first<{ name: string }>();
+		let emailed = false;
+		if (domain && c.env.CF_API_TOKEN && c.env.CF_ACCOUNT_ID) {
+			try {
+				await sendEmail(
+					{
+						from: { address: `noreply@${domain.name}`, name: "EmailFlare" },
+						to: email,
+						subject: "You're invited to EmailFlare",
+						text: `Accept your invite: ${inviteUrl}\n\nThis link expires in 48 hours.`,
+						html: `<p>You have been invited to an EmailFlare workspace.</p><p><a href="${inviteUrl}">Accept invite</a></p><p>This link expires in 48 hours.</p>`,
+					},
+					c.env.CF_API_TOKEN,
+					c.env.CF_ACCOUNT_ID,
+				);
+				emailed = true;
+			} catch {
+				emailed = false;
+			}
+		}
+		await writeAudit(c.env.DB, {
+			actorId: createdBy,
+			action: "invite.create",
+			targetType: "invite",
+			targetId: id,
+			detail: email,
+		});
+		return c.json({ inviteUrl, emailed }, 201);
 	},
 );
 

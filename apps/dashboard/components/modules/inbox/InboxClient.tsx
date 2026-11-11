@@ -16,6 +16,7 @@ import {
 } from "@/lib/api";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePermissions } from "@/lib/UserContext";
+import { replyReferences } from "@/lib/threading";
 import ThreadList from "./ThreadList";
 import ThreadReader from "./ThreadReader";
 import ComposeModal from "./ComposeModal";
@@ -149,6 +150,8 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 	}) {
 		if (!selectedThread) return;
 
+		const refs = payload.replyTarget ? replyReferences(payload.replyTarget) : undefined;
+
 		if (payload.replyTarget?.message_id) {
 			await replyTo({
 				personId: selectedThread.person_id || "",
@@ -157,6 +160,7 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 				subject: payload.subject,
 				text: payload.text,
 				replyToMessageId: payload.replyTarget.message_id,
+				references: refs,
 			});
 		} else {
 			await composeSend({

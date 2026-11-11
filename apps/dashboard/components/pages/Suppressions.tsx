@@ -173,6 +173,8 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 	const [loading, setLoading] = useState(initialResult === undefined);
 	const [addOpen, setAddOpen] = useState(false);
 	const [deleting, setDeleting] = useState<string | null>(null);
+	const [confirmId, setConfirmId] = useState<string | null>(null);
+	const [importing, setImporting] = useState(false);
 	const isFirstMount = useRef(true);
 
 	const load = useCallback(async () => {
@@ -230,10 +232,44 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 						Addresses blocked from receiving emails due to bounces, spam complaints, or unsubscribes.
 					</p>
 				</div>
-				<Button size="sm" className="gap-1.5 h-8.5 text-xs shadow-xs" onClick={() => setAddOpen(true)}>
-					<Plus size={13} />
-					<span>Add Suppression</span>
-				</Button>
+				<div className="flex items-center gap-2">
+					<Button
+						size="sm"
+						variant="outline"
+						className="h-8.5 text-xs"
+						onClick={() => {
+							window.location.href = "/api/suppressions/export.csv";
+						}}
+					>
+						Export CSV
+					</Button>
+					<label className="h-8.5 px-3 inline-flex items-center rounded-md border text-xs cursor-pointer">
+						{importing ? "Importing…" : "Import CSV"}
+						<input
+							type="file"
+							accept=".csv,text/csv"
+							className="sr-only"
+							onChange={async (e) => {
+								const file = e.target.files?.[0];
+								if (!file) return;
+								setImporting(true);
+								try {
+									await api.post("/api/suppressions/import", await file.text(), {
+										headers: { "Content-Type": "text/csv" },
+									});
+									load();
+								} finally {
+									setImporting(false);
+									e.target.value = "";
+								}
+							}}
+						/>
+					</label>
+					<Button size="sm" className="gap-1.5 h-8.5 text-xs shadow-xs" onClick={() => setAddOpen(true)}>
+						<Plus size={13} />
+						<span>Add Suppression</span>
+					</Button>
+				</div>
 			</div>
 
 			{/* Filter & Search Bar */}
@@ -354,7 +390,7 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 											size="sm"
 											className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
 											disabled={deleting === row.id}
-											onClick={() => handleDelete(row.id)}
+											onClick={() => setConfirmId(row.id)}
 										>
 											<Trash2 size={12} className="mr-1" />
 											<span>Unsuppress</span>
@@ -397,6 +433,34 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 			</div>
 
 			<AddDialog open={addOpen} onClose={() => setAddOpen(false)} onAdded={load} />
+			<Dialog open={!!confirmId} onOpenChange={(open) => !open && setConfirmId(null)}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Unsuppress this address?</DialogTitle>
+						<DialogDescription>
+							Future sends to this address will be delivered again. This does not undo a bounce at the
+							recipient.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setConfirmId(null)}>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							disabled={!confirmId || deleting === confirmId}
+							onClick={() => {
+								if (!confirmId) return;
+								const id = confirmId;
+								setConfirmId(null);
+								void handleDelete(id);
+							}}
+						>
+							Unsuppress
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

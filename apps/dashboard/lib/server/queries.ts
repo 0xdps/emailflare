@@ -3,11 +3,14 @@ export { getServerSession } from "@/app/actions/auth";
 import { getServerSession } from "@/app/actions/auth";
 import { makeDb, D1Db } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
-import { enrich } from "@/lib/core";
+import { dailySendLimit, enrich } from "@/lib/core";
 import { getCloudflareTokenStatus as fetchCfStatus, buildDomainCatalog } from "@/worker/inbox/services/cloudflare";
 import { inboxWorkerName, type Env } from "@/worker/inbox/env";
 
-const CF_DAILY_LIMIT = 1000;
+function cfDailyLimit(): number {
+	const workerEnv = env as unknown as Env;
+	return dailySendLimit(workerEnv?.CF_DAILY_LIMIT);
+}
 
 function rangeStart(range: string): string {
 	const now = new Date();
@@ -87,7 +90,7 @@ export async function getDashboardStats(range: "1d" | "7d" | "30d" = "7d"): Prom
 			totalEmails: 0,
 			sentToday: 0,
 			failedToday: 0,
-			cfDailyLimit: CF_DAILY_LIMIT,
+			cfDailyLimit: cfDailyLimit(),
 			domainBreakdown: [],
 			daily: [],
 		};
@@ -159,7 +162,7 @@ export async function getDashboardStats(range: "1d" | "7d" | "30d" = "7d"): Prom
 		totalEmails: emailCounts?.total ?? 0,
 		sentToday: emailCounts?.sent_today ?? 0,
 		failedToday: emailCounts?.failed_today ?? 0,
-		cfDailyLimit: CF_DAILY_LIMIT,
+		cfDailyLimit: cfDailyLimit(),
 		domainBreakdown: domainBreakdownResult.rows.map((r) => ({
 			name: r.domain_name,
 			verified: r.verified === 1,
@@ -315,7 +318,19 @@ export async function getDomainCatalog(): Promise<{
 	try {
 		const { domains } = makeDb(workerEnv.DB);
 		const stored = await domains.find();
-		const catalog = await buildDomainCatalog(workerEnv.CF_API_TOKEN, stored, inboxWorkerName(workerEnv), true);
+		const catalog = await buildDomainCatalog(
+			workerEnv.CF_API_TOKEN,
+			stored.map((row) => ({
+				id: row.id,
+				name: row.name,
+				cf_zone_id: row.cf_zone_id,
+				verified: row.verified,
+				routing_status: row.routing_status ?? null,
+				dns_status: row.dns_status ?? null,
+			})),
+			inboxWorkerName(workerEnv),
+			true,
+		);
 		return { zones: catalog.zones, truncated: catalog.truncated, error: null };
 	} catch (error) {
 		return {

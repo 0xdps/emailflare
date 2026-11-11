@@ -1,8 +1,7 @@
 import { Hono } from "hono";
+import { dailySendLimit } from "@/lib/core";
 import { makeDb, D1Db } from "../db.ts";
 import type { HonoEnv } from "../env.ts";
-
-const CF_DAILY_LIMIT = 1000;
 
 const app = new Hono<HonoEnv>();
 
@@ -89,7 +88,7 @@ app.get("/", async (c) => {
 		totalEmails: emailCounts?.total ?? 0,
 		sentToday: emailCounts?.sent_today ?? 0,
 		failedToday: emailCounts?.failed_today ?? 0,
-		cfDailyLimit: CF_DAILY_LIMIT,
+		cfDailyLimit: dailySendLimit(c.env.CF_DAILY_LIMIT),
 		domainBreakdown: domainBreakdownResult.rows.map((r) => ({
 			name: r.domain_name,
 			verified: r.verified === 1,

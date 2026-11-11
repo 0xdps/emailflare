@@ -30,6 +30,10 @@ import suppressionsRouter from "./routes/suppressions.ts";
 import testEmailsRouter from "./routes/testEmails.ts";
 import unsubscribeRouter from "./routes/unsubscribe.ts";
 import playgroundRouter from "./routes/playground.ts";
+import trackingRouter from "./routes/tracking.ts";
+import webhooksRouter from "./routes/webhooks.ts";
+import auditRouter from "./routes/audit.ts";
+import totpRouter from "./routes/totp.ts";
 
 // ── Inbox
 import peopleRouter from "./routes/inbox/people.ts";
@@ -72,13 +76,22 @@ app.use(
 app.get("/health", (c) => c.json({ ok: true, service: "emailflare-inbox" }));
 app.route("/api/setup", setupRouter);
 app.route("/api/auth", authRouter);
+app.route("/api/auth/totp", totpRouter);
 app.route("/api", invitesRouter); // mounts /api/invites/:token and /api/admin/invites
 
 // ── Public unsubscribe (token-authenticated, no API key) ───────────────────────
 app.route("/v1/unsubscribe", unsubscribeRouter);
+app.route("/v1/t", trackingRouter);
 
 // ── Send API (API key auth + rate limiting) ───────────────────────────────────
-app.use("/v1/*", requireApiKey, checkRateLimit);
+app.use("/v1/*", async (c, next) => {
+	if (new URL(c.req.url).pathname.startsWith("/v1/t/")) return next();
+	return requireApiKey(c, next);
+});
+app.use("/v1/*", async (c, next) => {
+	if (new URL(c.req.url).pathname.startsWith("/v1/t/")) return next();
+	return checkRateLimit(c, next);
+});
 app.route("/v1/send", sendRouter);
 
 // ── Authenticated session routes ──────────────────────────────────────────────
@@ -92,6 +105,8 @@ adminApp.route("/domains", domainsRouter);
 adminApp.route("/keys", keysRouter);
 adminApp.route("/admin/users", adminUsersRouter);
 adminApp.route("/suppressions", suppressionsRouter);
+adminApp.route("/webhooks", webhooksRouter);
+adminApp.route("/audit", auditRouter);
 adminApp.post("/seed", async (c) => {
 	await seedSystemTemplates(c.env.DB);
 	return c.json({ ok: true });
@@ -149,4 +164,4 @@ app.onError((err, c) => {
 
 export { app };
 export { handleIncomingEmail } from "./email-handler.ts";
-export { processDueSequenceSteps, handleSequenceQueueMessage } from "./sequence-processor.ts";
+export { processDueSequenceSteps, handleSequenceQueueMessage, deliverScheduledSend } from "./sequence-processor.ts";

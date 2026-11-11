@@ -98,10 +98,22 @@ app.get("/", async (c) => {
 		)
 		SELECT
 			m.thread_id AS id,
-			m.inbox_address,
-			m.counterparty_email,
-			m.counterparty_name,
-			m.person_id,
+			COALESCE(
+				(SELECT inbox_address FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.inbox_address IS NOT NULL ORDER BY timestamp DESC LIMIT 1),
+				MIN(m.inbox_address)
+			) AS inbox_address,
+			COALESCE(
+				(SELECT counterparty_email FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.counterparty_email IS NOT NULL ORDER BY timestamp DESC LIMIT 1),
+				MIN(m.counterparty_email)
+			) AS counterparty_email,
+			COALESCE(
+				(SELECT counterparty_name FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.counterparty_name IS NOT NULL ORDER BY timestamp DESC LIMIT 1),
+				MIN(m.counterparty_name)
+			) AS counterparty_name,
+			COALESCE(
+				(SELECT person_id FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.person_id IS NOT NULL ORDER BY timestamp DESC LIMIT 1),
+				MIN(m.person_id)
+			) AS person_id,
 			COALESCE(
 				(SELECT subject FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.subject IS NOT NULL AND m2.subject != '' ORDER BY timestamp DESC LIMIT 1),
 				'(No subject)'
@@ -112,17 +124,66 @@ app.get("/", async (c) => {
 			COUNT(m.id) AS total_count
 		FROM all_messages m
 		${whereClause}
-		GROUP BY m.thread_id, m.inbox_address, m.counterparty_email
+		GROUP BY m.thread_id
 		${havingClause}
 		ORDER BY last_message_at DESC
 		LIMIT ? OFFSET ?
 	`;
 
-	params.push(limit, offset);
+	const countSql = `
+		WITH all_messages AS (
+			SELECT
+				ie.id,
+				ie.thread_id,
+				ie.inbox_address,
+				COALESCE(p.email, ie.inbox_address) AS counterparty_email,
+				p.name AS counterparty_name,
+				p.id AS person_id,
+				ie.subject,
+				ie.body_text,
+				ie.received_at AS timestamp,
+				CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END AS is_unread
+			FROM inbox_emails ie
+			LEFT JOIN people p ON p.id = ie.person_id
 
-	const rows = await c.env.DB.prepare(sql)
-		.bind(...params)
-		.all();
+			UNION ALL
+
+			SELECT
+				se.id,
+				se.thread_id,
+				se.from_address AS inbox_address,
+				se.to_address AS counterparty_email,
+				p.name AS counterparty_name,
+				p.id AS person_id,
+				se.subject,
+				se.body_text,
+				se.sent_at AS timestamp,
+				0 AS is_unread
+			FROM sent_inbox_emails se
+			LEFT JOIN people p ON p.id = se.person_id
+		),
+		grouped_threads AS (
+			SELECT
+				m.thread_id,
+				SUM(m.is_unread) AS unread_count
+			FROM all_messages m
+			${whereClause}
+			GROUP BY m.thread_id
+			${havingClause}
+		)
+		SELECT COUNT(*) AS total FROM grouped_threads
+	`;
+
+	const [countResult, rows] = await Promise.all([
+		c.env.DB.prepare(countSql)
+			.bind(...params)
+			.first<{ total: number }>(),
+		c.env.DB.prepare(sql)
+			.bind(...params, limit, offset)
+			.all(),
+	]);
+
+	const total = Number(countResult?.total ?? 0);
 
 	// Format results for thread client
 	const data = (rows.results ?? []).map((r: any) => ({
@@ -145,10 +206,10 @@ app.get("/", async (c) => {
 
 	return c.json({
 		data,
-		total: data.length, // paged slice
+		total,
 		page,
 		limit,
-		pages: Math.ceil(data.length / limit),
+		pages: Math.ceil(total / limit),
 	});
 });
 
@@ -170,48 +231,58 @@ app.get("/:id", async (c) => {
 	// Fetch all messages in this thread
 	const sql = `
 		SELECT
-			id,
+			ie.id,
 			'inbound' AS direction,
-			subject,
-			body_html,
-			body_text,
-			body_r2_key,
-			message_id,
-			in_reply_to,
-			"references",
-			thread_id,
-			is_read,
-			received_at AS timestamp,
-			inbox_address,
-			person_id,
-			spf,
-			dkim,
-			dmarc
-		FROM inbox_emails
-		WHERE thread_id = ?
+			ie.subject,
+			ie.body_html,
+			ie.body_text,
+			ie.body_r2_key,
+			ie.message_id,
+			ie.in_reply_to,
+			ie."references",
+			ie.thread_id,
+			ie.is_read,
+			ie.received_at AS timestamp,
+			ie.inbox_address,
+			ie.person_id,
+			COALESCE(p.email, ie.inbox_address) AS counterparty_email,
+			p.name AS counterparty_name,
+			NULL AS to_address,
+			NULL AS from_address,
+			ie.spf,
+			ie.dkim,
+			ie.dmarc
+		FROM inbox_emails ie
+		LEFT JOIN people p ON p.id = ie.person_id
+		WHERE ie.thread_id = ?
 
 		UNION ALL
 
 		SELECT
-			id,
+			se.id,
 			'outbound' AS direction,
-			subject,
-			NULL AS body_html,
-			body_text,
+			se.subject,
+			se.body_html,
+			se.body_text,
 			NULL AS body_r2_key,
-			message_id,
-			in_reply_to,
-			"references",
-			thread_id,
+			se.message_id,
+			se.in_reply_to,
+			se."references",
+			se.thread_id,
 			1 AS is_read,
-			sent_at AS timestamp,
-			from_address AS inbox_address,
-			person_id,
+			se.sent_at AS timestamp,
+			se.from_address AS inbox_address,
+			se.person_id,
+			se.to_address AS counterparty_email,
+			p.name AS counterparty_name,
+			se.to_address,
+			se.from_address,
 			NULL AS spf,
 			NULL AS dkim,
 			NULL AS dmarc
-		FROM sent_inbox_emails
-		WHERE thread_id = ?
+		FROM sent_inbox_emails se
+		LEFT JOIN people p ON p.id = se.person_id
+		WHERE se.thread_id = ?
 
 		ORDER BY timestamp ASC
 	`;
@@ -228,6 +299,31 @@ app.get("/:id", async (c) => {
 		return c.json({ error: "Thread not found" }, 404);
 	}
 
+	// Populate attachments for messages in this thread
+	const emailIds = messages.map((m: any) => m.id);
+	if (emailIds.length > 0) {
+		const placeholders = emailIds.map(() => "?").join(",");
+		const attRows = await c.env.DB.prepare(
+			`SELECT id, email_id, filename, content_type, size FROM attachments WHERE email_id IN (${placeholders})`,
+		)
+			.bind(...emailIds)
+			.all();
+		const attMap = new Map<string, any[]>();
+		for (const att of (attRows.results ?? []) as any[]) {
+			const list = attMap.get(att.email_id) ?? [];
+			list.push({
+				id: att.id,
+				filename: att.filename,
+				content_type: att.content_type,
+				size: att.size,
+			});
+			attMap.set(att.email_id, list);
+		}
+		for (const m of messages as any[]) {
+			m.attachments = attMap.get(m.id) ?? [];
+		}
+	}
+
 	// Resolve counterparty details
 	const personId = messages.find((m: any) => m.person_id)?.person_id;
 	let person: any = null;
@@ -239,13 +335,12 @@ app.get("/:id", async (c) => {
 	}
 
 	const subject = messages.find((m: any) => m.subject)?.subject || "(No subject)";
-	const inboundMsg = messages.find((m: any) => m.direction === "inbound");
-	const outboundMsg = messages.find((m: any) => m.direction === "outbound");
 	const counterpartyEmail =
 		person?.email ||
-		(inboundMsg as any)?.counterparty_email ||
-		(outboundMsg as any)?.to_address ||
+		messages.find((m: any) => m.counterparty_email)?.counterparty_email ||
+		messages.find((m: any) => m.direction === "outbound" && m.to_address)?.to_address ||
 		"unknown@recipient.com";
+	const counterpartyName = person?.name || messages.find((m: any) => m.counterparty_name)?.counterparty_name || null;
 
 	return c.json({
 		id: threadId,
@@ -253,7 +348,7 @@ app.get("/:id", async (c) => {
 		person: person || {
 			id: personId || threadId,
 			email: counterpartyEmail,
-			name: null,
+			name: counterpartyName,
 		},
 		thread: messages,
 		total: messages.length,

@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "../lib/password.ts";
 import { getSession, saveSession, clearSession } from "../middleware/auth.ts";
 import { checkLoginRateLimit } from "../middleware/loginRateLimit.ts";
 import { sendEmail } from "../services/cloudflare.ts";
+import { hashBackupCode, verifyTotp } from "../lib/totp.ts";
 import type { HonoEnv } from "../env.ts";
 import { generateId, userLoginSchema } from "@/lib/core";
 
@@ -23,7 +24,7 @@ app.post("/login", zValidator("json", userLoginSchema), async (c) => {
 	const { email, password } = c.req.valid("json");
 
 	const user = await c.env.DB.prepare(
-		"SELECT id, name, email, password_hash, user_type, access_types FROM users WHERE email = ? LIMIT 1",
+		"SELECT id, name, email, password_hash, user_type, access_types, totp_enabled, totp_secret FROM users WHERE email = ? LIMIT 1",
 	)
 		.bind(email)
 		.first<{
@@ -33,6 +34,8 @@ app.post("/login", zValidator("json", userLoginSchema), async (c) => {
 			password_hash: string;
 			user_type: "admin" | "member";
 			access_types: string;
+			totp_enabled: number;
+			totp_secret: string | null;
 		}>();
 
 	if (!user) {
@@ -43,6 +46,25 @@ app.post("/login", zValidator("json", userLoginSchema), async (c) => {
 
 	const valid = await verifyPassword(password, user.password_hash);
 	if (!valid) return c.json({ error: "Invalid email or password" }, 401);
+
+	if (user.totp_enabled === 1 && user.totp_secret) {
+		const code = c.req.header("X-EmailFlare-OTP") ?? "";
+		const totpOk = code ? await verifyTotp(user.totp_secret, code) : false;
+		if (!totpOk) {
+			const backup = code ? await hashBackupCode(code) : "";
+			const unused = backup
+				? await c.env.DB.prepare(
+						"SELECT id FROM user_backup_codes WHERE user_id = ? AND code_hash = ? AND used_at IS NULL LIMIT 1",
+					)
+						.bind(user.id, backup)
+						.first<{ id: string }>()
+				: null;
+			if (!unused) return c.json({ error: "totp_required" }, 401);
+			await c.env.DB.prepare("UPDATE user_backup_codes SET used_at = ? WHERE id = ?")
+				.bind(new Date().toISOString(), unused.id)
+				.run();
+		}
+	}
 
 	const userType: "admin" | "member" = user.user_type === "admin" ? "admin" : "member";
 

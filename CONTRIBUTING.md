@@ -65,6 +65,14 @@ Lefthook pre-commit hooks run automatically on staged files to check secrets, fo
 
 ---
 
+## Access types
+
+`user_type` is `admin` or `member`. Admins can open every area. Members receive one or more `access_types`:
+
+- `inbox`: shared inbox, contacts, and sequences. Non-admins only see mailboxes assigned to them.
+- `api`: delivery overview, logs, templates, playground, lists, and suppressions. Suppression changes are admin-only.
+- `tester`: sandbox mailbox. Test API keys are captured there and are not delivered.
+
 ## Pull Request Guidelines
 
 1. **Keep Changes Focused:** Target one feature, improvement, or bug fix per PR.

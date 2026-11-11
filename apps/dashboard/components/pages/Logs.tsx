@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
 	CheckCircle2,
 	XCircle,
@@ -340,13 +340,15 @@ function DetailPanel({ log }: { log: LogRow }) {
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 export default function LogsPage({ initialResult }: { initialResult?: PagedLogs }) {
+	const router = useRouter();
+	const params = useSearchParams();
 	const [result, setResult] = useState<PagedLogs | null>(initialResult ?? null);
-	const [page, setPage] = useState(1);
-	const [filterVal, setFilterVal] = useState("");
-	const [search, setSearch] = useState("");
-	const [searchInput, setSearchInput] = useState("");
-	const [from, setFrom] = useState("");
-	const [to, setTo] = useState("");
+	const [page, setPage] = useState(Number(params.get("page") ?? "1") || 1);
+	const [filterVal, setFilterVal] = useState(params.get("status") ?? (params.get("isTest") === "1" ? "test" : ""));
+	const [search, setSearch] = useState(params.get("search") ?? "");
+	const [searchInput, setSearchInput] = useState(params.get("search") ?? "");
+	const [from, setFrom] = useState(params.get("from") ?? "");
+	const [to, setTo] = useState(params.get("to") ?? "");
 	const [selected, setSelected] = useState<LogRow | null>(initialResult?.data?.[0] ?? null);
 	const [loading, setLoading] = useState(initialResult === undefined);
 	const isFirstMount = useRef(true);
@@ -380,12 +382,24 @@ export default function LogsPage({ initialResult }: { initialResult?: PagedLogs 
 	}, [page, filterVal, search, from, to]);
 
 	useEffect(() => {
+		const next = new URLSearchParams();
+		if (page > 1) next.set("page", String(page));
+		if (filterVal === "sent" || filterVal === "failed") next.set("status", filterVal);
+		if (filterVal === "test") next.set("isTest", "1");
+		if (search) next.set("search", search);
+		if (from) next.set("from", from);
+		if (to) next.set("to", to);
+		const query = next.toString();
+		router.replace(query ? `/developer/logs?${query}` : "/developer/logs", { scroll: false });
+	}, [page, filterVal, search, from, to, router]);
+
+	useEffect(() => {
 		if (isFirstMount.current) {
 			isFirstMount.current = false;
-			if (initialResult) return;
+			if (initialResult && !params.toString()) return;
 		}
 		load();
-	}, [load, initialResult]);
+	}, [load, initialResult, params]);
 
 	function handleFilter(val: string) {
 		setFilterVal(val);

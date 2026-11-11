@@ -56,7 +56,19 @@ app.get("/catalog", async (c) => {
 	// Setup only needs names. Sending and routing status are two Cloudflare calls
 	// per zone, so skip them unless the caller asks for the full catalog.
 	try {
-		const catalog = await buildDomainCatalog(token, stored, inboxWorkerName(c.env), c.req.query("view") === "full");
+		const catalog = await buildDomainCatalog(
+			token,
+			stored.map((row) => ({
+				id: row.id,
+				name: row.name,
+				cf_zone_id: row.cf_zone_id,
+				verified: row.verified,
+				routing_status: row.routing_status ?? null,
+				dns_status: row.dns_status ?? null,
+			})),
+			inboxWorkerName(c.env),
+			c.req.query("view") === "full",
+		);
 		return c.json(catalog);
 	} catch (error) {
 		if (error instanceof CloudflareApiError) {

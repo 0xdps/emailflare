@@ -5,7 +5,7 @@
 // POST /api/inbox/people/:id/mark-read      — mark all emails read for person
 
 import { Hono } from "hono";
-import { parsePagination } from "@/lib/core";
+import { generateId, parsePagination } from "@/lib/core";
 import type { HonoEnv } from "../../env.ts";
 
 const app = new Hono<HonoEnv>();
@@ -17,6 +17,36 @@ async function getAssignedInboxes(db: D1Database, userId: string): Promise<strin
 		.all<{ email: string }>();
 	return (rows.results ?? []).map((r) => r.email);
 }
+
+app.post("/import", async (c) => {
+	const inbox = c.req.query("inbox") ?? "";
+	if (!inbox.includes("@")) return c.json({ error: "Choose a mailbox first." }, 400);
+	const userType = c.get("userType");
+	if (userType !== "admin") {
+		const assigned = await getAssignedInboxes(c.env.DB, c.get("userId"));
+		if (!assigned.includes(inbox)) return c.json({ error: "That mailbox is not assigned to you." }, 403);
+	}
+	const text = await c.req.text();
+	const now = new Date().toISOString();
+	let imported = 0;
+	for (const line of text.split(/\r?\n/).slice(0, 1000)) {
+		const [emailRaw, nameRaw] = line.split(",");
+		const email = emailRaw?.trim().toLowerCase() ?? "";
+		if (!email.includes("@") || email === "email") continue;
+		const name = nameRaw?.trim() || null;
+		try {
+			await c.env.DB.prepare(
+				"INSERT INTO people (id, email, name, inbox_address, created_at) VALUES (?, ?, ?, ?, ?)",
+			)
+				.bind(generateId(), email, name, inbox, now)
+				.run();
+			imported++;
+		} catch {
+			// Existing email+mailbox pairs are skipped.
+		}
+	}
+	return c.json({ imported });
+});
 
 // GET /api/inbox/people
 app.get("/", async (c) => {
@@ -196,7 +226,7 @@ app.get("/:id/thread", async (c) => {
 			       spf, dkim, dmarc
 			FROM inbox_emails WHERE person_id = ? AND inbox_address IN (${placeholders})
 			UNION ALL
-			SELECT id, 'outbound' AS direction, subject, NULL, body_text, NULL,
+			SELECT id, 'outbound' AS direction, subject, body_html, body_text, NULL,
 			       message_id, in_reply_to, "references", thread_id, 1, sent_at AS timestamp, from_address AS inbox_address,
 			       NULL AS spf, NULL AS dkim, NULL AS dmarc
 			FROM sent_inbox_emails WHERE person_id = ? AND from_address IN (${placeholders})
@@ -216,7 +246,7 @@ app.get("/:id/thread", async (c) => {
 			       spf, dkim, dmarc
 			FROM inbox_emails WHERE person_id = ?
 			UNION ALL
-			SELECT id, 'outbound' AS direction, subject, NULL, body_text, NULL,
+			SELECT id, 'outbound' AS direction, subject, body_html, body_text, NULL,
 			       message_id, in_reply_to, "references", thread_id, 1, sent_at AS timestamp, from_address AS inbox_address,
 			       NULL AS spf, NULL AS dkim, NULL AS dmarc
 			FROM sent_inbox_emails WHERE person_id = ?

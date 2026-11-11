@@ -92,7 +92,13 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
 	const references = email.references ?? (tokenParent ? tokenParent : null);
 
 	// Resolve thread_id: reply inherits its parent's thread; otherwise new thread.
-	const threadId = await resolveThreadId(db, tokenParent ?? email.inReplyTo, { generateId });
+	const threadId = await resolveThreadId(db, tokenParent ?? email.inReplyTo, {
+		generateId,
+		references,
+		subject: email.subject,
+		personId,
+		inboxAddress,
+	});
 
 	await env.DB.prepare(
 		`INSERT INTO inbox_emails

@@ -147,6 +147,10 @@ export const sendSchema = z
 		listId: z.string().optional(),
 		listUnsubscribe: z.string().optional(),
 		listUnsubscribePost: z.boolean().optional(),
+		// Optional open/click tracking. Off unless the caller opts in.
+		track: z.boolean().optional(),
+		// ISO-8601 delivery time. Absent or in the past means send now.
+		sendAt: z.string().datetime().optional(),
 	})
 	.refine((d) => d.templateId || d.templateSlug || d.html || d.text, {
 		message: "Provide templateId, templateSlug, or at least one of html/text",
@@ -490,6 +494,29 @@ export function applyVariables(template: string, vars: Record<string, unknown>):
 	return hbsRender(template, vars);
 }
 
+const DEFAULT_DAILY_LIMIT = 1000;
+
+/** Daily send ceiling. `CF_DAILY_LIMIT` overrides the default of 1000. */
+export function dailySendLimit(raw: string | number | undefined | null): number {
+	const parsed = typeof raw === "number" ? raw : Number(raw);
+	if (!Number.isFinite(parsed) || parsed < 1) return DEFAULT_DAILY_LIMIT;
+	return Math.floor(parsed);
+}
+
+/** Rewrite http(s) links through the click tracker and append a 1x1 open pixel. */
+export function instrumentTracking(html: string, origin: string, token: string): string {
+	const base = origin.replace(/\/$/, "");
+	if (!base || !html) return html;
+	const rewritten = html.replace(/href=(["'])(https?:\/\/[^"']+)\1/gi, (_match, quote: string, url: string) => {
+		if (url.startsWith(`${base}/v1/`)) return `href=${quote}${url}${quote}`;
+		const tracked = `${base}/v1/t/c/${encodeURIComponent(token)}?u=${encodeURIComponent(url)}`;
+		return `href=${quote}${tracked}${quote}`;
+	});
+	const pixel = `<img src="${base}/v1/t/o/${encodeURIComponent(token)}" width="1" height="1" alt="" style="display:none" />`;
+	if (/<\/body>/i.test(rewritten)) return rewritten.replace(/<\/body>/i, `${pixel}</body>`);
+	return rewritten + pixel;
+}
+
 /**
  * Convert a display name to a URL-safe slug.
  * e.g. "Welcome Email" → "welcome-email"
@@ -699,6 +726,8 @@ export interface ExecuteSendDeps {
 	) => Promise<{ to_address: string; cf_message_id: string | null } | null>;
 	deliver: (msg: SendWithLogMessage) => Promise<{ id: string }>;
 	insertLog: (row: EmailLogRow) => Promise<unknown>;
+	/** Called with the rendered message before delivery. May rewrite HTML for tracking. */
+	prepareMessage?: (msg: SendWithLogMessage, recipient: string) => Promise<SendWithLogMessage>;
 	now?: () => string;
 	generateToken?: () => string;
 }
@@ -793,6 +822,16 @@ export async function executeSend(deps: ExecuteSendDeps, input: ExecuteSendInput
 		});
 
 		try {
+			const message = {
+				from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
+				to: recipient,
+				subject,
+				html,
+				text,
+				replyTo: body.replyTo,
+				...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
+			};
+			const prepared = deps.prepareMessage ? await deps.prepareMessage(message, recipient) : message;
 			const out = await sendWithLog(
 				{
 					deliver: deps.deliver,
@@ -804,15 +843,7 @@ export async function executeSend(deps: ExecuteSendDeps, input: ExecuteSendInput
 					isTest: apiKey.isTest,
 					storeBodies: apiKey.isTest,
 				},
-				{
-					from: body.fromName ? { address: body.from, name: body.fromName } : body.from,
-					to: recipient,
-					subject,
-					html,
-					text,
-					replyTo: body.replyTo,
-					...(unsubscribeHeaders ? { headers: unsubscribeHeaders } : {}),
-				},
+				prepared,
 			);
 			if (out.error) {
 				results.push({ to: recipient, error: out.error });

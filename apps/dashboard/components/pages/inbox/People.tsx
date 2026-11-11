@@ -460,8 +460,31 @@ export default function People({
 			<div className="flex flex-1 overflow-hidden">
 				{/* ── Left: contact list ── */}
 				<div className="w-[272px] shrink-0 flex flex-col border-r border-border h-full">
-					<div className="px-3 pt-3">
+					<div className="px-3 pt-3 flex items-center justify-between">
 						<h1 className="text-sm font-semibold tracking-tight">Contacts</h1>
+						<label className="text-[11px] text-muted-foreground cursor-pointer">
+							Import CSV
+							<input
+								type="file"
+								accept=".csv,text/csv"
+								className="sr-only"
+								onChange={async (e) => {
+									const file = e.target.files?.[0];
+									const inbox = inboxes[0]?.email;
+									if (!file || !inbox) return;
+									const { default: client } = await import("@/lib/api");
+									await client.post(
+										`/api/inbox/people/import?inbox=${encodeURIComponent(inbox)}`,
+										await file.text(),
+										{
+											headers: { "Content-Type": "text/csv" },
+										},
+									);
+									loadPeople();
+									e.target.value = "";
+								}}
+							/>
+						</label>
 					</div>
 					{/* Compose (global) */}
 					<div className="px-3 pt-3 shrink-0">

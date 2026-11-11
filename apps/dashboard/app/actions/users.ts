@@ -2,6 +2,7 @@
 
 import { env } from "cloudflare:workers";
 import { generateId } from "@/lib/core";
+import { sendEmail } from "@/worker/inbox/services/cloudflare";
 import { requireAdmin } from "./auth";
 import type { Env } from "@/worker/inbox/env";
 
@@ -16,7 +17,7 @@ export async function createInviteAction(
 	email: string,
 	user_type: "admin" | "member" = "member",
 	accessTypes: ("inbox" | "api" | "tester")[] = ["inbox"],
-): Promise<{ inviteUrl: string }> {
+): Promise<{ inviteUrl: string; emailed: boolean }> {
 	const session = await requireAdmin();
 	const workerEnv = env as unknown as Env;
 
@@ -56,8 +57,30 @@ export async function createInviteAction(
 
 	const publicOrigin = (workerEnv.PUBLIC_URL ?? "").replace(/\/$/, "");
 	const inviteUrl = `${publicOrigin}/invite/${rawToken}`;
+	const domain = await workerEnv.DB.prepare(
+		"SELECT name FROM domains WHERE verified = 1 ORDER BY created_at ASC LIMIT 1",
+	).first<{ name: string }>();
+	let emailed = false;
+	if (domain && workerEnv.CF_API_TOKEN && workerEnv.CF_ACCOUNT_ID && publicOrigin) {
+		try {
+			await sendEmail(
+				{
+					from: { address: `noreply@${domain.name}`, name: "EmailFlare" },
+					to: normalizedEmail,
+					subject: "You're invited to EmailFlare",
+					text: `Accept your invite: ${inviteUrl}\n\nThis link expires in 48 hours.`,
+					html: `<p>You have been invited to an EmailFlare workspace.</p><p><a href="${inviteUrl}">Accept invite</a></p><p>This link expires in 48 hours.</p>`,
+				},
+				workerEnv.CF_API_TOKEN,
+				workerEnv.CF_ACCOUNT_ID,
+			);
+			emailed = true;
+		} catch {
+			emailed = false;
+		}
+	}
 
-	return { inviteUrl };
+	return { inviteUrl, emailed };
 }
 
 export async function revokeUserAction(id: string): Promise<{ deleted: boolean }> {

@@ -55,7 +55,13 @@ app.post("/", zValidator("json", composeSchema), async (c) => {
 		const threadToken = generateId();
 		const syntheticMessageId = threadMessageId(threadToken);
 		const replyToAddress = buildReplyToAddress(body.from, threadToken);
-		const threadId = await resolveThreadId(db, body.inReplyTo, { generateId });
+		const threadId = await resolveThreadId(db, body.inReplyTo, {
+			generateId,
+			references: body.references,
+			subject: body.subject,
+			personId,
+			inboxAddress: body.from,
+		});
 
 		const mailbox = await c.env.DB.prepare("SELECT display_name FROM inboxes WHERE email = ? LIMIT 1")
 			.bind(body.from)
@@ -113,9 +119,10 @@ app.post("/", zValidator("json", composeSchema), async (c) => {
 		);
 
 		const id = generateId();
+		const htmlContent = body.html ?? (body.text ? `<p>${body.text.replace(/\n/g, "<br>")}</p>` : null);
 		await c.env.DB.prepare(
-			`INSERT INTO sent_inbox_emails (id, person_id, thread_id, in_reply_to, "references", message_id, thread_token, from_address, to_address, subject, body_text, status, cf_message_id, sent_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO sent_inbox_emails (id, person_id, thread_id, in_reply_to, "references", message_id, thread_token, from_address, to_address, subject, body_text, body_html, status, cf_message_id, sent_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 			.bind(
 				id,
@@ -129,6 +136,7 @@ app.post("/", zValidator("json", composeSchema), async (c) => {
 				body.to,
 				body.subject,
 				body.text ?? null,
+				htmlContent,
 				"sent",
 				result.cfId ?? null,
 				now,

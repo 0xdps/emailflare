@@ -87,6 +87,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 	const [inviteCanApi, setInviteCanApi] = useState(false);
 	const [inviteCanTest, setInviteCanTest] = useState(false);
 	const [inviteUrl, setInviteUrl] = useState("");
+	const [inviteEmailed, setInviteEmailed] = useState(false);
 	const [inviting, setInviting] = useState(false);
 	const [inviteError, setInviteError] = useState("");
 	const [copied, setCopied] = useState(false);
@@ -121,10 +122,15 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 			if (inviteCanApi) accessTypes.push("api");
 			if (inviteCanTest) accessTypes.push("tester");
 
-			const { inviteUrl: url } = await createInviteAction(inviteEmail.trim(), inviteUserType, accessTypes);
+			const { inviteUrl: url, emailed } = await createInviteAction(
+				inviteEmail.trim(),
+				inviteUserType,
+				accessTypes,
+			);
 			setInviteUrl(url);
-		} catch (err: any) {
-			const msg = err?.message;
+			setInviteEmailed(emailed);
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : "";
 			if (msg === "already_exists") setInviteError("A user with that email already exists.");
 			else setInviteError("Failed to create invite. Please try again.");
 		} finally {
@@ -140,6 +146,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 		setInviteCanApi(false);
 		setInviteCanTest(false);
 		setInviteUrl("");
+		setInviteEmailed(false);
 		setInviteError("");
 		setCopied(false);
 	}
@@ -183,8 +190,8 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 				),
 			);
 			setEditUser(null);
-		} catch (err: any) {
-			setEditError(err?.message || "Failed to update permissions.");
+		} catch (err: unknown) {
+			setEditError(err instanceof Error ? err.message : "Failed to update permissions.");
 		} finally {
 			setSavingPermissions(false);
 		}
@@ -526,9 +533,10 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 					) : (
 						<div className="flex flex-col gap-4 py-2">
 							<p className="text-sm text-muted-foreground">
-								Share this invite link with{" "}
-								<span className="font-medium text-foreground">{inviteEmail}</span>. It expires in 48
-								hours and can only be used once.
+								{inviteEmailed
+									? "The invite was emailed. The link is also here if you need to share it directly."
+									: "Email could not be sent. Share this link directly."}{" "}
+								It expires in 48 hours and can only be used once.
 							</p>
 							<div className="flex gap-2">
 								<Input value={inviteUrl} readOnly className="font-mono text-xs flex-1" />

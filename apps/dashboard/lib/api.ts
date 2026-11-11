@@ -36,8 +36,8 @@ export async function setup(name: string, email: string, password: string): Prom
 	await api.post("/api/setup", { name, email, password });
 }
 
-export async function login(email: string, password: string): Promise<void> {
-	await api.post("/api/auth/login", { email, password });
+export async function login(email: string, password: string, otp?: string): Promise<void> {
+	await api.post("/api/auth/login", { email, password }, otp ? { headers: { "X-EmailFlare-OTP": otp } } : undefined);
 }
 
 export async function forgotPassword(email: string): Promise<string> {
@@ -272,6 +272,7 @@ export async function replyTo(params: {
 	from: string;
 	subject: string;
 	text: string;
+	html?: string;
 	replyToMessageId: string;
 	references?: string;
 }): Promise<void> {
@@ -280,6 +281,7 @@ export async function replyTo(params: {
 		from: params.from,
 		subject: params.subject,
 		text: params.text,
+		html: params.html,
 		inReplyTo: params.replyToMessageId,
 		references: params.references,
 		personId: params.personId,
