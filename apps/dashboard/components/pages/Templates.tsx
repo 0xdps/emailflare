@@ -2,15 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, FileText, Cpu, X, Mail, ChevronDown, Play } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Cpu, X, Mail, ChevronDown, Play, Search } from "lucide-react";
 import api from "@/lib/api";
 import { createTemplateAction, updateTemplateAction, deleteTemplateAction } from "@/app/actions/templates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -53,22 +57,39 @@ const EMAIL_THEMES = [
 function ThemePicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
 	return (
 		<div className="flex items-center gap-1.5">
-			<span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mr-0.5">Theme</span>
+			<span className="mr-0.5 text-2xs font-medium tracking-wider text-muted-foreground uppercase">Theme</span>
 			{EMAIL_THEMES.map((t) => (
-				<button
+				<Button
 					key={t.id}
 					type="button"
+					variant="ghost"
+					size="icon-xs"
 					title={t.label}
+					aria-label={t.label}
+					aria-pressed={value === t.id}
 					onClick={() => onChange(t.id)}
 					className={cn(
-						"size-4 rounded-full border-2 transition-all duration-100",
+						"size-4 rounded-full border-2 p-0 transition-all duration-100 hover:bg-transparent dark:hover:bg-transparent",
 						value === t.id
-							? "border-white scale-125 shadow-sm"
-							: "border-transparent opacity-50 hover:opacity-90 hover:scale-110",
+							? "scale-125 border-foreground shadow-sm"
+							: "border-transparent opacity-50 hover:scale-110 hover:opacity-90",
 					)}
 					style={{ background: t.color }}
 				/>
 			))}
+		</div>
+	);
+}
+
+function WindowChrome({ subject }: { subject?: string }) {
+	return (
+		<div className="flex items-center gap-2 rounded-t-xl border border-b-0 border-border bg-muted px-4 py-2.5">
+			<div className="flex gap-1.5">
+				<div className="size-2.5 rounded-full bg-destructive" />
+				<div className="size-2.5 rounded-full bg-warning" />
+				<div className="size-2.5 rounded-full bg-success" />
+			</div>
+			{subject && <span className="ml-2 truncate font-mono text-2xs text-muted-foreground">{subject}</span>}
 		</div>
 	);
 }
@@ -102,59 +123,57 @@ function TemplateCard({
 	return (
 		<div
 			className={cn(
-				"w-full text-left rounded-xl transition-all duration-100 overflow-hidden border",
-				active ? "bg-primary/10 border-primary/20" : "hover:bg-muted/50 border-transparent",
+				"w-full overflow-hidden rounded-xl border text-left transition-all duration-100",
+				active ? "border-primary/20 bg-primary-muted" : "border-transparent hover:bg-muted/50",
 			)}
 		>
-			<div onClick={onClick} className="px-3 py-3 cursor-pointer">
-				<div className="flex items-start justify-between gap-2 mb-0.5">
-					<span className="text-[13px] font-medium truncate leading-tight text-foreground">{t.name}</span>
+			<div onClick={onClick} className="cursor-pointer px-3 py-3">
+				<div className="mb-0.5 flex items-start justify-between gap-2">
+					<span className="truncate text-sm leading-tight font-medium text-foreground">{t.name}</span>
 					{t.is_system === 1 && (
-						<Badge
-							variant="secondary"
-							className="text-[9px] text-purple-400 bg-purple-500/10 border-purple-500/20 px-1.5 py-0.5 uppercase shrink-0"
-						>
+						<Badge variant="info" className="shrink-0 text-2xs uppercase">
 							sys
 						</Badge>
 					)}
 				</div>
-				<div className="flex items-center justify-between gap-2 mt-0.5">
-					<p className="text-[11px] text-muted-foreground truncate leading-tight">{t.subject}</p>
-					<div className="flex items-center gap-2 shrink-0">
-						<span className="text-[10px] text-muted-foreground/40">
+				<div className="mt-0.5 flex items-center justify-between gap-2">
+					<p className="truncate text-2xs leading-tight text-muted-foreground">{t.subject}</p>
+					<div className="flex shrink-0 items-center gap-2">
+						<span className="text-2xs text-muted-foreground/60">
 							{new Date(t.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
 						</span>
 						{active && hasVars && (
-							<span
-								role="button"
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
 								onClick={onToggleVars}
 								className={cn(
-									"flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-md transition-colors",
+									"gap-0.5 text-2xs font-medium",
 									varsOpen
-										? "text-primary bg-primary/15"
-										: "text-muted-foreground hover:text-foreground bg-muted/60",
+										? "bg-primary-muted text-primary-muted-foreground hover:bg-primary-muted"
+										: "bg-muted/60 text-muted-foreground",
 								)}
 							>
 								<span>{t.variables.length} vars</span>
 								<ChevronDown
-									size={9}
-									className={cn("transition-transform duration-150", varsOpen && "rotate-180")}
+									className={cn("size-3 transition-transform duration-150", varsOpen && "rotate-180")}
 								/>
-							</span>
+							</Button>
 						)}
 					</div>
 				</div>
 			</div>
 			{active && varsOpen && detectedVars.length > 0 && (
-				<div className="px-3 pb-3 pt-1 border-t border-primary/10 flex flex-col gap-2.5">
+				<div className="flex flex-col gap-2.5 border-t border-primary/10 px-3 pt-1 pb-3">
 					{detectedVars.map((v) => (
 						<div key={v}>
-							<Label className="text-[10px] font-mono text-primary/70">{`{{${v}}}`}</Label>
+							<Label className="font-mono text-2xs text-primary">{`{{${v}}}`}</Label>
 							<Input
 								value={varValues[v] ?? ""}
 								onChange={(e) => onVarChange(v, e.target.value)}
 								placeholder={`Enter ${v}`}
-								className="mt-1 h-7 text-xs bg-black/30"
+								className="mt-1 h-7 text-xs"
 							/>
 						</div>
 					))}
@@ -334,7 +353,7 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 				{/* Form panel */}
 				<div className="w-[480px] flex-shrink-0 border-r border-border overflow-y-auto p-8">
 					<div className="flex items-center justify-between mb-6">
-						<h1 className="text-xl font-bold">
+						<h1 className="text-xl font-semibold tracking-tight">
 							{mode === "create" ? "New template" : `Edit — ${editing?.name}`}
 						</h1>
 						<Button
@@ -346,7 +365,7 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 								setEditVarValues({});
 							}}
 						>
-							<X size={14} />
+							<X className="size-3.5" />
 						</Button>
 					</div>
 					<form onSubmit={handleSave} className="flex flex-col gap-4">
@@ -382,7 +401,7 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 								className="font-mono"
 								required
 							/>
-							<p className="text-[10px] text-muted-foreground">
+							<p className="text-2xs text-muted-foreground">
 								Used as <code className="text-muted-foreground">templateSlug</code> in the send API.
 							</p>
 						</div>
@@ -457,22 +476,11 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 							<div className="h-full overflow-auto">
 								<div className="p-4">
 									<div className="max-w-[640px] mx-auto">
-										<div className="bg-[#1e1e1e] rounded-t-xl border border-[#3a3a3a] border-b-0 px-4 py-2.5 flex items-center gap-2">
-											<div className="flex gap-1.5">
-												<div className="size-2.5 rounded-full bg-[#ff5f57]" />
-												<div className="size-2.5 rounded-full bg-[#febc2e]" />
-												<div className="size-2.5 rounded-full bg-[#28c840]" />
-											</div>
-											{editPreviewSubject && (
-												<span className="text-[11px] text-[#999] font-mono ml-2 truncate">
-													{editPreviewSubject}
-												</span>
-											)}
-										</div>
-										<div className="bg-white rounded-b-xl overflow-hidden border border-[#3a3a3a] border-t-0">
+										<WindowChrome subject={editPreviewSubject} />
+										<div className="overflow-hidden rounded-b-xl border border-t-0 border-border bg-white">
 											<iframe
 												srcDoc={editPreviewHtml}
-												className="w-full h-full border-0 bg-white"
+												className="h-full w-full border-0 bg-white"
 												style={{ minHeight: "400px" }}
 												sandbox="allow-same-origin"
 												title="Template preview"
@@ -483,7 +491,7 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 							</div>
 						) : (
 							<div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-								<Mail size={40} strokeWidth={1} />
+								<Mail className="size-10" strokeWidth={1} />
 								<p className="text-sm">Your preview will appear here</p>
 							</div>
 						)}
@@ -518,16 +526,16 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 
 			{/* ── Left pane: template list ──────────────────────────────────── */}
 			<div className="w-[560px] flex-shrink-0 border-r border-border flex flex-col overflow-hidden">
-				<div className="px-5 pt-5 pb-4 flex-shrink-0 flex items-center justify-between">
+				<div className="flex flex-shrink-0 items-center justify-between px-5 pt-5 pb-4">
 					<div>
-						<div className="flex items-center gap-2 mb-1">
-							<FileText size={14} className="text-primary" />
-							<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+						<div className="mb-1 flex items-center gap-2">
+							<FileText className="size-3.5 text-primary" />
+							<span className="text-2xs font-medium tracking-wider text-muted-foreground uppercase">
 								Email
 							</span>
 						</div>
-						<h1 className="text-2xl font-bold">Templates</h1>
-						<div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+						<h1 className="text-2xl font-semibold tracking-tight">Templates</h1>
+						<div className="mt-1 flex items-center gap-2 text-2xs text-muted-foreground">
 							<span>{templates.length} total</span>
 							<span>•</span>
 							<span>{systemTemplates.length} built-in</span>
@@ -536,31 +544,35 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 						</div>
 					</div>
 					<Button onClick={openCreate}>
-						<Plus size={14} data-icon="inline-start" /> New template
+						<Plus className="size-4" data-icon="inline-start" /> New template
 					</Button>
 				</div>
 
 				<div className="px-5 pb-3">
-					<Input
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder="Search templates by name, slug, or subject..."
-					/>
-					<div className="mt-2 flex gap-1 overflow-x-auto">
+					<InputGroup>
+						<InputGroupAddon>
+							<Search className="size-4" />
+						</InputGroupAddon>
+						<InputGroupInput
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder="Search templates by name, slug, or subject..."
+						/>
+					</InputGroup>
+					<ToggleGroup
+						value={[category]}
+						onValueChange={(v) => v[0] && setCategory(v[0])}
+						variant="outline"
+						size="sm"
+						spacing={1}
+						className="mt-2 max-w-full overflow-x-auto"
+					>
 						{categories.slice(0, 8).map((item) => (
-							<button
-								key={item}
-								type="button"
-								onClick={() => setCategory(item)}
-								className={cn(
-									"rounded-full border px-2 py-0.5 text-[10px]",
-									category === item ? "border-orange-400 text-orange-600" : "text-muted-foreground",
-								)}
-							>
+							<ToggleGroupItem key={item} value={item} className="rounded-full px-2.5 text-2xs">
 								{item}
-							</button>
+							</ToggleGroupItem>
 						))}
-					</div>
+					</ToggleGroup>
 				</div>
 
 				<ScrollArea className="flex-1 min-h-0">
@@ -575,8 +587,8 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 							{systemTemplates.length > 0 && (
 								<div>
 									<div className="flex items-center gap-1.5 px-3 pt-2 pb-1">
-										<Cpu size={10} className="text-purple-400" />
-										<span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+										<Cpu className="size-3 text-info" />
+										<span className="text-2xs font-medium tracking-wide text-muted-foreground uppercase">
 											Built-in ({filteredSystemTemplates.length})
 										</span>
 									</div>
@@ -607,27 +619,27 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 
 							<div>
 								<div className="flex items-center gap-1.5 px-3 pb-1">
-									<FileText size={10} className="text-primary" />
-									<span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+									<FileText className="size-3 text-primary" />
+									<span className="text-2xs font-medium tracking-wide text-muted-foreground uppercase">
 										Custom ({filteredCustomTemplates.length})
 									</span>
 								</div>
 								{filteredCustomTemplates.length === 0 ? (
 									<div className="px-3 py-6 text-center">
 										{q ? (
-											<p className="text-[11px] text-muted-foreground">
+											<p className="text-2xs text-muted-foreground">
 												No custom templates match "{search}"
 											</p>
 										) : (
 											<>
-												<p className="text-[11px] text-muted-foreground">
+												<p className="text-2xs text-muted-foreground">
 													No custom templates yet
 												</p>
 												<Button
 													variant="link"
 													size="sm"
 													onClick={openCreate}
-													className="mt-1 h-auto text-[11px] p-0"
+													className="mt-1 h-auto p-0 text-2xs"
 												>
 													Create your first →
 												</Button>
@@ -667,75 +679,70 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 			{/* ── Right pane: preview ───────────────────────────────────────── */}
 			<div className="flex-1 overflow-hidden flex flex-col">
 				{!previewing ? (
-					<div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground select-none">
-						<div className="size-14 rounded-2xl bg-white/[0.03] border border-border flex items-center justify-center mb-1">
-							<Mail size={22} strokeWidth={1.2} className="opacity-50" />
-						</div>
-						<p className="text-sm">Select a template to preview</p>
-						<Button
-							variant="link"
-							size="sm"
-							onClick={openCreate}
-							className="text-xs text-primary/70 h-auto p-0"
-						>
-							or create a new one →
-						</Button>
-					</div>
+					<Empty className="h-full select-none">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Mail />
+							</EmptyMedia>
+							<EmptyTitle className="text-sm font-normal text-muted-foreground">
+								Select a template to preview
+							</EmptyTitle>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button variant="link" size="sm" onClick={openCreate} className="h-auto p-0 text-xs">
+								or create a new one →
+							</Button>
+						</EmptyContent>
+					</Empty>
 				) : (
 					<>
 						{/* Header */}
-						<div className="px-6 py-4 border-b border-border flex-shrink-0 flex items-center justify-between gap-4">
+						<div className="flex flex-shrink-0 items-center justify-between gap-4 border-b border-border px-6 py-4">
 							<div className="min-w-0">
-								<div className="flex items-center gap-2 flex-wrap mb-0.5">
-									<h2 className="font-semibold text-[15px] leading-tight">{previewing.name}</h2>
+								<div className="mb-0.5 flex flex-wrap items-center gap-2">
+									<h2 className="text-base leading-tight font-semibold">{previewing.name}</h2>
 									{previewing.is_system === 1 && (
-										<Badge
-											variant="secondary"
-											className="text-[10px] text-purple-400 bg-purple-500/15 uppercase tracking-wide"
-										>
+										<Badge variant="info" className="text-2xs tracking-wide uppercase">
 											built-in
 										</Badge>
 									)}
 									{previewing.slug && (
-										<Badge
-											variant="outline"
-											className="text-[11px] text-primary/80 font-mono border-primary/10"
-										>
+										<Badge variant="outline" className="font-mono text-2xs text-primary">
 											{previewing.slug}
 										</Badge>
 									)}
 								</div>
-								<p className="text-xs text-muted-foreground truncate">
+								<p className="truncate text-xs text-muted-foreground">
 									{previewSubject || previewing.subject}
 								</p>
 							</div>
-							<div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+							<div className="flex flex-shrink-0 flex-wrap items-center gap-2">
 								<ThemePicker value={previewThemeId} onChange={(id) => setPreviewThemeId(id)} />
 								<Button
 									variant="outline"
 									size="sm"
-									className="gap-1.5 h-7 text-xs text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40"
+									className="gap-1.5 border-info/30 text-xs text-info-muted-foreground hover:bg-info-muted"
 									onClick={() => router.push(`/playground?templateId=${previewing.id}`)}
 								>
-									<Play size={11} className="fill-current" /> Test in Playground
+									<Play className="size-3 fill-current" /> Test in Playground
 								</Button>
 								{previewing.is_system === 0 && (
 									<div className="flex items-center gap-1.5">
 										<Button
 											variant="outline"
 											size="sm"
-											className="gap-1.5 h-7 text-xs"
+											className="gap-1.5 text-xs"
 											onClick={() => openEdit(previewing)}
 										>
-											<Pencil size={11} /> Edit
+											<Pencil className="size-3" /> Edit
 										</Button>
 										<Button
 											variant="outline"
 											size="sm"
-											className="gap-1.5 h-7 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/40"
+											className="gap-1.5 text-xs text-muted-foreground hover:border-destructive/40 hover:text-destructive"
 											onClick={() => setDeleteTarget(previewing)}
 										>
-											<Trash2 size={11} /> Delete
+											<Trash2 className="size-3" /> Delete
 										</Button>
 									</div>
 								)}
@@ -746,23 +753,14 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 						<ScrollArea className="flex-1">
 							<div className="p-6">
 								{previewLoading ? (
-									<div className="flex items-center justify-center h-32 gap-2 text-muted-foreground">
-										<div className="size-3.5 border-2 border-muted border-t-primary rounded-full animate-spin" />
+									<div className="flex h-32 items-center justify-center gap-2 text-muted-foreground">
+										<Spinner className="size-3.5" />
 										<span className="text-xs">Rendering…</span>
 									</div>
 								) : previewHtml ? (
-									<div className="max-w-[640px] mx-auto">
-										<div className="bg-[#1e1e1e] rounded-t-xl border border-[#3a3a3a] border-b-0 px-4 py-2.5 flex items-center gap-2">
-											<div className="flex gap-1.5">
-												<div className="size-2.5 rounded-full bg-[#ff5f57]" />
-												<div className="size-2.5 rounded-full bg-[#febc2e]" />
-												<div className="size-2.5 rounded-full bg-[#28c840]" />
-											</div>
-											<span className="text-[11px] text-[#999] font-mono ml-2 truncate">
-												{previewSubject || previewing.subject}
-											</span>
-										</div>
-										<div className="bg-white rounded-b-xl overflow-hidden border border-border border-t-0 shadow-2xl shadow-black/50">
+									<div className="mx-auto max-w-[640px]">
+										<WindowChrome subject={previewSubject || previewing.subject} />
+										<div className="overflow-hidden rounded-b-xl border border-t-0 border-border bg-white shadow-lg">
 											<iframe
 												srcDoc={previewHtml}
 												className="w-full border-0 block"
@@ -778,8 +776,8 @@ export default function TemplatesPage({ initialTemplates }: TemplatesPageProps =
 										</div>
 									</div>
 								) : (
-									<div className="flex flex-col items-center justify-center h-32 gap-2 text-muted-foreground">
-										<Mail size={20} strokeWidth={1} className="opacity-40" />
+									<div className="flex h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
+										<Mail className="size-5 opacity-40" strokeWidth={1} />
 										<p className="text-xs">No preview available</p>
 									</div>
 								)}

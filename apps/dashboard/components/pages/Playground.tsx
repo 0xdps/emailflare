@@ -16,7 +16,7 @@ import {
 	Copy,
 	Check,
 	Terminal,
-	RefreshCw,
+	Search,
 } from "lucide-react";
 import hljs from "highlight.js/lib/core";
 import xml from "highlight.js/lib/languages/xml";
@@ -26,12 +26,18 @@ import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
 import "highlight.js/styles/github.min.css";
 import api, { sendPlaygroundEmail } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/app/PageHeader";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Spinner } from "@/components/ui/spinner";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
 	Select,
@@ -60,24 +66,28 @@ const EMAIL_THEMES = [
 
 function ThemePicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
 	return (
-		<div className="flex items-center gap-1.5 flex-wrap">
-			<span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Theme</span>
+		<div className="flex flex-wrap items-center gap-1.5">
+			<span className="text-2xs font-medium tracking-wider text-muted-foreground uppercase">Theme</span>
 			{EMAIL_THEMES.map((t) => (
-				<button
+				<Button
 					key={t.id}
 					type="button"
+					variant="ghost"
+					size="icon-xs"
 					title={t.label}
+					aria-label={t.label}
+					aria-pressed={value === t.id}
 					onClick={() => onChange(t.id)}
 					className={cn(
-						"size-4 rounded-full border-2 transition-all duration-100",
+						"size-4 rounded-full border-2 p-0 transition-all duration-100 hover:bg-transparent dark:hover:bg-transparent",
 						value === t.id
-							? "border-white scale-125 shadow-sm"
-							: "border-transparent opacity-50 hover:opacity-90 hover:scale-110",
+							? "scale-125 border-foreground shadow-sm"
+							: "border-transparent opacity-50 hover:scale-110 hover:opacity-90",
 					)}
 					style={{ background: t.color }}
 				/>
 			))}
-			<span className="text-[10px] text-muted-foreground capitalize">{value}</span>
+			<span className="text-2xs text-muted-foreground capitalize">{value}</span>
 		</div>
 	);
 }
@@ -130,7 +140,7 @@ function SyntaxCode({
 			const result = hljs.highlight(formatted, { language: hlLang }).value;
 			return result.replace(
 				/\{\{(\w+)\}\}/g,
-				'<span style="color:#fb923c;background:rgba(251,146,60,.15);border-radius:3px;padding:0 2px">{{$1}}</span>',
+				'<span style="color:var(--primary);background:color-mix(in oklab,var(--primary) 15%,transparent);border-radius:3px;padding:0 2px">{{$1}}</span>',
 			);
 		} catch {
 			return code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -139,7 +149,10 @@ function SyntaxCode({
 
 	return (
 		<pre
-			className={`hljs rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed border border-border p-4 ${className}`}
+			className={cn(
+				"hljs overflow-x-auto rounded-lg border border-border p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap",
+				className,
+			)}
 		>
 			<code dangerouslySetInnerHTML={{ __html }} />
 		</pre>
@@ -394,6 +407,13 @@ export default function PlaygroundPage() {
 		);
 	});
 
+	const templateItems = templates.map((t) => ({ value: `t:${t.id}`, label: t.name }));
+	const domainItems = domains.map((d) => ({ value: d.name, label: d.name }));
+	const apiKeyItems = apiKeys.map((k) => ({
+		value: k.key_prefix,
+		label: `${k.name} (${k.key_prefix}...) [${k.key_type}]`,
+	}));
+
 	async function handleSend(e: React.FormEvent) {
 		e.preventDefault();
 		if (!selectedTemplate || !fromAddress || !to) return;
@@ -453,123 +473,117 @@ export default function PlaygroundPage() {
 	}
 
 	return (
-		<div className="flex flex-col h-full bg-background overflow-hidden">
+		<div className="flex h-full flex-col overflow-hidden bg-background">
 			{/* Top Header */}
-			<div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0 bg-background">
-				<div>
-					<h1 className="text-base font-semibold tracking-tight text-foreground">Playground</h1>
-					<p className="text-xs text-muted-foreground mt-0.5">
-						Test, preview, and generate client code for your transactional email templates.
-					</p>
-				</div>
-				<div className="flex items-center gap-2">
-					<Link
-						href="/inbox?folder=test"
-						className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-medium hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-colors"
-					>
-						<FlaskConical size={13} />
-						<span>Open Test Mailbox</span>
-					</Link>
-				</div>
+			<div className="shrink-0 border-b border-border bg-background px-6 py-4">
+				<PageHeader
+					title="Playground"
+					description="Test, preview, and generate client code for your transactional email templates."
+					actions={
+						<Link href="/inbox?folder=test" className={buttonVariants({ variant: "outline", size: "sm" })}>
+							<FlaskConical />
+							<span>Open Test Mailbox</span>
+						</Link>
+					}
+				/>
 			</div>
 
 			{/* Main Two-Column Layout */}
 			<div className="flex flex-1 overflow-hidden">
 				{/* Left Panel: Configuration Form */}
 				<ScrollArea className="w-[440px] shrink-0 border-r border-border bg-background">
-					<div className="p-5 flex flex-col gap-4">
+					<div className="flex flex-col gap-4 p-5">
 						{/* Delivery Destination Segmented Toggle */}
 						<div className="flex flex-col gap-1.5">
 							<Label className="text-xs font-semibold text-foreground">Delivery Destination</Label>
-							<div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-muted/40 border border-border">
-								<button
-									type="button"
-									onClick={() => {
-										setDeliveryMode("test");
+							<ToggleGroup
+								value={[deliveryMode]}
+								onValueChange={(v) => {
+									if (v[0] === "test" || v[0] === "live") {
+										setDeliveryMode(v[0]);
 										setResult(null);
-									}}
-									className={cn(
-										"flex items-center gap-2 p-2 rounded-lg text-left transition-all",
-										deliveryMode === "test"
-											? "bg-background text-foreground shadow-xs border border-purple-300/50 dark:border-purple-700/50 font-medium"
-											: "text-muted-foreground hover:text-foreground",
-									)}
+									}
+								}}
+								spacing={2}
+								className="grid w-full grid-cols-2 rounded-xl border border-border bg-muted/40 p-1"
+							>
+								<ToggleGroupItem
+									value="test"
+									className="h-auto justify-start gap-2 border border-transparent p-2 text-left text-muted-foreground hover:bg-transparent aria-pressed:border-info/40 aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-xs"
 								>
 									<div
 										className={cn(
-											"size-7 rounded-md flex items-center justify-center shrink-0",
+											"flex size-7 shrink-0 items-center justify-center rounded-md",
 											deliveryMode === "test"
-												? "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
+												? "bg-info-muted text-info-muted-foreground"
 												: "bg-muted text-muted-foreground",
 										)}
 									>
-										<FlaskConical size={14} />
+										<FlaskConical className="size-3.5" />
 									</div>
 									<div className="min-w-0">
-										<div className="text-xs font-semibold leading-tight">Test Sandbox</div>
-										<div className="text-[10px] text-muted-foreground truncate">
+										<div className="text-xs leading-tight font-semibold">Test Sandbox</div>
+										<div className="truncate text-2xs font-normal text-muted-foreground">
 											No API key required
 										</div>
 									</div>
-								</button>
+								</ToggleGroupItem>
 
-								<button
-									type="button"
-									onClick={() => {
-										setDeliveryMode("live");
-										setResult(null);
-									}}
-									className={cn(
-										"flex items-center gap-2 p-2 rounded-lg text-left transition-all",
-										deliveryMode === "live"
-											? "bg-background text-foreground shadow-xs border border-orange-300/50 dark:border-orange-700/50 font-medium"
-											: "text-muted-foreground hover:text-foreground",
-									)}
+								<ToggleGroupItem
+									value="live"
+									className="h-auto justify-start gap-2 border border-transparent p-2 text-left text-muted-foreground hover:bg-transparent aria-pressed:border-primary/40 aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-xs"
 								>
 									<div
 										className={cn(
-											"size-7 rounded-md flex items-center justify-center shrink-0",
+											"flex size-7 shrink-0 items-center justify-center rounded-md",
 											deliveryMode === "live"
-												? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+												? "bg-primary-muted text-primary-muted-foreground"
 												: "bg-muted text-muted-foreground",
 										)}
 									>
-										<Zap size={14} />
+										<Zap className="size-3.5" />
 									</div>
 									<div className="min-w-0">
-										<div className="text-xs font-semibold leading-tight">Live Recipient</div>
-										<div className="text-[10px] text-muted-foreground truncate">
+										<div className="text-xs leading-tight font-semibold">Live Recipient</div>
+										<div className="truncate text-2xs font-normal text-muted-foreground">
 											Cloudflare send
 										</div>
 									</div>
-								</button>
-							</div>
+								</ToggleGroupItem>
+							</ToggleGroup>
 						</div>
 
 						{/* Template Selector Card */}
-						<div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
+						<div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
 							<div className="flex items-center justify-between">
 								<p className="text-xs font-semibold text-foreground">Select Template</p>
 								<ThemePicker value={themeId} onChange={setThemeId} />
 							</div>
 
-							<Input
-								value={templateSearch}
-								onChange={(e) => setTemplateSearch(e.target.value)}
-								placeholder="Search templates..."
-								className="h-8 text-xs"
-							/>
+							<InputGroup className="h-8">
+								<InputGroupAddon>
+									<Search className="size-4" />
+								</InputGroupAddon>
+								<InputGroupInput
+									value={templateSearch}
+									onChange={(e) => setTemplateSearch(e.target.value)}
+									placeholder="Search templates..."
+									className="text-xs"
+								/>
+							</InputGroup>
 
-							<Select value={selectedId} onValueChange={(v) => v !== null && handleSelect(v)}>
-								<SelectTrigger className="w-full h-8.5 text-xs">
-									<SelectValue placeholder="— Select a template —">
-										{selectedTemplate ? selectedTemplate.name : undefined}
-									</SelectValue>
+							<Select
+								items={templateItems}
+								value={selectedId}
+								onValueChange={(v) => v !== null && handleSelect(v)}
+							>
+								<SelectTrigger className="w-full text-xs">
+									<SelectValue placeholder="— Select a template —" />
 								</SelectTrigger>
 								<SelectContent>
 									{filteredSystemTemplates.length > 0 && (
 										<SelectGroup>
-											<SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+											<SelectLabel className="text-2xs tracking-wider text-muted-foreground uppercase">
 												Built-in templates ({filteredSystemTemplates.length})
 											</SelectLabel>
 											{filteredSystemTemplates.map((t) => (
@@ -581,7 +595,7 @@ export default function PlaygroundPage() {
 									)}
 									{filteredCustomTemplates.length > 0 && (
 										<SelectGroup>
-											<SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+											<SelectLabel className="text-2xs tracking-wider text-muted-foreground uppercase">
 												Custom templates ({filteredCustomTemplates.length})
 											</SelectLabel>
 											{filteredCustomTemplates.map((t) => (
@@ -597,19 +611,19 @@ export default function PlaygroundPage() {
 
 						{/* Template Variables Form */}
 						{detectedVars.length > 0 && (
-							<div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2.5">
+							<div className="flex flex-col gap-2.5 rounded-xl border border-border bg-card p-4">
 								<p className="text-xs font-semibold text-foreground">Template Variables</p>
 								<div className="flex flex-col gap-2">
 									{detectedVars.map((v) => (
 										<div key={v} className="flex flex-col gap-1">
-											<Label className="text-[11px] font-mono text-muted-foreground">{`{{${v}}}`}</Label>
+											<Label className="font-mono text-2xs text-muted-foreground">{`{{${v}}}`}</Label>
 											<Input
 												value={variables[v] ?? ""}
 												onChange={(e) =>
 													setVariables((prev) => ({ ...prev, [v]: e.target.value }))
 												}
 												placeholder={`Value for ${v}...`}
-												className="h-7.5 text-xs font-mono"
+												className="font-mono text-xs"
 											/>
 										</div>
 									))}
@@ -620,43 +634,44 @@ export default function PlaygroundPage() {
 						{/* Delivery Parameters Card */}
 						<form
 							onSubmit={handleSend}
-							className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3"
+							className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
 						>
 							<p className="text-xs font-semibold text-foreground">Delivery Parameters</p>
 
 							{/* Sender Name */}
 							<div className="flex flex-col gap-1">
-								<Label className="text-[11px] text-muted-foreground">Sender Name (optional)</Label>
+								<Label className="text-2xs text-muted-foreground">Sender Name (optional)</Label>
 								<Input
 									value={senderName}
 									onChange={(e) => setSenderName(e.target.value)}
 									placeholder="Acme Notifications"
-									className="h-8 text-xs"
+									className="text-xs"
 								/>
 							</div>
 
 							{/* From Address */}
 							<div className="flex flex-col gap-1">
-								<Label className="text-[11px] text-muted-foreground">From Address</Label>
-								<div className="flex gap-1.5 items-center">
+								<Label className="text-2xs text-muted-foreground">From Address</Label>
+								<div className="flex items-center gap-1.5">
 									<Input
 										value={fromLocal}
 										onChange={(e) => setFromLocal(e.target.value)}
 										placeholder="hello"
-										className="flex-1 min-w-0 h-8 text-xs font-mono"
+										className="min-w-0 flex-1 font-mono text-xs"
 									/>
-									<span className="text-muted-foreground text-xs shrink-0">@</span>
+									<span className="shrink-0 text-xs text-muted-foreground">@</span>
 									{domains.length > 0 ? (
 										<Select
+											items={domainItems}
 											value={fromDomain}
 											onValueChange={(v) => v !== null && setFromDomain(v)}
 										>
-											<SelectTrigger className="flex-1 min-w-0 h-8 text-xs font-mono">
+											<SelectTrigger className="min-w-0 flex-1 font-mono text-xs">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
 												{domains.map((d) => (
-													<SelectItem key={d.id} value={d.name} className="text-xs font-mono">
+													<SelectItem key={d.id} value={d.name} className="font-mono text-xs">
 														{d.name}
 													</SelectItem>
 												))}
@@ -667,7 +682,7 @@ export default function PlaygroundPage() {
 											value={fromDomain}
 											onChange={(e) => setFromDomain(e.target.value)}
 											placeholder="yourdomain.com"
-											className="flex-1 min-w-0 h-8 text-xs font-mono"
+											className="min-w-0 flex-1 font-mono text-xs"
 										/>
 									)}
 								</div>
@@ -675,47 +690,46 @@ export default function PlaygroundPage() {
 
 							{/* Recipient */}
 							<div className="flex flex-col gap-1">
-								<Label className="text-[11px] text-muted-foreground">To (Recipient)</Label>
+								<Label className="text-2xs text-muted-foreground">To (Recipient)</Label>
 								<Input
 									type="email"
 									value={to}
 									onChange={(e) => setTo(e.target.value)}
 									placeholder={deliveryMode === "test" ? "sandbox@example.com" : "you@example.com"}
-									className="h-8 text-xs font-mono"
+									className="font-mono text-xs"
 									required
 								/>
 							</div>
 
 							{/* Subject */}
 							<div className="flex flex-col gap-1">
-								<Label className="text-[11px] text-muted-foreground">Subject Line</Label>
+								<Label className="text-2xs text-muted-foreground">Subject Line</Label>
 								<Input
 									value={subject}
 									onChange={(e) => setSubject(e.target.value)}
 									placeholder="Email subject..."
-									className="h-8 text-xs"
+									className="text-xs"
 									required
 								/>
 							</div>
 
 							{/* API Key (Only in Live Mode) */}
 							{deliveryMode === "live" && (
-								<div className="flex flex-col gap-1 pt-1 border-t border-border/80">
+								<div className="flex flex-col gap-1 border-t border-border/80 pt-1">
 									<div className="flex items-center justify-between">
-										<Label className="text-[11px] text-foreground font-medium">
+										<Label className="text-2xs font-medium text-foreground">
 											API Key (Required for live send)
 										</Label>
-										<span className="text-[10px] text-orange-600 dark:text-orange-400 font-mono">
-											Bearer Auth
-										</span>
+										<span className="font-mono text-2xs text-primary">Bearer Auth</span>
 									</div>
 									{apiKeys.length > 0 && (
 										<Select
+											items={apiKeyItems}
 											onValueChange={(val) => {
 												if (typeof val === "string") setApiKey(val);
 											}}
 										>
-											<SelectTrigger className="w-full h-7.5 text-xs font-mono">
+											<SelectTrigger className="w-full font-mono text-xs">
 												<SelectValue placeholder="— Pick an active API key —" />
 											</SelectTrigger>
 											<SelectContent>
@@ -723,7 +737,7 @@ export default function PlaygroundPage() {
 													<SelectItem
 														key={k.id}
 														value={k.key_prefix}
-														className="text-xs font-mono"
+														className="font-mono text-xs"
 													>
 														{k.name} ({k.key_prefix}...) [{k.key_type}]
 													</SelectItem>
@@ -736,7 +750,7 @@ export default function PlaygroundPage() {
 										value={apiKey}
 										onChange={(e) => setApiKey(e.target.value)}
 										placeholder="eflive_... or eftest_..."
-										className="h-8 text-xs font-mono"
+										className="font-mono text-xs"
 										required={deliveryMode === "live"}
 									/>
 								</div>
@@ -746,46 +760,39 @@ export default function PlaygroundPage() {
 							{result && (
 								<div className="pt-1">
 									{result.ok && result.isTest ? (
-										<div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/30 p-3.5 space-y-2">
-											<div className="flex items-center gap-1.5 text-purple-700 dark:text-purple-300 font-semibold text-xs">
-												<FlaskConical size={14} />
-												<span>Captured in Test Mailbox!</span>
-											</div>
-											<p className="text-[11px] text-muted-foreground leading-relaxed">
-												Your test email was captured safely in the sandbox and did not hit
-												external inboxes.
-											</p>
-											<div className="pt-0.5">
-												<Link
-													href="/inbox?folder=test"
-													className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-purple-600 hover:bg-purple-700 text-white shadow-xs transition-colors"
-												>
-													<span>View in Test Mailbox</span>
-													<ArrowRight size={12} />
-												</Link>
-											</div>
-										</div>
+										<Alert variant="info" className="p-3.5">
+											<AlertDescription className="flex flex-col gap-2 text-info-muted-foreground">
+												<div className="flex items-center gap-1.5 text-xs font-semibold">
+													<FlaskConical className="size-3.5" />
+													<span>Captured in Test Mailbox!</span>
+												</div>
+												<p className="text-2xs leading-relaxed text-muted-foreground">
+													Your test email was captured safely in the sandbox and did not hit
+													external inboxes.
+												</p>
+												<div className="pt-0.5">
+													<Link
+														href="/inbox?folder=test"
+														className={buttonVariants({ variant: "default", size: "sm" })}
+													>
+														<span>View in Test Mailbox</span>
+														<ArrowRight className="size-3" />
+													</Link>
+												</div>
+											</AlertDescription>
+										</Alert>
 									) : (
-										<Alert
-											className={cn(
-												result.ok
-													? "border-emerald-500/20 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
-													: "border-destructive/20 bg-destructive/10 text-destructive",
-											)}
-										>
+										<Alert variant={result.ok ? "success" : "destructive"}>
 											<AlertDescription className="flex items-start gap-2 text-xs">
 												{result.ok ? (
-													<CheckCircle2
-														size={13}
-														className="shrink-0 mt-0.5 text-emerald-500"
-													/>
+													<CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-success" />
 												) : (
-													<XCircle size={13} className="shrink-0 mt-0.5 text-destructive" />
+													<XCircle className="mt-0.5 size-3.5 shrink-0 text-destructive" />
 												)}
 												<div>
 													<div className="font-semibold">{result.message}</div>
 													{result.detail && (
-														<div className="opacity-80 text-[11px] mt-0.5">
+														<div className="mt-0.5 text-2xs opacity-80">
 															{result.detail}
 														</div>
 													)}
@@ -807,27 +814,25 @@ export default function PlaygroundPage() {
 									(deliveryMode === "live" && !apiKey)
 								}
 								className={cn(
-									"w-full gap-2 text-xs h-9 font-medium shadow-xs",
-									deliveryMode === "test"
-										? "bg-purple-600 hover:bg-purple-700 text-white"
-										: "bg-orange-600 hover:bg-orange-700 text-white",
+									"h-9 w-full gap-2 text-xs font-medium shadow-xs",
+									deliveryMode === "test" && "bg-info text-primary-foreground hover:bg-info/90",
 								)}
 							>
 								{sending ? (
 									<>
-										<RefreshCw size={13} className="animate-spin" />
+										<Spinner className="size-3.5" />
 										<span>
 											{deliveryMode === "test" ? "Capturing in Sandbox..." : "Delivering..."}
 										</span>
 									</>
 								) : deliveryMode === "test" ? (
 									<>
-										<FlaskConical size={14} />
+										<FlaskConical className="size-3.5" />
 										<span>Send to Sandbox (Test Mailbox)</span>
 									</>
 								) : (
 									<>
-										<Send size={13} />
+										<Send className="size-3.5" />
 										<span>Dispatch Live Email</span>
 									</>
 								)}
@@ -840,36 +845,24 @@ export default function PlaygroundPage() {
 				<Tabs
 					value={rightTab}
 					onValueChange={(v) => setRightTab(v as RightTab)}
-					className="flex-1 flex flex-col overflow-hidden bg-background"
+					className="flex flex-1 flex-col overflow-hidden bg-background"
 				>
-					<div className="border-b border-border shrink-0 px-4 bg-muted/20">
-						<TabsList className="bg-transparent h-10 gap-2 p-0">
-							<TabsTrigger
-								value="preview"
-								className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-							>
-								<Eye size={13} />
+					<div className="shrink-0 border-b border-border bg-muted/20 px-4">
+						<TabsList variant="line" className="h-10 gap-2 p-0">
+							<TabsTrigger value="preview" className="h-10 rounded-none px-3 text-xs after:bg-primary">
+								<Eye className="size-3.5" />
 								<span>Live Preview</span>
 							</TabsTrigger>
-							<TabsTrigger
-								value="code"
-								className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-							>
-								<Code2 size={13} />
+							<TabsTrigger value="code" className="h-10 rounded-none px-3 text-xs after:bg-primary">
+								<Code2 className="size-3.5" />
 								<span>Template Source</span>
 							</TabsTrigger>
-							<TabsTrigger
-								value="snippets"
-								className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-							>
-								<Terminal size={13} />
+							<TabsTrigger value="snippets" className="h-10 rounded-none px-3 text-xs after:bg-primary">
+								<Terminal className="size-3.5" />
 								<span>Code Snippets</span>
 							</TabsTrigger>
-							<TabsTrigger
-								value="api"
-								className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-							>
-								<BookOpen size={13} />
+							<TabsTrigger value="api" className="h-10 rounded-none px-3 text-xs after:bg-primary">
+								<BookOpen className="size-3.5" />
 								<span>Payload & Docs</span>
 							</TabsTrigger>
 						</TabsList>
@@ -877,36 +870,37 @@ export default function PlaygroundPage() {
 
 					<div className="flex-1 overflow-hidden">
 						{/* Tab 1: Live Preview */}
-						<TabsContent value="preview" className="h-full m-0 data-[state=inactive]:hidden">
+						<TabsContent value="preview" className="m-0 h-full data-[state=inactive]:hidden">
 							{previewHtml ? (
 								<iframe
 									srcDoc={previewHtml}
-									className="w-full h-full border-0 bg-white"
+									className="h-full w-full border-0 bg-white"
 									sandbox="allow-same-origin"
 									title="Email preview"
 								/>
 							) : (
-								<div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground select-none">
-									<Mail size={36} strokeWidth={1.25} />
-									<p className="text-xs">Select a template to generate live preview</p>
-								</div>
+								<Empty className="h-full select-none">
+									<EmptyHeader>
+										<EmptyMedia variant="icon">
+											<Mail />
+										</EmptyMedia>
+										<EmptyTitle className="text-xs font-normal text-muted-foreground">
+											Select a template to generate live preview
+										</EmptyTitle>
+									</EmptyHeader>
+								</Empty>
 							)}
 						</TabsContent>
 
 						{/* Tab 2: Template Code */}
-						<TabsContent value="code" className="h-full m-0 data-[state=inactive]:hidden overflow-y-auto">
-							<div className="p-6 flex flex-col gap-4">
+						<TabsContent value="code" className="m-0 h-full overflow-y-auto data-[state=inactive]:hidden">
+							<div className="flex flex-col gap-4 p-6">
 								{selectedTemplate ? (
 									<>
 										<div className="flex items-center gap-2">
 											<Badge
-												variant="secondary"
-												className={cn(
-													"text-[10px] uppercase font-mono",
-													selectedTemplate.is_system === 1
-														? "text-purple-700 bg-purple-100 dark:bg-purple-950 dark:text-purple-300"
-														: "text-amber-700 bg-amber-100 dark:bg-amber-950 dark:text-amber-300",
-												)}
+												variant={selectedTemplate.is_system === 1 ? "info" : "warning"}
+												className="font-mono text-2xs uppercase"
 											>
 												{selectedTemplate.is_system === 1
 													? "Built-in Layout"
@@ -920,16 +914,16 @@ export default function PlaygroundPage() {
 										</div>
 
 										<div>
-											<p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1.5">
+											<p className="mb-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
 												Subject Line
 											</p>
-											<pre className="bg-muted/40 border border-border rounded-xl px-4 py-2.5 text-xs font-mono text-foreground">
+											<pre className="rounded-xl border border-border bg-muted/40 px-4 py-2.5 font-mono text-xs text-foreground">
 												{previewSubject || selectedTemplate.subject}
 											</pre>
 										</div>
 
 										<div>
-											<p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1.5">
+											<p className="mb-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
 												Rendered HTML Output
 											</p>
 											<SyntaxCode code={previewHtml || selectedTemplate.html_body} lang="html" />
@@ -937,20 +931,26 @@ export default function PlaygroundPage() {
 
 										{selectedTemplate.text_body && (
 											<div>
-												<p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1.5">
+												<p className="mb-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
 													Plain Text Body
 												</p>
-												<pre className="bg-muted/40 border border-border rounded-xl p-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed">
+												<pre className="rounded-xl border border-border bg-muted/40 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap text-muted-foreground">
 													{selectedTemplate.text_body}
 												</pre>
 											</div>
 										)}
 									</>
 								) : (
-									<div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground py-20 select-none">
-										<Code2 size={36} strokeWidth={1.25} />
-										<p className="text-xs">Select a template to view source</p>
-									</div>
+									<Empty className="h-full select-none">
+										<EmptyHeader>
+											<EmptyMedia variant="icon">
+												<Code2 />
+											</EmptyMedia>
+											<EmptyTitle className="text-xs font-normal text-muted-foreground">
+												Select a template to view source
+											</EmptyTitle>
+										</EmptyHeader>
+									</Empty>
 								)}
 							</div>
 						</TabsContent>
@@ -958,41 +958,33 @@ export default function PlaygroundPage() {
 						{/* Tab 3: Code Snippets (Multi-language) */}
 						<TabsContent
 							value="snippets"
-							className="h-full m-0 data-[state=inactive]:hidden overflow-y-auto"
+							className="m-0 h-full overflow-y-auto data-[state=inactive]:hidden"
 						>
-							<div className="p-6 flex flex-col gap-4">
+							<div className="flex flex-col gap-4 p-6">
 								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-1.5 p-1 rounded-lg bg-muted/40 border border-border">
-										{(
-											[
-												{ id: "curl", label: "cURL" },
-												{ id: "typescript", label: "TypeScript / Node" },
-												{ id: "python", label: "Python" },
-											] as const
-										).map(({ id, label }) => (
-											<button
-												key={id}
-												type="button"
-												onClick={() => setSnippetLang(id)}
-												className={cn(
-													"px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
-													snippetLang === id
-														? "bg-background text-foreground shadow-xs font-semibold"
-														: "text-muted-foreground hover:text-foreground",
-												)}
-											>
-												{label}
-											</button>
-										))}
-									</div>
+									<ToggleGroup
+										value={[snippetLang]}
+										onValueChange={(v) => v[0] && setSnippetLang(v[0] as SnippetLang)}
+										variant="outline"
+										size="sm"
+										spacing={0}
+									>
+										<ToggleGroupItem value="curl">cURL</ToggleGroupItem>
+										<ToggleGroupItem value="typescript">TypeScript / Node</ToggleGroupItem>
+										<ToggleGroupItem value="python">Python</ToggleGroupItem>
+									</ToggleGroup>
 
 									<Button
 										variant="outline"
 										size="sm"
 										onClick={handleCopySnippet}
-										className="h-8 gap-1.5 text-xs"
+										className="gap-1.5 text-xs"
 									>
-										{copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+										{copied ? (
+											<Check className="size-3 text-success" />
+										) : (
+											<Copy className="size-3" />
+										)}
 										<span>{copied ? "Copied!" : "Copy Code"}</span>
 									</Button>
 								</div>
@@ -1010,71 +1002,75 @@ export default function PlaygroundPage() {
 									/>
 								</div>
 
-								<div className="rounded-xl border border-border p-4 bg-muted/10 text-xs space-y-1.5 text-muted-foreground">
+								<div className="space-y-1.5 rounded-xl border border-border bg-muted/10 p-4 text-xs text-muted-foreground">
 									<p className="font-semibold text-foreground">API Delivery Note:</p>
 									<p>
 										Sending with an API key with prefix{" "}
-										<code className="text-purple-600 font-mono">eftest_</code> will automatically
-										capture into the in-house Sandbox (Test Mailbox) without real delivery. Keys
-										with prefix <code className="text-orange-600 font-mono">eflive_</code> deliver
-										live via Cloudflare.
+										<code className="font-mono text-info">eftest_</code> will automatically capture
+										into the in-house Sandbox (Test Mailbox) without real delivery. Keys with prefix{" "}
+										<code className="font-mono text-primary">eflive_</code> deliver live via
+										Cloudflare.
 									</p>
 								</div>
 							</div>
 						</TabsContent>
 
 						{/* Tab 4: API Payload & Docs */}
-						<TabsContent value="api" className="h-full m-0 data-[state=inactive]:hidden overflow-y-auto">
-							<div className="p-6 flex flex-col gap-5">
+						<TabsContent value="api" className="m-0 h-full overflow-y-auto data-[state=inactive]:hidden">
+							<div className="flex flex-col gap-5 p-6">
 								<div>
-									<p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1.5">
+									<p className="mb-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
 										Full JSON Request Payload
 									</p>
 									<SyntaxCode code={codePayload} lang="json" />
 								</div>
 
 								<div>
-									<p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">
+									<p className="mb-2 text-xs font-medium tracking-wider text-muted-foreground uppercase">
 										Request Fields Breakdown
 									</p>
-									<div className="bg-card border border-border rounded-xl divide-y divide-border">
-										{(
-											[
-												{ field: "from", value: fromAddress || null },
-												{ field: "fromName", value: senderName || null },
-												{ field: "to", value: to || null },
-												{ field: "subject", value: subject || null },
-												selectedTemplate
-													? {
-															field: selectedTemplate.slug
-																? "templateSlug"
-																: "templateId",
-															value: selectedTemplate.slug ?? selectedTemplate.id,
-														}
-													: null,
-												{ field: "themeId", value: themeId },
-												...detectedVars.map((v) => ({
-													field: `variables.${v}`,
-													value: variables[v] || null,
-												})),
-											].filter(Boolean) as Array<{ field: string; value: string | null }>
-										).map(({ field, value }) => (
-											<div
-												key={field}
-												className="flex items-center justify-between px-4 py-2.5 text-xs"
-											>
-												<code className="font-mono text-primary">{field}</code>
-												<span
-													className={
-														value
-															? "text-foreground font-mono max-w-xs truncate text-right"
-															: "text-muted-foreground italic"
-													}
-												>
-													{value ?? "not set"}
-												</span>
-											</div>
-										))}
+									<div className="rounded-xl border border-border bg-card px-2">
+										<Table>
+											<TableBody>
+												{(
+													[
+														{ field: "from", value: fromAddress || null },
+														{ field: "fromName", value: senderName || null },
+														{ field: "to", value: to || null },
+														{ field: "subject", value: subject || null },
+														selectedTemplate
+															? {
+																	field: selectedTemplate.slug
+																		? "templateSlug"
+																		: "templateId",
+																	value: selectedTemplate.slug ?? selectedTemplate.id,
+																}
+															: null,
+														{ field: "themeId", value: themeId },
+														...detectedVars.map((v) => ({
+															field: `variables.${v}`,
+															value: variables[v] || null,
+														})),
+													].filter(Boolean) as Array<{ field: string; value: string | null }>
+												).map(({ field, value }) => (
+													<TableRow key={field}>
+														<TableCell className="font-mono text-xs text-primary">
+															{field}
+														</TableCell>
+														<TableCell
+															className={cn(
+																"max-w-xs truncate text-right text-xs",
+																value
+																	? "font-mono text-foreground"
+																	: "text-muted-foreground italic",
+															)}
+														>
+															{value ?? "not set"}
+														</TableCell>
+													</TableRow>
+												))}
+											</TableBody>
+										</Table>
 									</div>
 								</div>
 							</div>

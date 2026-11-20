@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { ShieldOff, Search, X, Trash2, Plus, ChevronLeft, ChevronRight, MailX } from "lucide-react";
+import { Search, X, Trash2, Plus, ChevronLeft, ChevronRight, MailX } from "lucide-react";
 import api from "@/lib/api";
 import { createSuppressionAction, deleteSuppressionAction } from "@/app/actions/suppressions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
 import {
 	Dialog,
 	DialogContent,
@@ -18,7 +24,6 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 
 export type SuppressionReason = "hard_bounce" | "soft_bounce" | "complaint" | "manual" | "unsubscribed";
 
@@ -48,12 +53,12 @@ const REASON_LABEL: Record<SuppressionReason, string> = {
 	unsubscribed: "Unsubscribed",
 };
 
-const REASON_CLASS: Record<SuppressionReason, string> = {
-	hard_bounce: "bg-destructive/10 text-destructive border-destructive/20",
-	soft_bounce: "bg-amber-500/10 text-amber-600 border-amber-200",
-	complaint: "bg-orange-500/10 text-orange-600 border-orange-200",
-	manual: "bg-muted text-muted-foreground border-border",
-	unsubscribed: "bg-blue-500/10 text-blue-600 border-blue-200",
+const REASON_VARIANT: Record<SuppressionReason, "destructive" | "warning" | "secondary" | "info"> = {
+	hard_bounce: "destructive",
+	soft_bounce: "warning",
+	complaint: "destructive",
+	manual: "secondary",
+	unsubscribed: "info",
 };
 
 const REASON_FILTER_OPTS = [
@@ -63,6 +68,13 @@ const REASON_FILTER_OPTS = [
 	{ label: "Complaint", value: "complaint" },
 	{ label: "Manual", value: "manual" },
 	{ label: "Unsubscribed", value: "unsubscribed" },
+];
+
+const ADD_REASON_ITEMS = [
+	{ value: "manual", label: "Manual Suppression" },
+	{ value: "hard_bounce", label: "Hard Bounce" },
+	{ value: "complaint", label: "Spam Complaint" },
+	{ value: "unsubscribed", label: "Unsubscribed" },
 ];
 
 // ─── Add dialog ───────────────────────────────────────────────────────────────
@@ -104,55 +116,56 @@ function AddDialog({ open, onClose, onAdded }: { open: boolean; onClose: () => v
 		>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="text-base font-semibold">Suppress Recipient Address</DialogTitle>
-					<DialogDescription className="text-xs">
+					<DialogTitle>Suppress Recipient Address</DialogTitle>
+					<DialogDescription>
 						Prevent EmailFlare from sending emails to this counterparty across all domains.
 					</DialogDescription>
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit} className="space-y-4 pt-2">
-					{err && <p className="text-xs text-destructive">{err}</p>}
+					{err && (
+						<Alert variant="destructive">
+							<AlertDescription>{err}</AlertDescription>
+						</Alert>
+					)}
 
 					<div className="space-y-1.5">
-						<Label className="text-xs">Email Address</Label>
+						<Label>Email Address</Label>
 						<Input
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							placeholder="recipient@example.com"
 							required
-							className="h-8.5 text-xs font-mono"
+							className="font-mono text-sm"
 						/>
 					</div>
 
 					<div className="space-y-1.5">
-						<Label className="text-xs">Suppression Reason</Label>
-						<Select value={reason} onValueChange={(v) => setReason(v as SuppressionReason)}>
-							<SelectTrigger className="h-8.5 text-xs">
+						<Label>Suppression Reason</Label>
+						<Select
+							items={ADD_REASON_ITEMS}
+							value={reason}
+							onValueChange={(v) => setReason(v as SuppressionReason)}
+						>
+							<SelectTrigger className="w-full">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="manual" className="text-xs">
-									Manual Suppression
-								</SelectItem>
-								<SelectItem value="hard_bounce" className="text-xs">
-									Hard Bounce
-								</SelectItem>
-								<SelectItem value="complaint" className="text-xs">
-									Spam Complaint
-								</SelectItem>
-								<SelectItem value="unsubscribed" className="text-xs">
-									Unsubscribed
-								</SelectItem>
+								{ADD_REASON_ITEMS.map((o) => (
+									<SelectItem key={o.value} value={o.value}>
+										{o.label}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
 
 					<DialogFooter className="pt-2">
-						<Button type="button" variant="ghost" onClick={onClose} className="h-8 text-xs">
+						<Button type="button" variant="ghost" onClick={onClose}>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={saving || !email} className="h-8 text-xs">
+						<Button type="submit" disabled={saving || !email}>
 							{saving ? "Saving..." : "Add to Suppressions"}
 						</Button>
 					</DialogFooter>
@@ -176,6 +189,7 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 	const [confirmId, setConfirmId] = useState<string | null>(null);
 	const [importing, setImporting] = useState(false);
 	const isFirstMount = useRef(true);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -217,35 +231,26 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 	}
 
 	return (
-		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<div className="flex items-center gap-2 mb-1">
-						<ShieldOff size={14} className="text-orange-500" />
-						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-							Deliverability & Reputation
-						</span>
-					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Suppressions</h1>
-					<p className="text-xs text-muted-foreground mt-0.5">
-						Addresses blocked from receiving emails due to bounces, spam complaints, or unsubscribes.
-					</p>
-				</div>
-				<div className="flex items-center gap-2">
-					<Button
-						size="sm"
-						variant="outline"
-						className="h-8.5 text-xs"
-						onClick={() => {
-							window.location.href = "/api/suppressions/export.csv";
-						}}
-					>
-						Export CSV
-					</Button>
-					<label className="h-8.5 px-3 inline-flex items-center rounded-md border text-xs cursor-pointer">
-						{importing ? "Importing…" : "Import CSV"}
-						<input
+		<PageShell>
+			<PageHeader
+				eyebrow="Deliverability & Reputation"
+				title="Suppressions"
+				description="Addresses blocked from receiving emails due to bounces, spam complaints, or unsubscribes."
+				actions={
+					<>
+						<Button
+							variant="outline"
+							onClick={() => {
+								window.location.href = "/api/suppressions/export.csv";
+							}}
+						>
+							Export CSV
+						</Button>
+						<Button variant="outline" disabled={importing} onClick={() => fileInputRef.current?.click()}>
+							{importing ? "Importing…" : "Import CSV"}
+						</Button>
+						<Input
+							ref={fileInputRef}
 							type="file"
 							accept=".csv,text/csv"
 							className="sr-only"
@@ -264,59 +269,58 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 								}
 							}}
 						/>
-					</label>
-					<Button size="sm" className="gap-1.5 h-8.5 text-xs shadow-xs" onClick={() => setAddOpen(true)}>
-						<Plus size={13} />
-						<span>Add Suppression</span>
-					</Button>
-				</div>
-			</div>
+						<Button onClick={() => setAddOpen(true)}>
+							<Plus />
+							<span>Add Suppression</span>
+						</Button>
+					</>
+				}
+			/>
 
 			{/* Filter & Search Bar */}
-			<div className="flex items-center gap-3">
-				<form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 max-w-sm">
-					<div className="relative flex-1">
-						<Search
-							size={12}
-							className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-						/>
-						<Input
+			<div className="flex flex-wrap items-center gap-3">
+				<form onSubmit={handleSearch} className="flex max-w-sm min-w-0 flex-1 items-center gap-2">
+					<InputGroup className="flex-1">
+						<InputGroupAddon>
+							<Search />
+						</InputGroupAddon>
+						<InputGroupInput
 							value={searchInput}
 							onChange={(e) => setSearchInput(e.target.value)}
 							placeholder="Search suppressed emails..."
-							className="pl-7 h-8.5 text-xs bg-muted/30"
 						/>
-					</div>
+					</InputGroup>
 					{search && (
 						<Button
 							type="button"
 							variant="ghost"
 							size="icon"
-							className="size-8"
+							aria-label="Clear search"
 							onClick={() => {
 								setSearch("");
 								setSearchInput("");
 								setPage(1);
 							}}
 						>
-							<X size={12} />
+							<X />
 						</Button>
 					)}
 				</form>
 
 				<Select
+					items={REASON_FILTER_OPTS}
 					value={reason}
 					onValueChange={(v) => {
 						setReason(v ?? "");
 						setPage(1);
 					}}
 				>
-					<SelectTrigger className="h-8.5 text-xs w-40">
+					<SelectTrigger className="w-40">
 						<SelectValue placeholder="All reasons" />
 					</SelectTrigger>
 					<SelectContent>
 						{REASON_FILTER_OPTS.map((o) => (
-							<SelectItem key={o.value} value={o.value} className="text-xs">
+							<SelectItem key={o.value} value={o.value}>
 								{o.label}
 							</SelectItem>
 						))}
@@ -325,112 +329,113 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 			</div>
 
 			{/* Suppressions Table Card */}
-			<div className="rounded-xl border border-border bg-card overflow-hidden">
-				<div className="px-5 py-3.5 border-b border-border bg-muted/20 flex items-center justify-between">
-					<span className="text-xs font-semibold text-foreground">
+			<Card className="gap-0 py-0">
+				<div className="flex items-center justify-between border-b border-border bg-muted/20 px-5 py-3.5">
+					<span className="text-sm font-semibold text-foreground">
 						Suppressed Recipients ({result?.total ?? 0})
 					</span>
-					<span className="text-[11px] text-muted-foreground">Automatically checked before send</span>
+					<span className="text-2xs text-muted-foreground">Automatically checked before send</span>
 				</div>
 
 				{loading ? (
-					<div className="p-4 space-y-2">
+					<div className="space-y-2 p-4">
 						{[...Array(5)].map((_, i) => (
 							<Skeleton key={i} className="h-12 rounded-lg" />
 						))}
 					</div>
 				) : !result || result.data.length === 0 ? (
-					<div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
-						<MailX size={32} strokeWidth={1.25} className="opacity-30 mb-1" />
-						<p className="text-xs font-semibold text-foreground">No suppressions recorded</p>
-						<p className="text-[11px]">Any bounced or unsubscribed recipients will be listed here.</p>
-					</div>
+					<Empty className="py-16">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<MailX />
+							</EmptyMedia>
+							<EmptyTitle>No suppressions recorded</EmptyTitle>
+							<EmptyDescription>
+								Any bounced or unsubscribed recipients will be listed here.
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				) : (
-					<table className="w-full text-xs">
-						<thead>
-							<tr className="border-b border-border bg-muted/10 text-muted-foreground">
-								<th className="px-5 py-3 text-left font-semibold uppercase tracking-wider text-[11px]">
+					<Table>
+						<TableHeader>
+							<TableRow className="bg-muted/10 hover:bg-muted/10">
+								<TableHead className="px-5 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
 									Email Address
-								</th>
-								<th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[11px]">
+								</TableHead>
+								<TableHead className="px-4 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
 									Reason
-								</th>
-								<th className="px-4 py-3 text-left font-semibold uppercase tracking-wider text-[11px]">
+								</TableHead>
+								<TableHead className="px-4 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
 									Date Suppressed
-								</th>
-								<th className="px-5 py-3 text-right font-semibold uppercase tracking-wider text-[11px]">
+								</TableHead>
+								<TableHead className="px-5 text-right text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
 									Actions
-								</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-border">
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
 							{result.data.map((row) => (
-								<tr key={row.id} className="hover:bg-muted/30 transition-colors">
-									<td className="px-5 py-3 font-mono text-xs font-medium text-foreground select-all">
+								<TableRow key={row.id}>
+									<TableCell className="px-5 py-3 font-mono text-xs font-medium text-foreground select-all">
 										{row.email}
-									</td>
-									<td className="px-4 py-3">
-										<Badge
-											variant="outline"
-											className={`text-[10px] px-2 py-0.5 font-medium ${REASON_CLASS[row.reason]}`}
-										>
-											{REASON_LABEL[row.reason]}
-										</Badge>
-									</td>
-									<td className="px-4 py-3 text-muted-foreground tabular-nums">
+									</TableCell>
+									<TableCell className="px-4 py-3">
+										<Badge variant={REASON_VARIANT[row.reason]}>{REASON_LABEL[row.reason]}</Badge>
+									</TableCell>
+									<TableCell className="px-4 py-3 text-xs text-muted-foreground tabular-nums">
 										{new Date(row.created_at).toLocaleDateString("en-US", {
 											year: "numeric",
 											month: "short",
 											day: "numeric",
 										})}
-									</td>
-									<td className="px-5 py-3 text-right">
+									</TableCell>
+									<TableCell className="px-5 py-3 text-right">
 										<Button
 											variant="ghost"
 											size="sm"
-											className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+											className="text-muted-foreground hover:text-destructive"
 											disabled={deleting === row.id}
 											onClick={() => setConfirmId(row.id)}
 										>
-											<Trash2 size={12} className="mr-1" />
+											<Trash2 />
 											<span>Unsuppress</span>
 										</Button>
-									</td>
-								</tr>
+									</TableCell>
+								</TableRow>
 							))}
-						</tbody>
-					</table>
+						</TableBody>
+					</Table>
 				)}
 
 				{/* Pagination */}
 				{result && result.pages > 1 && (
-					<div className="p-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground bg-background">
+					<div className="flex items-center justify-between border-t border-border bg-background p-3 text-xs text-muted-foreground">
 						<span>
 							{result.total} total · Page {result.page} of {result.pages}
 						</span>
 						<div className="flex items-center gap-1">
 							<Button
 								variant="ghost"
-								size="icon"
-								className="size-7"
+								size="icon-sm"
+								aria-label="Previous page"
 								disabled={page <= 1}
 								onClick={() => setPage((p) => Math.max(1, p - 1))}
 							>
-								<ChevronLeft size={13} />
+								<ChevronLeft />
 							</Button>
 							<Button
 								variant="ghost"
-								size="icon"
-								className="size-7"
+								size="icon-sm"
+								aria-label="Next page"
 								disabled={page >= result.pages}
 								onClick={() => setPage((p) => Math.min(result.pages, p + 1))}
 							>
-								<ChevronRight size={13} />
+								<ChevronRight />
 							</Button>
 						</div>
 					</div>
 				)}
-			</div>
+			</Card>
 
 			<AddDialog open={addOpen} onClose={() => setAddOpen(false)} onAdded={load} />
 			<Dialog open={!!confirmId} onOpenChange={(open) => !open && setConfirmId(null)}>
@@ -461,6 +466,6 @@ export default function SuppressionsPage({ initialResult }: { initialResult?: Pa
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</PageShell>
 	);
 }

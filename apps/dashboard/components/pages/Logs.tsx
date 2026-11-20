@@ -25,11 +25,13 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Badge } from "@/components/ui/badge";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { TONE_STYLES } from "@/components/app/StatCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import HtmlEmailViewer from "@/components/modules/inbox/HtmlEmailViewer";
 import { cn } from "@/lib/utils";
 
@@ -118,30 +120,21 @@ function DetailPanel({ log }: { log: LogRow }) {
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2 mb-1.5 flex-wrap">
 						{isSent ? (
-							<CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+							<CheckCircle2 className="size-3.5 text-success shrink-0" />
 						) : (
-							<XCircle size={13} className="text-destructive shrink-0" />
+							<XCircle className="size-3.5 text-destructive shrink-0" />
 						)}
-						<span
-							className={cn(
-								"text-xs font-semibold",
-								isSent ? "text-emerald-600 dark:text-emerald-400" : "text-destructive",
-							)}
-						>
+						<span className={cn("text-xs font-semibold", isSent ? "text-success" : "text-destructive")}>
 							{isSent ? "Delivered" : "Failed"}
 						</span>
 
-						{isTest && (
-							<span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-								SANDBOX
-							</span>
-						)}
+						{isTest && <Badge variant="info">SANDBOX</Badge>}
 
 						<span className="text-muted-foreground/30 text-xs">·</span>
 						<span className="text-xs text-muted-foreground tabular-nums">{sentAt.toLocaleString()}</span>
 					</div>
 
-					<h2 className="text-[15px] font-semibold leading-snug line-clamp-2 text-foreground">
+					<h2 className="text-base font-semibold leading-snug line-clamp-2 text-foreground">
 						{fullLog.subject || (
 							<span className="text-muted-foreground italic font-normal">No subject</span>
 						)}
@@ -149,13 +142,8 @@ function DetailPanel({ log }: { log: LogRow }) {
 				</div>
 
 				<div className="flex items-center gap-2 shrink-0">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={handleRerunInPlayground}
-						className="h-8 gap-1.5 text-xs text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/40"
-					>
-						<Play size={12} className="fill-current" />
+					<Button variant="outline" size="sm" onClick={handleRerunInPlayground}>
+						<Play className="fill-current" />
 						<span>Playground</span>
 					</Button>
 				</div>
@@ -167,35 +155,23 @@ function DetailPanel({ log }: { log: LogRow }) {
 				className="flex flex-col flex-1 overflow-hidden"
 			>
 				<div className="border-b border-border shrink-0 px-6 bg-muted/20">
-					<TabsList className="bg-transparent h-10 gap-2 p-0">
-						<TabsTrigger
-							value="envelope"
-							className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-						>
-							<Mail size={13} />
+					<TabsList variant="line" className="h-10 gap-2 p-0">
+						<TabsTrigger value="envelope">
+							<Mail />
 							<span>Envelope</span>
 						</TabsTrigger>
 						{fullLog.html_body && (
-							<TabsTrigger
-								value="preview"
-								className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-							>
-								<Eye size={13} />
+							<TabsTrigger value="preview">
+								<Eye />
 								<span>HTML Body</span>
 							</TabsTrigger>
 						)}
-						<TabsTrigger
-							value="metadata"
-							className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-						>
-							<Info size={13} />
+						<TabsTrigger value="metadata">
+							<Info />
 							<span>Metadata</span>
 						</TabsTrigger>
-						<TabsTrigger
-							value="json"
-							className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none h-10 px-3 text-xs gap-1.5"
-						>
-							<Code2 size={13} />
+						<TabsTrigger value="json">
+							<Code2 />
 							<span>Event JSON</span>
 						</TabsTrigger>
 					</TabsList>
@@ -234,12 +210,14 @@ function DetailPanel({ log }: { log: LogRow }) {
 								<div
 									className={cn(
 										"size-10 rounded-full flex items-center justify-center",
-										isSent
-											? "bg-emerald-500/10 text-emerald-500"
-											: "bg-destructive/10 text-destructive",
+										TONE_STYLES[isSent ? "success" : "danger"].chip,
 									)}
 								>
-									{isTest ? <FlaskConical size={18} /> : <Mail size={18} />}
+									{isTest ? (
+										<FlaskConical className="size-[18px]" />
+									) : (
+										<Mail className="size-[18px]" />
+									)}
 								</div>
 								<div>
 									<p className="text-sm font-semibold text-foreground">
@@ -261,7 +239,7 @@ function DetailPanel({ log }: { log: LogRow }) {
 
 							{fullLog.error && (
 								<div className="px-5 py-4 border-t border-destructive/20 bg-destructive/10 flex items-start gap-2.5">
-									<AlertTriangle size={14} className="text-destructive shrink-0 mt-0.5" />
+									<AlertTriangle className="size-3.5 text-destructive shrink-0 mt-0.5" />
 									<div>
 										<p className="text-xs font-semibold text-destructive mb-0.5">Delivery Error</p>
 										<p className="text-xs text-destructive/90 font-mono break-all leading-relaxed">
@@ -302,8 +280,8 @@ function DetailPanel({ log }: { log: LogRow }) {
 								},
 							].map(({ label, value, icon: Icon }) => (
 								<div key={label} className="bg-card border border-border rounded-xl p-3.5 space-y-1">
-									<div className="flex items-center gap-1.5 text-muted-foreground text-[11px] font-medium uppercase tracking-wider">
-										<Icon size={12} />
+									<div className="flex items-center gap-1.5 text-muted-foreground text-2xs font-medium uppercase tracking-wider">
+										<Icon className="size-3" />
 										<span>{label}</span>
 									</div>
 									<div className="font-mono text-xs text-foreground break-all select-all pt-0.5">
@@ -317,13 +295,8 @@ function DetailPanel({ log }: { log: LogRow }) {
 					{/* Tab 4: Raw JSON Event */}
 					<TabsContent value="json" className="m-0 space-y-3">
 						<div className="flex justify-end">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={handleCopyJson}
-								className="h-7 text-xs gap-1.5"
-							>
-								{copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+							<Button variant="outline" size="sm" onClick={handleCopyJson}>
+								{copied ? <Check className="text-success" /> : <Copy />}
 								<span>{copied ? "Copied" : "Copy JSON"}</span>
 							</Button>
 						</div>
@@ -424,57 +397,51 @@ export default function LogsPage({ initialResult }: { initialResult?: PagedLogs 
 			<div className="w-[460px] shrink-0 border-r border-border flex flex-col h-full bg-background">
 				{/* Pane Header */}
 				<div className="p-4 border-b border-border bg-background/95 shrink-0 space-y-3">
-					<div className="flex items-center justify-between">
+					<div className="flex flex-wrap items-center justify-between gap-2">
 						<div>
 							<h1 className="text-base font-semibold tracking-tight text-foreground">Activity Logs</h1>
-							<p className="text-[11px] text-muted-foreground mt-0.5">
+							<p className="text-2xs text-muted-foreground mt-0.5">
 								{result?.total ?? 0} total transactional events
 							</p>
 						</div>
 
 						{/* Filter pills */}
-						<div className="flex bg-muted/60 border border-border/80 rounded-lg p-0.5">
+						<ToggleGroup
+							value={[filterVal]}
+							onValueChange={(v) => v.length > 0 && handleFilter(v[0] as string)}
+							variant="outline"
+							size="sm"
+							spacing={0}
+						>
 							{FILTER_OPTS.map((o) => (
-								<button
-									key={o.value}
-									type="button"
-									onClick={() => handleFilter(o.value)}
-									className={cn(
-										"text-[11px] font-medium px-2 py-0.5 rounded-md transition-all",
-										filterVal === o.value
-											? "bg-background shadow-xs text-foreground font-semibold"
-											: "text-muted-foreground hover:text-foreground",
-									)}
-								>
+								<ToggleGroupItem key={o.value} value={o.value}>
 									{o.label}
-								</button>
+								</ToggleGroupItem>
 							))}
-						</div>
+						</ToggleGroup>
 					</div>
 
 					{/* Search */}
 					<form onSubmit={handleSearch} className="flex items-center gap-2">
-						<div className="relative flex-1">
-							<Search
-								size={12}
-								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-							/>
-							<Input
+						<InputGroup className="flex-1">
+							<InputGroupAddon>
+								<Search />
+							</InputGroupAddon>
+							<InputGroupInput
 								value={searchInput}
 								onChange={(e) => setSearchInput(e.target.value)}
 								placeholder="Search to, from, subject..."
-								className="pl-7 h-7.5 text-xs bg-muted/40"
 							/>
-						</div>
+						</InputGroup>
 						{search && (
 							<Button
 								type="button"
 								variant="ghost"
 								size="icon"
-								className="size-7.5"
+								aria-label="Clear search"
 								onClick={clearSearch}
 							>
-								<X size={12} />
+								<X />
 							</Button>
 						)}
 					</form>
@@ -489,15 +456,19 @@ export default function LogsPage({ initialResult }: { initialResult?: PagedLogs 
 							))}
 						</div>
 					) : !result?.data || result.data.length === 0 ? (
-						<div className="flex flex-col items-center justify-center h-64 px-4 text-center text-muted-foreground">
-							<Mail size={32} strokeWidth={1.25} className="opacity-40 mb-2" />
-							<p className="text-xs font-semibold text-foreground">No logs found</p>
-							<p className="text-[11px] mt-0.5 max-w-[200px]">
-								{search || filterVal
-									? "Try broadening your filters or search criteria."
-									: "Transactional sends will be recorded here."}
-							</p>
-						</div>
+						<Empty className="h-64">
+							<EmptyHeader>
+								<EmptyMedia variant="icon">
+									<Mail />
+								</EmptyMedia>
+								<EmptyTitle>No logs found</EmptyTitle>
+								<EmptyDescription>
+									{search || filterVal
+										? "Try broadening your filters or search criteria."
+										: "Transactional sends will be recorded here."}
+								</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					) : (
 						result.data.map((row) => {
 							const isSelected = row.id === selected?.id;
@@ -505,32 +476,32 @@ export default function LogsPage({ initialResult }: { initialResult?: PagedLogs 
 							const isTest = row.is_test === 1;
 
 							return (
-								<button
+								<Button
 									key={row.id}
-									type="button"
+									variant="ghost"
 									onClick={() => setSelected(row)}
 									className={cn(
-										"w-full text-left p-3 flex flex-col gap-1 transition-colors relative",
-										isSelected ? "bg-muted/70 dark:bg-muted/40" : "hover:bg-muted/30",
+										"relative h-auto w-full flex-col items-stretch justify-start gap-1 rounded-none p-3 text-left font-normal whitespace-normal",
+										isSelected && "bg-muted",
 									)}
 								>
 									{isSelected && (
 										<span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary rounded-r" />
 									)}
 
-									<div className="flex items-center justify-between text-xs">
+									<div className="flex items-center justify-between gap-2 text-xs">
 										<div className="flex items-center gap-1.5 truncate max-w-[280px]">
 											{isSent ? (
-												<CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
+												<CheckCircle2 className="size-3 text-success shrink-0" />
 											) : (
-												<XCircle size={12} className="text-destructive shrink-0" />
+												<XCircle className="size-3 text-destructive shrink-0" />
 											)}
 											<span className="font-semibold text-foreground truncate">
 												{row.to_address}
 											</span>
 										</div>
 
-										<span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+										<span className="text-2xs text-muted-foreground tabular-nums shrink-0">
 											{new Date(row.sent_at).toLocaleTimeString([], {
 												hour: "2-digit",
 												minute: "2-digit",
@@ -544,19 +515,15 @@ export default function LogsPage({ initialResult }: { initialResult?: PagedLogs 
 										)}
 									</p>
 
-									<div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+									<div className="flex items-center justify-between gap-2 text-2xs text-muted-foreground pt-0.5">
 										<span className="truncate max-w-[220px]">From: {row.from_address}</span>
 										{isTest ? (
-											<span className="px-1.5 py-0.2 rounded font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-												SANDBOX
-											</span>
+											<Badge variant="info">SANDBOX</Badge>
 										) : (
-											<span className="text-emerald-600 dark:text-emerald-400 font-medium">
-												LIVE
-											</span>
+											<Badge variant="success">LIVE</Badge>
 										)}
 									</div>
-								</button>
+								</Button>
 							);
 						})
 					)}
@@ -571,21 +538,21 @@ export default function LogsPage({ initialResult }: { initialResult?: PagedLogs 
 						<div className="flex items-center gap-1">
 							<Button
 								variant="ghost"
-								size="icon"
-								className="size-7"
+								size="icon-sm"
+								aria-label="Previous page"
 								onClick={() => setPage((p) => Math.max(1, p - 1))}
 								disabled={page <= 1}
 							>
-								<ChevronLeft size={13} />
+								<ChevronLeft />
 							</Button>
 							<Button
 								variant="ghost"
-								size="icon"
-								className="size-7"
+								size="icon-sm"
+								aria-label="Next page"
 								onClick={() => setPage((p) => Math.min(result.pages, p + 1))}
 								disabled={page >= result.pages}
 							>
-								<ChevronRight size={13} />
+								<ChevronRight />
 							</Button>
 						</div>
 					</div>
@@ -597,12 +564,16 @@ export default function LogsPage({ initialResult }: { initialResult?: PagedLogs 
 				{selected ? (
 					<DetailPanel log={selected} />
 				) : (
-					<div className="flex flex-col items-center justify-center h-full text-center p-6 text-muted-foreground select-none">
-						<Mail size={36} strokeWidth={1.25} className="opacity-40 mb-2" />
-						<p className="text-xs font-medium">
-							Select a log event to view details, technical headers, and JSON
-						</p>
-					</div>
+					<Empty className="h-full select-none">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Mail />
+							</EmptyMedia>
+							<EmptyDescription>
+								Select a log event to view details, technical headers, and JSON
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				)}
 			</div>
 		</div>
