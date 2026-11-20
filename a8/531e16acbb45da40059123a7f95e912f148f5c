@@ -1,0 +1,96 @@
+apps/dashboard/package.json
+  s_31f384226fbd1c::t_ecc17de1df7b1c 7-8
+  s_31f384226fbd1c::t_32b440f5eb8ffb 17,23,28,31
+apps/dashboard/components/ui/alert.tsx
+  s_31f384226fbd1c::t_4c05b729d16b60 14-16
+apps/dashboard/components/ui/kbd.tsx
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2-3,14-16,18-19
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,4-13,17,20
+apps/dashboard/components/app/ThemeProvider.tsx
+  s_31f384226fbd1c::t_f001403a5f326c 1-11
+apps/dashboard/components/ui/sonner.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-5,8,10-37,39
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2,6-7,9,38
+apps/dashboard/app/layout.tsx
+  s_31f384226fbd1c::t_e543c25804ef89 3-5,18,20-25
+apps/dashboard/app/theme.css
+  s_31f384226fbd1c::t_fc675b62065d2a 1-69,74-128,133-194,199-208
+  s_31f384226fbd1c::t_9075a9dac8f71b 70-73,129-132,195-198
+apps/dashboard/app/globals.css
+  s_31f384226fbd1c::t_73b5c78fafa49f 4-6,14-19,21-35,39,41,46-47,53-56,59-60,70-78
+apps/dashboard/components/ui/input-group.tsx
+  s_31f384226fbd1c::t_a1118887fb2551 2,6,10-11,23-25,43-44,48,64-65,79-80,86,99-101,111-112,124-125,137-138
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-5,7-9,12-22,26-42,45-47,49-63,66-78,81-85,87-98,102-110,113-123,126-136,139
+apps/dashboard/components/ui/context-menu.tsx
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2,7-8,10-12,14-15,24-26,33,55-57,59-61,65,67,76-78,83,86,99-101,103-105,110,112,131-133,139,141,165-167,172,174,216-218
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-6,9,13,16-23,27-32,34-54,58,62-64,66,68-75,79-82,84-85,87-98,102,106-109,111,113-130,134-138,140,142-164,168-171,173,175-215,219-234
+apps/dashboard/components/ui/badge.tsx
+  s_31f384226fbd1c::t_4c05b729d16b60 16-19
+apps/dashboard/components/ui/command.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-5,7-9,11-21,25-30,32-36,38-51,54-71,74-84,87-94,97-107,110-117,120-133,136-146,150-159
+  s_31f384226fbd1c::t_a1118887fb2551 2,6,10,22-24,31,37,52-53,72-73,85-86,95-96,108-109,118-119,134-135,147-149
+apps/dashboard/components/ui/breadcrumb.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1-5,8,12-21,25-41,45-83,87-94
+  s_31f384226fbd1c::t_32b440f5eb8ffb 6-7,9-11,22-24,42-44,84-86
+apps/dashboard/scripts/ui-baseline.json
+  s_31f384226fbd1c::t_c9a61360aa30d7 1
+apps/dashboard/components/ui/hover-card.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-4,7,11,15-20,22-42,45
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2,5-6,8-10,12-14,21,43-44
+apps/dashboard/components/ui/spinner.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1-2,5-13,16
+  s_31f384226fbd1c::t_32b440f5eb8ffb 3-4,14-15
+apps/dashboard/components/ui/button.tsx
+  s_31f384226fbd1c::t_2dae6f59a206b6 47-53
+apps/dashboard/components/ui/toggle.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-5,8-26,29-32,34-36,39
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2,6-7,27-28,33,37-38
+apps/dashboard/components.json
+  s_31f384226fbd1c::t_b71fcf53c48b2c 1-21
+apps/dashboard/scripts/check-ui-tokens.mjs
+  s_31f384226fbd1c::t_bbab577fd1073a 26-27,43-46,62
+  s_31f384226fbd1c::t_9b651ee7a926bb 1-24,29-42,47-61,63-75
+  s_31f384226fbd1c::t_ccb64fb43fbae2 25,28
+apps/dashboard/components/ui/dropdown-menu.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-6,9,13,17,21-47,51,55-57,59,61-68,72-75,77-78,80-91,95,99-102,104,106-119,123-128,130-143,147-151,153,155-176,180,184-187,189,191-234,238-253
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2,7-8,10-12,14-16,18-20,48-50,52-54,58,60,69-71,76,79,92-94,96-98,103,105,120-122,129,144-146,152,154,177-179,181-183,188,190,235-237
+apps/dashboard/components/ui/toggle-group.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-7,9,12-15,17-21,24-30,32-54,58-62,64,66-84,87
+  s_31f384226fbd1c::t_a1118887fb2551 2,8,10-11,16,22-23,31,55-57,63,65,85-86
+package.json
+  s_31f384226fbd1c::t_5a2f5b02535b7d 10
+apps/dashboard/components/ui/popover.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-5,8,12,16-21,23-43,47,51,54-61,64
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2,6-7,9-11,13-15,22,44-46,48-50,52-53,62-63
+apps/dashboard/components/ui/resizable.tsx
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1,3-4,6-13,17,21-23,25,27-38,41
+  s_31f384226fbd1c::t_32b440f5eb8ffb 2,5,14-16,18-20,24,26,39-40
+apps/dashboard/components/ui/empty.tsx
+  s_31f384226fbd1c::t_32b440f5eb8ffb 3-4,15-17,25-27,41-42,46,55-57,59-61,72-74,82-83
+  s_31f384226fbd1c::t_5a2f5b02535b7d 1-2,5-14,18-24,28-40,43-45,47-54,58,62-71,75-81,84
+lefthook.yml
+  s_31f384226fbd1c::t_5a2f5b02535b7d 28-35
+pnpm-lock.yaml
+  s_31f384226fbd1c::t_2191c2fe54218b 29-34,59-61,77-79,92-94,101-103,838-843,1105-1266,1931-1934,2090-2095,2301-2303,2601-2604,3260-3265,3554-3583,3592-3601,3803-3812,4119-4138,4996-4999,5239-5376,5932-5935,6160-6171,6331-6332,6671-6672,7195-7199,7461-7486,7496-7503,7855-7861,8106-8120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a8531e16acbb45da40059123a7f95e912f148f5c",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_31f384226fbd1c": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "51492a6f-94b4-49a2-b31d-cc3ef72f5b2e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
