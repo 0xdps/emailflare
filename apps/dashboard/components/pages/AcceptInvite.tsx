@@ -2,13 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { getInvite, acceptInvite } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import AppLogo from "@/components/AppLogo";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AuthCentered, AuthHeading } from "@/components/app/auth/AuthLayout";
+import { FormError, PasswordField, SubmitButton, TextField } from "@/components/app/auth/fields";
 
 export default function AcceptInvite({ token }: { token: string }) {
 	const router = useRouter();
@@ -59,112 +56,84 @@ export default function AcceptInvite({ token }: { token: string }) {
 
 	if (notFound) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-background px-6">
-				<div className="text-center">
-					<p className="text-sm text-muted-foreground">
-						This invite link is invalid or has already been used.
-					</p>
-				</div>
-			</div>
+			<AuthCentered>
+				<AuthHeading
+					title="Invite unavailable"
+					description="This invite link is invalid or has already been used."
+				/>
+			</AuthCentered>
 		);
 	}
 
 	if (!inviteEmail) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-background">
-				<Loader2 size={20} className="animate-spin text-muted-foreground" />
-			</div>
+			<AuthCentered wide>
+				<div className="flex flex-col gap-4">
+					<Skeleton className="h-6 w-40" />
+					<Skeleton className="h-9 w-full" />
+					<Skeleton className="h-9 w-full" />
+					<Skeleton className="h-9 w-full" />
+				</div>
+			</AuthCentered>
 		);
 	}
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-background px-6">
-			<div className="w-full max-w-[400px]">
-				<div className="flex items-center gap-2.5 mb-8">
-					<AppLogo size={30} />
-					<span className="text-[15px] font-semibold text-foreground tracking-tight">EmailFlare</span>
-				</div>
-
-				<div className="mb-7">
-					<h2 className="text-xl font-semibold text-foreground tracking-tight">Accept invite</h2>
-					<p className="text-sm text-muted-foreground mt-1">
+		<AuthCentered wide>
+			<AuthHeading
+				title="Accept invite"
+				description={
+					<>
 						You were invited as <span className="font-medium text-foreground">{inviteEmail}</span>. Create
 						your account to continue.
-					</p>
-				</div>
+					</>
+				}
+			/>
 
-				<form onSubmit={handleSubmit} className="flex flex-col gap-4">
-					<div className="flex flex-col gap-1.5">
-						<Label htmlFor="name">Full name</Label>
-						<Input
-							id="name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							required
-							placeholder="Jane Smith"
-							autoFocus
-						/>
-					</div>
+			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+				<TextField
+					id="name"
+					label="Full name"
+					value={name}
+					onChange={(e) => setName(e.target.value)}
+					required
+					placeholder="Jane Smith"
+					autoFocus
+				/>
+				<TextField id="invite-email" label="Email" value={inviteEmail} disabled readOnly />
+				<PasswordField
+					id="password"
+					label="Password"
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					required
+					minLength={8}
+					placeholder="Min 8 characters"
+					autoComplete="new-password"
+					visible={showPw}
+					onVisibleChange={setShowPw}
+				/>
+				<TextField
+					id="confirm"
+					label="Confirm password"
+					type={showPw ? "text" : "password"}
+					value={confirm}
+					onChange={(e) => setConfirm(e.target.value)}
+					required
+					placeholder="Re-enter password"
+					autoComplete="new-password"
+				/>
 
-					<div className="flex flex-col gap-1.5">
-						<Label>Email</Label>
-						<Input value={inviteEmail} disabled className="opacity-60" />
-					</div>
+				<FormError>{error}</FormError>
 
-					<div className="flex flex-col gap-1.5">
-						<Label htmlFor="password">Password</Label>
-						<div className="relative">
-							<Input
-								id="password"
-								type={showPw ? "text" : "password"}
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
-								minLength={8}
-								className="pr-10"
-								placeholder="Min 8 characters"
-								autoComplete="new-password"
-							/>
-							<button
-								type="button"
-								onClick={() => setShowPw((v) => !v)}
-								className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-								tabIndex={-1}
-							>
-								{showPw ? <EyeOff size={14} /> : <Eye size={14} />}
-							</button>
-						</div>
-					</div>
-
-					<div className="flex flex-col gap-1.5">
-						<Label htmlFor="confirm">Confirm password</Label>
-						<Input
-							id="confirm"
-							type={showPw ? "text" : "password"}
-							value={confirm}
-							onChange={(e) => setConfirm(e.target.value)}
-							required
-							placeholder="Re-enter password"
-							autoComplete="new-password"
-						/>
-					</div>
-
-					{error && (
-						<Alert variant="destructive">
-							<AlertDescription>{error}</AlertDescription>
-						</Alert>
-					)}
-
-					<Button
-						type="submit"
-						disabled={loading || !name.trim() || !password || !confirm}
-						className="w-full"
-					>
-						{loading && <Loader2 size={14} className="animate-spin" data-icon="inline-start" />}
-						{loading ? "Creating account…" : "Create account"}
-					</Button>
-				</form>
-			</div>
-		</div>
+				<SubmitButton
+					loading={loading}
+					loadingLabel="Creating account…"
+					disabled={!name.trim() || !password || !confirm}
+				>
+					Create account
+				</SubmitButton>
+			</form>
+		</AuthCentered>
 	);
 }
