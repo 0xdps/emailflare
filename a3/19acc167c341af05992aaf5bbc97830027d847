@@ -1,0 +1,76 @@
+apps/dashboard/hooks/useInboxShortcuts.ts
+  s_31f384226fbd1c::t_253ee97102035f 1-74
+apps/dashboard/test/inbox-ui.test.ts
+  s_31f384226fbd1c::t_c5950d46c2f013 1-55
+apps/dashboard/app/inbox/page.tsx
+  s_31f384226fbd1c::t_5e08d1b2b90dfb 1,30-32
+apps/dashboard/components/OwnerAccessBanner.tsx
+  s_31f384226fbd1c::t_2396a0a4dcb169 15-16,19
+apps/dashboard/components/modules/inbox/InboxClient.tsx
+  s_31f384226fbd1c::t_1ccdc026b0f844 45-50,94-96,309,365-372,390-394,396-400
+  s_31f384226fbd1c::t_4e2809f68ba82b 3-6,8,12-18,21-24,27-32,34-35,37-38,51-66,68,70-74,77-78,80-85,89-90,92-93,98,100-101,103,105-109,112-115,117-122,126,129-137,140,142,144-145,147,149-152,154-160,163,165-190,192-194,196-213,215-237,239-253,255-256,259,265,273,276-277,288-289,292-307,310,312-318,320-342,344-364,373-380,383,386-389,395,401-408,410-413,421,424
+apps/dashboard/components/modules/inbox/HtmlEmailViewer.tsx
+  s_31f384226fbd1c::t_051d7fd322cbbc 3-7,16-17,37-45,47,65,69,71-77,81-92,95-96,99-100,104,106-115
+apps/dashboard/components/modules/inbox/ShortcutsDialog.tsx
+  s_31f384226fbd1c::t_1ccdc026b0f844 31-37,48-50
+  s_31f384226fbd1c::t_971f4da54b573e 1-30,38-47,51-73
+apps/dashboard/components/modules/inbox/AuthBadge.tsx
+  s_31f384226fbd1c::t_3ecdeace449054 1-5,14-38,43-60,67-70,74-81
+  s_31f384226fbd1c::t_1ccdc026b0f844 6-13,39-42,61-66,71-73
+apps/dashboard/hooks/useInboxThreads.ts
+  s_31f384226fbd1c::t_143cd31d0c8349 1-92
+apps/dashboard/components/modules/inbox/ThreadRow.tsx
+  s_31f384226fbd1c::t_1eb1b7f19f51be 126-143
+  s_31f384226fbd1c::t_1ccdc026b0f844 31-39,84-89,93-95,99-102,108-115
+  s_31f384226fbd1c::t_9cd342b9026744 63
+  s_31f384226fbd1c::t_3d35779893bca3 1-30,40-62,64-83,90-92,96-98,103-107,116-125,144-167
+apps/dashboard/components/modules/inbox/ThreadReader.tsx
+  s_31f384226fbd1c::t_1ccdc026b0f844 42-44,98-101,103,142-144,172-177
+  s_31f384226fbd1c::t_ccb64fb43fbae2 195,197,199
+  s_31f384226fbd1c::t_da4df992ecdfcb 87
+  s_31f384226fbd1c::t_55311976afa805 3-5,8-19,22,24-28,30-31,34-39,41,45-48,53,57-58,61,63-65,67-76,80-86,89-92,94-96,105-106,108-122,125-141,145-164,167-171,178-180,182-194,196,198,200-203
+  s_31f384226fbd1c::t_9e7a907ca39f3b 88
+apps/dashboard/components/modules/inbox/ComposeModal.tsx
+  s_31f384226fbd1c::t_feeb741df1e2c1 4-5,11-18,87-89,111-112,144-155,242
+  s_31f384226fbd1c::t_1ccdc026b0f844 119-120,122-124
+  s_31f384226fbd1c::t_ccb64fb43fbae2 217,219-220,223,226-227
+apps/dashboard/components/modules/inbox/InlineComposer.tsx
+  s_31f384226fbd1c::t_b7baf2ac42911f 3-5,7-16,18,20-28,33,36,55-60,65,73,75-76,79,81-84,99-100,107-109,117-120,122-138,140-146,148-150,152-154,157-164
+  s_31f384226fbd1c::t_1ccdc026b0f844 96-98,101-106,110-116
+apps/dashboard/lib/inbox/format.ts
+  s_31f384226fbd1c::t_03686523ef9f38 1-66
+apps/dashboard/components/modules/inbox/TestInboxFolderView.tsx
+  s_31f384226fbd1c::t_bbab577fd1073a 107,125,171,207,219,241,256,373,379,385
+  s_31f384226fbd1c::t_1b0cc4ecf0c1d9 19,21,91,102,109,111-112,114,118,128,130-131,136-137,139-140,144,149-153,157,159,169,173,180,182-183,188-194,196-197,201,221,226,246,268,367,397,407
+apps/dashboard/components/modules/inbox/FromSelect.tsx
+  s_31f384226fbd1c::t_eb5e22ed830475 1-14,19-33
+  s_31f384226fbd1c::t_1ccdc026b0f844 15-18
+apps/dashboard/components/modules/inbox/MessageCard.tsx
+  s_31f384226fbd1c::t_2f299e21c260af 1-5,7-49,51,53-54,56-58,63-69,73,77-81,88,95-113,115,118,120-122,124-139,144-156
+  s_31f384226fbd1c::t_1ccdc026b0f844 59-62,70-72,74-76,82-87,89-93,140-143
+  s_31f384226fbd1c::t_ccb64fb43fbae2 6,50,52,55,94,114,116-117,119,123
+apps/dashboard/components/modules/inbox/ThreadList.tsx
+  s_31f384226fbd1c::t_c51199dc264c6b 3-13,15,17-18,20,24-26,28-30,32-33,37-47,51,53,58-59,61-63,65-66,68,70-98,101-114,118-120,122-123,129-132,134-143,145-149,151,153-160,166-169,171-182,184,186-190,192-207,210
+  s_31f384226fbd1c::t_1ccdc026b0f844 124-128,161-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a319acc167c341af05992aaf5bbc97830027d847",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_31f384226fbd1c": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "51492a6f-94b4-49a2-b31d-cc3ef72f5b2e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
