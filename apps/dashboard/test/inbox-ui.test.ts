@@ -32,7 +32,7 @@ test("previewText drops quoted history and collapses whitespace", () => {
 	assert.equal(previewText("x".repeat(200), 10), `${"x".repeat(10)}…`);
 });
 
-test("inbox view links only light up for their own view", () => {
+test("inbox view links only light up for their own view, regardless of mailbox", () => {
 	const inbox = allNavItems().find((i) => i.title === "Inbox")!;
 	const starred = allNavItems().find((i) => i.title === "Starred")!;
 	const at = (path: string, query = "") => ({ pathname: path, params: new URLSearchParams(query) });
@@ -40,7 +40,9 @@ test("inbox view links only light up for their own view", () => {
 	assert.equal(isNavActive(inbox, at("/inbox")), true);
 	assert.equal(isNavActive(inbox, at("/inbox", "view=unread")), true);
 	assert.equal(isNavActive(inbox, at("/inbox", "view=starred")), false);
-	assert.equal(isNavActive(inbox, at("/inbox", "mailbox=a@b.c")), false);
+	assert.equal(isNavActive(inbox, at("/inbox", "mailbox=a@b.c")), true);
+	assert.equal(isNavActive(starred, at("/inbox", "view=starred&mailbox=a@b.c")), true);
+	assert.equal(isNavActive(inbox, at("/inbox", "folder=test")), false);
 	assert.equal(isNavActive(starred, at("/inbox", "view=starred")), true);
 });
 

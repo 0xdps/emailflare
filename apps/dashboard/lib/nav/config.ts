@@ -67,7 +67,8 @@ export const WORKSPACES: Record<Workspace, WorkspaceMeta> = {
 };
 
 const inboxView = (view: string | null) => (ctx: NavContext) => {
-	if (ctx.pathname !== "/inbox" || ctx.params.has("mailbox") || ctx.params.has("folder")) return false;
+	// The mailbox is a filter on top of a view, so it doesn't affect which view is active.
+	if (ctx.pathname !== "/inbox" || ctx.params.has("folder")) return false;
 	const current = ctx.params.get("view");
 	if (view === null) return current === null || current === "inbox" || current === "unread";
 	return current === view;

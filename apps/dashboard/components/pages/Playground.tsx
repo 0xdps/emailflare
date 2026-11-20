@@ -847,8 +847,8 @@ export default function PlaygroundPage() {
 					onValueChange={(v) => setRightTab(v as RightTab)}
 					className="flex flex-1 flex-col overflow-hidden bg-background"
 				>
-					<div className="shrink-0 border-b border-border bg-muted/20 px-4">
-						<TabsList variant="line" className="h-10 gap-2 p-0">
+					<div className="shrink-0 overflow-x-auto border-b border-border bg-muted/20 px-4">
+						<TabsList variant="line" className="h-10 w-max gap-1 p-0">
 							<TabsTrigger value="preview" className="h-10 rounded-none px-3 text-xs after:bg-primary">
 								<Eye className="size-3.5" />
 								<span>Live Preview</span>

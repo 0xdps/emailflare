@@ -32,8 +32,11 @@ export function useInboxShortcuts(handlers: InboxShortcutHandlers, enabled = tru
 		function onKeyDown(e: KeyboardEvent) {
 			if (e.metaKey || e.ctrlKey || e.altKey) return;
 			if (isTyping(e.target)) return;
-			// Leave open dialogs / menus alone.
+			// Leave open dialogs / menus alone (Escape may already have closed the popup by now,
+			// so also check where the event came from).
 			if (document.querySelector('[role="dialog"], [role="menu"]')) return;
+			if ((e.target as HTMLElement | null)?.closest?.('[role="dialog"], [role="menu"], [role="menuitemradio"]'))
+				return;
 
 			const h = ref.current;
 			const key = e.key;

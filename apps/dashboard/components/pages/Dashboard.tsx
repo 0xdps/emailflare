@@ -9,7 +9,9 @@ import { StatCard, TONE_STYLES, type Tone } from "@/components/app/StatCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,34 +66,12 @@ function shortDate(iso: string): string {
 
 // ─── Chart ────────────────────────────────────────────────────────────────────
 
-function smoothPath(pts: { x: number; y: number }[]): string {
-	if (!pts.length) return "";
-	let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
-	for (let i = 0; i < pts.length - 1; i++) {
-		const dx = (pts[i + 1].x - pts[i].x) * 0.45;
-		d += ` C ${(pts[i].x + dx).toFixed(2)} ${pts[i].y.toFixed(2)},${(pts[i + 1].x - dx).toFixed(2)} ${pts[i + 1].y.toFixed(2)},${pts[i + 1].x.toFixed(2)} ${pts[i + 1].y.toFixed(2)}`;
-	}
-	return d;
-}
+const chartConfig = {
+	sent: { label: "Sent", color: "var(--chart-1)" },
+	failed: { label: "Failed", color: "var(--destructive)" },
+} satisfies ChartConfig;
 
-interface TooltipState {
-	x: number;
-	y: number;
-	d: DailyBucket;
-}
-
-function AreaChart({ daily }: { daily: DailyBucket[] }) {
-	const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-	const svgRef = useRef<SVGSVGElement>(null);
-
-	const W = 1000,
-		H = 180;
-	const padX = 8,
-		padY = 20,
-		padBottom = 4;
-	const plotH = H - padY - padBottom;
-	const plotW = W - padX * 2;
-
+function VolumeChart({ daily }: { daily: DailyBucket[] }) {
 	if (!daily.length) {
 		return (
 			<Empty className="h-44">
@@ -107,156 +87,35 @@ function AreaChart({ daily }: { daily: DailyBucket[] }) {
 		);
 	}
 
-	const maxVal = Math.max(...daily.map((d) => Math.max(d.sent, d.failed)), 1);
-	const pts = daily.map((d, i) => ({
-		x: padX + (daily.length > 1 ? (i / (daily.length - 1)) * plotW : plotW / 2),
-		y: padY + (1 - d.sent / maxVal) * plotH,
-		failedY: padY + (1 - d.failed / maxVal) * plotH,
-		...d,
-	}));
-
-	const linePath = smoothPath(pts);
-	const failedPath = smoothPath(pts.map((point) => ({ x: point.x, y: point.failedY })));
-	const first = pts[0],
-		last = pts[pts.length - 1];
-	const areaPath = `${linePath} L ${last.x.toFixed(2)} ${(H - padBottom).toFixed(2)} L ${first.x.toFixed(2)} ${(H - padBottom).toFixed(2)} Z`;
-
-	const yGrid = [0, 0.25, 0.5, 0.75, 1];
-
-	function handleMouseMove(e: React.MouseEvent<SVGSVGElement>) {
-		if (!svgRef.current) return;
-		const rect = svgRef.current.getBoundingClientRect();
-		const rawX = ((e.clientX - rect.left) / rect.width) * W;
-		const idx = Math.min(daily.length - 1, Math.max(0, Math.round(((rawX - padX) / plotW) * (daily.length - 1))));
-		setTooltip({ x: pts[idx].x, y: pts[idx].y, d: daily[idx] });
-	}
-
 	return (
-		<div className="relative select-none">
-			<svg
-				ref={svgRef}
-				width="100%"
-				viewBox={`0 0 ${W} ${H}`}
-				preserveAspectRatio="none"
-				style={{ height: 180, overflow: "visible" }}
-				onMouseMove={handleMouseMove}
-				onMouseLeave={() => setTooltip(null)}
-				className="cursor-crosshair"
-			>
+		<ChartContainer config={chartConfig} className="h-52 w-full">
+			<AreaChart data={daily} margin={{ left: 4, right: 4, top: 8 }}>
 				<defs>
-					<linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" style={{ stopColor: "var(--chart-1)" }} stopOpacity="0.12" />
-						<stop offset="85%" style={{ stopColor: "var(--chart-1)" }} stopOpacity="0" />
-					</linearGradient>
-					<linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-						<stop offset="0%" style={{ stopColor: "var(--chart-1)" }} stopOpacity="0.6" />
-						<stop offset="100%" style={{ stopColor: "var(--chart-1)" }} stopOpacity="1" />
+					<linearGradient id="fillSent" x1="0" y1="0" x2="0" y2="1">
+						<stop offset="5%" stopColor="var(--color-sent)" stopOpacity={0.3} />
+						<stop offset="95%" stopColor="var(--color-sent)" stopOpacity={0} />
 					</linearGradient>
 				</defs>
-
-				{yGrid.map((t) => {
-					const gy = padY + (1 - t) * plotH;
-					return (
-						<line
-							key={t}
-							x1={padX}
-							x2={W - padX}
-							y1={gy}
-							y2={gy}
-							stroke="currentColor"
-							strokeOpacity="0.06"
-							strokeWidth="1"
-							className="text-foreground"
-						/>
-					);
-				})}
-
-				<path d={areaPath} fill="url(#areaFill)" />
-				<path
-					d={failedPath}
-					stroke="var(--destructive)"
-					strokeWidth="1.5"
-					strokeOpacity="0.85"
-					fill="none"
-					strokeLinecap="round"
-					strokeLinejoin="round"
+				<CartesianGrid vertical={false} />
+				<XAxis
+					dataKey="date"
+					tickLine={false}
+					axisLine={false}
+					tickMargin={8}
+					minTickGap={32}
+					tickFormatter={shortDate}
 				/>
-				<path
-					d={linePath}
-					stroke="url(#lineGrad)"
-					strokeWidth="2"
-					fill="none"
-					strokeLinecap="round"
-					strokeLinejoin="round"
+				<YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} tickFormatter={fmt} />
+				<ChartTooltip
+					cursor={false}
+					content={
+						<ChartTooltipContent labelFormatter={(value) => shortDate(String(value))} indicator="line" />
+					}
 				/>
-
-				{tooltip && (
-					<>
-						<line
-							x1={tooltip.x}
-							x2={tooltip.x}
-							y1={padY}
-							y2={H - padBottom}
-							stroke="currentColor"
-							strokeOpacity="0.1"
-							strokeWidth="1"
-							strokeDasharray="4 3"
-							className="text-foreground"
-						/>
-						<circle
-							cx={tooltip.x}
-							cy={tooltip.y}
-							r={4}
-							fill="var(--chart-1)"
-							stroke="var(--card)"
-							strokeWidth="2"
-						/>
-					</>
-				)}
-			</svg>
-
-			{tooltip &&
-				(() => {
-					const pct = tooltip.x / W;
-					return (
-						<div
-							className="pointer-events-none absolute -top-2 z-10"
-							style={{
-								left: `${pct * 100}%`,
-								transform: pct > 0.7 ? "translateX(-100%)" : "translateX(-50%)",
-							}}
-						>
-							<div className="bg-popover border border-border rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-md">
-								<p className="text-muted-foreground mb-1">{shortDate(tooltip.d.date)}</p>
-								<p className="text-foreground font-medium">{tooltip.d.sent.toLocaleString()} sent</p>
-								{tooltip.d.failed > 0 && <p className="text-destructive">{tooltip.d.failed} failed</p>}
-							</div>
-						</div>
-					);
-				})()}
-
-			{daily.length > 1 && (
-				<div className="flex justify-between mt-2 px-1">
-					{daily.length <= 8
-						? daily.map((d, i) => (
-								<span key={i} className="text-2xs text-muted-foreground tabular-nums">
-									{shortDate(d.date)}
-								</span>
-							))
-						: [
-								0,
-								Math.floor(daily.length / 4),
-								Math.floor(daily.length / 2),
-								Math.floor((daily.length * 3) / 4),
-								daily.length - 1,
-							].map((i) => (
-								<span key={i} className="text-2xs text-muted-foreground tabular-nums">
-									{shortDate(daily[i].date)}
-								</span>
-							))}
-				</div>
-			)}
-		</div>
+				<Area dataKey="sent" type="monotone" fill="url(#fillSent)" stroke="var(--color-sent)" strokeWidth={2} />
+				<Area dataKey="failed" type="monotone" fill="none" stroke="var(--color-failed)" strokeWidth={1.5} />
+			</AreaChart>
+		</ChartContainer>
 	);
 }
 
@@ -514,7 +373,7 @@ export default function Dashboard({ initialStats }: DashboardProps = {}) {
 							</span>
 						</div>
 					</div>
-					<AreaChart daily={stats.daily} />
+					<VolumeChart daily={stats.daily} />
 				</CardContent>
 			</Card>
 		</PageShell>

@@ -199,7 +199,7 @@ export default function ThreadReader({
 							className="h-11 w-full justify-start gap-2 rounded-xl bg-background px-4 font-normal text-muted-foreground shadow-xs hover:text-foreground"
 						>
 							<CornerUpLeft className="size-4" />
-							<span className="flex-1">Reply to {person.name || person.email}…</span>
+							<span className="flex-1 text-left">Reply to {person.name || person.email}…</span>
 							<Kbd>R</Kbd>
 						</Button>
 					)}

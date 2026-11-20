@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, ChevronsUpDown, Github, Check, PenLine, Inbox as InboxIcon } from "lucide-react";
 import AppLogo from "@/components/AppLogo";
 import {
@@ -11,6 +11,8 @@ import {
 	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Kbd } from "@/components/ui/kbd";
@@ -98,6 +100,90 @@ function NavGroups({ groups, ctx }: { groups: NavGroup[]; ctx: NavContext }) {
 	);
 }
 
+function withMailbox(href: string, mailbox: string | null) {
+	if (!mailbox) return href;
+	const [path, query = ""] = href.split("?");
+	const params = new URLSearchParams(query);
+	params.set("mailbox", mailbox);
+	return `${path}?${params.toString()}`;
+}
+
+/** Choose which mailbox the inbox views are filtered to; the active view is preserved. */
+function MailboxPicker({
+	mailboxes,
+	counts,
+	ctx,
+}: Pick<AppSidebarProps, "mailboxes" | "counts"> & { ctx: NavContext }) {
+	const router = useRouter();
+	const { setOpenMobile } = useSidebar();
+	const selected = ctx.params.get("mailbox") ?? "";
+	const current = mailboxes.find((m) => m.email === selected);
+	const label = current ? current.display_name || current.email : "All mailboxes";
+
+	function pick(email: string) {
+		const params = new URLSearchParams(ctx.params.toString());
+		params.delete("folder");
+		if (email) params.set("mailbox", email);
+		else params.delete("mailbox");
+		const query = params.toString();
+		setOpenMobile(false);
+		router.push(query ? `/inbox?${query}` : "/inbox");
+	}
+
+	if (mailboxes.length === 0) return null;
+
+	return (
+		<SidebarMenu>
+			<SidebarMenuItem>
+				<DropdownMenu>
+					<DropdownMenuTrigger
+						render={
+							<SidebarMenuButton
+								tooltip={label}
+								className="border border-sidebar-border bg-background/60 shadow-xs data-open:bg-sidebar-accent"
+							/>
+						}
+					>
+						<InboxIcon />
+						<span className="flex-1 truncate">{label}</span>
+						<ChevronsUpDown className="ml-auto text-muted-foreground group-data-[collapsible=icon]:hidden" />
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="start" className="w-60">
+						<DropdownMenuGroup>
+							<DropdownMenuLabel>Mailbox</DropdownMenuLabel>
+							<DropdownMenuRadioGroup value={selected} onValueChange={(v) => pick(String(v))}>
+								<DropdownMenuRadioItem value="">
+									<span className="flex-1">All mailboxes</span>
+									{counts.unread > 0 && (
+										<span className="text-xs text-primary tabular-nums">{counts.unread}</span>
+									)}
+								</DropdownMenuRadioItem>
+								{mailboxes.map((mailbox) => (
+									<DropdownMenuRadioItem key={mailbox.id} value={mailbox.email}>
+										<span className="grid flex-1 leading-tight">
+											<span className="truncate">{mailbox.display_name || mailbox.email}</span>
+											{mailbox.display_name && (
+												<span className="truncate text-2xs text-muted-foreground">
+													{mailbox.email}
+												</span>
+											)}
+										</span>
+										{(counts.perInbox[mailbox.email] ?? 0) > 0 && (
+											<span className="text-xs text-primary tabular-nums">
+												{counts.perInbox[mailbox.email]}
+											</span>
+										)}
+									</DropdownMenuRadioItem>
+								))}
+							</DropdownMenuRadioGroup>
+						</DropdownMenuGroup>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</SidebarMenuItem>
+		</SidebarMenu>
+	);
+}
+
 function InboxNav({
 	ctx,
 	mailboxes,
@@ -106,6 +192,7 @@ function InboxNav({
 	canAccessTester,
 }: Pick<AppSidebarProps, "mailboxes" | "counts" | "canAccessInbox" | "canAccessTester"> & { ctx: NavContext }) {
 	const { setOpenMobile } = useSidebar();
+	const mailbox = ctx.params.get("mailbox");
 	const viewBadge: Record<string, number> = { Inbox: counts.unread, Starred: counts.starred };
 
 	return (
@@ -117,14 +204,14 @@ function InboxNav({
 							<SidebarMenuItem>
 								<SidebarMenuButton
 									tooltip="Compose"
-									className="h-9 justify-center bg-primary font-medium text-primary-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground group-data-[collapsible=icon]:justify-center"
+									className="h-9 justify-center group-data-[collapsible=icon]:size-8! bg-primary font-medium text-primary-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground group-data-[collapsible=icon]:justify-center"
 									onClick={() => {
 										setOpenMobile(false);
 										window.dispatchEvent(new CustomEvent("emailflare:compose"));
 									}}
 								>
 									<PenLine />
-									<span>Compose</span>
+									<span className="group-data-[collapsible=icon]:hidden">Compose</span>
 									<Kbd className="ml-auto bg-primary-foreground/15 text-primary-foreground group-data-[collapsible=icon]:hidden">
 										C
 									</Kbd>
@@ -137,33 +224,20 @@ function InboxNav({
 						<SidebarGroupContent>
 							<SidebarMenu>
 								{INBOX_VIEWS.map((item) => (
-									<NavLink key={item.href} item={item} ctx={ctx} badge={viewBadge[item.title]} />
+									<NavLink
+										key={item.href}
+										item={{ ...item, href: withMailbox(item.href, mailbox) }}
+										ctx={ctx}
+										badge={viewBadge[item.title]}
+									/>
 								))}
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
 
-					{mailboxes.length > 0 && (
-						<SidebarGroup>
-							<SidebarGroupLabel>Mailboxes</SidebarGroupLabel>
-							<SidebarGroupContent>
-								<SidebarMenu>
-									{mailboxes.map((mailbox) => (
-										<NavLink
-											key={mailbox.id}
-											ctx={ctx}
-											badge={counts.perInbox[mailbox.email]}
-											item={{
-												title: mailbox.display_name || mailbox.email,
-												href: `/inbox?mailbox=${encodeURIComponent(mailbox.email)}`,
-												icon: InboxIcon,
-											}}
-										/>
-									))}
-								</SidebarMenu>
-							</SidebarGroupContent>
-						</SidebarGroup>
-					)}
+					<SidebarGroup className="py-0">
+						<MailboxPicker mailboxes={mailboxes} counts={counts} ctx={ctx} />
+					</SidebarGroup>
 
 					<NavGroups groups={[{ label: "Workflows", items: INBOX_WORKFLOWS }]} ctx={ctx} />
 				</>
@@ -183,17 +257,17 @@ function WorkspaceSwitcher({ workspace, available }: Pick<AppSidebarProps, "work
 						render={
 							<SidebarMenuButton
 								size="lg"
-								className="data-open:bg-sidebar-accent"
+								className="data-open:bg-sidebar-accent group-data-[collapsible=icon]:justify-center"
 								tooltip="Switch workspace"
 							/>
 						}
 					>
 						<AppLogo size={28} />
-						<div className="grid flex-1 text-left leading-tight">
+						<div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
 							<span className="truncate text-sm font-semibold tracking-tight">EmailFlare</span>
 							<span className="truncate text-2xs text-muted-foreground">{current.label}</span>
 						</div>
-						<ChevronsUpDown className="ml-auto text-muted-foreground" />
+						<ChevronsUpDown className="ml-auto text-muted-foreground group-data-[collapsible=icon]:hidden" />
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="w-60">
 						<DropdownMenuGroup>

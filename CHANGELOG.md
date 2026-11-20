@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Developer pages migrated:** Overview, Logs, Templates, Playground, Audiences, Suppressions and Deliverability use shared `PageShell`/`PageHeader`/`StatCard` components, semantic status badges and shadcn tables, inputs and tabs. The unused `TestMailbox` page was removed.
 - **Admin pages migrated:** Domains, Mailboxes, Team, API keys, Webhooks, Audit log, Security, Contacts and Sequences now use the same primitives and tokens. `pnpm lint:ui` has no grandfathered files left and also rejects arbitrary pixel font sizes.
+- **Overview chart:** the hand-written SVG chart is now a shadcn `chart` (Recharts) area chart with theme-aware colours and tooltips.
+- **Sidebar:** the inbox mailbox list is now a dropdown (with per-mailbox unread counts) that filters whichever view is open; the collapsed rail centres the logo and shows Compose as an icon.
 - `Button` now sets `nativeButton={false}` when given a custom `render` (e.g. a `Link`).
 
 ### Inbox
