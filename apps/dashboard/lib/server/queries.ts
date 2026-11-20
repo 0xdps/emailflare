@@ -3,7 +3,14 @@ export { getServerSession } from "@/app/actions/auth";
 import { getServerSession } from "@/app/actions/auth";
 import { makeDb, D1Db } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
-import { dailySendLimit, enrich } from "@/lib/core";
+import {
+	dailySendLimit,
+	enrich,
+	mapThreadRow,
+	threadListSql,
+	threadViewCondition,
+	type ThreadListRow,
+} from "@/lib/core";
 import { getCloudflareTokenStatus as fetchCfStatus, buildDomainCatalog } from "@/worker/inbox/services/cloudflare";
 import { inboxWorkerName, type Env } from "@/worker/inbox/env";
 
@@ -567,13 +574,15 @@ export interface ThreadHeader {
 	unread_count: number;
 	total_count: number;
 	latest_snippet?: string | null;
+	is_starred?: boolean;
+	is_archived?: boolean;
 }
 
 export async function getThreadsList(search?: string, unread?: boolean, inbox?: string): Promise<ThreadHeader[]> {
 	const workerEnv = env as unknown as Env;
 	if (!workerEnv?.DB) return [];
 
-	const conditions: string[] = [];
+	const conditions: string[] = [threadViewCondition("inbox")];
 	const params: unknown[] = [];
 	let assignedEmails: string[] = [];
 
@@ -612,81 +621,11 @@ export async function getThreadsList(search?: string, unread?: boolean, inbox?: 
 	const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 	const havingClause = unread ? "HAVING unread_count > 0" : "";
 
-	const sql = `
-		WITH all_messages AS (
-			SELECT
-				ie.id,
-				ie.thread_id,
-				ie.inbox_address,
-				COALESCE(p.email, ie.inbox_address) AS counterparty_email,
-				p.name AS counterparty_name,
-				p.id AS person_id,
-				ie.subject,
-				ie.body_text,
-				ie.received_at AS timestamp,
-				CASE WHEN ie.is_read = 0 THEN 1 ELSE 0 END AS is_unread
-			FROM inbox_emails ie
-			LEFT JOIN people p ON p.id = ie.person_id
-
-			UNION ALL
-
-			SELECT
-				se.id,
-				se.thread_id,
-				se.from_address AS inbox_address,
-				se.to_address AS counterparty_email,
-				p.name AS counterparty_name,
-				p.id AS person_id,
-				se.subject,
-				se.body_text,
-				se.sent_at AS timestamp,
-				0 AS is_unread
-			FROM sent_inbox_emails se
-			LEFT JOIN people p ON p.id = se.person_id
-		)
-		SELECT
-			m.thread_id AS id,
-			m.inbox_address,
-			m.counterparty_email,
-			m.counterparty_name,
-			m.person_id,
-			COALESCE(
-				(SELECT subject FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.subject IS NOT NULL AND m2.subject != '' ORDER BY timestamp DESC LIMIT 1),
-				'(No subject)'
-			) AS subject,
-			(SELECT body_text FROM all_messages m2 WHERE m2.thread_id = m.thread_id AND m2.body_text IS NOT NULL ORDER BY timestamp DESC LIMIT 1) AS latest_snippet,
-			MAX(m.timestamp) AS last_message_at,
-			SUM(m.is_unread) AS unread_count,
-			COUNT(m.id) AS total_count
-		FROM all_messages m
-		${whereClause}
-		GROUP BY m.thread_id, m.inbox_address, m.counterparty_email
-		${havingClause}
-		ORDER BY last_message_at DESC
-		LIMIT 50
-	`;
-
-	const rows = await workerEnv.DB.prepare(sql)
-		.bind(...params)
+	const rows = await workerEnv.DB.prepare(threadListSql({ where: whereClause, having: havingClause }))
+		.bind(...params, 50, 0)
 		.all();
 
-	return (rows.results ?? []).map((r: any) => ({
-		id: r.id,
-		thread_id: r.id,
-		subject: r.subject || "(No subject)",
-		latest_subject: r.subject || "(No subject)",
-		email: r.counterparty_email,
-		counterparty_email: r.counterparty_email,
-		name: r.counterparty_name,
-		counterparty_name: r.counterparty_name,
-		person_id: r.person_id,
-		inbox_address: r.inbox_address,
-		last_message_at: r.last_message_at,
-		last_email_at: r.last_message_at,
-		unread_count: Number(r.unread_count || 0),
-		total_count: Number(r.total_count || 0),
-		latest_snippet: r.latest_snippet || null,
-	}));
+	return (rows.results ?? []).map((r) => mapThreadRow(r as unknown as ThreadListRow));
 }
 
 export async function getListsList() {

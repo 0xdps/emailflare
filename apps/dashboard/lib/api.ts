@@ -206,21 +206,42 @@ export interface ThreadSummary {
 	last_message_at: string;
 	unread_count: number;
 	total_count: number;
+	is_starred: boolean;
+	is_archived: boolean;
+}
+
+export type ThreadView = "inbox" | "unread" | "starred" | "archived";
+
+export interface ThreadCounts {
+	unread: number;
+	starred: number;
+	perInbox: Record<string, number>;
 }
 
 export async function getThreads(params?: {
 	inbox?: string;
 	search?: string;
-	unread?: boolean;
+	view?: ThreadView;
 	page?: number;
-}): Promise<{ data: ThreadSummary[]; total: number }> {
-	const { data } = await api.get("/api/inbox/threads", {
-		params: {
-			...params,
-			unread: params?.unread ? "1" : undefined,
-		},
-	});
+}): Promise<{ data: ThreadSummary[]; total: number; page: number; pages: number }> {
+	const { data } = await api.get("/api/inbox/threads", { params });
 	return data;
+}
+
+export async function getThreadCounts(): Promise<ThreadCounts> {
+	const { data } = await api.get<ThreadCounts>("/api/inbox/threads/counts");
+	return data;
+}
+
+export async function markThreadUnread(threadId: string): Promise<void> {
+	await api.post(`/api/inbox/threads/${threadId}/mark-unread`);
+}
+
+export async function setThreadState(
+	threadId: string,
+	state: { starred?: boolean; archived?: boolean },
+): Promise<void> {
+	await api.patch(`/api/inbox/threads/${threadId}/state`, state);
 }
 
 export async function getThreadDetails(threadId: string): Promise<Thread> {
@@ -325,14 +346,14 @@ export async function cancelEnrollment(enrollmentId: string): Promise<void> {
 // ── Inbox Templates ───────────────────────────────────────────────────────────
 
 export async function getInboxTemplates(): Promise<InboxTemplate[]> {
-	const { data } = await api.get<InboxTemplate[]>("/api/inbox/inbox-templates");
+	const { data } = await api.get<InboxTemplate[]>("/api/inbox/templates");
 	return data;
 }
 
 export async function createInboxTemplate(
 	d: Pick<InboxTemplate, "slug" | "subject" | "body_html">,
 ): Promise<InboxTemplate> {
-	const { data } = await api.post<InboxTemplate>("/api/inbox/inbox-templates", d);
+	const { data } = await api.post<InboxTemplate>("/api/inbox/templates", d);
 	return data;
 }
 
@@ -340,12 +361,12 @@ export async function updateInboxTemplate(
 	id: string,
 	d: Partial<Pick<InboxTemplate, "slug" | "subject" | "body_html">>,
 ): Promise<InboxTemplate> {
-	const { data } = await api.put<InboxTemplate>(`/api/inbox/inbox-templates/${id}`, d);
+	const { data } = await api.put<InboxTemplate>(`/api/inbox/templates/${id}`, d);
 	return data;
 }
 
 export async function deleteInboxTemplate(id: string): Promise<void> {
-	await api.delete(`/api/inbox/inbox-templates/${id}`);
+	await api.delete(`/api/inbox/templates/${id}`);
 }
 
 // ── Test Emails (Sandbox) ─────────────────────────────────────────────────────

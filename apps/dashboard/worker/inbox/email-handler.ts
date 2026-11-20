@@ -126,6 +126,12 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
 		)
 		.run();
 
+	await env.DB.prepare(
+		"UPDATE thread_state SET is_archived = 0, updated_at = ? WHERE thread_id = ? AND is_archived = 1",
+	)
+		.bind(now, threadId)
+		.run();
+
 	// ── Store attachments in R2 ─────────────────────────────────────────────────
 	if (email.attachments?.length) {
 		for (const att of email.attachments) {

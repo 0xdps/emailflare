@@ -205,7 +205,7 @@ export const sequenceSchema = z.object({
 
 export type SequenceInput = z.infer<typeof sequenceSchema>;
 
-/** POST /api/inbox/inbox-templates — create or update a reusable reply template. */
+/** POST /api/inbox/templates — create or update a reusable reply template. */
 export const inboxTemplateSchema = z.object({
 	slug: z
 		.string()
