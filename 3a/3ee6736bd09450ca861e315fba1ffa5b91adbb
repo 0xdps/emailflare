@@ -1,0 +1,44 @@
+apps/dashboard/components/NotificationBell.tsx
+  s_31f384226fbd1c::t_1ccdc026b0f844 19-20,23-25,50-52
+  s_31f384226fbd1c::t_659ea631a2f19e 6-7,14,18,22,26-36,38-49,53-60
+apps/dashboard/lib/nav/config.ts
+  s_31f384226fbd1c::t_7593851b9146b9 1-2,4-16,18-43,46-85,88-95,97-244,250-258
+  s_31f384226fbd1c::t_14f97525bfb52f 44-45,96
+  s_31f384226fbd1c::t_1ccdc026b0f844 245-249
+  s_31f384226fbd1c::t_1ca0876a565b9e 3,17,86-87
+apps/dashboard/components/CommandPalette.tsx
+  s_31f384226fbd1c::t_64fd1d990c8593 3,5-6,8-16,18,27,32-34,37,39-41,43,45,49-73,77-103
+  s_31f384226fbd1c::t_1ccdc026b0f844 74-76
+  s_31f384226fbd1c::t_14f97525bfb52f 30,35-36
+apps/dashboard/components/app/AppSidebar.tsx
+  s_31f384226fbd1c::t_1ccdc026b0f844 8-15,184-188,199-216,262-268
+  s_31f384226fbd1c::t_57c405353b3545 1-7,16-183,189-198,217-261,269-279
+apps/dashboard/components/Layout.tsx
+  s_31f384226fbd1c::t_3b314e5b58ba37 3-4,8-11,13-14,16,18-28,42-50,59,63,65,67,70-71,81,84,98,100,106,110,113-135,138
+apps/dashboard/components/app/AppHeader.tsx
+  s_31f384226fbd1c::t_f088b1fe7982ed 1-48,55-204
+  s_31f384226fbd1c::t_1ccdc026b0f844 49-54
+apps/dashboard/hooks/useThreadCounts.ts
+  s_31f384226fbd1c::t_b73900b997013c 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3a3ee6736bd09450ca861e315fba1ffa5b91adbb",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_31f384226fbd1c": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "51492a6f-94b4-49a2-b31d-cc3ef72f5b2e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
