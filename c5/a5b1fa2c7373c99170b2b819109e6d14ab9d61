@@ -1,0 +1,40 @@
+apps/dashboard/components/app/auth/AuthLayout.tsx
+  s_31f384226fbd1c::t_345cd394394612 1-90
+apps/dashboard/components/pages/ResetPassword.tsx
+  s_31f384226fbd1c::t_8641fc7039b6bc 7-8,18,47-85
+apps/dashboard/components/pages/AcceptInvite.tsx
+  s_31f384226fbd1c::t_e06c4b4b499b0b 6-8,59-64,70-77,82-86,89-91,93-125,127,129-137
+apps/dashboard/components/pages/Setup.tsx
+  s_31f384226fbd1c::t_342cac211f08ae 5-6,44-50,52-93,95,97-105
+apps/dashboard/components/app/auth/fields.tsx
+  s_31f384226fbd1c::t_cd5794548ef8a9 13-21
+  s_31f384226fbd1c::t_0e6dee2d97abd6 1-12,22-90
+apps/dashboard/components/pages/ForgotPassword.tsx
+  s_31f384226fbd1c::t_c8e0d8bdc83376 6-8,31-62
+apps/dashboard/components/pages/Login.tsx
+  s_31f384226fbd1c::t_963a680c3d1edd 6-7,41-53,55-85,87,89-91,93-99,101-102
+apps/dashboard/components/pages/Readiness.tsx
+  s_31f384226fbd1c::t_111bde535774dc 5,9-15,86,88-90,97,110-111,177,239-243
+  s_31f384226fbd1c::t_cd5794548ef8a9 118-130,132-160,163-176,179,181-200,202-210,212-236
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c5a5b1fa2c7373c99170b2b819109e6d14ab9d61",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_31f384226fbd1c": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "51492a6f-94b4-49a2-b31d-cc3ef72f5b2e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
