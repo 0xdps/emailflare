@@ -25,6 +25,14 @@ pre-commit:
                 - merge
                 - rebase
 
+        # Design-system ratchet: no new hard-coded colours or raw form controls
+        ui-tokens:
+            glob: "apps/dashboard/{app,components}/**/*.tsx"
+            run: pnpm lint:ui
+            skip:
+                - merge
+                - rebase
+
         # Prevent accidental commit of secrets
         secrets:
             glob: "*.{ts,tsx,js,jsx,json,yaml,yml,toml,env,sh}"

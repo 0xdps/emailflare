@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { UserProvider } from "@/lib/UserContext";
+import ThemeProvider from "@/components/app/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,9 +15,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<body>
-				<UserProvider>{children}</UserProvider>
+				<ThemeProvider>
+					<TooltipProvider delay={300}>
+						<UserProvider>{children}</UserProvider>
+					</TooltipProvider>
+					<Toaster position="bottom-right" />
+				</ThemeProvider>
 			</body>
 		</html>
 	);
