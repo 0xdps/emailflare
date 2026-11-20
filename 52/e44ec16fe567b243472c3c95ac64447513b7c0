@@ -1,0 +1,46 @@
+justfile
+  s_62d485c0877b12::t_285ece14f4df7a 40,107
+  s_62d485c0877b12::t_18156c363140b9 46
+apps/dashboard/.gitignore
+  s_62d485c0877b12::t_14d73a3cde5b9d 11
+apps/dashboard/scripts/merge-wrangler-config.mjs
+  s_62d485c0877b12::t_e618364a6bd7d6 1-125
+apps/dashboard/package.json
+  s_62d485c0877b12::t_74e30117cb6ec0 47-50,52-53,55-57
+apps/dashboard/wrangler.production.example.jsonc
+  s_62d485c0877b12::t_26e5791ae333eb 1-56
+apps/dashboard/vite.config.ts
+  s_62d485c0877b12::t_b3438c5963ffde 9
+docs/RECIPES.md
+  s_62d485c0877b12::t_9e41384bbb401b 70,103
+apps/dashboard/wrangler.local.example.jsonc
+  s_62d485c0877b12::t_49924c49b6d4e3 2-3
+.github/workflows/deploy-workers.yml
+  s_62d485c0877b12::t_028310e3a15646 39-49
+docs/CLOUDFLARE.md
+  s_62d485c0877b12::t_d3ca1e3d566a81 7,15-20,58-59,61-62,64-66
+  s_62d485c0877b12::t_6c70389b97d4e5 82-83
+.gitignore
+  s_62d485c0877b12::t_15b2a1f7e8c8b8 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "52e44ec16fe567b243472c3c95ac64447513b7c0",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_62d485c0877b12": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "0b393cc4-956d-4b5d-9f57-07a53b43d03b",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
