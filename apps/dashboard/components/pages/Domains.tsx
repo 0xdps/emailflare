@@ -9,14 +9,11 @@ import {
 	Clock,
 	ExternalLink,
 	Globe,
-	X,
 	ShieldCheck,
 	ShieldOff,
-	Loader2,
 	Copy,
-	Check,
-	AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
 import { createDomainAction, verifyDomainAction, deleteDomainAction } from "@/app/actions/domains";
 import { Button } from "@/components/ui/button";
@@ -24,7 +21,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
 import {
 	Dialog,
 	DialogContent,
@@ -33,7 +34,6 @@ import {
 	DialogDescription,
 	DialogFooter,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 
 export interface Domain {
 	id: string;
@@ -88,7 +88,6 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		records: DnsRecord[];
 		isManual?: boolean;
 	} | null>(null);
-	const [copiedKey, setCopiedKey] = useState<string | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
 	async function load() {
@@ -168,14 +167,15 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		load();
 	}
 
-	function handleCopy(text: string, key: string) {
-		navigator.clipboard.writeText(text);
-		setCopiedKey(key);
-		setTimeout(() => setCopiedKey(null), 2000);
+	function handleCopy(text: string, label: string) {
+		navigator.clipboard.writeText(text).then(
+			() => toast.success(`${label} copied`),
+			() => toast.error("Could not copy to clipboard"),
+		);
 	}
 
 	return (
-		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+		<PageShell>
 			{/* Delete Confirm Dialog */}
 			<Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
 				<DialogContent>
@@ -200,14 +200,14 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			<Dialog open={!!sendingChoice} onOpenChange={(open) => !open && setSendingChoice(null)}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle className="text-base font-semibold">Choose the sending name</DialogTitle>
-						<DialogDescription className="text-xs">
+						<DialogTitle>Choose the sending name</DialogTitle>
+						<DialogDescription>
 							{sendingChoice?.zoneName} has no Email Sending subdomain yet. Use the root, or a subdomain
 							such as mail.
 						</DialogDescription>
 					</DialogHeader>
 					{formError && (
-						<Alert variant="destructive" className="py-2 text-xs">
+						<Alert variant="destructive">
 							<AlertDescription>{formError}</AlertDescription>
 						</Alert>
 					)}
@@ -218,8 +218,9 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 							if (sendingChoice) void enable(sendingName, sendingChoice.zoneName);
 						}}
 					>
-						<Label className="text-xs">Sending domain</Label>
+						<Label htmlFor="sending-name">Sending domain</Label>
 						<Input
+							id="sending-name"
 							value={sendingName}
 							onChange={(e) => setSendingName(e.target.value.toLowerCase().trim())}
 							className="font-mono text-xs"
@@ -237,25 +238,17 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 				</DialogContent>
 			</Dialog>
 
-			{/* Page Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<div className="flex items-center gap-2 mb-1">
-						<Globe size={14} className="text-orange-500" />
-						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-							DNS & Delivery
-						</span>
-					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Domains</h1>
-					<p className="text-xs text-muted-foreground mt-0.5">
-						Turn on a Cloudflare zone. Sending and receiving are set up separately.
-					</p>
-				</div>
-				<Button variant="outline" onClick={() => setManual((open) => !open)} className="gap-1.5 text-xs h-8.5">
-					<Plus size={14} />
-					<span>Domain not listed?</span>
-				</Button>
-			</div>
+			<PageHeader
+				eyebrow="DNS & Delivery"
+				title="Domains"
+				description="Turn on a Cloudflare zone. Sending and receiving are set up separately."
+				actions={
+					<Button variant="outline" onClick={() => setManual((open) => !open)}>
+						<Plus />
+						<span>Domain not listed?</span>
+					</Button>
+				}
+			/>
 
 			{catalogNote && (
 				<Alert variant="destructive">
@@ -263,19 +256,19 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 				</Alert>
 			)}
 
-			<div className="rounded-xl border border-border bg-card overflow-hidden">
-				<div className="px-5 py-3.5 border-b border-border bg-muted/20">
-					<span className="text-xs font-semibold">Cloudflare zones</span>
+			<Card className="gap-0 overflow-hidden py-0">
+				<div className="border-b border-border bg-muted/20 px-5 py-3.5">
+					<span className="text-sm font-semibold">Cloudflare zones</span>
 				</div>
 				{catalog.length === 0 ? (
 					<p className="p-5 text-xs text-muted-foreground">No active zones were returned for this token.</p>
 				) : (
 					<div className="divide-y divide-border">
 						{catalog.map((zone) => (
-							<div key={zone.zoneName} className="p-4 flex items-center justify-between gap-3">
+							<div key={zone.zoneName} className="flex items-center justify-between gap-3 p-4">
 								<div>
-									<p className="text-sm font-mono font-semibold">{zone.zoneName}</p>
-									<p className="text-[11px] text-muted-foreground">
+									<p className="font-mono text-sm font-semibold">{zone.zoneName}</p>
+									<p className="text-2xs text-muted-foreground">
 										{zone.sending === "ready"
 											? "Ready to send"
 											: zone.sending === "pending"
@@ -298,7 +291,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 										disabled={submitting === zone.zoneName}
 										onClick={() => startEnable(zone)}
 									>
-										{submitting === zone.zoneName && <Loader2 size={13} className="animate-spin" />}
+										{submitting === zone.zoneName && <Spinner />}
 										Enable
 									</Button>
 								)}
@@ -306,11 +299,11 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 						))}
 					</div>
 				)}
-			</div>
+			</Card>
 
 			{manual && (
 				<form
-					className="rounded-xl border border-border p-4 space-y-3"
+					className="space-y-3 rounded-xl border border-border p-4"
 					onSubmit={(e) => {
 						e.preventDefault();
 						void enable(form.name, form.zoneName || form.name);
@@ -362,82 +355,74 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			)}
 
 			{/* Domains Card */}
-			<div className="rounded-xl border border-border bg-card overflow-hidden">
-				<div className="px-5 py-3.5 border-b border-border bg-muted/20 flex items-center justify-between">
-					<span className="text-xs font-semibold text-foreground">Configured Domains ({domains.length})</span>
-					<span className="text-[11px] text-muted-foreground">Requires SPF & DKIM DNS records</span>
+			<Card className="gap-0 overflow-hidden py-0">
+				<div className="flex items-center justify-between border-b border-border bg-muted/20 px-5 py-3.5">
+					<span className="text-sm font-semibold text-foreground">Configured Domains ({domains.length})</span>
+					<span className="text-2xs text-muted-foreground">Requires SPF & DKIM DNS records</span>
 				</div>
 
 				{loading ? (
-					<div className="p-5 space-y-3">
+					<div className="space-y-2 p-4">
 						{[...Array(3)].map((_, i) => (
 							<Skeleton key={i} className="h-16 rounded-lg" />
 						))}
 					</div>
 				) : domains.length === 0 ? (
-					<div className="text-center py-16 text-muted-foreground space-y-2">
-						<Globe size={32} strokeWidth={1.25} className="mx-auto opacity-40 mb-1" />
-						<p className="text-xs font-semibold text-foreground">No domains configured yet</p>
-						<p className="text-[11px] max-w-sm mx-auto">
-							Add a sending domain to unlock deliverability via Cloudflare.
-						</p>
-					</div>
+					<Empty className="py-16">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Globe />
+							</EmptyMedia>
+							<EmptyTitle>No domains configured yet</EmptyTitle>
+							<EmptyDescription>
+								Add a sending domain to unlock deliverability via Cloudflare.
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				) : (
 					<div className="divide-y divide-border">
 						{domains.map((d) => (
 							<div
 								key={d.id}
-								className="p-4 md:px-5 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-muted/30 transition-colors"
+								className="flex flex-col justify-between gap-3 p-4 transition-colors hover:bg-muted/30 md:flex-row md:items-center md:px-5"
 							>
-								<div className="space-y-1 min-w-0">
-									<div className="flex items-center gap-2 flex-wrap">
+								<div className="min-w-0 space-y-1">
+									<div className="flex flex-wrap items-center gap-2">
 										{d.verified ? (
-											<CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+											<CheckCircle2 className="size-4 shrink-0 text-success" />
 										) : (
-											<Clock size={15} className="text-amber-500 shrink-0" />
+											<Clock className="size-4 shrink-0 text-warning" />
 										)}
 
-										<span className="text-sm font-semibold font-mono text-foreground">
+										<span className="font-mono text-sm font-semibold text-foreground">
 											{d.name}
 										</span>
 
 										{d.verified ? (
-											<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-												VERIFIED
-											</span>
+											<Badge variant="success">VERIFIED</Badge>
 										) : (
-											<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-												PENDING DNS
-											</span>
+											<Badge variant="warning">PENDING DNS</Badge>
 										)}
 
 										<span
-											className="inline-flex items-center gap-1 text-[10px] text-muted-foreground"
+											className="inline-flex items-center gap-1 text-2xs text-muted-foreground"
 											title={d.dkim_selector ? "DKIM selector active" : "DKIM not configured"}
 										>
 											{d.dkim_selector ? (
-												<ShieldCheck
-													size={13}
-													className="text-emerald-600 dark:text-emerald-400"
-												/>
+												<ShieldCheck className="size-3.5 text-success" />
 											) : (
-												<ShieldOff size={13} className="text-muted-foreground/40" />
+												<ShieldOff className="size-3.5 text-muted-foreground/40" />
 											)}
 											<span>{d.dkim_selector ? "DKIM Configured" : "No DKIM"}</span>
 										</span>
 									</div>
 
-									<div className="text-[11px] text-muted-foreground font-mono">ID: {d.id}</div>
+									<div className="font-mono text-2xs text-muted-foreground">ID: {d.id}</div>
 								</div>
 
-								<div className="flex items-center gap-2 shrink-0">
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => handleDns(d)}
-										className="h-8 text-xs gap-1.5"
-									>
-										<ExternalLink size={12} />
+								<div className="flex shrink-0 items-center gap-2">
+									<Button variant="outline" size="sm" onClick={() => handleDns(d)}>
+										<ExternalLink />
 										<span>DNS Records</span>
 									</Button>
 
@@ -446,48 +431,42 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 										size="sm"
 										onClick={() => handleVerify(d)}
 										disabled={verifying === d.id}
-										className="h-8 text-xs gap-1.5 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
 									>
-										<RefreshCw size={12} className={verifying === d.id ? "animate-spin" : ""} />
+										<RefreshCw className={verifying === d.id ? "animate-spin" : ""} />
 										<span>{verifying === d.id ? "Checking..." : "Verify DNS"}</span>
 									</Button>
 
 									<Button
 										variant="ghost"
-										size="sm"
+										size="icon-sm"
+										aria-label="Delete domain"
 										onClick={() => setDeleteId(d.id)}
-										className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+										className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
 									>
-										<Trash2 size={13} />
+										<Trash2 />
 									</Button>
 								</div>
 							</div>
 						))}
 					</div>
 				)}
-			</div>
+			</Card>
 
 			{/* DNS Records Modal */}
 			<Dialog open={!!dnsModal} onOpenChange={(open) => !open && setDnsModal(null)}>
-				<DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+				<DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
 					<DialogHeader>
 						<div className="flex items-center gap-2">
-							<DialogTitle className="text-base font-semibold">DNS Configuration Records</DialogTitle>
+							<DialogTitle>DNS Configuration Records</DialogTitle>
 							{dnsModal?.domain.verified ? (
-								<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-									VERIFIED
-								</span>
+								<Badge variant="success">VERIFIED</Badge>
 							) : dnsModal?.isManual ? (
-								<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-									ACTION REQUIRED
-								</span>
+								<Badge variant="warning">ACTION REQUIRED</Badge>
 							) : (
-								<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-muted text-muted-foreground">
-									CONFIGURED
-								</span>
+								<Badge variant="secondary">CONFIGURED</Badge>
 							)}
 						</div>
-						<DialogDescription className="text-xs">
+						<DialogDescription>
 							{dnsModal?.isManual ? (
 								<>
 									These records could not be written automatically. Add them in Cloudflare DNS for{" "}
@@ -513,48 +492,49 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 						{dnsModal?.records.map((r, i) => (
 							<div
 								key={i}
-								className="rounded-xl border border-border bg-muted/20 p-3.5 space-y-2 text-xs"
+								className="space-y-2 rounded-xl border border-border bg-muted/20 p-3.5 text-xs"
 							>
 								<div className="flex items-center justify-between">
-									<Badge
-										variant="outline"
-										className="text-xs font-mono font-bold text-orange-600 bg-orange-500/10 border-orange-500/20"
-									>
+									<Badge variant="soft" className="font-mono font-bold">
 										{r.type}
 									</Badge>
-									<span className="text-[11px] text-muted-foreground">TTL: {r.ttl || "Auto"}</span>
+									<span className="text-2xs text-muted-foreground">TTL: {r.ttl || "Auto"}</span>
 								</div>
 
 								<div className="space-y-1">
-									<div className="flex items-center justify-between text-[11px] text-muted-foreground">
+									<div className="flex items-center justify-between text-2xs text-muted-foreground">
 										<span>Hostname / Name</span>
-										<button
+										<Button
 											type="button"
-											onClick={() => handleCopy(r.name, `name_${i}`)}
-											className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+											variant="ghost"
+											size="xs"
+											className="text-primary"
+											onClick={() => handleCopy(r.name, "Hostname")}
 										>
-											{copiedKey === `name_${i}` ? <Check size={10} /> : <Copy size={10} />}
-											<span>{copiedKey === `name_${i}` ? "Copied" : "Copy"}</span>
-										</button>
+											<Copy />
+											<span>Copy</span>
+										</Button>
 									</div>
-									<div className="p-2 rounded bg-background border border-border font-mono text-xs text-foreground select-all break-all">
+									<div className="rounded border border-border bg-background p-2 font-mono text-xs break-all text-foreground select-all">
 										{r.name}
 									</div>
 								</div>
 
 								<div className="space-y-1">
-									<div className="flex items-center justify-between text-[11px] text-muted-foreground">
+									<div className="flex items-center justify-between text-2xs text-muted-foreground">
 										<span>Value / Target</span>
-										<button
+										<Button
 											type="button"
-											onClick={() => handleCopy(r.content, `val_${i}`)}
-											className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+											variant="ghost"
+											size="xs"
+											className="text-primary"
+											onClick={() => handleCopy(r.content, "Value")}
 										>
-											{copiedKey === `val_${i}` ? <Check size={10} /> : <Copy size={10} />}
-											<span>{copiedKey === `val_${i}` ? "Copied" : "Copy"}</span>
-										</button>
+											<Copy />
+											<span>Copy</span>
+										</Button>
 									</div>
-									<div className="p-2 rounded bg-background border border-border font-mono text-xs text-foreground select-all break-all">
+									<div className="rounded border border-border bg-background p-2 font-mono text-xs break-all text-foreground select-all">
 										{r.content}
 									</div>
 								</div>
@@ -563,6 +543,6 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 					</div>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</PageShell>
 	);
 }

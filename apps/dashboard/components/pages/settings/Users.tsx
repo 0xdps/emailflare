@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Loader2, Users, Trash2, Copy, Check, Shield, Wrench, Edit2 } from "lucide-react";
+import { Plus, Users, Trash2, Copy, Check, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import { getUsers, User, UserType, AccessType } from "@/lib/api";
 import { createInviteAction, revokeUserAction, changeUserPermissionsAction } from "@/app/actions/users";
 import { usePermissions } from "@/lib/UserContext";
@@ -10,24 +11,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+	DialogFooter,
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 
+const EDIT_USER_TYPE_ITEMS = [
+	{ value: "member", label: "Member — Regular application user" },
+	{ value: "admin", label: "Admin — Full platform administration" },
+];
+
+const INVITE_USER_TYPE_ITEMS = [
+	{ value: "member", label: "Member — Regular user" },
+	{ value: "admin", label: "Admin — Full platform administration" },
+];
+
 function UserTypeBadge({ userType }: { userType: UserType }) {
-	if (userType === "admin") {
-		return (
-			<Badge className="text-[10px] h-4.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800">
-				admin
-			</Badge>
-		);
-	}
-	return (
-		<Badge variant="secondary" className="text-[10px] h-4.5 px-2 text-zinc-600 dark:text-zinc-300">
-			member
-		</Badge>
-	);
+	if (userType === "admin") return <Badge variant="warning">admin</Badge>;
+	return <Badge variant="secondary">member</Badge>;
 }
 
 function AccessBadges({ accessTypes, userType }: { accessTypes: AccessType[]; userType: UserType }) {
@@ -41,32 +55,46 @@ function AccessBadges({ accessTypes, userType }: { accessTypes: AccessType[]; us
 	}
 
 	return (
-		<div className="flex items-center gap-1.5 flex-wrap">
-			{list.includes("inbox") && (
-				<Badge
-					variant="outline"
-					className="text-[10px] h-4 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
-				>
-					inbox
-				</Badge>
-			)}
-			{list.includes("api") && (
-				<Badge
-					variant="outline"
-					className="text-[10px] h-4 px-1.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300"
-				>
-					api
-				</Badge>
-			)}
-			{list.includes("tester") && (
-				<Badge
-					variant="outline"
-					className="text-[10px] h-4 px-1.5 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300"
-				>
-					test inbox
-				</Badge>
-			)}
+		<div className="flex flex-wrap items-center gap-1.5">
+			{list.includes("inbox") && <Badge variant="success">inbox</Badge>}
+			{list.includes("api") && <Badge variant="info">api</Badge>}
+			{list.includes("tester") && <Badge variant="soft">test inbox</Badge>}
 		</div>
+	);
+}
+
+function CapabilityCheckbox({
+	id,
+	checked,
+	onCheckedChange,
+	label,
+	hint,
+}: {
+	id: string;
+	checked: boolean;
+	onCheckedChange: (checked: boolean) => void;
+	label: string;
+	hint: string;
+}) {
+	return (
+		<div className="flex items-center gap-2.5">
+			<Checkbox id={id} checked={checked} onCheckedChange={(value) => onCheckedChange(!!value)} />
+			<Label htmlFor={id} className="cursor-pointer text-xs">
+				<span>
+					{label} <span className="font-normal text-muted-foreground">{hint}</span>
+				</span>
+			</Label>
+		</div>
+	);
+}
+
+function AdminNote() {
+	return (
+		<Alert variant="warning">
+			<AlertDescription className="text-xs text-warning-muted-foreground italic">
+				Administrators automatically receive full authority across all dashboards, mailboxes, and settings.
+			</AlertDescription>
+		</Alert>
 	);
 }
 
@@ -153,6 +181,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 
 	async function copyInviteUrl() {
 		await navigator.clipboard.writeText(inviteUrl);
+		toast.success("Invite link copied");
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	}
@@ -210,33 +239,41 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 	}
 
 	return (
-		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<div className="flex items-center gap-2 mb-1">
-						<Users size={14} className="text-orange-500" />
-						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-							Access Control
-						</span>
-					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Team</h1>
-					<p className="text-xs text-muted-foreground mt-0.5">
-						Invite people and choose whether they can use the inbox, API, or test mailbox.
-					</p>
-				</div>
-				<Button onClick={() => setInviteOpen(true)} className="gap-1.5 text-xs h-8.5 shadow-xs">
-					<Plus size={14} />
-					<span>Invite User</span>
-				</Button>
-			</div>
+		<PageShell>
+			<PageHeader
+				eyebrow="Access Control"
+				title="Team"
+				description="Invite people and choose whether they can use the inbox, API, or test mailbox."
+				actions={
+					<Button onClick={() => setInviteOpen(true)}>
+						<Plus />
+						<span>Invite User</span>
+					</Button>
+				}
+			/>
 
 			{loading ? (
-				<div className="flex justify-center py-16">
-					<Loader2 size={20} className="animate-spin text-muted-foreground" />
-				</div>
+				<Card className="gap-0 p-4">
+					<div className="space-y-2">
+						{[...Array(4)].map((_, i) => (
+							<Skeleton key={i} className="h-12 rounded-lg" />
+						))}
+					</div>
+				</Card>
+			) : users.length === 0 ? (
+				<Card className="gap-0 py-0">
+					<Empty className="py-16">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Users />
+							</EmptyMedia>
+							<EmptyTitle>No users yet</EmptyTitle>
+							<EmptyDescription>Invite people to give them access to EmailFlare.</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
+				</Card>
 			) : (
-				<div className="rounded-xl border border-border overflow-hidden bg-card">
+				<Card className="gap-0 overflow-hidden py-0">
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -256,7 +293,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 								return (
 									<TableRow key={user.id}>
 										<TableCell>
-											<div className="font-medium text-sm text-foreground">{user.name}</div>
+											<div className="text-sm font-medium text-foreground">{user.name}</div>
 											<div className="text-xs text-muted-foreground">{user.email}</div>
 										</TableCell>
 										<TableCell>
@@ -274,23 +311,19 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 										</TableCell>
 										<TableCell className="text-right">
 											<div className="flex items-center justify-end gap-1">
-												<Button
-													size="sm"
-													variant="ghost"
-													onClick={() => openEdit(user)}
-													className="h-7 px-2 text-xs"
-												>
-													<Edit2 size={12} className="mr-1" />
+												<Button size="sm" variant="ghost" onClick={() => openEdit(user)}>
+													<Pencil />
 													Permissions
 												</Button>
 												{!isSelf && (
 													<Button
-														size="sm"
+														size="icon-sm"
 														variant="ghost"
+														aria-label="Revoke access"
 														onClick={() => setRevokeId(user.id)}
-														className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+														className="text-muted-foreground hover:text-destructive"
 													>
-														<Trash2 size={12} />
+														<Trash2 />
 													</Button>
 												)}
 											</div>
@@ -300,7 +333,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 							})}
 						</TableBody>
 					</Table>
-				</div>
+				</Card>
 			)}
 
 			{/* ── Edit Permissions Dialog ── */}
@@ -312,83 +345,60 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 
 					{editUser && (
 						<div className="flex flex-col gap-4 py-2">
-							<div className="rounded-lg bg-muted/50 p-3 text-xs flex flex-col gap-1">
+							<div className="flex flex-col gap-1 rounded-lg bg-muted/50 p-3 text-xs">
 								<span className="font-semibold text-foreground">{editUser.name}</span>
 								<span className="text-muted-foreground">{editUser.email}</span>
 							</div>
 
 							<div className="flex flex-col gap-1.5">
 								<Label htmlFor="edit-user-type">User Type (Administrative Authority)</Label>
-								<Select value={editUserType} onValueChange={(val) => setEditUserType(val as UserType)}>
-									<SelectTrigger id="edit-user-type" className="h-9 text-sm">
+								<Select
+									items={EDIT_USER_TYPE_ITEMS}
+									value={editUserType}
+									onValueChange={(val) => setEditUserType(val as UserType)}
+								>
+									<SelectTrigger id="edit-user-type" className="w-full">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="member">Member — Regular application user</SelectItem>
-										<SelectItem value="admin">Admin — Full platform administration</SelectItem>
+										{EDIT_USER_TYPE_ITEMS.map((o) => (
+											<SelectItem key={o.value} value={o.value}>
+												{o.label}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 							</div>
 
 							{editUserType === "admin" ? (
-								<p className="text-xs text-muted-foreground italic bg-amber-50/50 border border-amber-200/60 rounded p-2.5 dark:bg-amber-950/20 dark:border-amber-900">
-									Administrators automatically receive full authority across all dashboards,
-									mailboxes, and settings.
-								</p>
+								<AdminNote />
 							) : (
 								<div className="flex flex-col gap-2 pt-1">
-									<Label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+									<Label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
 										Product Capabilities
 									</Label>
 									<div className="space-y-2.5 rounded-lg border border-border p-3">
-										<div className="flex items-center gap-2.5">
-											<Checkbox
-												id="edit-cap-inbox"
-												checked={editCanInbox}
-												onCheckedChange={(checked) => setEditCanInbox(!!checked)}
-											/>
-											<label
-												htmlFor="edit-cap-inbox"
-												className="text-xs font-medium cursor-pointer"
-											>
-												Production Inbox{" "}
-												<span className="text-muted-foreground font-normal">
-													(Mailbox, threads, compose)
-												</span>
-											</label>
-										</div>
-										<div className="flex items-center gap-2.5">
-											<Checkbox
-												id="edit-cap-api"
-												checked={editCanApi}
-												onCheckedChange={(checked) => setEditCanApi(!!checked)}
-											/>
-											<label
-												htmlFor="edit-cap-api"
-												className="text-xs font-medium cursor-pointer"
-											>
-												API Dashboard{" "}
-												<span className="text-muted-foreground font-normal">
-													(Logs, templates, playground, keys)
-												</span>
-											</label>
-										</div>
-										<div className="flex items-center gap-2.5">
-											<Checkbox
-												id="edit-cap-test"
-												checked={editCanTest}
-												onCheckedChange={(checked) => setEditCanTest(!!checked)}
-											/>
-											<label
-												htmlFor="edit-cap-test"
-												className="text-xs font-medium cursor-pointer"
-											>
-												Test Inbox{" "}
-												<span className="text-muted-foreground font-normal">
-													(Virtual testing folder inside Inbox)
-												</span>
-											</label>
-										</div>
+										<CapabilityCheckbox
+											id="edit-cap-inbox"
+											checked={editCanInbox}
+											onCheckedChange={setEditCanInbox}
+											label="Production Inbox"
+											hint="(Mailbox, threads, compose)"
+										/>
+										<CapabilityCheckbox
+											id="edit-cap-api"
+											checked={editCanApi}
+											onCheckedChange={setEditCanApi}
+											label="API Dashboard"
+											hint="(Logs, templates, playground, keys)"
+										/>
+										<CapabilityCheckbox
+											id="edit-cap-test"
+											checked={editCanTest}
+											onCheckedChange={setEditCanTest}
+											label="Test Inbox"
+											hint="(Virtual testing folder inside Inbox)"
+										/>
 									</div>
 								</div>
 							)}
@@ -404,7 +414,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 									Cancel
 								</Button>
 								<Button onClick={handleSavePermissions} disabled={savingPermissions}>
-									{savingPermissions && <Loader2 size={13} className="animate-spin mr-1.5" />}
+									{savingPermissions && <Spinner data-icon="inline-start" />}
 									Save changes
 								</Button>
 							</DialogFooter>
@@ -438,78 +448,52 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 							<div className="flex flex-col gap-1.5">
 								<Label htmlFor="invite-user-type">User Type</Label>
 								<Select
+									items={INVITE_USER_TYPE_ITEMS}
 									value={inviteUserType}
 									onValueChange={(val) => setInviteUserType(val as UserType)}
 								>
-									<SelectTrigger id="invite-user-type" className="h-9 text-sm">
+									<SelectTrigger id="invite-user-type" className="w-full">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="member">Member — Regular user</SelectItem>
-										<SelectItem value="admin">Admin — Full platform administration</SelectItem>
+										{INVITE_USER_TYPE_ITEMS.map((o) => (
+											<SelectItem key={o.value} value={o.value}>
+												{o.label}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 							</div>
 
 							{inviteUserType === "admin" ? (
-								<p className="text-xs text-muted-foreground italic bg-amber-50/50 border border-amber-200/60 rounded p-2.5 dark:bg-amber-950/20 dark:border-amber-900">
-									Administrators automatically receive full authority across all dashboards,
-									mailboxes, and settings.
-								</p>
+								<AdminNote />
 							) : (
 								<div className="flex flex-col gap-2 pt-1">
-									<Label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+									<Label className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
 										Capabilities
 									</Label>
 									<div className="space-y-2.5 rounded-lg border border-border p-3">
-										<div className="flex items-center gap-2.5">
-											<Checkbox
-												id="invite-cap-inbox"
-												checked={inviteCanInbox}
-												onCheckedChange={(checked) => setInviteCanInbox(!!checked)}
-											/>
-											<label
-												htmlFor="invite-cap-inbox"
-												className="text-xs font-medium cursor-pointer"
-											>
-												Production Inbox{" "}
-												<span className="text-muted-foreground font-normal">
-													(Mailbox, threads, compose)
-												</span>
-											</label>
-										</div>
-										<div className="flex items-center gap-2.5">
-											<Checkbox
-												id="invite-cap-api"
-												checked={inviteCanApi}
-												onCheckedChange={(checked) => setInviteCanApi(!!checked)}
-											/>
-											<label
-												htmlFor="invite-cap-api"
-												className="text-xs font-medium cursor-pointer"
-											>
-												API Dashboard{" "}
-												<span className="text-muted-foreground font-normal">
-													(Logs, templates, playground, keys)
-												</span>
-											</label>
-										</div>
-										<div className="flex items-center gap-2.5">
-											<Checkbox
-												id="invite-cap-test"
-												checked={inviteCanTest}
-												onCheckedChange={(checked) => setInviteCanTest(!!checked)}
-											/>
-											<label
-												htmlFor="invite-cap-test"
-												className="text-xs font-medium cursor-pointer"
-											>
-												Test Inbox{" "}
-												<span className="text-muted-foreground font-normal">
-													(Virtual testing folder)
-												</span>
-											</label>
-										</div>
+										<CapabilityCheckbox
+											id="invite-cap-inbox"
+											checked={inviteCanInbox}
+											onCheckedChange={setInviteCanInbox}
+											label="Production Inbox"
+											hint="(Mailbox, threads, compose)"
+										/>
+										<CapabilityCheckbox
+											id="invite-cap-api"
+											checked={inviteCanApi}
+											onCheckedChange={setInviteCanApi}
+											label="API Dashboard"
+											hint="(Logs, templates, playground, keys)"
+										/>
+										<CapabilityCheckbox
+											id="invite-cap-test"
+											checked={inviteCanTest}
+											onCheckedChange={setInviteCanTest}
+											label="Test Inbox"
+											hint="(Virtual testing folder)"
+										/>
 									</div>
 								</div>
 							)}
@@ -525,7 +509,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 									Cancel
 								</Button>
 								<Button onClick={handleInvite} disabled={inviting || !inviteEmail.trim()}>
-									{inviting && <Loader2 size={13} className="animate-spin mr-1.5" />}
+									{inviting && <Spinner data-icon="inline-start" />}
 									{inviting ? "Creating invite…" : "Create invite"}
 								</Button>
 							</DialogFooter>
@@ -538,12 +522,23 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 									: "Email could not be sent. Share this link directly."}{" "}
 								It expires in 48 hours and can only be used once.
 							</p>
-							<div className="flex gap-2">
-								<Input value={inviteUrl} readOnly className="font-mono text-xs flex-1" />
-								<Button size="sm" variant="outline" onClick={copyInviteUrl} className="shrink-0">
-									{copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-								</Button>
-							</div>
+							<InputGroup>
+								<InputGroupInput
+									value={inviteUrl}
+									readOnly
+									aria-label="Invite link"
+									className="font-mono text-xs"
+								/>
+								<InputGroupAddon align="inline-end">
+									<InputGroupButton
+										size="icon-xs"
+										aria-label="Copy invite link"
+										onClick={copyInviteUrl}
+									>
+										{copied ? <Check className="text-success" /> : <Copy />}
+									</InputGroupButton>
+								</InputGroupAddon>
+							</InputGroup>
 							<DialogFooter>
 								<Button onClick={closeInviteDialog}>Done</Button>
 							</DialogFooter>
@@ -557,21 +552,21 @@ export default function UsersPage({ initialUsers }: UsersPageProps = {}) {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Revoke access?</DialogTitle>
+						<DialogDescription>
+							This user will immediately lose access. Their data (emails, threads) will be retained.
+						</DialogDescription>
 					</DialogHeader>
-					<p className="text-sm text-muted-foreground">
-						This user will immediately lose access. Their data (emails, threads) will be retained.
-					</p>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setRevokeId(null)}>
 							Cancel
 						</Button>
 						<Button variant="destructive" onClick={handleRevoke} disabled={revoking}>
-							{revoking && <Loader2 size={13} className="animate-spin mr-1.5" />}
+							{revoking && <Spinner data-icon="inline-start" />}
 							Revoke access
 						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</PageShell>
 	);
 }

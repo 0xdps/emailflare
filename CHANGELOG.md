@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Design System
+
+- **Themed shadcn end to end:** `components.json`, light + dark tokens (warm neutrals, brand orange, semantic success/warning/info), a type scale and elevation tokens in `app/theme.css`. Geist is now bundled instead of falling back to system fonts.
+- **New app shell:** collapsible shadcn sidebar with a workspace switcher, breadcrumb header, account menu with theme switcher, and a ⌘K palette built on `Command`. Navigation is declared once in `lib/nav/config.ts`.
+- **Guardrail:** `pnpm lint:ui` blocks new hard-coded palette colours and raw form controls; legacy files are ratcheted in `scripts/ui-baseline.json`.
+
+- **Auth pages migrated:** Login, Setup, Forgot/Reset password, Accept invite and the setup readiness page now use shared `AuthLayout` / form field components built on shadcn primitives and theme tokens.
+
+- **Developer pages migrated:** Overview, Logs, Templates, Playground, Audiences, Suppressions and Deliverability use shared `PageShell`/`PageHeader`/`StatCard` components, semantic status badges and shadcn tables, inputs and tabs. The unused `TestMailbox` page was removed.
+- **Admin pages migrated:** Domains, Mailboxes, Team, API keys, Webhooks, Audit log, Security, Contacts and Sequences now use the same primitives and tokens. `pnpm lint:ui` has no grandfathered files left and also rejects arbitrary pixel font sizes.
+- `Button` now sets `nativeButton={false}` when given a custom `render` (e.g. a `Link`).
+
+### Inbox
+
+- **Redesigned from scratch:** resizable list/reader panes, date-grouped threads, collapsible messages, one-click sender verification (SPF/DKIM/DMARC) popover, themed HTML mail rendering, toasts with undo, and a shortcuts dialog (`?`).
+- **Star, archive and real mark-unread:** new `thread_state` table (migration `0005`), `PATCH /api/inbox/threads/:id/state`, `POST /api/inbox/threads/:id/mark-unread`, `GET /api/inbox/threads/counts`, and `view=inbox|unread|starred|archived` on the thread list. New inbound mail un-archives its thread.
+- **Fixes:** the server-rendered inbox no longer lists a thread once per participant, and canned replies now call the correct `/api/inbox/templates` endpoint.
+
+---
+
 ## [1.0.0] - 2026-11-07
 
 ### Architecture & Edge Infrastructure

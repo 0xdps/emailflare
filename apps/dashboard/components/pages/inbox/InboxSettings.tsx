@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Trash2, Pencil, Loader2, Inbox, Users, Globe, AlertTriangle, Check } from "lucide-react";
+import { Plus, Trash2, Pencil, Inbox, Users, Globe, AlertTriangle, Check } from "lucide-react";
 import {
 	getInboxes,
 	getInboxMembers,
@@ -20,15 +20,115 @@ import {
 	addInboxMemberAction,
 	removeInboxMemberAction,
 } from "@/app/actions/inboxes";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
+
+const MODE_ITEMS = [
+	{ value: "thread", label: "Thread" },
+	{ value: "individual", label: "Individual" },
+];
+
+function userItems(users: User[]) {
+	return users.map((u) => ({ value: u.id, label: `${u.name} (${u.email})` }));
+}
+
+function MemberRow({ user, onRemove, className }: { user: User; onRemove: () => void; className?: string }) {
+	return (
+		<div className={cn("flex items-center gap-3 rounded-lg px-3 py-2", className)}>
+			<Avatar size="sm">
+				<AvatarFallback>{(user.name || user.email).charAt(0).toUpperCase()}</AvatarFallback>
+			</Avatar>
+			<div className="min-w-0 flex-1">
+				<p className="truncate text-sm font-medium text-foreground">{user.name}</p>
+				<p className="truncate text-xs text-muted-foreground">{user.email}</p>
+			</div>
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				aria-label={`Remove ${user.name}`}
+				className="text-muted-foreground hover:text-destructive"
+				onClick={onRemove}
+			>
+				<Trash2 />
+			</Button>
+		</div>
+	);
+}
+
+function UserPicker({
+	users,
+	value,
+	onValueChange,
+	onAdd,
+	adding,
+}: {
+	users: User[];
+	value: string;
+	onValueChange: (value: string) => void;
+	onAdd: () => void;
+	adding: boolean;
+}) {
+	const items = userItems(users);
+	return (
+		<div className="flex gap-2">
+			<Select items={items} value={value} onValueChange={(v) => onValueChange(v ?? "")}>
+				<SelectTrigger className="min-w-0 flex-1">
+					<SelectValue placeholder="Select user…" />
+				</SelectTrigger>
+				<SelectContent>
+					{items.map((o) => (
+						<SelectItem key={o.value} value={o.value}>
+							{o.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+			<Button onClick={onAdd} disabled={!value || adding}>
+				{adding ? <Spinner data-icon="inline-start" /> : <Plus data-icon="inline-start" />}
+				Add
+			</Button>
+		</div>
+	);
+}
+
+function ModeSelect({ value, onValueChange }: { value: "thread" | "individual"; onValueChange: (v: string) => void }) {
+	return (
+		<Select items={MODE_ITEMS} value={value} onValueChange={(v) => onValueChange(v ?? "thread")}>
+			<SelectTrigger className="w-full">
+				<SelectValue />
+			</SelectTrigger>
+			<SelectContent>
+				{MODE_ITEMS.map((o) => (
+					<SelectItem key={o.value} value={o.value}>
+						{o.label}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>
+	);
+}
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -241,189 +341,189 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 	}
 
 	const nonMembers = allUsers.filter((u) => !members.some((m) => m.id === u.id));
+	const assignableUsers = assignUsers.filter((u) => !assignMembers.some((m) => m.id === u.id));
+	const domainItems = domains.map((d) => ({ value: d.name, label: d.name }));
+
+	// Group inboxes by domain
+	const grouped = new Map<string, InboxType[]>();
+	for (const inbox of inboxes) {
+		const domain = inbox.email.split("@")[1] ?? "unknown";
+		if (!grouped.has(domain)) grouped.set(domain, []);
+		grouped.get(domain)!.push(inbox);
+	}
 
 	return (
-		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<div className="flex items-center gap-2 mb-1">
-						<Inbox size={14} className="text-orange-500" />
-						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-							Mailboxes & Routing
-						</span>
-					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">Mailboxes</h1>
-					<p className="text-xs text-muted-foreground mt-0.5">
-						Addresses that receive mail, and the people who can open them.
-					</p>
-				</div>
-				<Button
-					onClick={openCreate}
-					disabled={domains.length === 0}
-					className="gap-1.5 text-xs h-8.5 shadow-xs"
-				>
-					<Plus size={14} />
-					<span>New Mailbox</span>
-				</Button>
-			</div>
+		<PageShell>
+			<PageHeader
+				eyebrow="Mailboxes & Routing"
+				title="Mailboxes"
+				description="Addresses that receive mail, and the people who can open them."
+				actions={
+					<Button onClick={openCreate} disabled={domains.length === 0}>
+						<Plus />
+						<span>New Mailbox</span>
+					</Button>
+				}
+			/>
 
 			{!loading && domains.length === 0 && (
-				<div className="mb-4 flex items-center gap-2.5 px-3.5 py-3 rounded-lg border border-amber-200 bg-amber-50 text-sm text-amber-800">
-					<AlertTriangle size={14} className="shrink-0 text-amber-500" />
-					<span className="flex-1">No domains configured — you need a domain before creating an inbox.</span>
-					<Link
-						href="/domains"
-						className="text-xs font-semibold text-amber-700 hover:text-amber-900 underline-offset-2 hover:underline whitespace-nowrap"
+				<Alert variant="warning" className="flex items-center gap-2.5">
+					<AlertTriangle className="shrink-0" />
+					<AlertDescription className="flex-1 text-warning-muted-foreground">
+						No domains configured — you need a domain before creating an inbox.
+					</AlertDescription>
+					<Button
+						variant="link"
+						size="sm"
+						className="text-warning-muted-foreground"
+						render={<Link href="/domains" />}
 					>
 						Set up a domain →
-					</Link>
-				</div>
+					</Button>
+				</Alert>
 			)}
 
 			{loading ? (
-				<div className="flex justify-center py-16">
-					<Loader2 size={20} className="animate-spin text-muted-foreground" />
+				<div className="space-y-2">
+					{[...Array(4)].map((_, i) => (
+						<Skeleton key={i} className="h-12 rounded-lg" />
+					))}
 				</div>
 			) : inboxes.length === 0 ? (
 				domains.length === 0 ? (
-					<div className="flex flex-col items-center gap-3 py-20 text-muted-foreground">
-						<Globe size={36} className="opacity-20" />
-						<p className="text-sm font-medium text-foreground/70">No domains configured</p>
-						<p className="text-xs text-center max-w-xs text-muted-foreground/70">
-							Add a domain to your account first — the inbox email address must belong to a domain in your
-							system.
-						</p>
-						<Link href="/domains">
-							<Button size="sm" variant="outline">
+					<Empty className="py-20">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Globe />
+							</EmptyMedia>
+							<EmptyTitle>No domains configured</EmptyTitle>
+							<EmptyDescription>
+								Add a domain to your account first — the inbox email address must belong to a domain in
+								your system.
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button variant="outline" render={<Link href="/domains" />}>
 								Set up a domain →
 							</Button>
-						</Link>
-					</div>
+						</EmptyContent>
+					</Empty>
 				) : (
-					<div className="flex flex-col items-center gap-3 py-20 text-muted-foreground">
-						<Inbox size={36} className="opacity-20" />
-						<p className="text-sm">No mailboxes yet</p>
-						<Button size="sm" variant="outline" onClick={openCreate}>
-							Create a mailbox
-						</Button>
-					</div>
+					<Empty className="py-20">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Inbox />
+							</EmptyMedia>
+							<EmptyTitle>No mailboxes yet</EmptyTitle>
+						</EmptyHeader>
+						<EmptyContent>
+							<Button variant="outline" onClick={openCreate}>
+								Create a mailbox
+							</Button>
+						</EmptyContent>
+					</Empty>
 				)
 			) : (
 				<div className="flex flex-col gap-6">
-					{/* Group inboxes by domain */}
-					{(() => {
-						const grouped = new Map<string, InboxType[]>();
-						for (const inbox of inboxes) {
-							const domain = inbox.email.split("@")[1] ?? "unknown";
-							if (!grouped.has(domain)) grouped.set(domain, []);
-							grouped.get(domain)!.push(inbox);
-						}
-						return Array.from(grouped.entries()).map(([domain, domainInboxes]) => (
-							<div key={domain}>
-								{/* Domain header */}
-								<div className="flex items-center gap-2 mb-2">
-									<Globe size={13} className="text-muted-foreground shrink-0" />
-									<span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
-										{domain}
-									</span>
-									<span className="text-[11px] text-muted-foreground/60">
-										{domainInboxes.length} inbox{domainInboxes.length !== 1 ? "es" : ""}
-									</span>
-									<span className="flex-1 h-px bg-border ml-1" />
-								</div>
-								{/* Inbox table for this domain */}
-								<div className="rounded-xl border border-border overflow-hidden">
-									<Table>
-										<TableHeader>
-											<TableRow>
-												<TableHead>Email address</TableHead>
-												<TableHead>Display name</TableHead>
-												<TableHead>Mode</TableHead>
-												<TableHead>Routing</TableHead>
-												<TableHead className="text-right">Actions</TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{domainInboxes.map((inbox) => (
-												<TableRow key={inbox.id}>
-													<TableCell className="font-mono text-sm">{inbox.email}</TableCell>
-													<TableCell className="text-sm">{inbox.display_name}</TableCell>
-													<TableCell>
-														<Badge variant="outline" className="capitalize text-xs">
-															{inbox.mode}
-														</Badge>
-													</TableCell>
-													<TableCell>
-														{inbox.routing?.configured ? (
-															<Badge
-																variant="outline"
-																className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50"
-															>
-																Active
-															</Badge>
-														) : (
-															<div className="flex items-center gap-2">
-																<Button
-																	size="sm"
-																	variant="outline"
-																	className="h-7 px-2 gap-1.5 text-xs"
-																	disabled={routingId === inbox.id}
-																	onClick={() => handleSetupRouting(inbox)}
-																>
-																	{routingId === inbox.id && (
-																		<Loader2 size={12} className="animate-spin" />
-																	)}
-																	Setup routing
-																</Button>
-																{inbox.routing?.error && (
-																	<span
-																		className="text-[11px] text-amber-600"
-																		title={inbox.routing.error}
-																	>
-																		<AlertTriangle size={12} className="inline" />
-																	</span>
-																)}
-															</div>
-														)}
-													</TableCell>
-													<TableCell className="text-right">
-														<div className="flex items-center justify-end gap-1">
-															<Button
-																size="sm"
-																variant="ghost"
-																onClick={() => openMembers(inbox)}
-																className="h-7 px-2 gap-1.5 text-xs"
-															>
-																<Users size={12} />
-																Members
-															</Button>
-															<Button
-																size="sm"
-																variant="ghost"
-																onClick={() => openEdit(inbox)}
-																className="h-7 px-2"
-															>
-																<Pencil size={12} />
-															</Button>
-															<Button
-																size="sm"
-																variant="ghost"
-																onClick={() => setDeleteId(inbox.id)}
-																className="h-7 px-2 hover:text-destructive"
-															>
-																<Trash2 size={12} />
-															</Button>
-														</div>
-													</TableCell>
-												</TableRow>
-											))}
-										</TableBody>
-									</Table>
-								</div>
+					{Array.from(grouped.entries()).map(([domain, domainInboxes]) => (
+						<div key={domain}>
+							{/* Domain header */}
+							<div className="mb-2 flex items-center gap-2">
+								<Globe className="size-3.5 shrink-0 text-muted-foreground" />
+								<span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+									{domain}
+								</span>
+								<span className="text-2xs text-muted-foreground">
+									{domainInboxes.length} inbox{domainInboxes.length !== 1 ? "es" : ""}
+								</span>
+								<Separator className="ml-1 flex-1" />
 							</div>
-						));
-					})()}
+							{/* Inbox table for this domain */}
+							<Card className="gap-0 overflow-hidden py-0">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>Email address</TableHead>
+											<TableHead>Display name</TableHead>
+											<TableHead>Mode</TableHead>
+											<TableHead>Routing</TableHead>
+											<TableHead className="text-right">Actions</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{domainInboxes.map((inbox) => (
+											<TableRow key={inbox.id}>
+												<TableCell className="font-mono text-sm">{inbox.email}</TableCell>
+												<TableCell className="text-sm">{inbox.display_name}</TableCell>
+												<TableCell>
+													<Badge variant="outline" className="capitalize">
+														{inbox.mode}
+													</Badge>
+												</TableCell>
+												<TableCell>
+													{inbox.routing?.configured ? (
+														<Badge variant="success">Active</Badge>
+													) : (
+														<div className="flex items-center gap-2">
+															<Button
+																size="sm"
+																variant="outline"
+																disabled={routingId === inbox.id}
+																onClick={() => handleSetupRouting(inbox)}
+															>
+																{routingId === inbox.id && (
+																	<Spinner data-icon="inline-start" />
+																)}
+																Setup routing
+															</Button>
+															{inbox.routing?.error && (
+																<span
+																	className="text-warning"
+																	title={inbox.routing.error}
+																	aria-label={inbox.routing.error}
+																>
+																	<AlertTriangle className="inline size-3.5" />
+																</span>
+															)}
+														</div>
+													)}
+												</TableCell>
+												<TableCell className="text-right">
+													<div className="flex items-center justify-end gap-1">
+														<Button
+															size="sm"
+															variant="ghost"
+															onClick={() => openMembers(inbox)}
+														>
+															<Users />
+															Members
+														</Button>
+														<Button
+															size="icon-sm"
+															variant="ghost"
+															aria-label="Edit mailbox"
+															onClick={() => openEdit(inbox)}
+														>
+															<Pencil />
+														</Button>
+														<Button
+															size="icon-sm"
+															variant="ghost"
+															aria-label="Delete mailbox"
+															onClick={() => setDeleteId(inbox.id)}
+															className="text-muted-foreground hover:text-destructive"
+														>
+															<Trash2 />
+														</Button>
+													</div>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</Card>
+						</div>
+					))}
 				</div>
 			)}
 
@@ -441,19 +541,20 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 							{([1, 2, 3] as const).map((step) => (
 								<div key={step} className="flex items-center gap-1">
 									<span
-										className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold ${
+										className={cn(
+											"flex size-5 items-center justify-center rounded-full text-2xs font-semibold",
 											createStep > step
-												? "bg-emerald-500 text-white"
+												? "bg-success-muted text-success-muted-foreground"
 												: createStep === step
-													? "bg-foreground text-background"
-													: "bg-muted text-muted-foreground"
-										}`}
+													? "bg-primary text-primary-foreground"
+													: "bg-muted text-muted-foreground",
+										)}
 									>
-										{createStep > step ? <Check size={11} /> : step}
+										{createStep > step ? <Check className="size-3" /> : step}
 									</span>
 									{step < 3 && (
 										<span
-											className={`h-px w-4 ${createStep > step ? "bg-emerald-500" : "bg-muted"}`}
+											className={cn("h-px w-4", createStep > step ? "bg-success" : "bg-muted")}
 										/>
 									)}
 								</div>
@@ -465,9 +566,10 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 					{createStep === 1 && (
 						<div className="flex flex-col gap-4 py-2">
 							<div className="flex flex-col gap-1.5">
-								<Label>Email address</Label>
+								<Label htmlFor="inbox-local-part">Email address</Label>
 								<div className="flex items-center gap-1.5">
 									<Input
+										id="inbox-local-part"
 										className="flex-1"
 										placeholder="support"
 										value={localPart}
@@ -475,26 +577,31 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 										autoFocus
 									/>
 									<span className="text-sm text-muted-foreground select-none">@</span>
-									<Select value={selectedDomain} onValueChange={(v) => setSelectedDomain(v ?? "")}>
-										<SelectTrigger className="w-[180px]">
+									<Select
+										items={domainItems}
+										value={selectedDomain}
+										onValueChange={(v) => setSelectedDomain(v ?? "")}
+									>
+										<SelectTrigger className="w-44" aria-label="Domain">
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											{domains.map((d) => (
-												<SelectItem key={d.id} value={d.name}>
-													{d.name}
+											{domainItems.map((d) => (
+												<SelectItem key={d.value} value={d.value}>
+													{d.label}
 												</SelectItem>
 											))}
 										</SelectContent>
 									</Select>
 								</div>
-								<p className="text-[11px] text-muted-foreground">
+								<p className="text-2xs text-muted-foreground">
 									Must be configured in Cloudflare Email Routing
 								</p>
 							</div>
 							<div className="flex flex-col gap-1.5">
-								<Label>Display name</Label>
+								<Label htmlFor="inbox-display-name">Display name</Label>
 								<Input
+									id="inbox-display-name"
 									placeholder="Support"
 									value={displayName}
 									onChange={(e) => setDisplayName(e.target.value)}
@@ -502,15 +609,7 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 							</div>
 							<div className="flex flex-col gap-1.5">
 								<Label>Mode</Label>
-								<Select value={mode} onValueChange={(v) => setMode(v as "thread" | "individual")}>
-									<SelectTrigger>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="thread">Thread</SelectItem>
-										<SelectItem value="individual">Individual</SelectItem>
-									</SelectContent>
-								</Select>
+								<ModeSelect value={mode} onValueChange={(v) => setMode(v as "thread" | "individual")} />
 							</div>
 						</div>
 					)}
@@ -519,22 +618,22 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 					{createStep === 2 && createdInbox && (
 						<div className="flex flex-col gap-4 py-2">
 							{createdInbox.routing?.configured ? (
-								<div className="flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
-									<Check size={15} className="shrink-0 text-emerald-500" />
-									<span>
+								<Alert variant="success" className="flex items-center gap-2.5">
+									<Check className="shrink-0" />
+									<AlertDescription className="text-success-muted-foreground">
 										Email Routing is configured — inbound mail will be delivered to this inbox.
-									</span>
-								</div>
+									</AlertDescription>
+								</Alert>
 							) : (
-								<div className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3">
-									<div className="flex items-center gap-2.5 text-sm text-amber-800">
-										<AlertTriangle size={15} className="shrink-0 text-amber-500" />
-										<span>Email Routing couldn't be configured automatically.</span>
+								<Alert variant="warning" className="flex flex-col gap-3">
+									<div className="flex items-center gap-2.5">
+										<AlertTriangle className="shrink-0" />
+										<AlertDescription className="text-warning-muted-foreground">
+											Email Routing couldn't be configured automatically.
+										</AlertDescription>
 									</div>
 									{createdInbox.routing?.error && (
-										<p className="text-[12px] text-amber-700 break-words">
-											{createdInbox.routing.error}
-										</p>
+										<p className="text-xs break-words">{createdInbox.routing.error}</p>
 									)}
 									<Button
 										size="sm"
@@ -543,14 +642,12 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 										disabled={routingId === createdInbox.id}
 										onClick={handleRetryRouting}
 									>
-										{routingId === createdInbox.id && (
-											<Loader2 size={12} className="animate-spin" />
-										)}
+										{routingId === createdInbox.id && <Spinner data-icon="inline-start" />}
 										Retry setup
 									</Button>
-								</div>
+								</Alert>
 							)}
-							<p className="text-[12px] text-muted-foreground">
+							<p className="text-xs text-muted-foreground">
 								You can also configure routing later from the inbox list.
 							</p>
 						</div>
@@ -567,61 +664,31 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 							{assignMembers.length > 0 && (
 								<div className="flex flex-col gap-1">
 									{assignMembers.map((u) => (
-										<div
+										<MemberRow
 											key={u.id}
-											className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/50"
-										>
-											<div>
-												<p className="text-[13px] font-medium text-foreground">{u.name}</p>
-												<p className="text-[11.5px] text-muted-foreground">{u.email}</p>
-											</div>
-											<button
-												onClick={() =>
-													setAssignMembers((prev) => prev.filter((m) => m.id !== u.id))
-												}
-												className="text-muted-foreground hover:text-destructive transition-colors"
-											>
-												<Trash2 size={13} />
-											</button>
-										</div>
+											user={u}
+											className="bg-muted/50"
+											onRemove={() =>
+												setAssignMembers((prev) => prev.filter((m) => m.id !== u.id))
+											}
+										/>
 									))}
 								</div>
 							)}
 
-							{assignUsers.filter((u) => !assignMembers.some((m) => m.id === u.id)).length === 0 ? (
+							{assignableUsers.length === 0 ? (
 								<p className="text-xs text-muted-foreground">All users are already members</p>
 							) : (
-								<div className="flex gap-2">
-									<Select value={assignUserId} onValueChange={(v) => setAssignUserId(v ?? "")}>
-										<SelectTrigger className="flex-1">
-											<SelectValue placeholder="Select user…" />
-										</SelectTrigger>
-										<SelectContent>
-											{assignUsers
-												.filter((u) => !assignMembers.some((m) => m.id === u.id))
-												.map((u) => (
-													<SelectItem key={u.id} value={u.id}>
-														{u.name} ({u.email})
-													</SelectItem>
-												))}
-										</SelectContent>
-									</Select>
-									<Button
-										size="sm"
-										onClick={handleAssignMember}
-										disabled={!assignUserId || assignAdding}
-									>
-										{assignAdding ? (
-											<Loader2 size={13} className="animate-spin" />
-										) : (
-											<Plus size={13} />
-										)}
-										Add
-									</Button>
-								</div>
+								<UserPicker
+									users={assignableUsers}
+									value={assignUserId}
+									onValueChange={setAssignUserId}
+									onAdd={handleAssignMember}
+									adding={assignAdding}
+								/>
 							)}
 
-							<p className="text-[12px] text-muted-foreground">
+							<p className="text-xs text-muted-foreground">
 								You can add or remove members later from the inbox list.
 							</p>
 						</div>
@@ -642,7 +709,7 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 								onClick={handleCreateInbox}
 								disabled={creating || !localPart.trim() || !selectedDomain || !displayName.trim()}
 							>
-								{creating && <Loader2 size={13} className="animate-spin" />}
+								{creating && <Spinner data-icon="inline-start" />}
 								{creating ? "Creating…" : "Create"}
 							</Button>
 						)}
@@ -669,8 +736,9 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 					</DialogHeader>
 					<div className="flex flex-col gap-4 py-2">
 						<div className="flex flex-col gap-1.5">
-							<Label>Display name</Label>
+							<Label htmlFor="edit-inbox-display-name">Display name</Label>
 							<Input
+								id="edit-inbox-display-name"
 								placeholder="Support"
 								value={displayName}
 								onChange={(e) => setDisplayName(e.target.value)}
@@ -679,15 +747,7 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 						</div>
 						<div className="flex flex-col gap-1.5">
 							<Label>Mode</Label>
-							<Select value={mode} onValueChange={(v) => setMode(v as "thread" | "individual")}>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="thread">Thread</SelectItem>
-									<SelectItem value="individual">Individual</SelectItem>
-								</SelectContent>
-							</Select>
+							<ModeSelect value={mode} onValueChange={(v) => setMode(v as "thread" | "individual")} />
 						</div>
 					</div>
 					<DialogFooter>
@@ -695,7 +755,7 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 							Cancel
 						</Button>
 						<Button onClick={handleEditSave} disabled={saving || !displayName.trim()}>
-							{saving && <Loader2 size={13} className="animate-spin" />}
+							{saving && <Spinner data-icon="inline-start" />}
 							{saving ? "Saving…" : "Save changes"}
 						</Button>
 					</DialogFooter>
@@ -704,41 +764,34 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 
 			{/* Members Sheet */}
 			<Sheet open={!!membersInbox} onOpenChange={(open) => !open && setMembersInbox(null)}>
-				<SheetContent className="w-[420px] sm:max-w-[420px] px-6">
+				<SheetContent className="w-[420px] px-6 sm:max-w-[420px]">
 					<SheetHeader>
 						<SheetTitle>Members — {membersInbox?.display_name}</SheetTitle>
 					</SheetHeader>
 
 					<div className="flex flex-col gap-4 py-5">
 						{loadingMembers ? (
-							<div className="flex justify-center py-8">
-								<Loader2 size={16} className="animate-spin text-muted-foreground" />
+							<div className="space-y-2">
+								{[...Array(3)].map((_, i) => (
+									<Skeleton key={i} className="h-10 rounded-lg" />
+								))}
 							</div>
 						) : (
 							<>
 								{/* Current members */}
 								{members.length === 0 ? (
-									<p className="text-sm text-muted-foreground text-center py-4">
+									<p className="py-4 text-center text-sm text-muted-foreground">
 										No members assigned yet
 									</p>
 								) : (
 									<div className="flex flex-col gap-1">
 										{members.map((u) => (
-											<div
+											<MemberRow
 												key={u.id}
-												className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-muted/50"
-											>
-												<div>
-													<p className="text-[13px] font-medium text-foreground">{u.name}</p>
-													<p className="text-[11.5px] text-muted-foreground">{u.email}</p>
-												</div>
-												<button
-													onClick={() => handleRemoveMember(u.id)}
-													className="text-muted-foreground hover:text-destructive transition-colors"
-												>
-													<Trash2 size={13} />
-												</button>
-											</div>
+												user={u}
+												className="hover:bg-muted/50"
+												onRemove={() => handleRemoveMember(u.id)}
+											/>
 										))}
 									</div>
 								)}
@@ -751,32 +804,13 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 									{nonMembers.length === 0 ? (
 										<p className="text-xs text-muted-foreground">All users are already members</p>
 									) : (
-										<div className="flex gap-2">
-											<Select value={addUserId} onValueChange={(v) => setAddUserId(v ?? "")}>
-												<SelectTrigger className="flex-1">
-													<SelectValue placeholder="Select user…" />
-												</SelectTrigger>
-												<SelectContent>
-													{nonMembers.map((u) => (
-														<SelectItem key={u.id} value={u.id}>
-															{u.name} ({u.email})
-														</SelectItem>
-													))}
-												</SelectContent>
-											</Select>
-											<Button
-												size="sm"
-												onClick={handleAddMember}
-												disabled={!addUserId || addingMember}
-											>
-												{addingMember ? (
-													<Loader2 size={13} className="animate-spin" />
-												) : (
-													<Plus size={13} />
-												)}
-												Add
-											</Button>
-										</div>
+										<UserPicker
+											users={nonMembers}
+											value={addUserId}
+											onValueChange={setAddUserId}
+											onAdd={handleAddMember}
+											adding={addingMember}
+										/>
 									)}
 								</div>
 							</>
@@ -790,21 +824,21 @@ export default function InboxSettings({ initialInboxes, initialDomains }: InboxS
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Delete inbox?</DialogTitle>
+						<DialogDescription>
+							All associated emails and threads will be permanently deleted. This cannot be undone.
+						</DialogDescription>
 					</DialogHeader>
-					<p className="text-sm text-muted-foreground">
-						All associated emails and threads will be permanently deleted. This cannot be undone.
-					</p>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setDeleteId(null)}>
 							Cancel
 						</Button>
 						<Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-							{deleting && <Loader2 size={13} className="animate-spin" />}
+							{deleting && <Spinner data-icon="inline-start" />}
 							Delete
 						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</PageShell>
 	);
 }

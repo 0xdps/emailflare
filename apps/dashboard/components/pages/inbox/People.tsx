@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Loader2, Search, Send, MailOpen, ChevronDown, ChevronRight, Reply, PenLine } from "lucide-react";
+import { Search, MailOpen, ChevronDown, Reply, PenLine } from "lucide-react";
 import {
 	getPeople,
 	getThread,
@@ -17,21 +17,30 @@ import { markReadAction } from "@/app/actions/inbox";
 import { cn } from "@/lib/utils";
 import { groupThread, replyReferences, ThreadGroup } from "@/lib/threading";
 import { useNotifications } from "@/hooks/useNotifications";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import { avatarTone, initialsOf } from "@/lib/inbox/format";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import OwnerAccessBanner from "@/components/OwnerAccessBanner";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function initials(name: string | null, email: string) {
-	if (name)
-		return name
-			.split(" ")
-			.map((s) => s[0])
-			.join("")
-			.slice(0, 2)
-			.toUpperCase();
-	return email[0].toUpperCase();
-}
 
 function relativeTime(dateStr: string) {
 	const diff = Date.now() - new Date(dateStr).getTime();
@@ -72,49 +81,50 @@ function stripQuotedReply(body: string | null | undefined): string {
 function ContactRow({ person, selected, onClick }: { person: Person; selected: boolean; onClick: () => void }) {
 	const hasUnread = person.unread_count > 0;
 	return (
-		<button
+		<Button
+			variant="ghost"
 			onClick={onClick}
+			aria-pressed={selected}
 			className={cn(
-				"w-full text-left px-4 py-3 flex items-start gap-3 border-b border-border transition-colors relative",
-				selected ? "bg-zinc-100" : "hover:bg-zinc-50",
+				"relative h-auto w-full items-start justify-start gap-3 rounded-none border-0 border-b border-border px-4 py-3 text-left font-normal whitespace-normal",
+				selected && "bg-muted hover:bg-muted",
 			)}
 		>
-			{/* Selected indicator */}
-			{selected && <span className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-orange-500" />}
+			{selected && <span aria-hidden className="absolute inset-y-3 left-0 w-0.5 rounded-r-full bg-primary" />}
 
-			{/* Avatar */}
-			<div className="size-8 rounded-full bg-zinc-200 flex items-center justify-center shrink-0 mt-0.5">
-				<span className="text-[11px] font-semibold text-zinc-600">{initials(person.name, person.email)}</span>
-			</div>
+			<Avatar className="mt-0.5">
+				<AvatarFallback className={cn("text-xs font-semibold", avatarTone(person.email))}>
+					{initialsOf(person.name, person.email)}
+				</AvatarFallback>
+			</Avatar>
 
-			{/* Info */}
-			<div className="flex-1 min-w-0">
-				<div className="flex items-baseline justify-between gap-2">
-					<p
+			<span className="block min-w-0 flex-1">
+				<span className="flex items-baseline justify-between gap-2">
+					<span
 						className={cn(
-							"text-[13px] truncate",
-							hasUnread ? "font-semibold text-zinc-900" : "font-medium text-zinc-700",
+							"truncate text-sm",
+							hasUnread ? "font-semibold text-foreground" : "font-medium text-foreground/90",
 						)}
 					>
 						{person.name ?? person.email}
-					</p>
-					<span className="text-[11px] text-zinc-400 shrink-0 tabular-nums">
+					</span>
+					<span className="shrink-0 text-2xs text-muted-foreground tabular-nums">
 						{person.last_email_at ? relativeTime(person.last_email_at) : ""}
 					</span>
-				</div>
-				{person.name && <p className="text-[11.5px] text-zinc-400 truncate mt-0.5">{person.email}</p>}
-				<div className="flex items-center gap-2 mt-1">
-					<span className="text-[11px] text-zinc-400">
+				</span>
+				{person.name && (
+					<span className="mt-0.5 block truncate text-xs text-muted-foreground">{person.email}</span>
+				)}
+				<span className="mt-1 flex items-center gap-2">
+					<span className="text-2xs text-muted-foreground">
 						{person.total_count} msg{person.total_count !== 1 ? "s" : ""}
 					</span>
 					{hasUnread && (
-						<span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-orange-500 text-white text-[9.5px] font-semibold tabular-nums">
-							{person.unread_count}
-						</span>
+						<Badge className="h-4 min-w-4 px-1 text-2xs tabular-nums">{person.unread_count}</Badge>
 					)}
-				</div>
-			</div>
-		</button>
+				</span>
+			</span>
+		</Button>
 	);
 }
 
@@ -139,29 +149,36 @@ function EmailCard({
 	return (
 		<div
 			className={cn(
-				"rounded-lg border overflow-hidden transition-shadow",
-				open ? "border-zinc-200 shadow-sm" : "border-zinc-100 hover:border-zinc-200",
+				"overflow-hidden rounded-lg border transition-shadow",
+				open ? "border-border shadow-sm" : "hover:border-border",
 			)}
 		>
-			<div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-zinc-50/60">
-				<button className="flex-1 flex items-start gap-3 text-left min-w-0" onClick={() => setOpen((v) => !v)}>
-					{/* Sender avatar */}
-					<div
-						className={cn(
-							"size-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-semibold",
-							isSent ? "bg-orange-100 text-orange-700" : "bg-zinc-200 text-zinc-600",
-						)}
-					>
-						{isSent ? "Me" : (subject?.[0]?.toUpperCase() ?? "?")}
-					</div>
+			<div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/40">
+				<Button
+					variant="ghost"
+					className="h-auto min-w-0 flex-1 items-start justify-start gap-3 rounded-none p-0 text-left font-normal whitespace-normal hover:bg-transparent dark:hover:bg-transparent"
+					onClick={() => setOpen((v) => !v)}
+					aria-expanded={open}
+				>
+					<Avatar size="sm" className="mt-0.5">
+						<AvatarFallback
+							className={cn(
+								"text-2xs font-semibold",
+								isSent
+									? "bg-primary-muted text-primary-muted-foreground"
+									: "bg-muted text-muted-foreground",
+							)}
+						>
+							{isSent ? "Me" : (subject?.[0]?.toUpperCase() ?? "?")}
+						</AvatarFallback>
+					</Avatar>
 
-					{/* Content */}
-					<div className="flex-1 min-w-0">
-						<div className="flex items-baseline justify-between gap-3">
-							<p className="text-[12.5px] font-semibold text-zinc-800 truncate">
+					<span className="block min-w-0 flex-1">
+						<span className="flex items-baseline justify-between gap-3">
+							<span className="truncate text-xs font-semibold text-foreground">
 								{isSent ? "You" : subject || "(no subject)"}
-							</p>
-							<span className="text-[11px] text-zinc-400 shrink-0 tabular-nums">
+							</span>
+							<span className="shrink-0 text-2xs text-muted-foreground tabular-nums">
 								{date.toLocaleString(undefined, {
 									month: "short",
 									day: "numeric",
@@ -169,41 +186,45 @@ function EmailCard({
 									minute: "2-digit",
 								})}
 							</span>
-						</div>
-						{!open && preview && <p className="text-[12px] text-zinc-400 truncate mt-0.5">{preview}</p>}
-						{isSent && (
-							<span className="mt-1 inline-block text-[10.5px] text-orange-600 bg-orange-50 border border-orange-100 rounded px-1.5 py-0.5 font-medium">
-								Sent
-							</span>
+						</span>
+						{!open && preview && (
+							<span className="mt-0.5 block truncate text-xs text-muted-foreground">{preview}</span>
 						)}
-					</div>
+						{isSent && (
+							<Badge variant="soft" className="mt-1 h-4 rounded-sm text-2xs">
+								Sent
+							</Badge>
+						)}
+					</span>
 
-					{/* Chevron */}
 					<ChevronDown
-						size={13}
-						className={cn("text-zinc-300 shrink-0 mt-0.5 transition-transform", open && "rotate-180")}
+						className={cn(
+							"mt-0.5 size-3.5 shrink-0 text-muted-foreground transition-transform",
+							open && "rotate-180",
+						)}
 					/>
-				</button>
+				</Button>
 
-				{/* Per-message reply */}
 				{onReply && (
-					<button
+					<Button
+						variant="ghost"
+						size="xs"
 						onClick={() => onReply(item)}
-						className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded text-[11px] font-medium text-zinc-500 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+						className="shrink-0 text-muted-foreground hover:text-primary"
 						title={`Reply to ${isSent ? "this message" : (subject ?? "message")}`}
 					>
-						<Reply size={12} />
+						<Reply />
 						Reply
-					</button>
+					</Button>
 				)}
 			</div>
 
 			{open && (
-				<div className="px-4 pb-4 pt-1 border-t border-zinc-100">
+				<div className="border-t border-border px-4 pt-1 pb-4">
 					{body ? (
-						<p className="text-[13px] text-zinc-700 leading-relaxed whitespace-pre-wrap">{body}</p>
+						<p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">{body}</p>
 					) : (
-						<p className="text-[13px] text-zinc-400 italic">No plain-text content</p>
+						<p className="text-sm text-muted-foreground italic">No plain-text content</p>
 					)}
 				</div>
 			)}
@@ -238,36 +259,36 @@ function ThreadPanel({
 	}, [thread.thread.length]);
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex h-full flex-col">
 			{/* Header */}
-			<div className="h-14 border-b border-border px-6 flex items-center gap-3 shrink-0 bg-background">
-				<div className="size-8 rounded-full bg-zinc-200 flex items-center justify-center shrink-0">
-					<span className="text-[11px] font-semibold text-zinc-600">
-						{initials(person.name, person.email)}
-					</span>
+			<div className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-6">
+				<Avatar>
+					<AvatarFallback className={cn("text-xs font-semibold", avatarTone(person.email))}>
+						{initialsOf(person.name, person.email)}
+					</AvatarFallback>
+				</Avatar>
+				<div className="min-w-0 flex-1 leading-none">
+					<p className="text-sm font-semibold text-foreground">{person.name ?? person.email}</p>
+					{person.name && <p className="mt-1 text-xs text-muted-foreground">{person.email}</p>}
 				</div>
-				<div className="flex-1 min-w-0 leading-none">
-					<p className="text-[13.5px] font-semibold text-zinc-900">{person.name ?? person.email}</p>
-					{person.name && <p className="text-[11.5px] text-zinc-400 mt-[3px]">{person.email}</p>}
-				</div>
-				<span className="text-[11.5px] text-zinc-400 shrink-0">
+				<span className="shrink-0 text-xs text-muted-foreground">
 					{groups.length} conversation{groups.length !== 1 ? "s" : ""}
 				</span>
 			</div>
 
 			{/* Threads grouped by inbox */}
-			<div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-6">
+			<div className="flex flex-1 flex-col gap-6 overflow-y-auto px-6 py-5">
 				{Array.from(inboxGroups.entries()).map(([inboxAddr, inboxThreads]) => (
 					<div key={inboxAddr}>
 						{/* Inbox header */}
-						<div className="flex items-center gap-2 mb-3">
-							<span className="text-[10.5px] font-semibold text-zinc-400 uppercase tracking-wide">
+						<div className="mb-3 flex items-center gap-2">
+							<span className="text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
 								{inboxAddr}
 							</span>
-							<span className="text-[10px] text-zinc-300">
+							<span className="text-2xs text-muted-foreground/70">
 								{inboxThreads.length} thread{inboxThreads.length !== 1 ? "s" : ""}
 							</span>
-							<span className="flex-1 h-px bg-zinc-100" />
+							<Separator className="flex-1" />
 						</div>
 						{/* Threads within this inbox */}
 						<div className="flex flex-col gap-4">
@@ -275,13 +296,13 @@ function ThreadPanel({
 								<div key={group.key} className="flex flex-col gap-2">
 									{/* Sub-thread label */}
 									<div className="flex items-center gap-2">
-										<span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide truncate">
+										<span className="truncate text-2xs font-semibold tracking-wide text-muted-foreground uppercase">
 											{group.subject ?? "(no subject)"}
 										</span>
-										<span className="text-[10.5px] text-zinc-300 shrink-0">
+										<span className="shrink-0 text-2xs text-muted-foreground/70">
 											{group.items.length} msg{group.items.length !== 1 ? "s" : ""}
 										</span>
-										<span className="flex-1 h-px bg-zinc-100" />
+										<Separator className="flex-1" />
 									</div>
 									{group.items.map((item: ThreadItem, i: number) => (
 										<EmailCard
@@ -306,10 +327,14 @@ function ThreadPanel({
 
 function EmptyState({ message }: { message: string }) {
 	return (
-		<div className="h-full flex flex-col items-center justify-center gap-3 select-none">
-			<MailOpen size={36} strokeWidth={1.25} className="text-zinc-300" />
-			<p className="text-[13px] text-zinc-400">{message}</p>
-		</div>
+		<Empty className="h-full select-none">
+			<EmptyHeader>
+				<EmptyMedia variant="icon">
+					<MailOpen />
+				</EmptyMedia>
+				<EmptyDescription>{message}</EmptyDescription>
+			</EmptyHeader>
+		</Empty>
 	);
 }
 
@@ -339,6 +364,7 @@ export default function People({
 	const [composeBody, setComposeBody] = useState("");
 	const [composeSending, setComposeSending] = useState(false);
 	const [replyTarget, setReplyTarget] = useState<ThreadItem | null>(null);
+	const importInputRef = useRef<HTMLInputElement>(null);
 
 	useNotifications((msg) => {
 		if (msg.type === "new_email") {
@@ -459,83 +485,84 @@ export default function People({
 			<OwnerAccessBanner />
 			<div className="flex flex-1 overflow-hidden">
 				{/* ── Left: contact list ── */}
-				<div className="w-[272px] shrink-0 flex flex-col border-r border-border h-full">
-					<div className="px-3 pt-3 flex items-center justify-between">
+				<div className="flex h-full w-68 shrink-0 flex-col border-r border-border">
+					<div className="flex items-center justify-between px-3 pt-3">
 						<h1 className="text-sm font-semibold tracking-tight">Contacts</h1>
-						<label className="text-[11px] text-muted-foreground cursor-pointer">
+						<Button
+							variant="ghost"
+							size="xs"
+							className="text-muted-foreground"
+							onClick={() => importInputRef.current?.click()}
+						>
 							Import CSV
-							<input
-								type="file"
-								accept=".csv,text/csv"
-								className="sr-only"
-								onChange={async (e) => {
-									const file = e.target.files?.[0];
-									const inbox = inboxes[0]?.email;
-									if (!file || !inbox) return;
-									const { default: client } = await import("@/lib/api");
-									await client.post(
-										`/api/inbox/people/import?inbox=${encodeURIComponent(inbox)}`,
-										await file.text(),
-										{
-											headers: { "Content-Type": "text/csv" },
-										},
-									);
-									loadPeople();
-									e.target.value = "";
-								}}
-							/>
-						</label>
+						</Button>
+						<Input
+							ref={importInputRef}
+							type="file"
+							accept=".csv,text/csv"
+							className="sr-only"
+							tabIndex={-1}
+							aria-label="Import CSV"
+							onChange={async (e) => {
+								const file = e.target.files?.[0];
+								const inbox = inboxes[0]?.email;
+								if (!file || !inbox) return;
+								const { default: client } = await import("@/lib/api");
+								await client.post(
+									`/api/inbox/people/import?inbox=${encodeURIComponent(inbox)}`,
+									await file.text(),
+									{
+										headers: { "Content-Type": "text/csv" },
+									},
+								);
+								loadPeople();
+								e.target.value = "";
+							}}
+						/>
 					</div>
 					{/* Compose (global) */}
-					<div className="px-3 pt-3 shrink-0">
-						<button
-							onClick={openCompose}
-							className="w-full inline-flex items-center justify-center gap-1.5 h-8 rounded-md bg-orange-500 text-white text-[12.5px] font-medium hover:bg-orange-600 transition-colors"
-						>
-							<PenLine size={13} />
+					<div className="shrink-0 px-3 pt-3">
+						<Button onClick={openCompose} className="w-full">
+							<PenLine />
 							Compose
-						</button>
+						</Button>
 					</div>
 
 					{/* Search + filter bar */}
-					<div className="h-14 border-b border-border flex items-center gap-2 px-3 shrink-0">
-						<div className="relative flex-1">
-							<Search
-								size={13}
-								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
-							/>
-							<input
+					<div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-3">
+						<InputGroup className="flex-1">
+							<InputGroupAddon>
+								<Search />
+							</InputGroupAddon>
+							<InputGroupInput
 								value={search}
 								onChange={(e) => setSearch(e.target.value)}
 								placeholder="Search…"
-								className="w-full h-8 pl-7 pr-3 rounded-md bg-zinc-100 text-[12.5px] text-zinc-800
-                placeholder:text-zinc-400 outline-none border border-transparent
-                focus:bg-white focus:border-orange-300 transition-colors"
 							/>
-						</div>
-						<div className="flex rounded-md border border-border overflow-hidden shrink-0">
+						</InputGroup>
+						<ToggleGroup
+							variant="outline"
+							size="sm"
+							spacing={0}
+							value={[filter]}
+							onValueChange={(v) => v[0] && setFilter(v[0] as "all" | "unread")}
+							className="shrink-0"
+						>
 							{(["all", "unread"] as const).map((f) => (
-								<button
-									key={f}
-									onClick={() => setFilter(f)}
-									className={cn(
-										"h-8 px-2.5 text-[11.5px] font-medium capitalize transition-colors",
-										filter === f
-											? "bg-zinc-900 text-white"
-											: "text-zinc-500 hover:text-zinc-800 bg-white hover:bg-zinc-50",
-									)}
-								>
+								<ToggleGroupItem key={f} value={f} className="text-xs capitalize">
 									{f}
-								</button>
+								</ToggleGroupItem>
 							))}
-						</div>
+						</ToggleGroup>
 					</div>
 
 					{/* List */}
 					<div className="flex-1 overflow-y-auto">
 						{loadingPeople ? (
-							<div className="flex items-center justify-center h-32">
-								<Loader2 size={16} className="animate-spin text-zinc-300" />
+							<div className="space-y-1 p-3">
+								{[...Array(5)].map((_, i) => (
+									<Skeleton key={i} className="h-14 rounded-lg" />
+								))}
 							</div>
 						) : filtered.length === 0 ? (
 							<EmptyState
@@ -557,10 +584,10 @@ export default function People({
 				</div>
 
 				{/* ── Right: thread ── */}
-				<div className="flex-1 min-w-0 h-full overflow-hidden">
+				<div className="h-full min-w-0 flex-1 overflow-hidden">
 					{loadingThread ? (
-						<div className="h-full flex items-center justify-center">
-							<Loader2 size={18} className="animate-spin text-zinc-300" />
+						<div className="flex h-full items-center justify-center">
+							<Spinner className="size-5 text-muted-foreground" />
 						</div>
 					) : selected && thread ? (
 						<ThreadPanel person={selected} thread={thread} onReply={openReply} />
@@ -576,23 +603,23 @@ export default function People({
 					<DialogHeader>
 						<DialogTitle>{replyTarget ? "Reply" : "New email"}</DialogTitle>
 						{replyTarget && (
-							<p className="text-[12px] text-muted-foreground">
+							<DialogDescription>
 								Replying to{" "}
 								<span className="font-medium text-foreground">
 									{replyTarget.subject ?? "(no subject)"}
 								</span>
-							</p>
+							</DialogDescription>
 						)}
 					</DialogHeader>
 					<div className="flex flex-col gap-3 py-2">
 						<div className="grid grid-cols-2 gap-3">
-							<div className="flex flex-col gap-1">
-								<span className="text-[11px] font-medium text-muted-foreground">From</span>
-								<input
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="compose-from">From</Label>
+								<Input
+									id="compose-from"
 									value={composeFrom}
 									onChange={(e) => setComposeFrom(e.target.value)}
 									list="compose-from-inboxes"
-									className="h-8 px-2.5 rounded-md border border-border text-[12.5px] outline-none focus:border-orange-300"
 								/>
 								<datalist id="compose-from-inboxes">
 									{inboxes.map((ib) => (
@@ -600,46 +627,43 @@ export default function People({
 									))}
 								</datalist>
 							</div>
-							<div className="flex flex-col gap-1">
-								<span className="text-[11px] font-medium text-muted-foreground">To</span>
-								<input
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor="compose-to">To</Label>
+								<Input
+									id="compose-to"
 									value={composeTo}
 									onChange={(e) => setComposeTo(e.target.value)}
-									className="h-8 px-2.5 rounded-md border border-border text-[12.5px] outline-none focus:border-orange-300"
 								/>
 							</div>
 						</div>
-						<div className="flex flex-col gap-1">
-							<span className="text-[11px] font-medium text-muted-foreground">Subject</span>
-							<input
+						<div className="flex flex-col gap-1.5">
+							<Label htmlFor="compose-subject">Subject</Label>
+							<Input
+								id="compose-subject"
 								value={composeSubject}
 								onChange={(e) => setComposeSubject(e.target.value)}
-								className="h-8 px-2.5 rounded-md border border-border text-[12.5px] outline-none focus:border-orange-300"
 							/>
 						</div>
-						<textarea
+						<Textarea
 							value={composeBody}
 							onChange={(e) => setComposeBody(e.target.value)}
 							placeholder="Write your message…"
 							rows={8}
-							className="w-full px-3 py-2.5 rounded-md border border-border text-[13px] outline-none resize-none focus:border-orange-300"
+							aria-label="Message"
+							className="resize-none"
 						/>
 					</div>
 					<DialogFooter>
-						<button
-							onClick={() => setComposeOpen(false)}
-							className="h-8 px-3 rounded-md border border-border text-[12.5px] text-muted-foreground hover:bg-muted transition-colors"
-						>
+						<Button variant="outline" onClick={() => setComposeOpen(false)}>
 							Cancel
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={handleComposeSend}
 							disabled={composeSending || !composeBody.trim() || !composeTo.trim() || !composeFrom.trim()}
-							className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-orange-500 text-white text-[12.5px] font-medium hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
 						>
-							{composeSending && <Loader2 size={12} className="animate-spin" />}
+							{composeSending && <Spinner />}
 							{composeSending ? "Sending…" : "Send"}
-						</button>
+						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>

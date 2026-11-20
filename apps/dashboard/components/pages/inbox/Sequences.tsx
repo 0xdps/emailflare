@@ -1,19 +1,36 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Pencil, Loader2, ListOrdered, GripVertical, X } from "lucide-react";
+import { Plus, Trash2, Pencil, ListOrdered, GripVertical, X } from "lucide-react";
 import { getSequences, Sequence, SequenceStep } from "@/lib/api";
 import { createSequenceAction, updateSequenceAction, deleteSequenceAction } from "@/app/actions/sequences";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import OwnerAccessBanner from "@/components/OwnerAccessBanner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePermissions } from "@/lib/UserContext";
+
+const DELAY_AFTER_ITEMS = [
+	{ value: "enrollment", label: "Enrollment" },
+	{ value: "previous", label: "Previous step" },
+];
 
 // ── Step editor ───────────────────────────────────────────────────────────────
 
@@ -29,11 +46,11 @@ function StepRow({
 	onRemove: () => void;
 }) {
 	return (
-		<div className="relative flex items-start gap-2 rounded-lg border-l-2 border-orange-200 bg-muted/40 p-3 pl-4">
-			<GripVertical size={14} className="mt-2.5 text-muted-foreground/40 shrink-0" />
+		<div className="relative flex items-start gap-2 rounded-lg border-l-2 border-primary/30 bg-muted/40 p-3 pl-4">
+			<GripVertical className="mt-2.5 size-3.5 shrink-0 text-muted-foreground/40" />
 			<div className="flex-1 flex flex-col gap-2">
 				<div className="flex items-center gap-2">
-					<Badge variant="outline" className="text-[10px] h-4 shrink-0">
+					<Badge variant="outline" className="h-4 shrink-0 text-2xs">
 						Step {index + 1}
 					</Badge>
 				</div>
@@ -43,7 +60,7 @@ function StepRow({
 						placeholder="e.g. welcome-email"
 						value={step.templateSlug}
 						onChange={(e) => onChange({ ...step, templateSlug: e.target.value })}
-						className="h-7 text-sm font-mono"
+						className="h-7 font-mono text-sm"
 					/>
 				</div>
 				<div className="flex gap-2">
@@ -60,23 +77,35 @@ function StepRow({
 					<div className="flex flex-col gap-1.5 flex-1">
 						<Label className="text-xs">After</Label>
 						<Select
+							items={DELAY_AFTER_ITEMS}
 							value={step.delayAfter}
-							onValueChange={(v) => onChange({ ...step, delayAfter: v as SequenceStep["delayAfter"] })}
+							onValueChange={(v) =>
+								v && onChange({ ...step, delayAfter: v as SequenceStep["delayAfter"] })
+							}
 						>
 							<SelectTrigger className="h-7 text-sm">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="enrollment">Enrollment</SelectItem>
-								<SelectItem value="previous">Previous step</SelectItem>
+								{DELAY_AFTER_ITEMS.map((item) => (
+									<SelectItem key={item.value} value={item.value}>
+										{item.label}
+									</SelectItem>
+								))}
 							</SelectContent>
 						</Select>
 					</div>
 				</div>
 			</div>
-			<button onClick={onRemove} className="mt-1 text-muted-foreground hover:text-destructive transition-colors">
-				<X size={14} />
-			</button>
+			<Button
+				variant="ghost"
+				size="icon-xs"
+				onClick={onRemove}
+				aria-label="Remove step"
+				className="mt-1 text-muted-foreground hover:text-destructive"
+			>
+				<X />
+			</Button>
 		</div>
 	);
 }
@@ -95,26 +124,27 @@ function SequenceCard({
 	onDelete: () => void;
 }) {
 	return (
-		<div className="bg-card rounded-xl p-5 flex flex-col gap-3 shadow-[0_1px_3px_oklch(0.138_0.012_50/0.08)]">
+		<Card className="gap-3 p-5">
 			<div className="flex items-start justify-between gap-2">
 				<div>
-					<p className="text-[14px] font-semibold text-foreground">{seq.name}</p>
-					<p className="text-[12px] text-muted-foreground mt-0.5">
+					<p className="text-sm font-semibold text-foreground">{seq.name}</p>
+					<p className="mt-0.5 text-xs text-muted-foreground">
 						{seq.steps.length} step{seq.steps.length !== 1 ? "s" : ""}
 					</p>
 				</div>
 				{isAdmin && (
 					<div className="flex gap-1.5">
-						<Button size="sm" variant="ghost" onClick={onEdit} className="h-7 px-2">
-							<Pencil size={13} />
+						<Button size="icon-sm" variant="ghost" onClick={onEdit} aria-label="Edit sequence">
+							<Pencil />
 						</Button>
 						<Button
-							size="sm"
+							size="icon-sm"
 							variant="ghost"
 							onClick={onDelete}
-							className="h-7 px-2 hover:text-destructive"
+							aria-label="Delete sequence"
+							className="hover:text-destructive"
 						>
-							<Trash2 size={13} />
+							<Trash2 />
 						</Button>
 					</div>
 				)}
@@ -123,8 +153,8 @@ function SequenceCard({
 			{seq.steps.length > 0 && (
 				<div className="flex flex-col gap-1">
 					{seq.steps.map((step, i) => (
-						<div key={i} className="flex items-center gap-2 text-[12px] text-muted-foreground">
-							<span className="size-4 rounded-full bg-muted flex items-center justify-center text-[9px] font-bold shrink-0">
+						<div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+							<span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-muted text-2xs font-semibold">
 								{i + 1}
 							</span>
 							<span className="font-mono">{step.templateSlug}</span>
@@ -139,10 +169,8 @@ function SequenceCard({
 				</div>
 			)}
 
-			<p className="text-[10.5px] text-muted-foreground/40">
-				Created {new Date(seq.created_at).toLocaleDateString()}
-			</p>
-		</div>
+			<p className="text-2xs text-muted-foreground">Created {new Date(seq.created_at).toLocaleDateString()}</p>
+		</Card>
 	);
 }
 
@@ -227,39 +255,46 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 	}
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex h-full flex-col">
 			<OwnerAccessBanner />
-			<div className="p-6 max-w-4xl">
-				{/* Header */}
-				<div className="flex items-center justify-between mb-6">
-					<div>
-						<h1 className="text-[18px] font-semibold text-foreground tracking-tight">Sequences</h1>
-						<p className="text-sm text-muted-foreground mt-0.5">Automate multi-step email campaigns</p>
-					</div>
-					{isAdmin && (
-						<Button size="sm" onClick={openCreate}>
-							<Plus size={14} />
-							New sequence
-						</Button>
-					)}
-				</div>
+			<PageShell className="mx-0">
+				<PageHeader
+					title="Sequences"
+					description="Automate multi-step email campaigns"
+					actions={
+						isAdmin && (
+							<Button onClick={openCreate}>
+								<Plus />
+								New sequence
+							</Button>
+						)
+					}
+				/>
 
 				{loading ? (
-					<div className="flex justify-center py-16">
-						<Loader2 size={20} className="animate-spin text-muted-foreground" />
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{[...Array(3)].map((_, i) => (
+							<Skeleton key={i} className="h-32 rounded-xl" />
+						))}
 					</div>
 				) : sequences.length === 0 ? (
-					<div className="flex flex-col items-center gap-3 py-20 text-muted-foreground">
-						<ListOrdered size={36} className="opacity-20" />
-						<p className="text-sm">No sequences yet</p>
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<ListOrdered />
+							</EmptyMedia>
+							<EmptyTitle>No sequences yet</EmptyTitle>
+						</EmptyHeader>
 						{isAdmin && (
-							<Button size="sm" variant="outline" onClick={openCreate}>
-								Create your first sequence
-							</Button>
+							<EmptyContent>
+								<Button variant="outline" onClick={openCreate}>
+									Create your first sequence
+								</Button>
+							</EmptyContent>
 						)}
-					</div>
+					</Empty>
 				) : (
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 						{sequences.map((seq) => (
 							<SequenceCard
 								key={seq.id}
@@ -274,7 +309,7 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 
 				{/* Create / Edit Sheet */}
 				<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-					<SheetContent className="w-[480px] sm:max-w-[480px] overflow-y-auto">
+					<SheetContent className="w-120 overflow-y-auto sm:max-w-120">
 						<SheetHeader>
 							<SheetTitle>{editing ? "Edit sequence" : "New sequence"}</SheetTitle>
 						</SheetHeader>
@@ -299,9 +334,8 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 										size="sm"
 										variant="outline"
 										onClick={() => setSteps((prev) => [...prev, emptyStep()])}
-										className="h-7 text-xs"
 									>
-										<Plus size={12} />
+										<Plus />
 										Add step
 									</Button>
 								</div>
@@ -331,7 +365,7 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 								Cancel
 							</Button>
 							<Button onClick={handleSave} disabled={saving || !name.trim()}>
-								{saving && <Loader2 size={13} className="animate-spin" />}
+								{saving && <Spinner />}
 								{saving ? "Saving…" : editing ? "Save changes" : "Create"}
 							</Button>
 						</SheetFooter>
@@ -343,22 +377,22 @@ export default function Sequences({ initialSequences }: { initialSequences?: Seq
 					<DialogContent>
 						<DialogHeader>
 							<DialogTitle>Delete sequence?</DialogTitle>
+							<DialogDescription>
+								This will also cancel all active enrollments. This action cannot be undone.
+							</DialogDescription>
 						</DialogHeader>
-						<p className="text-sm text-muted-foreground">
-							This will also cancel all active enrollments. This action cannot be undone.
-						</p>
 						<DialogFooter>
 							<Button variant="outline" onClick={() => setDeleteId(null)}>
 								Cancel
 							</Button>
 							<Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-								{deleting && <Loader2 size={13} className="animate-spin" />}
+								{deleting && <Spinner />}
 								Delete
 							</Button>
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
-			</div>
+			</PageShell>
 		</div>
 	);
 }

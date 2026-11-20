@@ -1,29 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-	Plus,
-	Trash2,
-	Copy,
-	CheckCheck,
-	Key,
-	X,
-	FlaskConical,
-	Zap,
-	ShieldCheck,
-	Clock,
-	Check,
-	Radio,
-} from "lucide-react";
+import { Plus, Trash2, Copy, CheckCheck, Key, FlaskConical, Zap } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
 import { createApiKeyAction, revokeApiKeyAction, type ApiKey, type CreatedApiKey as NewKey } from "@/app/actions/keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
 	Dialog,
 	DialogContent,
@@ -33,7 +24,7 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
 
 function timeAgo(iso: string) {
 	const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -41,6 +32,22 @@ function timeAgo(iso: string) {
 	if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
 	if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
 	return `${Math.floor(secs / 86400)}d ago`;
+}
+
+const SCOPE_ITEMS = [
+	{ value: "global", label: "Global (All Verified Domains)" },
+	{ value: "domain", label: "Domain Restricted" },
+	{ value: "multi", label: "Multi-domain" },
+];
+
+const KEY_TYPE_ITEM_CLASS =
+	"h-auto flex-1 justify-start gap-2 rounded-lg border border-border p-2.5 text-left data-pressed:border-primary/50 data-pressed:bg-primary-muted";
+
+function copyToClipboard(text: string, message: string) {
+	navigator.clipboard.writeText(text).then(
+		() => toast.success(message),
+		() => toast.error("Could not copy to clipboard"),
+	);
 }
 
 export interface KeysPageProps {
@@ -52,8 +59,6 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 	const [loading, setLoading] = useState(!initialKeys);
 	const [creating, setCreating] = useState(false);
 	const [newKey, setNewKey] = useState<NewKey | null>(null);
-	const [copied, setCopied] = useState(false);
-	const [copiedPrefixId, setCopiedPrefixId] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 	const [domains, setDomains] = useState<{ id: string; name: string }[]>([]);
 	const [form, setForm] = useState({
@@ -106,20 +111,8 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 		load();
 	}
 
-	function copyKey(key: string) {
-		navigator.clipboard.writeText(key);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	}
-
-	function copyPrefix(id: string, prefix: string) {
-		navigator.clipboard.writeText(prefix);
-		setCopiedPrefixId(id);
-		setTimeout(() => setCopiedPrefixId(null), 2000);
-	}
-
 	return (
-		<div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+		<PageShell>
 			{/* Confirm revoke dialog */}
 			<Dialog open={!!revokeId} onOpenChange={(open) => !open && setRevokeId(null)}>
 				<DialogContent>
@@ -145,66 +138,54 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 			<Dialog open={creating} onOpenChange={(open) => !open && setCreating(false)}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle className="text-base font-semibold">Create API Key</DialogTitle>
-						<DialogDescription className="text-xs">
+						<DialogTitle>Create API Key</DialogTitle>
+						<DialogDescription>
 							Generate a programmatic API key for transactional email delivery.
 						</DialogDescription>
 					</DialogHeader>
 
 					<form onSubmit={handleCreate} className="space-y-4 pt-2">
 						<div className="space-y-1.5">
-							<Label className="text-xs">Key Name / Description</Label>
+							<Label htmlFor="key-name">Key Name / Description</Label>
 							<Input
+								id="key-name"
 								value={form.name}
 								onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
 								required
 								placeholder="e.g. Production Backend, Signup Worker, CI/CD"
-								className="h-8.5 text-xs"
 							/>
 						</div>
 
 						<div className="space-y-1.5">
-							<Label className="text-xs">Environment & Type</Label>
-							<div className="grid grid-cols-2 gap-2">
-								<button
-									type="button"
-									onClick={() => setForm((f) => ({ ...f, type: "live" }))}
-									className={cn(
-										"flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all",
-										form.type === "live"
-											? "border-orange-500/50 bg-orange-500/10 text-foreground font-semibold"
-											: "border-border text-muted-foreground hover:bg-muted/40",
-									)}
-								>
-									<Zap size={14} className="text-orange-600 shrink-0" />
-									<div className="min-w-0">
-										<div className="text-xs font-semibold">Live Mode</div>
-										<div className="text-[10px] text-muted-foreground truncate font-mono">
+							<Label>Environment & Type</Label>
+							<ToggleGroup
+								value={[form.type]}
+								onValueChange={(value) => {
+									const next = value[0];
+									if (next === "live" || next === "test") setForm((f) => ({ ...f, type: next }));
+								}}
+								className="grid w-full grid-cols-2"
+							>
+								<ToggleGroupItem value="live" className={KEY_TYPE_ITEM_CLASS}>
+									<Zap className="shrink-0 text-primary" />
+									<span className="min-w-0">
+										<span className="block text-xs font-semibold">Live Mode</span>
+										<span className="block truncate font-mono text-2xs text-muted-foreground">
 											eflive_...
-										</div>
-									</div>
-								</button>
-
-								<button
-									type="button"
-									onClick={() => setForm((f) => ({ ...f, type: "test" }))}
-									className={cn(
-										"flex items-center gap-2 p-2.5 rounded-lg border text-left transition-all",
-										form.type === "test"
-											? "border-purple-500/50 bg-purple-500/10 text-foreground font-semibold"
-											: "border-border text-muted-foreground hover:bg-muted/40",
-									)}
-								>
-									<FlaskConical size={14} className="text-purple-600 shrink-0" />
-									<div className="min-w-0">
-										<div className="text-xs font-semibold">Sandbox Test</div>
-										<div className="text-[10px] text-muted-foreground truncate font-mono">
+										</span>
+									</span>
+								</ToggleGroupItem>
+								<ToggleGroupItem value="test" className={KEY_TYPE_ITEM_CLASS}>
+									<FlaskConical className="shrink-0 text-info" />
+									<span className="min-w-0">
+										<span className="block text-xs font-semibold">Sandbox Test</span>
+										<span className="block truncate font-mono text-2xs text-muted-foreground">
 											eftest_...
-										</div>
-									</div>
-								</button>
-							</div>
-							<p className="text-[11px] text-muted-foreground">
+										</span>
+									</span>
+								</ToggleGroupItem>
+							</ToggleGroup>
+							<p className="text-2xs text-muted-foreground">
 								{form.type === "test"
 									? "Emails sent with this test key will be captured into the in-house Test Mailbox without delivering."
 									: "Emails sent with this live key will be delivered via Cloudflare Email Routing."}
@@ -212,62 +193,53 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 						</div>
 
 						<div className="space-y-1.5">
-							<Label className="text-xs">Scope</Label>
+							<Label>Scope</Label>
 							<Select
+								items={SCOPE_ITEMS}
 								value={form.scope}
 								onValueChange={(v) => setForm((f) => ({ ...f, scope: v as typeof form.scope }))}
 							>
-								<SelectTrigger className="h-8.5 text-xs">
+								<SelectTrigger className="w-full">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="global" className="text-xs">
-										Global (All Verified Domains)
-									</SelectItem>
-									<SelectItem value="domain" className="text-xs">
-										Domain Restricted
-									</SelectItem>
-									<SelectItem value="multi" className="text-xs">
-										Multi-domain
-									</SelectItem>
+									{SCOPE_ITEMS.map((item) => (
+										<SelectItem key={item.value} value={item.value}>
+											{item.label}
+										</SelectItem>
+									))}
 								</SelectContent>
 							</Select>
 							{form.scope !== "global" && (
-								<div className="space-y-1 pt-1">
+								<div className="space-y-2 pt-1">
 									{domains.map((domain) => (
-										<label key={domain.id} className="flex items-center gap-2 text-xs">
-											<input
-												type="checkbox"
+										<Label key={domain.id} className="text-xs font-normal">
+											<Checkbox
 												checked={form.domainIds.includes(domain.id)}
-												onChange={(e) =>
+												onCheckedChange={(checked) =>
 													setForm((current) => ({
 														...current,
-														domainIds: e.target.checked
+														domainIds: checked
 															? [...current.domainIds, domain.id]
 															: current.domainIds.filter((id) => id !== domain.id),
 													}))
 												}
 											/>
 											<span className="font-mono">{domain.name}</span>
-										</label>
+										</Label>
 									))}
 									{domains.length === 0 && (
-										<p className="text-[11px] text-muted-foreground">Enable a domain first.</p>
+										<p className="text-2xs text-muted-foreground">Enable a domain first.</p>
 									)}
 								</div>
 							)}
 						</div>
 
 						<DialogFooter className="pt-2">
-							<Button
-								type="button"
-								variant="ghost"
-								onClick={() => setCreating(false)}
-								className="h-8 text-xs"
-							>
+							<Button type="button" variant="ghost" onClick={() => setCreating(false)}>
 								Cancel
 							</Button>
-							<Button type="submit" disabled={submitting} className="h-8 text-xs">
+							<Button type="submit" disabled={submitting}>
 								{submitting ? "Generating..." : "Create Secret Key"}
 							</Button>
 						</DialogFooter>
@@ -275,88 +247,79 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 				</DialogContent>
 			</Dialog>
 
-			{/* Page Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<div className="flex items-center gap-2 mb-1">
-						<Key size={14} className="text-orange-500" />
-						<span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-							Credentials & Auth
-						</span>
-					</div>
-					<h1 className="text-2xl font-bold tracking-tight text-foreground">API keys</h1>
-					<p className="text-xs text-muted-foreground mt-0.5">
+			<PageHeader
+				eyebrow="Credentials & Auth"
+				title="API keys"
+				description={
+					<>
 						Authenticate transactional HTTP requests to{" "}
-						<code className="text-foreground font-mono">POST /v1/send</code>.
-					</p>
-				</div>
-				<Button onClick={() => setCreating(true)} className="gap-1.5 text-xs h-8.5 shadow-xs">
-					<Plus size={14} />
-					<span>New API Key</span>
-				</Button>
-			</div>
+						<code className="font-mono text-foreground">POST /v1/send</code>.
+					</>
+				}
+				actions={
+					<Button onClick={() => setCreating(true)}>
+						<Plus />
+						<span>New API Key</span>
+					</Button>
+				}
+			/>
 
 			{/* Newly Created Key Alert Banner */}
 			{newKey && (
-				<div className="rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-950/40 p-4 space-y-3">
-					<div className="flex items-center justify-between gap-4">
-						<div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold text-xs">
-							<CheckCheck size={16} />
-							<span>API Key Created — Save It Now</span>
-						</div>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setNewKey(null)}
-							className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground"
-						>
+				<Alert variant="success" className="space-y-3 p-4">
+					<CheckCheck />
+					<AlertTitle>API Key Created — Save It Now</AlertTitle>
+					<AlertAction>
+						<Button variant="ghost" size="xs" onClick={() => setNewKey(null)}>
 							Dismiss
 						</Button>
-					</div>
-
-					<p className="text-xs text-emerald-900/80 dark:text-emerald-200/80">
+					</AlertAction>
+					<AlertDescription className="col-start-2 text-current">
 						Please copy your key immediately. For security reasons, you will not be able to view the full
 						token again.
-					</p>
-
-					<div className="flex items-center gap-2 bg-background border border-emerald-300/80 dark:border-emerald-800 rounded-lg p-2">
-						<code className="text-xs font-mono text-foreground font-semibold flex-1 select-all break-all">
+					</AlertDescription>
+					<div className="col-span-full flex items-center gap-2 rounded-lg border border-border bg-background p-2">
+						<code className="flex-1 font-mono text-xs font-semibold break-all text-foreground select-all">
 							{newKey.key}
 						</code>
 						<Button
 							variant="secondary"
 							size="sm"
-							onClick={() => copyKey(newKey.key)}
-							className="h-7 text-xs gap-1.5 shrink-0"
+							onClick={() => copyToClipboard(newKey.key, "API key copied")}
+							className="shrink-0"
 						>
-							{copied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-							<span>{copied ? "Copied" : "Copy Key"}</span>
+							<Copy />
+							<span>Copy Key</span>
 						</Button>
 					</div>
-				</div>
+				</Alert>
 			)}
 
-			{/* API Keys Table / Card */}
-			<div className="rounded-xl border border-border bg-card overflow-hidden">
-				<div className="px-5 py-3.5 border-b border-border bg-muted/20 flex items-center justify-between">
-					<span className="text-xs font-semibold text-foreground">Active API Keys ({keys.length})</span>
-					<span className="text-[11px] text-muted-foreground">Header: Authorization: Bearer &lt;key&gt;</span>
+			{/* API Keys */}
+			<Card className="gap-0 py-0">
+				<div className="flex items-center justify-between border-b border-border bg-muted/20 px-5 py-3.5">
+					<span className="text-sm font-semibold text-foreground">Active API Keys ({keys.length})</span>
+					<span className="text-2xs text-muted-foreground">Header: Authorization: Bearer &lt;key&gt;</span>
 				</div>
 
 				{loading ? (
-					<div className="p-5 space-y-3">
+					<div className="space-y-2 p-4">
 						{[...Array(3)].map((_, i) => (
 							<Skeleton key={i} className="h-14 rounded-lg" />
 						))}
 					</div>
 				) : keys.length === 0 ? (
-					<div className="text-center py-16 text-muted-foreground space-y-2">
-						<Key size={32} strokeWidth={1.25} className="mx-auto opacity-40 mb-1" />
-						<p className="text-xs font-semibold text-foreground">No active API keys found</p>
-						<p className="text-[11px] max-w-sm mx-auto">
-							Create your first API key to start dispatching transactional emails programmatically.
-						</p>
-					</div>
+					<Empty className="py-16">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Key />
+							</EmptyMedia>
+							<EmptyTitle>No active API keys found</EmptyTitle>
+							<EmptyDescription>
+								Create your first API key to start dispatching transactional emails programmatically.
+							</EmptyDescription>
+						</EmptyHeader>
+					</Empty>
 				) : (
 					<div className="divide-y divide-border">
 						{keys.map((k) => {
@@ -364,42 +327,36 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 							return (
 								<div
 									key={k.id}
-									className="p-4 md:px-5 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-muted/30 transition-colors"
+									className="flex flex-col justify-between gap-3 p-4 transition-colors hover:bg-muted/30 md:flex-row md:items-center md:px-5"
 								>
-									<div className="space-y-1 min-w-0">
-										<div className="flex items-center gap-2 flex-wrap">
-											<span className="text-xs font-semibold text-foreground">{k.name}</span>
+									<div className="min-w-0 space-y-1">
+										<div className="flex flex-wrap items-center gap-2">
+											<span className="text-sm font-semibold text-foreground">{k.name}</span>
 
 											{isTest ? (
-												<span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-													TEST SANDBOX
-												</span>
+												<Badge variant="info">TEST SANDBOX</Badge>
 											) : (
-												<span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-													LIVE PRODUCTION
-												</span>
+												<Badge variant="success">LIVE PRODUCTION</Badge>
 											)}
 
-											<Badge variant="outline" className="text-[10px] font-mono capitalize">
+											<Badge variant="outline" className="font-mono capitalize">
 												{k.scope}
 											</Badge>
 										</div>
 
-										<div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-											<div className="flex items-center gap-1 font-mono text-[11px]">
+										<div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+											<div className="flex items-center gap-1 font-mono text-2xs">
 												<span>{k.key_prefix}...</span>
-												<button
+												<Button
 													type="button"
-													onClick={() => copyPrefix(k.id, k.key_prefix)}
-													className="text-muted-foreground hover:text-foreground ml-0.5"
+													variant="ghost"
+													size="icon-xs"
+													aria-label="Copy key prefix"
 													title="Copy key prefix"
+													onClick={() => copyToClipboard(k.key_prefix, "Key prefix copied")}
 												>
-													{copiedPrefixId === k.id ? (
-														<Check size={11} className="text-emerald-500" />
-													) : (
-														<Copy size={11} />
-													)}
-												</button>
+													<Copy />
+												</Button>
 											</div>
 
 											<span>·</span>
@@ -414,14 +371,14 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 										</div>
 									</div>
 
-									<div className="flex items-center gap-2 shrink-0">
+									<div className="flex shrink-0 items-center gap-2">
 										<Button
 											variant="ghost"
 											size="sm"
 											onClick={() => setRevokeId(k.id)}
-											className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+											className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
 										>
-											<Trash2 size={12} className="mr-1.5" />
+											<Trash2 />
 											<span>Revoke</span>
 										</Button>
 									</div>
@@ -430,7 +387,7 @@ export default function KeysPage({ initialKeys }: KeysPageProps = {}) {
 						})}
 					</div>
 				)}
-			</div>
-		</div>
+			</Card>
+		</PageShell>
 	);
 }

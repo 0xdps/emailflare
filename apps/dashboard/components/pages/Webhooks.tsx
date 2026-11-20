@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Radio } from "lucide-react";
+import { KeyRound, Radio } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
 
 const EVENTS = ["email.sent", "email.failed", "email.opened", "email.clicked", "email.bounced"];
 
@@ -31,82 +37,95 @@ export default function WebhooksPage() {
 	}, []);
 
 	return (
-		<div className="mx-auto max-w-3xl space-y-6 p-6 md:p-8">
-			<div>
-				<div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-					<Radio size={14} className="text-orange-500" /> Delivery events
-				</div>
-				<h1 className="text-2xl font-semibold">Webhooks</h1>
-				<p className="mt-1 text-xs text-muted-foreground">
-					EmailFlare signs each request with HMAC-SHA256 in X-EmailFlare-Signature.
-				</p>
-			</div>
-			<form
-				className="space-y-3 rounded-xl border p-4"
-				onSubmit={async (e) => {
-					e.preventDefault();
-					const { data } = await api.post<{ secret: string }>("/api/webhooks", { url, events });
-					setSecret(data.secret);
-					setUrl("");
-					await load();
-				}}
-			>
-				<Input
-					value={url}
-					onChange={(e) => setUrl(e.target.value)}
-					placeholder="https://example.com/hooks/email"
-					required
-				/>
-				<div className="flex flex-wrap gap-3">
-					{EVENTS.map((event) => (
-						<label key={event} className="flex items-center gap-1.5 text-xs">
-							<input
-								type="checkbox"
-								checked={events.includes(event)}
-								onChange={(e) =>
-									setEvents((current) =>
-										e.target.checked
-											? [...current, event]
-											: current.filter((item) => item !== event),
-									)
-								}
-							/>
-							{event}
-						</label>
-					))}
-				</div>
-				<Button type="submit" size="sm" disabled={events.length === 0}>
-					Add webhook
-				</Button>
-			</form>
-			{secret && (
-				<p className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 font-mono text-xs text-orange-950">
-					Signing secret, shown once: {secret}
-				</p>
-			)}
-			<ul className="divide-y rounded-xl border">
-				{hooks.map((hook) => (
-					<li key={hook.id} className="flex items-center justify-between gap-3 px-4 py-3">
-						<div>
-							<p className="font-mono text-xs">{hook.url}</p>
-							<p className="text-[11px] text-muted-foreground">{hook.events}</p>
+		<PageShell width="narrow">
+			<PageHeader
+				eyebrow="Delivery events"
+				title="Webhooks"
+				description="EmailFlare signs each request with HMAC-SHA256 in X-EmailFlare-Signature."
+			/>
+			<Card>
+				<CardContent>
+					<form
+						className="space-y-3"
+						onSubmit={async (e) => {
+							e.preventDefault();
+							const { data } = await api.post<{ secret: string }>("/api/webhooks", { url, events });
+							setSecret(data.secret);
+							setUrl("");
+							await load();
+						}}
+					>
+						<Input
+							value={url}
+							onChange={(e) => setUrl(e.target.value)}
+							placeholder="https://example.com/hooks/email"
+							required
+						/>
+						<div className="flex flex-wrap gap-x-4 gap-y-2">
+							{EVENTS.map((event) => (
+								<Label key={event} className="gap-1.5 text-xs">
+									<Checkbox
+										checked={events.includes(event)}
+										onCheckedChange={(checked) =>
+											setEvents((current) =>
+												checked
+													? [...current, event]
+													: current.filter((item) => item !== event),
+											)
+										}
+									/>
+									{event}
+								</Label>
+							))}
 						</div>
-						<Button
-							size="sm"
-							variant="ghost"
-							onClick={async () => {
-								await api.delete(`/api/webhooks/${hook.id}`);
-								await load();
-							}}
-						>
-							Disable
+						<Button type="submit" size="sm" disabled={events.length === 0}>
+							Add webhook
 						</Button>
-					</li>
-				))}
-				{hooks.length === 0 && (
-					<li className="px-4 py-8 text-center text-xs text-muted-foreground">No webhooks yet.</li>
+					</form>
+				</CardContent>
+			</Card>
+			{secret && (
+				<Alert variant="warning">
+					<KeyRound />
+					<AlertTitle>Signing secret, shown once</AlertTitle>
+					<AlertDescription className="font-mono text-xs break-all text-current select-all">
+						{secret}
+					</AlertDescription>
+				</Alert>
+			)}
+			<Card className="gap-0 py-0">
+				{hooks.length === 0 ? (
+					<Empty className="py-12">
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Radio />
+							</EmptyMedia>
+							<EmptyTitle>No webhooks yet.</EmptyTitle>
+						</EmptyHeader>
+					</Empty>
+				) : (
+					<ul className="divide-y divide-border">
+						{hooks.map((hook) => (
+							<li key={hook.id} className="flex items-center justify-between gap-3 px-4 py-3">
+								<div className="min-w-0">
+									<p className="font-mono text-xs break-all">{hook.url}</p>
+									<p className="text-2xs text-muted-foreground">{hook.events}</p>
+								</div>
+								<Button
+									size="sm"
+									variant="ghost"
+									onClick={async () => {
+										await api.delete(`/api/webhooks/${hook.id}`);
+										await load();
+									}}
+								>
+									Disable
+								</Button>
+							</li>
+						))}
+					</ul>
 				)}
-			</ul>
-		</div>
+			</Card>
+		</PageShell>
 	);
 }

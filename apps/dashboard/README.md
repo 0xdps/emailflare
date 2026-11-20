@@ -35,6 +35,27 @@ The Worker entrypoint in `worker/index.ts` dispatches requests and events based 
 
 ---
 
+## Design System
+
+The UI is [shadcn/ui](https://ui.shadcn.com) (Base UI flavour, `components.json`) with one EmailFlare theme.
+
+| Where                      | What                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
+| `app/theme.css`            | **Only place colours live.** Light + dark tokens, status colours, shadows, type scale.        |
+| `components/ui/`           | shadcn primitives. Add with `pnpm dlx shadcn@latest add <name>`; brand tweaks go in variants. |
+| `components/app/`          | App shell pieces built from primitives (sidebar, header, theme provider).                     |
+| `lib/nav/config.ts`        | Single source for sidebar, breadcrumb, ⌘K palette and `g`-then-key shortcuts.                 |
+| `components/modules/inbox` | Inbox feature: list, reader, composer. State lives in `hooks/useInbox*.ts`.                   |
+
+Rules:
+
+- Use semantic tokens (`bg-primary`, `text-muted-foreground`, `bg-success-muted`, `text-2xs`) — never palette classes like `bg-orange-500` or `text-zinc-400`.
+- Use `components/ui` primitives instead of raw `<button>`, `<input>`, `<select>`, `<textarea>` or `<table>`.
+- To re-brand, edit the variables in `app/theme.css`. Dark mode is the `.dark` block in the same file.
+- `pnpm lint:ui` enforces both rules. The baseline in `scripts/ui-baseline.json` is empty — keep it that way (the script also rejects `text-[Npx]` sizes).
+
+---
+
 ## Local Development
 
 ### 1. Prerequisites

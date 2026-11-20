@@ -2,25 +2,18 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import {
-	Shield,
-	ShieldCheck,
-	QrCode,
-	Key,
-	Lock,
-	Eye,
-	EyeOff,
-	Copy,
-	Check,
-	Download,
-	Smartphone,
-	AlertCircle,
-	CheckCircle2,
-	Loader2,
-} from "lucide-react";
+import { ShieldCheck, QrCode, Key, Copy, Check, Download, Smartphone, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
+import { FormError, PasswordField } from "@/components/app/auth/fields";
 
 export default function SecurityPage() {
 	const [enabled, setEnabled] = useState(false);
@@ -165,6 +158,7 @@ export default function SecurityPage() {
 
 	function copyToClipboard(text: string, type: "secret" | "backup") {
 		navigator.clipboard.writeText(text);
+		toast.success(type === "secret" ? "Secret key copied" : "Backup codes copied");
 		if (type === "secret") {
 			setCopiedSecret(true);
 			setTimeout(() => setCopiedSecret(false), 2000);
@@ -191,411 +185,363 @@ export default function SecurityPage() {
 
 	if (loading) {
 		return (
-			<div className="mx-auto max-w-xl p-6 md:p-8 flex items-center justify-center min-h-[300px]">
-				<Loader2 className="size-6 animate-spin text-muted-foreground" />
-			</div>
+			<PageShell width="narrow">
+				<div className="space-y-2">
+					<Skeleton className="h-4 w-32" />
+					<Skeleton className="h-8 w-64" />
+				</div>
+				<Skeleton className="h-80 rounded-xl" />
+				<Skeleton className="h-40 rounded-xl" />
+			</PageShell>
 		);
 	}
 
 	return (
-		<div className="mx-auto max-w-xl space-y-6 p-6 md:p-8">
-			{/* Page Header */}
-			<div>
-				<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Account security</p>
-				<h1 className="mt-1 text-2xl font-semibold tracking-tight">Security Settings</h1>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Manage your password, two-factor authentication, and account access.
-				</p>
-			</div>
+		<PageShell width="narrow">
+			<PageHeader
+				eyebrow="Account security"
+				title="Security Settings"
+				description="Manage your password, two-factor authentication, and account access."
+			/>
 
 			{/* Section 1: Change Password */}
-			<div className="rounded-xl border border-border bg-card p-6 space-y-5">
-				<div className="flex items-start gap-3.5">
-					<div className="size-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
-						<Key className="size-5" />
-					</div>
-					<div className="space-y-1">
-						<h2 className="text-sm font-semibold text-foreground">Change password</h2>
-						<p className="text-xs text-muted-foreground leading-relaxed">
-							Update your sign-in password. Passwords must be at least 8 characters long.
-						</p>
-					</div>
-				</div>
-
-				<form onSubmit={handleChangePassword} className="space-y-4 pt-1 max-w-md">
-					{/* Current Password */}
-					<div className="space-y-1.5">
-						<label className="text-xs font-medium text-foreground">Current password</label>
-						<div className="relative">
-							<Input
-								type={showCurrentPassword ? "text" : "password"}
-								value={currentPassword}
-								onChange={(e) => setCurrentPassword(e.target.value)}
-								placeholder="Enter your current password"
-								className="pr-10 h-9 text-xs"
-								autoComplete="current-password"
-								required
-							/>
-							<button
-								type="button"
-								onClick={() => setShowCurrentPassword((v) => !v)}
-								className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-								tabIndex={-1}
-							>
-								{showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-							</button>
+			<Card>
+				<CardContent className="space-y-5">
+					<div className="flex items-start gap-3.5">
+						<div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-muted text-primary-muted-foreground">
+							<Key className="size-5" />
+						</div>
+						<div className="space-y-1">
+							<h2 className="text-sm font-semibold text-foreground">Change password</h2>
+							<p className="text-xs leading-relaxed text-muted-foreground">
+								Update your sign-in password. Passwords must be at least 8 characters long.
+							</p>
 						</div>
 					</div>
 
-					{/* New Password */}
-					<div className="space-y-1.5">
-						<label className="text-xs font-medium text-foreground">New password</label>
-						<div className="relative">
-							<Input
-								type={showNewPassword ? "text" : "password"}
-								value={newPassword}
-								onChange={(e) => setNewPassword(e.target.value)}
-								placeholder="At least 8 characters"
-								minLength={8}
-								className="pr-10 h-9 text-xs"
-								autoComplete="new-password"
-								required
-							/>
-							<button
-								type="button"
-								onClick={() => setShowNewPassword((v) => !v)}
-								className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-								tabIndex={-1}
-							>
-								{showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-							</button>
-						</div>
-					</div>
+					<form onSubmit={handleChangePassword} className="max-w-md space-y-4 pt-1">
+						<PasswordField
+							id="current-password"
+							label="Current password"
+							value={currentPassword}
+							onChange={(e) => setCurrentPassword(e.target.value)}
+							visible={showCurrentPassword}
+							onVisibleChange={setShowCurrentPassword}
+							placeholder="Enter your current password"
+							autoComplete="current-password"
+							required
+						/>
 
-					{/* Confirm New Password */}
-					<div className="space-y-1.5">
-						<label className="text-xs font-medium text-foreground">Confirm new password</label>
-						<div className="relative">
-							<Input
-								type={showConfirmPassword ? "text" : "password"}
-								value={confirmPassword}
-								onChange={(e) => setConfirmPassword(e.target.value)}
-								placeholder="Re-enter your new password"
-								minLength={8}
-								className="pr-10 h-9 text-xs"
-								autoComplete="new-password"
-								required
-							/>
-							<button
-								type="button"
-								onClick={() => setShowConfirmPassword((v) => !v)}
-								className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-								tabIndex={-1}
-							>
-								{showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-							</button>
-						</div>
-					</div>
+						<PasswordField
+							id="new-password"
+							label="New password"
+							value={newPassword}
+							onChange={(e) => setNewPassword(e.target.value)}
+							visible={showNewPassword}
+							onVisibleChange={setShowNewPassword}
+							placeholder="At least 8 characters"
+							minLength={8}
+							autoComplete="new-password"
+							required
+						/>
 
-					{/* Password Messages */}
-					{passwordError && (
-						<div className="flex items-center gap-2 p-3 rounded-lg border border-destructive/20 bg-destructive/10 text-destructive text-xs">
-							<AlertCircle className="size-4 shrink-0" />
-							<p>{passwordError}</p>
-						</div>
-					)}
+						<PasswordField
+							id="confirm-new-password"
+							label="Confirm new password"
+							value={confirmPassword}
+							onChange={(e) => setConfirmPassword(e.target.value)}
+							visible={showConfirmPassword}
+							onVisibleChange={setShowConfirmPassword}
+							placeholder="Re-enter your new password"
+							minLength={8}
+							autoComplete="new-password"
+							required
+						/>
 
-					{passwordSuccess && (
-						<div className="flex items-center gap-2 p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs">
-							<CheckCircle2 className="size-4 shrink-0" />
-							<p>{passwordSuccess}</p>
-						</div>
-					)}
+						<FormError>{passwordError}</FormError>
 
-					<Button
-						type="submit"
-						size="sm"
-						disabled={changingPassword || !currentPassword || newPassword.length < 8 || !confirmPassword}
-						className="h-9 px-4 bg-orange-600 hover:bg-orange-700 text-white"
-					>
-						{changingPassword ? <Loader2 className="size-3.5 animate-spin" /> : "Update password"}
-					</Button>
-				</form>
-			</div>
+						{passwordSuccess && (
+							<Alert variant="success">
+								<CheckCircle2 />
+								<AlertDescription className="text-success-muted-foreground">
+									{passwordSuccess}
+								</AlertDescription>
+							</Alert>
+						)}
+
+						<Button
+							type="submit"
+							disabled={
+								changingPassword || !currentPassword || newPassword.length < 8 || !confirmPassword
+							}
+						>
+							{changingPassword ? <Spinner /> : "Update password"}
+						</Button>
+					</form>
+				</CardContent>
+			</Card>
 
 			{/* Section 2: Two-Factor Authentication */}
-			<div>
-				<h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-					Two-Factor Authentication
-				</h2>
-			</div>
+			<h2 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+				Two-Factor Authentication
+			</h2>
 
 			{/* Status Card: Enabled State */}
 			{enabled ? (
 				<div className="space-y-6">
-					<div className="rounded-xl border border-border bg-card p-5 space-y-4">
-						<div className="flex items-start gap-3.5">
-							<div className="size-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-								<ShieldCheck className="size-5" />
-							</div>
-							<div className="space-y-1">
-								<div className="flex items-center gap-2">
-									<h2 className="text-sm font-semibold text-foreground">
-										Authenticator app is active
-									</h2>
-									<span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-										<span className="size-1.5 rounded-full bg-emerald-500" />
-										Protected
-									</span>
-								</div>
-								<p className="text-xs text-muted-foreground leading-relaxed">
-									Your account requires a 6-digit one-time code from your authenticator app whenever
-									you sign in.
-								</p>
-							</div>
-						</div>
-
-						{/* Backup Codes Display (shown right after activation) */}
-						{backupCodes.length > 0 && (
-							<div className="mt-4 pt-4 border-t border-border/80 space-y-3">
-								<div className="flex items-center justify-between">
-									<div>
-										<h3 className="text-xs font-semibold text-foreground">
-											Save your backup codes
-										</h3>
-										<p className="text-[11px] text-muted-foreground">
-											Each code can only be used once if you lose access to your device.
-										</p>
-									</div>
-									<div className="flex items-center gap-1.5">
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											className="h-7 text-xs gap-1.5"
-											onClick={() => copyToClipboard(backupCodes.join("\n"), "backup")}
-										>
-											{copiedBackupCodes ? (
-												<Check className="size-3 text-emerald-500" />
-											) : (
-												<Copy className="size-3" />
-											)}
-											<span>{copiedBackupCodes ? "Copied" : "Copy"}</span>
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											className="h-7 text-xs gap-1.5"
-											onClick={downloadBackupCodes}
-										>
-											<Download className="size-3" />
-											<span>Download</span>
-										</Button>
-									</div>
-								</div>
-
-								<div className="grid grid-cols-2 gap-2 bg-muted/40 p-3.5 rounded-lg border border-border/60 font-mono text-xs text-center select-all">
-									{backupCodes.map((c, i) => (
-										<div
-											key={i}
-											className="py-1 px-2 rounded bg-background/60 border border-border/40 text-foreground"
-										>
-											{c}
-										</div>
-									))}
-								</div>
-							</div>
-						)}
-					</div>
-
-					{/* Turn Off Form */}
-					<div className="rounded-xl border border-border/80 bg-card p-5 space-y-3">
-						<h2 className="text-sm font-semibold text-foreground">Disable two-factor authentication</h2>
-						<p className="text-xs text-muted-foreground">
-							Enter the current 6-digit code from your authenticator app to turn off 2FA.
-						</p>
-
-						<form onSubmit={handleDisable} className="space-y-3 pt-1">
-							<div className="flex items-center gap-2 max-w-xs">
-								<Input
-									value={code}
-									onChange={(e) => setCode(e.target.value)}
-									placeholder="000000"
-									maxLength={8}
-									inputMode="numeric"
-									autoComplete="one-time-code"
-									className="h-9 font-mono text-sm tracking-widest text-center"
-									required
-								/>
-								<Button
-									type="submit"
-									variant="destructive"
-									size="sm"
-									className="h-9 shrink-0"
-									disabled={disabling || code.trim().length < 6}
-								>
-									{disabling ? <Loader2 className="size-3.5 animate-spin" /> : "Turn off"}
-								</Button>
-							</div>
-						</form>
-					</div>
-				</div>
-			) : (
-				/* Setup State */
-				<div className="rounded-xl border border-border bg-card p-6 space-y-6">
-					{!secret ? (
-						<div className="space-y-4">
+					<Card>
+						<CardContent className="space-y-4">
 							<div className="flex items-start gap-3.5">
-								<div className="size-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
-									<Smartphone className="size-5" />
+								<div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-success-muted text-success-muted-foreground">
+									<ShieldCheck className="size-5" />
 								</div>
 								<div className="space-y-1">
-									<h2 className="text-sm font-semibold text-foreground">Authenticator App (TOTP)</h2>
-									<p className="text-xs text-muted-foreground leading-relaxed">
-										Secure your account with Google Authenticator, 1Password, Apple Passwords,
-										Authy, or any standard TOTP app.
+									<div className="flex items-center gap-2">
+										<h2 className="text-sm font-semibold text-foreground">
+											Authenticator app is active
+										</h2>
+										<Badge variant="success">
+											<span className="size-1.5 rounded-full bg-success" />
+											Protected
+										</Badge>
+									</div>
+									<p className="text-xs leading-relaxed text-muted-foreground">
+										Your account requires a 6-digit one-time code from your authenticator app
+										whenever you sign in.
 									</p>
 								</div>
 							</div>
 
-							<Button
-								size="sm"
-								onClick={startSetup}
-								disabled={settingUp}
-								className="gap-2 bg-orange-600 hover:bg-orange-700 text-white"
-							>
-								{settingUp ? (
-									<Loader2 className="size-3.5 animate-spin" />
-								) : (
-									<QrCode className="size-4" />
-								)}
-								<span>Set up authenticator</span>
-							</Button>
-						</div>
-					) : (
-						<div className="space-y-6">
-							{/* Step 1: Scan QR Code */}
-							<div className="space-y-3">
-								<div className="flex items-center gap-2">
-									<span className="flex items-center justify-center size-5 rounded-full bg-orange-500/10 text-orange-600 text-xs font-semibold">
-										1
-									</span>
-									<h2 className="text-sm font-semibold text-foreground">Scan the QR code</h2>
-								</div>
-								<p className="text-xs text-muted-foreground">
-									Open your authenticator app (Google Authenticator, 1Password, Apple Passwords,
-									Authy) and scan the QR code below.
-								</p>
-
-								{/* QR Code Container */}
-								<div className="flex flex-col items-center justify-center p-6 bg-muted/30 rounded-xl border border-border/80">
-									{qrDataUrl ? (
-										<div className="p-3 bg-white rounded-xl shadow-sm border border-zinc-200">
-											<img
-												src={qrDataUrl}
-												alt="Authenticator setup QR code"
-												className="size-48 rounded"
-												width={192}
-												height={192}
-											/>
+							{/* Backup Codes Display (shown right after activation) */}
+							{backupCodes.length > 0 && (
+								<div className="mt-4 space-y-3 border-t border-border pt-4">
+									<div className="flex items-center justify-between gap-3">
+										<div>
+											<h3 className="text-xs font-semibold text-foreground">
+												Save your backup codes
+											</h3>
+											<p className="text-2xs text-muted-foreground">
+												Each code can only be used once if you lose access to your device.
+											</p>
 										</div>
-									) : (
-										<div className="size-48 flex items-center justify-center">
-											<Loader2 className="size-6 animate-spin text-muted-foreground" />
+										<div className="flex items-center gap-1.5">
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												onClick={() => copyToClipboard(backupCodes.join("\n"), "backup")}
+											>
+												{copiedBackupCodes ? <Check className="text-success" /> : <Copy />}
+												<span>{copiedBackupCodes ? "Copied" : "Copy"}</span>
+											</Button>
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												onClick={downloadBackupCodes}
+											>
+												<Download />
+												<span>Download</span>
+											</Button>
 										</div>
-									)}
+									</div>
 
-									{/* Secret Key Toggle / Copy */}
-									<div className="mt-4 w-full max-w-sm text-center">
-										<button
-											type="button"
-											onClick={() => setShowManualKey((v) => !v)}
-											className="text-[11px] text-muted-foreground hover:text-foreground font-medium underline underline-offset-4 transition-colors"
-										>
-											{showManualKey ? "Hide manual setup key" : "Can't scan? Enter key manually"}
-										</button>
-
-										{showManualKey && (
-											<div className="mt-3 p-3 bg-background rounded-lg border border-border/80 text-left space-y-2">
-												<div className="flex items-center justify-between">
-													<span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-														Secret key
-													</span>
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														className="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
-														onClick={() => copyToClipboard(secret, "secret")}
-													>
-														{copiedSecret ? (
-															<Check className="size-3 text-emerald-500" />
-														) : (
-															<Copy className="size-3" />
-														)}
-														<span>{copiedSecret ? "Copied" : "Copy"}</span>
-													</Button>
-												</div>
-												<p className="font-mono text-xs font-semibold tracking-wider text-foreground break-all select-all">
-													{formattedSecret}
-												</p>
+									<div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-muted/40 p-3.5 text-center font-mono text-xs select-all">
+										{backupCodes.map((c, i) => (
+											<div
+												key={i}
+												className="rounded border border-border bg-background/60 px-2 py-1 text-foreground"
+											>
+												{c}
 											</div>
-										)}
+										))}
 									</div>
 								</div>
-							</div>
+							)}
+						</CardContent>
+					</Card>
 
-							{/* Step 2: Verification Code Form */}
-							<form onSubmit={handleEnable} className="space-y-4 pt-2 border-t border-border/80">
-								<div className="flex items-center gap-2">
-									<span className="flex items-center justify-center size-5 rounded-full bg-orange-500/10 text-orange-600 text-xs font-semibold">
-										2
-									</span>
-									<h2 className="text-sm font-semibold text-foreground">Verify the code</h2>
-								</div>
-								<p className="text-xs text-muted-foreground">
-									Enter the 6-digit confirmation code shown in your authenticator app.
-								</p>
+					{/* Turn Off Form */}
+					<Card>
+						<CardContent className="space-y-3">
+							<h2 className="text-sm font-semibold text-foreground">Disable two-factor authentication</h2>
+							<p className="text-xs text-muted-foreground">
+								Enter the current 6-digit code from your authenticator app to turn off 2FA.
+							</p>
 
-								<div className="flex items-center gap-2.5 max-w-xs">
+							<form onSubmit={handleDisable} className="space-y-3 pt-1">
+								<div className="flex max-w-xs items-center gap-2">
 									<Input
 										value={code}
-										onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-										placeholder="123456"
-										maxLength={6}
+										onChange={(e) => setCode(e.target.value)}
+										placeholder="000000"
+										maxLength={8}
 										inputMode="numeric"
 										autoComplete="one-time-code"
-										autoFocus
-										className="h-10 font-mono text-base tracking-widest text-center font-medium"
+										aria-label="Authenticator code"
+										className="h-9 text-center font-mono text-sm tracking-widest"
 										required
 									/>
 									<Button
 										type="submit"
-										size="sm"
-										className="h-10 px-4 bg-orange-600 hover:bg-orange-700 text-white shrink-0"
-										disabled={confirming || code.trim().length !== 6}
+										variant="destructive"
+										size="lg"
+										className="shrink-0"
+										disabled={disabling || code.trim().length < 6}
 									>
-										{confirming ? (
-											<Loader2 className="size-3.5 animate-spin" />
-										) : (
-											"Confirm & Activate"
-										)}
+										{disabling ? <Spinner /> : "Turn off"}
 									</Button>
 								</div>
 							</form>
-						</div>
-					)}
+						</CardContent>
+					</Card>
 				</div>
+			) : (
+				/* Setup State */
+				<Card>
+					<CardContent className="space-y-6">
+						{!secret ? (
+							<div className="space-y-4">
+								<div className="flex items-start gap-3.5">
+									<div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-muted text-primary-muted-foreground">
+										<Smartphone className="size-5" />
+									</div>
+									<div className="space-y-1">
+										<h2 className="text-sm font-semibold text-foreground">
+											Authenticator App (TOTP)
+										</h2>
+										<p className="text-xs leading-relaxed text-muted-foreground">
+											Secure your account with Google Authenticator, 1Password, Apple Passwords,
+											Authy, or any standard TOTP app.
+										</p>
+									</div>
+								</div>
+
+								<Button onClick={startSetup} disabled={settingUp}>
+									{settingUp ? <Spinner /> : <QrCode />}
+									<span>Set up authenticator</span>
+								</Button>
+							</div>
+						) : (
+							<div className="space-y-6">
+								{/* Step 1: Scan QR Code */}
+								<div className="space-y-3">
+									<div className="flex items-center gap-2">
+										<span className="flex size-5 items-center justify-center rounded-full bg-primary-muted text-xs font-semibold text-primary-muted-foreground">
+											1
+										</span>
+										<h2 className="text-sm font-semibold text-foreground">Scan the QR code</h2>
+									</div>
+									<p className="text-xs text-muted-foreground">
+										Open your authenticator app (Google Authenticator, 1Password, Apple Passwords,
+										Authy) and scan the QR code below.
+									</p>
+
+									{/* QR Code Container */}
+									<div className="flex flex-col items-center justify-center rounded-xl border border-border bg-muted/30 p-6">
+										{qrDataUrl ? (
+											<div className="rounded-xl border border-border bg-white p-3 shadow-sm">
+												<img
+													src={qrDataUrl}
+													alt="Authenticator setup QR code"
+													className="size-48 rounded"
+													width={192}
+													height={192}
+												/>
+											</div>
+										) : (
+											<div className="flex size-48 items-center justify-center">
+												<Spinner className="size-6 text-muted-foreground" />
+											</div>
+										)}
+
+										{/* Secret Key Toggle / Copy */}
+										<div className="mt-4 w-full max-w-sm text-center">
+											<Button
+												type="button"
+												variant="link"
+												size="xs"
+												className="text-muted-foreground hover:text-foreground"
+												onClick={() => setShowManualKey((v) => !v)}
+											>
+												{showManualKey
+													? "Hide manual setup key"
+													: "Can't scan? Enter key manually"}
+											</Button>
+
+											{showManualKey && (
+												<div className="mt-3 space-y-2 rounded-lg border border-border bg-background p-3 text-left">
+													<div className="flex items-center justify-between">
+														<span className="text-2xs font-medium tracking-wider text-muted-foreground uppercase">
+															Secret key
+														</span>
+														<Button
+															type="button"
+															variant="ghost"
+															size="xs"
+															className="text-muted-foreground hover:text-foreground"
+															onClick={() => copyToClipboard(secret, "secret")}
+														>
+															{copiedSecret ? (
+																<Check className="text-success" />
+															) : (
+																<Copy />
+															)}
+															<span>{copiedSecret ? "Copied" : "Copy"}</span>
+														</Button>
+													</div>
+													<p className="font-mono text-xs font-semibold tracking-wider break-all text-foreground select-all">
+														{formattedSecret}
+													</p>
+												</div>
+											)}
+										</div>
+									</div>
+								</div>
+
+								{/* Step 2: Verification Code Form */}
+								<form onSubmit={handleEnable} className="space-y-4 border-t border-border pt-4">
+									<div className="flex items-center gap-2">
+										<span className="flex size-5 items-center justify-center rounded-full bg-primary-muted text-xs font-semibold text-primary-muted-foreground">
+											2
+										</span>
+										<h2 className="text-sm font-semibold text-foreground">Verify the code</h2>
+									</div>
+									<p className="text-xs text-muted-foreground">
+										Enter the 6-digit confirmation code shown in your authenticator app.
+									</p>
+
+									<div className="flex max-w-xs items-center gap-2.5">
+										<Input
+											value={code}
+											onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+											placeholder="123456"
+											maxLength={6}
+											inputMode="numeric"
+											autoComplete="one-time-code"
+											aria-label="6-digit confirmation code"
+											autoFocus
+											className="h-10 text-center font-mono text-base font-medium tracking-widest"
+											required
+										/>
+										<Button
+											type="submit"
+											size="lg"
+											className="shrink-0"
+											disabled={confirming || code.trim().length !== 6}
+										>
+											{confirming ? <Spinner /> : "Confirm & Activate"}
+										</Button>
+									</div>
+								</form>
+							</div>
+						)}
+					</CardContent>
+				</Card>
 			)}
 
 			{/* Error Alert */}
-			{error && (
-				<div className="flex items-center gap-2.5 p-3 rounded-lg border border-destructive/20 bg-destructive/10 text-destructive text-xs">
-					<AlertCircle className="size-4 shrink-0" />
-					<p>{error}</p>
-				</div>
-			)}
-		</div>
+			<FormError>{error}</FormError>
+		</PageShell>
 	);
 }

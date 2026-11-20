@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { Globe, Inbox, Key, ScrollText, Shield, Users, Radio } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader, PageShell } from "@/components/app/PageHeader";
+import { TONE_STYLES } from "@/components/app/StatCard";
+import { cn } from "@/lib/utils";
 
 interface AdminHomeProps {
 	domains: number;
@@ -47,19 +51,17 @@ export default function AdminHome(props: AdminHomeProps) {
 	const next = props.domains === 0 ? cards[0] : props.mailboxes === 0 ? cards[1] : null;
 
 	return (
-		<div className="mx-auto max-w-5xl space-y-6 p-6 md:p-8">
-			<div>
-				<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Admin</p>
-				<h1 className="mt-1 text-2xl font-semibold tracking-tight">Workspace</h1>
-				<p className="mt-1 text-sm text-muted-foreground">
-					Domains, mailboxes, team, and API keys for this EmailFlare install.
-				</p>
-			</div>
+		<PageShell>
+			<PageHeader
+				eyebrow="Admin"
+				title="Workspace"
+				description="Domains, mailboxes, team, and API keys for this EmailFlare install."
+			/>
 
 			{next && (
 				<Link
 					href={next.href}
-					className="block rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-950"
+					className="block rounded-xl border border-primary/30 bg-primary-muted px-4 py-3 text-sm text-primary-muted-foreground transition-colors hover:bg-primary-muted/70"
 				>
 					Next: {next.detail(props)}.
 				</Link>
@@ -69,20 +71,27 @@ export default function AdminHome(props: AdminHomeProps) {
 				{cards.map((card) => {
 					const Icon = card.icon;
 					return (
-						<Link
-							key={card.href}
-							href={card.href}
-							className="rounded-xl border bg-card p-4 transition-colors hover:bg-muted/40"
-						>
-							<div className="flex items-center gap-2">
-								<Icon size={15} className="text-orange-600" />
-								<h2 className="text-sm font-semibold">{card.title}</h2>
-							</div>
-							<p className="mt-2 text-xs text-muted-foreground">{card.detail(props)}</p>
+						<Link key={card.href} href={card.href} className="group/card-link block">
+							<Card className="h-full transition-colors group-hover/card-link:bg-muted/40">
+								<CardContent className="space-y-2">
+									<div className="flex items-center gap-2">
+										<span
+											className={cn(
+												"flex size-6 items-center justify-center rounded-md",
+												TONE_STYLES.brand.chip,
+											)}
+										>
+											<Icon className="size-3.5" />
+										</span>
+										<h2 className="text-sm font-semibold">{card.title}</h2>
+									</div>
+									<p className="text-xs text-muted-foreground">{card.detail(props)}</p>
+								</CardContent>
+							</Card>
 						</Link>
 					);
 				})}
 			</div>
-		</div>
+		</PageShell>
 	);
 }
