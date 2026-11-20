@@ -284,7 +284,11 @@ export async function upsertDnsRecords(
 				const message = err instanceof Error ? err.message : "DNS write failed";
 				const alreadyExists =
 					err instanceof CloudflareApiError &&
-					(err.code === 81057 || err.code === 81058 || /already exists/i.test(message));
+					(err.code === 81057 ||
+						err.code === 81058 ||
+						err.code === 81053 ||
+						err.code === 81056 ||
+						/already exists/i.test(message));
 				if (alreadyExists) {
 					written.push(record);
 				} else {

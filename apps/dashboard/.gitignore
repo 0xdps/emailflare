@@ -8,4 +8,5 @@ next-env.d.ts
 /dist/
 .vinext/
 .wrangler/
+wrangler.deploy.json
 worker-configuration.d.ts

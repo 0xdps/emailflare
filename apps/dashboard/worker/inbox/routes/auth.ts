@@ -9,6 +9,7 @@ import { getSession, saveSession, clearSession } from "../middleware/auth.ts";
 import { checkLoginRateLimit } from "../middleware/loginRateLimit.ts";
 import { sendEmail } from "../services/cloudflare.ts";
 import { hashBackupCode, verifyTotp } from "../lib/totp.ts";
+import { writeAudit } from "../lib/audit.ts";
 import type { HonoEnv } from "../env.ts";
 import { generateId, userLoginSchema } from "@/lib/core";
 
@@ -179,6 +180,46 @@ app.post("/reset-password", zValidator("json", resetSchema), async (c) => {
 	await c.env.RATE_LIMIT_KV.delete(key);
 	if (!updated.meta.changes) return c.json({ error: "This reset link is invalid or expired." }, 400);
 	return c.json({ ok: true });
+});
+
+const changePasswordSchema = z.object({
+	currentPassword: z.string().min(1, "Current password is required"),
+	newPassword: z.string().min(8, "New password must be at least 8 characters").max(200),
+});
+
+// POST /api/auth/change-password
+app.post("/change-password", zValidator("json", changePasswordSchema), async (c) => {
+	const session = await getSession(c);
+	if (!session) return c.json({ error: "Unauthorized" }, 401);
+
+	const { currentPassword, newPassword } = c.req.valid("json");
+
+	if (currentPassword === newPassword) {
+		return c.json({ error: "New password cannot be the same as your current password." }, 400);
+	}
+
+	const user = await c.env.DB.prepare("SELECT password_hash FROM users WHERE id = ? LIMIT 1")
+		.bind(session.userId)
+		.first<{ password_hash: string }>();
+
+	if (!user) return c.json({ error: "User not found" }, 404);
+
+	const valid = await verifyPassword(currentPassword, user.password_hash);
+	if (!valid) {
+		return c.json({ error: "Current password does not match." }, 400);
+	}
+
+	const passwordHash = await hashPassword(newPassword);
+	await c.env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?").bind(passwordHash, session.userId).run();
+
+	await writeAudit(c.env.DB, {
+		actorId: session.userId,
+		action: "user.change_password",
+		targetType: "user",
+		targetId: session.userId,
+	});
+
+	return c.json({ ok: true, message: "Password updated successfully." });
 });
 
 export default app;

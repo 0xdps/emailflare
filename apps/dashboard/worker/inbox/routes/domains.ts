@@ -204,6 +204,7 @@ app.post("/:id/verify", async (c) => {
 			verified: cfData.enabled ? 1 : 0,
 			dkim_selector: cfData.dkim_selector ?? null,
 			return_path_domain: cfData.return_path_domain ?? null,
+			...(cfData.enabled ? { dns_status: "written" } : {}),
 		},
 	});
 

@@ -36,6 +36,17 @@ jobs:
             - name: Install workspace dependencies
               run: pnpm install --frozen-lockfile
 
+            - name: Write production Wrangler override
+              working-directory: apps/dashboard
+              env:
+                  WRANGLER_PRODUCTION_CONFIG: ${{ secrets.WRANGLER_PRODUCTION_CONFIG }}
+              run: |
+                  if [ -z "$WRANGLER_PRODUCTION_CONFIG" ]; then
+                    echo "Set the WRANGLER_PRODUCTION_CONFIG secret to the contents of wrangler.production.jsonc"
+                    exit 1
+                  fi
+                  printf '%s\n' "$WRANGLER_PRODUCTION_CONFIG" > wrangler.production.jsonc
+
             - name: Build, migrate, and deploy
               working-directory: apps/dashboard
               run: pnpm run deploy

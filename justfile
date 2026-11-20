@@ -37,13 +37,13 @@ dashboard-preview:
 
 # Apply remote migrations and deploy unified Worker to Cloudflare
 dashboard-deploy:
-    pnpm --filter @emailflare/dashboard deploy
+    pnpm --filter @emailflare/dashboard run deploy
 
 alias deploy := dashboard-deploy
 
 # Set or update a remote secret in the dashboard Worker (e.g. just dashboard-secret SESSION_SECRET)
 dashboard-secret key:
-    cd apps/dashboard && pnpm exec wrangler secret put {{key}}
+    cd apps/dashboard && pnpm run config:production && pnpm exec wrangler secret put {{key}} --config wrangler.deploy.json
 
 # ── Database Migrations (apps/dashboard/migrations) ─────────────────────────
 
@@ -104,4 +104,4 @@ landing-preview:
 
 # Deploy marketing site to Cloudflare
 landing-deploy:
-    pnpm --filter emailflare-landing deploy
+    pnpm --filter emailflare-landing run deploy

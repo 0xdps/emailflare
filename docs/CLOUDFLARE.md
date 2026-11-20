@@ -4,7 +4,7 @@ EmailFlare deploys as **one single Cloudflare Worker** containing the Next.js we
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/0xdps/emailflare)
 
-The 1-Click Deploy button builds and deploys the Worker. Copy `wrangler.local.example.jsonc` to `wrangler.local.jsonc` first if this account needs its own Worker, database, bucket, or queue name. A manual deploy also needs those resources to exist.
+The 1-Click Deploy button builds and deploys the Worker. A manual deploy needs `wrangler.production.jsonc` and the D1, KV, R2, and queue resources it names. Local development uses `wrangler.local.jsonc` and does not touch those remote resources.
 
 ---
 
@@ -12,12 +12,12 @@ The 1-Click Deploy button builds and deploys the Worker. Copy `wrangler.local.ex
 
 When connecting your repository to Cloudflare Workers Builds, verify the following configuration:
 
-| Setting               | Value               | Notes                                                  |
-| :-------------------- | :------------------ | :----------------------------------------------------- |
-| **Root directory**    | `apps/dashboard`    | Location of the unified Worker                         |
-| **Build command**     | _(leave empty)_     | Handled automatically by `predeploy` in `package.json` |
-| **Deploy command**    | `pnpm run deploy`   | Applies D1 migrations to `DB` binding, then deploys    |
-| **Production branch** | `staging` or `main` | Set to your primary repository branch                  |
+| Setting               | Value               | Notes                                                                   |
+| :-------------------- | :------------------ | :---------------------------------------------------------------------- |
+| **Root directory**    | `apps/dashboard`    | Location of the unified Worker                                          |
+| **Build command**     | _(leave empty)_     | Handled automatically by `predeploy` in `package.json`                  |
+| **Deploy command**    | `pnpm run deploy`   | Merges `wrangler.production.jsonc`, applies D1 migrations, then deploys |
+| **Production branch** | `staging` or `main` | Set to your primary repository branch                                   |
 
 `pnpm run deploy` automatically applies database migrations from `apps/dashboard/migrations/` to the `DB` binding prior to worker deployment.
 
@@ -55,12 +55,15 @@ Once the initial deploy completes:
     pnpm exec wrangler secret put CF_ACCOUNT_ID     # Your Cloudflare Account ID
     ```
 
-3. **Set install-specific names** in `wrangler.local.jsonc` (copy from `wrangler.local.example.jsonc`):
+3. **Set production resource IDs** in `wrangler.production.jsonc` (copy from `wrangler.production.example.jsonc`):
+    - `database_id` and the KV `id` must be the real resources. Placeholder zeros fail the deploy.
     - `name`: Worker name, if `emailflare` is already taken.
-    - `PUBLIC_URL`: public origin, such as `https://mail.yourcompany.com`. Invite, password reset, unsubscribe, and tracking links use this. Set it before inviting teammates; without it, links fall back to the request origin.
-    - `CF_DAILY_LIMIT`: daily send ceiling shown on the overview. Defaults to `1000`. Override it in `wrangler.local.jsonc` without a redeploy of application code.
+    - `PUBLIC_URL`: public origin, such as `https://mail.yourcompany.com`. Invite, password reset, unsubscribe, and tracking links use this.
+    - `CF_DAILY_LIMIT`: daily send ceiling shown on the overview. Defaults to `1000`.
     - `INBOX_WORKER_NAME`: Worker that receives catch-all mail. Keep it equal to `name`.
-    - `bucket_name`, `database_name`, and `queue`: only if this account should not use the defaults.
+    - `bucket_name` and `queue`: create these before the first deploy.
+
+    `wrangler.local.jsonc` is only for `just dashboard-dev`. It must not contain the production `PUBLIC_URL`.
 
 4. **Connect Cloudflare Email Routing:**
     - Domain enable does this when the token can write Email Routing.
@@ -76,7 +79,8 @@ For local testing, the application runs on Miniflare with emulated D1, KV, and R
 # 1. Install dependencies and build core libraries
 just install
 
-# 2. Configure local secrets
+# 2. Configure local resource names and secrets
+cp apps/dashboard/wrangler.local.example.jsonc apps/dashboard/wrangler.local.jsonc
 cp apps/dashboard/.dev.vars.example apps/dashboard/.dev.vars
 
 # 3. Apply migrations to local SQLite/D1

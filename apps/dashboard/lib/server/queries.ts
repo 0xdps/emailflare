@@ -315,6 +315,20 @@ export async function getDomainCatalog(): Promise<{
 	if (!workerEnv?.CF_API_TOKEN || !workerEnv.DB) {
 		return { zones: [], truncated: false, error: "CF_API_TOKEN is not configured." };
 	}
+
+	// 1. Fast cache hit from KV (60s TTL)
+	const cacheKey = "cache:catalog:zones";
+	if (workerEnv.RATE_LIMIT_KV) {
+		try {
+			const cached = await workerEnv.RATE_LIMIT_KV.get(cacheKey, "json");
+			if (cached && typeof cached === "object" && "zones" in cached) {
+				return cached as { zones: DomainCatalogEntry[]; truncated: boolean; error: string | null };
+			}
+		} catch {
+			// ignore cache miss/error
+		}
+	}
+
 	try {
 		const { domains } = makeDb(workerEnv.DB);
 		const stored = await domains.find();
@@ -329,9 +343,16 @@ export async function getDomainCatalog(): Promise<{
 				dns_status: row.dns_status ?? null,
 			})),
 			inboxWorkerName(workerEnv),
-			true,
+			false, // Fast catalog load: don't make 58+ sequential calls during SSR!
 		);
-		return { zones: catalog.zones, truncated: catalog.truncated, error: null };
+		const result = { zones: catalog.zones, truncated: catalog.truncated, error: null };
+
+		// Cache for 60 seconds
+		if (workerEnv.RATE_LIMIT_KV) {
+			workerEnv.RATE_LIMIT_KV.put(cacheKey, JSON.stringify(result), { expirationTtl: 60 }).catch(() => {});
+		}
+
+		return result;
 	} catch (error) {
 		return {
 			zones: [],

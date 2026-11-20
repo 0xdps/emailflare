@@ -98,6 +98,8 @@ export async function createDomainAction(input: { name: string; zoneName?: strin
 		created_at: new Date().toISOString(),
 	});
 
+	await workerEnv.RATE_LIMIT_KV?.delete("cache:catalog:zones").catch(() => {});
+
 	return {
 		...row,
 		dns: { status: dnsStatus, records: dnsStatus === "manual" ? dnsRecords : [] },
@@ -122,6 +124,7 @@ export async function verifyDomainAction(id: string): Promise<{ verified: boolea
 			verified: cfData.enabled ? 1 : 0,
 			dkim_selector: cfData.dkim_selector ?? null,
 			return_path_domain: cfData.return_path_domain ?? null,
+			...(cfData.enabled ? { dns_status: "written" } : {}),
 		},
 	});
 
@@ -137,5 +140,6 @@ export async function deleteDomainAction(id: string): Promise<{ deleted: boolean
 	if (!domain) throw new Error("Domain not found");
 
 	await deleteDomainCascade(workerEnv.DB, domain.id);
+	await workerEnv.RATE_LIMIT_KV?.delete("cache:catalog:zones").catch(() => {});
 	return { deleted: true };
 }

@@ -1,0 +1,56 @@
+{
+	// Copy to wrangler.production.jsonc. That file is gitignored.
+	// `just dashboard-deploy` merges it over wrangler.jsonc.
+	//
+	// Binding names must stay as written in wrangler.jsonc. Replace the
+	// placeholder IDs with the D1 database and KV namespace for this account.
+	// Create the R2 bucket and queue before the first deploy.
+	//
+	// Secrets do not go here. Set them on the Worker:
+	//   just dashboard-secret SESSION_SECRET
+	//   just dashboard-secret CF_API_TOKEN
+	//   just dashboard-secret CF_ACCOUNT_ID
+
+	"name": "emailflare",
+
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "emailflare",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "RATE_LIMIT_KV",
+			"id": "00000000000000000000000000000000"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "ATTACHMENTS",
+			"bucket_name": "emailflare-attachments"
+		}
+	],
+	"queues": {
+		"producers": [
+			{
+				"binding": "EMAIL_QUEUE",
+				"queue": "emailflare-sequences"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "emailflare-sequences",
+				"max_batch_size": 10,
+				"max_batch_timeout": 30
+			}
+		]
+	],
+	"vars": {
+		"PUBLIC_URL": "https://emailflare.example.workers.dev",
+		"INBOX_WORKER_NAME": "emailflare",
+		"CF_DAILY_LIMIT": "1000"
+	}
+}

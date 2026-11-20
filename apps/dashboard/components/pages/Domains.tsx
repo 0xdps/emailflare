@@ -83,7 +83,11 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 	const [submitting, setSubmitting] = useState<string | null>(null);
 	const [manualRecords, setManualRecords] = useState<DnsRecord[] | null>(null);
 	const [verifying, setVerifying] = useState<string | null>(null);
-	const [dnsModal, setDnsModal] = useState<{ domain: Domain; records: DnsRecord[] } | null>(null);
+	const [dnsModal, setDnsModal] = useState<{
+		domain: Domain;
+		records: DnsRecord[];
+		isManual?: boolean;
+	} | null>(null);
 	const [copiedKey, setCopiedKey] = useState<string | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -121,7 +125,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 				const { data } = await api.get<Domain[]>("/api/domains");
 				setDomains(data);
 				const created = data.find((domain) => domain.name === name);
-				if (created) setDnsModal({ domain: created, records });
+				if (created) setDnsModal({ domain: created, records, isManual: true });
 			}
 		} catch (err: unknown) {
 			setFormError(err instanceof Error ? err.message : "Failed to enable domain");
@@ -154,7 +158,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 
 	async function handleDns(domain: Domain) {
 		const { data } = await api.get<DnsRecord[]>(`/api/domains/${domain.id}/dns`);
-		setDnsModal({ domain, records: data });
+		setDnsModal({ domain, records: data, isManual: false });
 	}
 
 	async function confirmDelete() {
@@ -348,7 +352,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 										(record) => record.name.endsWith(item.name) || record.name === item.name,
 									),
 								);
-								if (domain) setDnsModal({ domain, records: manualRecords });
+								if (domain) setDnsModal({ domain, records: manualRecords, isManual: true });
 							}}
 						>
 							View DNS records
@@ -467,10 +471,41 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			<Dialog open={!!dnsModal} onOpenChange={(open) => !open && setDnsModal(null)}>
 				<DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle className="text-base font-semibold">DNS Configuration Records</DialogTitle>
+						<div className="flex items-center gap-2">
+							<DialogTitle className="text-base font-semibold">DNS Configuration Records</DialogTitle>
+							{dnsModal?.domain.verified ? (
+								<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+									VERIFIED
+								</span>
+							) : dnsModal?.isManual ? (
+								<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+									ACTION REQUIRED
+								</span>
+							) : (
+								<span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-muted text-muted-foreground">
+									CONFIGURED
+								</span>
+							)}
+						</div>
 						<DialogDescription className="text-xs">
-							These records were not written automatically. Add them in Cloudflare DNS for{" "}
-							<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
+							{dnsModal?.isManual ? (
+								<>
+									These records could not be written automatically. Add them in Cloudflare DNS for{" "}
+									<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
+								</>
+							) : dnsModal?.domain.verified ? (
+								<>
+									Active DNS configuration records for{" "}
+									<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
+									These records are already configured in Cloudflare.
+								</>
+							) : (
+								<>
+									DNS configuration records for{" "}
+									<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
+									Cloudflare will verify them once propagation completes.
+								</>
+							)}
 						</DialogDescription>
 					</DialogHeader>
 

@@ -67,7 +67,7 @@ just dashboard-preview
 
 ### `just dashboard-deploy` _(alias: `just deploy`)_
 
-Builds the application, applies any pending D1 schema migrations to the remote database, and deploys the unified Worker bundle to Cloudflare.
+Merges `wrangler.production.jsonc` over `wrangler.jsonc`, applies pending D1 migrations to that remote database, and deploys the Worker. Copy `wrangler.production.example.jsonc` first and replace the placeholder IDs.
 
 ```bash
 just dashboard-deploy
@@ -100,7 +100,7 @@ just migrate
 
 ### `just dashboard-migrate-remote`
 
-Applies pending D1 schema migrations directly to the live remote Cloudflare D1 database without triggering a full worker redeploy.
+Applies pending D1 schema migrations to the database named in `wrangler.production.jsonc` without deploying the Worker.
 
 ```bash
 just dashboard-migrate-remote

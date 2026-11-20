@@ -1,6 +1,6 @@
 {
-	// Copy to wrangler.local.jsonc. That file is gitignored and overrides
-	// wrangler.jsonc for this install.
+	// Copy to wrangler.local.jsonc. Used by `just dashboard-dev` only.
+	// Production IDs belong in wrangler.production.jsonc.
 	//
 	// Change names and IDs here. Do not change binding names
 	// (DB, RATE_LIMIT_KV, ATTACHMENTS, EMAIL_QUEUE, NOTIFICATIONS).
