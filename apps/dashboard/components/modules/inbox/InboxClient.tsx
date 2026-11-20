@@ -1,122 +1,112 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Mail, Inbox as InboxIcon, PenLine, Loader2, Keyboard, ArrowRight, Sparkles, Search } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Keyboard, Mail } from "lucide-react";
+import { toast } from "sonner";
 import {
-	Thread,
-	ThreadItem,
-	ThreadSummary,
-	Inbox as InboxType,
-	getThreads,
+	getInboxes,
 	getThreadDetails,
 	composeSend,
-	replyTo,
 	markThreadRead,
-	getInboxes,
+	markThreadUnread,
+	replyTo,
+	setThreadState,
+	type Inbox as InboxType,
+	type Thread,
+	type ThreadSummary,
+	type ThreadView,
 } from "@/lib/api";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useInboxThreads } from "@/hooks/useInboxThreads";
+import { useInboxShortcuts } from "@/hooks/useInboxShortcuts";
+import { invalidateThreadCounts } from "@/hooks/useThreadCounts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { usePermissions } from "@/lib/UserContext";
 import { replyReferences } from "@/lib/threading";
+import { Button } from "@/components/ui/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDefaultLayout } from "react-resizable-panels";
+import OwnerAccessBanner from "@/components/OwnerAccessBanner";
+import ComposeModal from "./ComposeModal";
+import type { ReplyPayload } from "./InlineComposer";
+import ShortcutsDialog from "./ShortcutsDialog";
+import TestInboxFolderView from "./TestInboxFolderView";
 import ThreadList from "./ThreadList";
 import ThreadReader from "./ThreadReader";
-import ComposeModal from "./ComposeModal";
-import TestInboxFolderView from "./TestInboxFolderView";
-import OwnerAccessBanner from "@/components/OwnerAccessBanner";
-import { cn } from "@/lib/utils";
 
 interface InboxClientProps {
 	initialThreads?: ThreadSummary[];
 	initialInboxes?: InboxType[];
 }
 
+const VIEW_TITLES: Record<ThreadView, string> = {
+	inbox: "Inbox",
+	unread: "Inbox",
+	starred: "Starred",
+	archived: "Archived",
+};
+
+function parseView(raw: string | null): ThreadView {
+	return raw === "starred" || raw === "archived" || raw === "unread" ? raw : "inbox";
+}
+
+function ReaderSkeleton() {
+	return (
+		<div className="flex h-full flex-col gap-4 p-6">
+			<Skeleton className="h-6 w-2/3" />
+			<Skeleton className="h-4 w-1/3" />
+			<Skeleton className="mt-4 h-40 w-full rounded-xl" />
+			<Skeleton className="h-24 w-full rounded-xl" />
+		</div>
+	);
+}
+
 export default function InboxClient({ initialThreads, initialInboxes }: InboxClientProps) {
+	const params = useSearchParams();
 	const { canAccessTester, canAccessInbox } = usePermissions();
-	const [activeFolder, setActiveFolder] = useState<"inbox" | "test">("inbox");
-	const [selectedInbox, setSelectedInbox] = useState<string | null>(null);
+	const isMobile = useIsMobile();
 
-	const [threads, setThreads] = useState<ThreadSummary[]>(initialThreads ?? []);
-	const [inboxes, setInboxes] = useState<InboxType[]>(initialInboxes ?? []);
+	const mailbox = params.get("mailbox");
+	const baseView = parseView(params.get("view"));
+	const showTestFolder = canAccessTester && (params.get("folder") === "test" || !canAccessInbox);
+
 	const [search, setSearch] = useState("");
-	const [filter, setFilter] = useState<"all" | "unread">("all");
+	const [unreadOnly, setUnreadOnly] = useState(baseView === "unread");
+	const view: ThreadView = baseView === "inbox" && unreadOnly ? "unread" : baseView;
 
-	const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+	const [inboxes, setInboxes] = useState<InboxType[]>(initialInboxes ?? []);
+	const [composeOpen, setComposeOpen] = useState(false);
+	const [shortcutsOpen, setShortcutsOpen] = useState(false);
+	const [replySignal, setReplySignal] = useState(0);
+
+	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [thread, setThread] = useState<Thread | null>(null);
-	const [loadingThreads, setLoadingThreads] = useState(initialThreads === undefined);
 	const [loadingThread, setLoadingThread] = useState(false);
 
-	const [composeOpen, setComposeOpen] = useState(false);
+	const list = useInboxThreads({ mailbox, view, search, initialThreads });
+	const { threads, patchThread, removeThread, refresh } = list;
 
-	// Refs for keyboard shortcuts to avoid stale closures
-	const selectedThreadIdRef = useRef<string | null>(selectedThreadId);
-	selectedThreadIdRef.current = selectedThreadId;
+	const summaryCache = useRef(new Map<string, ThreadSummary>());
+	for (const t of threads) summaryCache.current.set(t.id, t);
+	const selectedSummary = selectedId
+		? (threads.find((t) => t.id === selectedId) ?? summaryCache.current.get(selectedId) ?? null)
+		: null;
 
-	const threadsRef = useRef<ThreadSummary[]>(threads);
+	const threadsRef = useRef(threads);
 	threadsRef.current = threads;
+	const selectedRef = useRef(selectedId);
+	selectedRef.current = selectedId;
 
-	// Sync folder from URL if provided (e.g. ?folder=test) or default to test for tester-only
+	// Selection belongs to a view; leaving the view clears it.
 	useEffect(() => {
-		if (typeof window === "undefined") return;
-		const params = new URLSearchParams(window.location.search);
-		const folder = params.get("folder");
-		const mailbox = params.get("mailbox");
-		if (folder === "test" && canAccessTester) {
-			setActiveFolder("test");
-		} else if (!canAccessInbox && canAccessTester) {
-			setActiveFolder("test");
-		} else {
-			setActiveFolder("inbox");
-		}
-		setSelectedInbox(mailbox);
-	}, [canAccessTester, canAccessInbox]);
-
-	useEffect(() => {
-		function openCompose() {
-			setComposeOpen(true);
-		}
-		window.addEventListener("emailflare:compose", openCompose);
-		return () => window.removeEventListener("emailflare:compose", openCompose);
-	}, []);
-
-	// Select a conversation thread
-	const selectThread = useCallback(async (id: string) => {
-		setSelectedThreadId(id);
-		setLoadingThread(true);
-		try {
-			const t = await getThreadDetails(id);
-			setThread(t);
-			await markThreadRead(id).catch(() => {});
-			setThreads((prev) => prev.map((item) => (item.id === id ? { ...item, unread_count: 0 } : item)));
-		} finally {
-			setLoadingThread(false);
-		}
-	}, []);
-
-	// Load conversation threads
-	const fetchThreads = useCallback(async () => {
-		setLoadingThreads(true);
-		try {
-			const { data } = await getThreads({
-				inbox: selectedInbox || undefined,
-				search: search || undefined,
-				unread: filter === "unread" ? true : undefined,
-			});
-			setThreads(data);
-
-			// On desktop (>= 768px), auto-select first thread if none selected
-			const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768;
-			if (data.length > 0 && !selectedThreadIdRef.current && isDesktop) {
-				selectThread(data[0].id);
-			}
-		} catch {
-			setThreads([]);
-		} finally {
-			setLoadingThreads(false);
-		}
-	}, [selectedInbox, search, filter, selectThread]);
-
-	useEffect(() => {
-		fetchThreads();
-	}, [selectedInbox, search, filter, fetchThreads]);
+		setSelectedId(null);
+		setThread(null);
+		setUnreadOnly(parseView(params.get("view")) === "unread");
+		setSearch("");
+	}, [mailbox, baseView]);
 
 	useEffect(() => {
 		if (initialInboxes === undefined) {
@@ -126,41 +116,153 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 		}
 	}, [initialInboxes]);
 
-	// Live notifications wakeup
-	useNotifications((msg) => {
-		if (msg.type === "new_email") {
-			fetchThreads();
-			if (selectedThreadId && msg.threadId === selectedThreadId) {
-				getThreadDetails(selectedThreadId)
-					.then(setThread)
+	useEffect(() => {
+		const open = () => setComposeOpen(true);
+		window.addEventListener("emailflare:compose", open);
+		return () => window.removeEventListener("emailflare:compose", open);
+	}, []);
+
+	const selectThread = useCallback(async (id: string) => {
+		setSelectedId(id);
+		setLoadingThread(true);
+		try {
+			const detail = await getThreadDetails(id);
+			if (selectedRef.current !== id) return;
+			setThread(detail);
+			const summary = threadsRef.current.find((t) => t.id === id);
+			if (summary && summary.unread_count > 0) {
+				patchThread(id, { unread_count: 0 });
+				markThreadRead(id)
+					.then(invalidateThreadCounts)
 					.catch(() => {});
 			}
+		} catch {
+			if (selectedRef.current === id) toast.error("Couldn't open that thread.");
+		} finally {
+			if (selectedRef.current === id) setLoadingThread(false);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// Deep link: /inbox?thread=<id> (used by notifications).
+	useEffect(() => {
+		const id = params.get("thread");
+		if (id) selectThread(id);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	useNotifications((msg) => {
+		if (msg.type !== "new_email") return;
+		refresh();
+		const current = selectedRef.current;
+		if (current && msg.threadId === current) {
+			getThreadDetails(current)
+				.then(setThread)
+				.catch(() => {});
 		}
 	});
 
-	const selectedThread = threads.find((t) => t.id === selectedThreadId) || null;
+	const closeThread = useCallback(() => {
+		setSelectedId(null);
+		setThread(null);
+	}, []);
 
-	// Handle sending an inline reply
-	async function handleReplySend(payload: {
-		from: string;
-		to: string;
-		subject: string;
-		text: string;
-		replyTarget?: ThreadItem | null;
-	}) {
-		if (!selectedThread) return;
+	const step = useCallback(
+		(delta: 1 | -1) => {
+			const list = threadsRef.current;
+			if (list.length === 0) return;
+			const idx = list.findIndex((t) => t.id === selectedRef.current);
+			const next = idx === -1 ? 0 : Math.min(Math.max(idx + delta, 0), list.length - 1);
+			selectThread(list[next].id);
+		},
+		[selectThread],
+	);
 
-		const refs = payload.replyTarget ? replyReferences(payload.replyTarget) : undefined;
+	const toggleStar = useCallback(
+		async (t: ThreadSummary) => {
+			const next = !t.is_starred;
+			patchThread(t.id, { is_starred: next });
+			try {
+				await setThreadState(t.id, { starred: next });
+				invalidateThreadCounts();
+			} catch {
+				patchThread(t.id, { is_starred: !next });
+				toast.error("Couldn't update the star.");
+			}
+		},
+		[patchThread],
+	);
 
+	const toggleArchive = useCallback(
+		async (t: ThreadSummary) => {
+			const next = !t.is_archived;
+			// Inbox / Unread hide archived threads and Archived hides the rest, so the row leaves the list.
+			const leavesView = view === "archived" ? !next : view !== "starred" ? next : false;
+
+			if (leavesView) {
+				if (selectedRef.current === t.id) {
+					const list = threadsRef.current;
+					const idx = list.findIndex((x) => x.id === t.id);
+					const neighbour = list[idx + 1] ?? list[idx - 1];
+					if (neighbour && !isMobile) selectThread(neighbour.id);
+					else closeThread();
+				}
+				removeThread(t.id);
+			} else {
+				patchThread(t.id, { is_archived: next });
+			}
+
+			try {
+				await setThreadState(t.id, { archived: next });
+				invalidateThreadCounts();
+				toast(next ? "Thread archived" : "Moved to inbox", {
+					action: {
+						label: "Undo",
+						onClick: () => {
+							setThreadState(t.id, { archived: !next })
+								.then(() => {
+									invalidateThreadCounts();
+									refresh();
+								})
+								.catch(() => toast.error("Couldn't undo."));
+						},
+					},
+				});
+			} catch {
+				toast.error("Couldn't update the thread.");
+				refresh();
+			}
+		},
+		[view, isMobile, selectThread, closeThread, removeThread, patchThread, refresh],
+	);
+
+	const toggleRead = useCallback(
+		async (t: ThreadSummary) => {
+			const makeUnread = t.unread_count === 0;
+			patchThread(t.id, { unread_count: makeUnread ? 1 : 0 });
+			if (makeUnread && selectedRef.current === t.id) closeThread();
+			try {
+				await (makeUnread ? markThreadUnread(t.id) : markThreadRead(t.id));
+				invalidateThreadCounts();
+			} catch {
+				patchThread(t.id, { unread_count: makeUnread ? 0 : t.unread_count });
+				toast.error("Couldn't update the thread.");
+			}
+		},
+		[patchThread, closeThread],
+	);
+
+	async function handleReplySend(payload: ReplyPayload) {
+		if (!selectedSummary) return;
 		if (payload.replyTarget?.message_id) {
 			await replyTo({
-				personId: selectedThread.person_id || "",
+				personId: selectedSummary.person_id || "",
 				to: payload.to,
 				from: payload.from,
 				subject: payload.subject,
 				text: payload.text,
 				replyToMessageId: payload.replyTarget.message_id,
-				references: refs,
+				references: replyReferences(payload.replyTarget),
 			});
 		} else {
 			await composeSend({
@@ -168,17 +270,13 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 				from: payload.from,
 				subject: payload.subject,
 				text: payload.text,
-				personId: selectedThread.person_id || undefined,
+				personId: selectedSummary.person_id || undefined,
 			});
 		}
-
-		// Refresh thread
-		const updated = await getThreadDetails(selectedThread.id);
-		setThread(updated);
-		fetchThreads();
+		setThread(await getThreadDetails(selectedSummary.id));
+		refresh();
 	}
 
-	// Handle new compose from modal
 	async function handleModalSend(payload: {
 		from: string;
 		to: string;
@@ -187,187 +285,143 @@ export default function InboxClient({ initialThreads, initialInboxes }: InboxCli
 		attachments?: Array<{ filename: string; content: string; type: string }>;
 	}) {
 		const result = await composeSend(payload);
-		fetchThreads();
-		if (result.threadId) {
-			selectThread(result.threadId);
-		}
+		refresh();
+		if (result.threadId) selectThread(result.threadId);
 	}
 
-	// Global keyboard shortcuts (C, J, K, ArrowDown, ArrowUp, /)
-	useEffect(() => {
-		function handleKeyDown(e: KeyboardEvent) {
-			// Don't intercept if user is typing in input or textarea
-			const activeTag = document.activeElement?.tagName.toLowerCase();
-			if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") {
-				return;
-			}
+	const selected = () => threadsRef.current.find((t) => t.id === selectedRef.current);
+	useInboxShortcuts(
+		{
+			compose: () => setComposeOpen(true),
+			focusSearch: () => document.getElementById("thread-search-input")?.focus(),
+			next: () => step(1),
+			previous: () => step(-1),
+			archive: () => selected() && toggleArchive(selected()!),
+			star: () => selected() && toggleStar(selected()!),
+			markUnread: () => selected() && toggleRead(selected()!),
+			reply: () => selectedRef.current && setReplySignal((n) => n + 1),
+			close: closeThread,
+			help: () => setShortcutsOpen(true),
+		},
+		!showTestFolder,
+	);
 
-			// Don't intercept if modifier keys like Cmd/Ctrl are pressed (except for browser defaults)
-			if (e.metaKey || e.ctrlKey || e.altKey) {
-				return;
-			}
+	const title = mailbox ? inboxes.find((i) => i.email === mailbox)?.display_name || mailbox : VIEW_TITLES[baseView];
+	const unreadTotal = threads.reduce((n, t) => n + (t.unread_count > 0 ? 1 : 0), 0);
 
-			if (e.key === "c" || e.key === "C") {
-				e.preventDefault();
-				setComposeOpen(true);
-			} else if (e.key === "/") {
-				e.preventDefault();
-				const searchInput = document.getElementById("thread-search-input");
-				if (searchInput) {
-					searchInput.focus();
-				}
-			} else if (e.key === "j" || e.key === "J" || e.key === "ArrowDown") {
-				e.preventDefault();
-				const curThreads = threadsRef.current;
-				if (curThreads.length === 0) return;
-				const curId = selectedThreadIdRef.current;
-				const idx = curThreads.findIndex((t) => t.id === curId);
-				const nextIdx = idx === -1 ? 0 : Math.min(idx + 1, curThreads.length - 1);
-				selectThread(curThreads[nextIdx].id);
-			} else if (e.key === "k" || e.key === "K" || e.key === "ArrowUp") {
-				e.preventDefault();
-				const curThreads = threadsRef.current;
-				if (curThreads.length === 0) return;
-				const curId = selectedThreadIdRef.current;
-				const idx = curThreads.findIndex((t) => t.id === curId);
-				const prevIdx = idx === -1 ? 0 : Math.max(idx - 1, 0);
-				selectThread(curThreads[prevIdx].id);
-			}
-		}
+	// Panel sizes are persisted per browser; mount the group client-side to avoid a hydration mismatch.
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => setMounted(true), []);
+	const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+		id: "emailflare-inbox",
+		storage: typeof window === "undefined" ? { getItem: () => null, setItem: () => {} } : window.localStorage,
+	});
 
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selectThread]);
+	const listPane = (
+		<ThreadList
+			title={title}
+			threads={threads}
+			total={list.total}
+			selectedId={selectedId}
+			onSelectThread={selectThread}
+			search={search}
+			onSearchChange={setSearch}
+			view={view}
+			onToggleUnread={setUnreadOnly}
+			loading={list.loading}
+			loadingMore={list.loadingMore}
+			hasMore={list.hasMore}
+			onLoadMore={list.loadMore}
+			hasMailbox={inboxes.length > 0}
+			showMailbox={!mailbox && inboxes.length > 1}
+			onCompose={() => setComposeOpen(true)}
+			onToggleStar={toggleStar}
+			onToggleArchive={toggleArchive}
+			onToggleRead={toggleRead}
+		/>
+	);
 
-	const unreadTotal = threads.reduce((acc, t) => acc + (t.unread_count || 0), 0);
+	const readerPane =
+		loadingThread && !thread ? (
+			<ReaderSkeleton />
+		) : selectedSummary && thread ? (
+			<ThreadReader
+				summary={selectedSummary}
+				thread={thread}
+				inboxes={inboxes}
+				replySignal={replySignal}
+				onReplySend={handleReplySend}
+				onToggleStar={() => toggleStar(selectedSummary)}
+				onToggleArchive={() => toggleArchive(selectedSummary)}
+				onMarkUnread={() => toggleRead(selectedSummary)}
+				onBack={closeThread}
+			/>
+		) : (
+			<Empty className="h-full bg-muted/30">
+				<EmptyHeader>
+					<EmptyMedia variant="icon">
+						<Mail />
+					</EmptyMedia>
+					<EmptyTitle>
+						{unreadTotal > 0
+							? `${unreadTotal} unread ${unreadTotal === 1 ? "thread" : "threads"}`
+							: "Select a conversation"}
+					</EmptyTitle>
+					<EmptyDescription>
+						Pick a thread from the list to read it, or press C to start a new message.
+					</EmptyDescription>
+				</EmptyHeader>
+				<EmptyContent>
+					<Button variant="outline" size="sm" onClick={() => setShortcutsOpen(true)}>
+						<Keyboard /> Keyboard shortcuts
+					</Button>
+				</EmptyContent>
+			</Empty>
+		);
 
 	return (
-		<div className="flex flex-col h-full overflow-hidden bg-background">
+		<div className="flex h-full flex-col overflow-hidden bg-background">
 			<OwnerAccessBanner />
 
-			<div className="flex flex-1 min-h-0 overflow-hidden">
-				{/* ── Condition: Test Mailbox Folder Selected ── */}
-				{activeFolder === "test" ? (
-					<div className="flex-1 min-w-0 h-full overflow-hidden">
-						<TestInboxFolderView />
-					</div>
+			<div className="min-h-0 flex-1">
+				{showTestFolder ? (
+					<TestInboxFolderView />
+				) : isMobile ? (
+					selectedId ? (
+						readerPane
+					) : (
+						listPane
+					)
+				) : mounted ? (
+					<ResizablePanelGroup
+						orientation="horizontal"
+						defaultLayout={defaultLayout}
+						onLayoutChanged={onLayoutChanged}
+					>
+						<ResizablePanel id="list" defaultSize="34%" minSize={300} maxSize="55%">
+							{listPane}
+						</ResizablePanel>
+						<ResizableHandle />
+						<ResizablePanel id="reader" minSize="35%">
+							{readerPane}
+						</ResizablePanel>
+					</ResizablePanelGroup>
 				) : (
-					/* ── Standard 3-Pane View (Thread List + Reader) ── */
-					<>
-						{/* ── Pane 2: Conversation Thread List ── */}
-						<ThreadList
-							threads={threads}
-							selectedId={selectedThreadId}
-							onSelectThread={selectThread}
-							search={search}
-							onSearchChange={setSearch}
-							filter={filter}
-							onFilterChange={setFilter}
-							loading={loadingThreads}
-							hasMailbox={inboxes.length > 0}
-							className={cn("w-full md:w-[320px] shrink-0", selectedThreadId ? "hidden md:flex" : "flex")}
-						/>
-
-						{/* ── Pane 3: Conversation Reader & Composer (Flex-1) ── */}
-						<div
-							className={cn(
-								"flex-1 min-w-0 h-full overflow-hidden bg-background",
-								!selectedThreadId ? "hidden md:flex" : "flex",
-							)}
-						>
-							{loadingThread ? (
-								<div className="flex items-center justify-center h-full w-full">
-									<Loader2 size={24} className="animate-spin text-muted-foreground" />
-								</div>
-							) : selectedThread && thread ? (
-								<ThreadReader
-									person={{
-										name: selectedThread.counterparty_name,
-										email: selectedThread.counterparty_email,
-										unread_count: selectedThread.unread_count,
-									}}
-									thread={thread}
-									inboxes={inboxes}
-									onReplySend={handleReplySend}
-									onBack={() => setSelectedThreadId(null)}
-									onMarkUnread={() => {
-										setThreads((prev) =>
-											prev.map((t) =>
-												t.id === selectedThread.id ? { ...t, unread_count: 1 } : t,
-											),
-										);
-									}}
-								/>
-							) : (
-								<div className="flex flex-col items-center justify-center h-full w-full text-center p-8 select-none">
-									<div className="size-12 rounded-2xl bg-orange-50 dark:bg-orange-950/60 flex items-center justify-center text-orange-600 mb-4">
-										<Mail size={24} strokeWidth={1.5} />
-									</div>
-									<h2 className="text-sm font-semibold text-foreground mb-1">Select a thread</h2>
-									<p className="text-xs text-muted-foreground max-w-sm mb-6 leading-relaxed">
-										Choose a thread from the list on the left to read messages, view communication
-										history, and send replies.
-									</p>
-
-									{/* Keyboard Shortcuts Hint Card */}
-									<div className="rounded-xl border border-border/80 bg-muted/20 p-4 max-w-xs w-full text-left space-y-2.5">
-										<div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-											<Keyboard size={12} />
-											<span>Keyboard shortcuts</span>
-										</div>
-										<div className="space-y-2 text-xs text-foreground/80">
-											<div className="flex items-center justify-between">
-												<span>Compose message</span>
-												<kbd className="px-1.5 py-0.5 rounded border border-border bg-background font-mono text-[10px]">
-													C
-												</kbd>
-											</div>
-											<div className="flex items-center justify-between">
-												<span>Next / Prev thread</span>
-												<div className="flex items-center gap-1">
-													<kbd className="px-1.5 py-0.5 rounded border border-border bg-background font-mono text-[10px]">
-														J
-													</kbd>
-													<kbd className="px-1.5 py-0.5 rounded border border-border bg-background font-mono text-[10px]">
-														K
-													</kbd>
-												</div>
-											</div>
-											<div className="flex items-center justify-between">
-												<span>Search threads</span>
-												<kbd className="px-1.5 py-0.5 rounded border border-border bg-background font-mono text-[10px]">
-													/
-												</kbd>
-											</div>
-											<div className="flex items-center justify-between">
-												<span>Command palette</span>
-												<kbd className="px-1.5 py-0.5 rounded border border-border bg-background font-mono text-[10px]">
-													⌘ + K
-												</kbd>
-											</div>
-											<div className="flex items-center justify-between">
-												<span>Send reply</span>
-												<kbd className="px-1.5 py-0.5 rounded border border-border bg-background font-mono text-[10px]">
-													⌘ + Enter
-												</kbd>
-											</div>
-										</div>
-									</div>
-								</div>
-							)}
-						</div>
-					</>
+					<div className="flex h-full">
+						<div className="w-[34%] min-w-[300px] border-r">{listPane}</div>
+						<div className="min-w-0 flex-1">{readerPane}</div>
+					</div>
 				)}
 			</div>
 
-			{/* ── Standalone Compose Modal (Shortcut 'C') ── */}
 			<ComposeModal
 				open={composeOpen}
 				onOpenChange={setComposeOpen}
 				inboxes={inboxes}
-				defaultFrom={selectedInbox ?? undefined}
+				defaultFrom={mailbox ?? undefined}
 				onSend={handleModalSend}
 			/>
+			<ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
 		</div>
 	);
 }

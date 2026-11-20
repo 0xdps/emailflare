@@ -1,12 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Send, Loader2, Sparkles, X, ChevronDown, Paperclip } from "lucide-react";
+import { Send, Sparkles, X, Paperclip } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import FromSelect from "./FromSelect";
 import { Inbox as InboxType, getInboxTemplates, InboxTemplate } from "@/lib/api";
 
 interface ComposeModalProps {
@@ -39,7 +48,6 @@ export default function ComposeModal({
 	const [files, setFiles] = useState<Array<{ filename: string; content: string; type: string }>>([]);
 	const [sending, setSending] = useState(false);
 	const [templates, setTemplates] = useState<InboxTemplate[]>([]);
-	const [showTemplates, setShowTemplates] = useState(false);
 
 	useEffect(() => {
 		if (defaultFrom) setFrom(defaultFrom);
@@ -76,6 +84,9 @@ export default function ComposeModal({
 			setBody("");
 			setFiles([]);
 			onOpenChange(false);
+			toast.success("Message sent");
+		} catch {
+			toast.error("Couldn't send the message. Try again.");
 		} finally {
 			setSending(false);
 		}
@@ -92,31 +103,25 @@ export default function ComposeModal({
 		const plain = tpl.body_html.replace(/<[^>]*>/g, "").trim();
 		setBody((prev) => (prev ? `${prev}\n\n${plain}` : plain));
 		if (!subject && tpl.subject) setSubject(tpl.subject);
-		setShowTemplates(false);
 	}
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-3xl p-0 overflow-hidden">
-				<DialogHeader className="px-5 py-3.5 border-b border-border bg-muted/20">
-					<DialogTitle className="text-sm font-semibold">New Message</DialogTitle>
+				<DialogHeader className="px-5 py-3.5 border-b border-border bg-muted/30">
+					<DialogTitle className="text-sm font-semibold">New message</DialogTitle>
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit} className="flex flex-col gap-3 p-5">
 					<div className="grid grid-cols-2 gap-3">
 						<div className="flex flex-col gap-1.5">
 							<Label className="text-xs text-muted-foreground">From Mailbox</Label>
-							<select
+							<FromSelect
+								inboxes={inboxes}
 								value={from}
-								onChange={(e) => setFrom(e.target.value)}
-								className="h-8.5 px-2.5 rounded-lg border border-border bg-background text-xs font-medium focus:outline-hidden focus:border-orange-500"
-							>
-								{inboxes.map((ib) => (
-									<option key={ib.id} value={ib.email}>
-										{ib.display_name ? `${ib.display_name} (${ib.email})` : ib.email}
-									</option>
-								))}
-							</select>
+								onValueChange={setFrom}
+								className="h-8.5 w-full text-xs"
+							/>
 						</div>
 
 						<div className="flex flex-col gap-1.5">
@@ -136,31 +141,18 @@ export default function ComposeModal({
 						<div className="flex items-center justify-between">
 							<Label className="text-xs text-muted-foreground">Subject</Label>
 							{templates.length > 0 && (
-								<div className="relative">
-									<button
-										type="button"
-										onClick={() => setShowTemplates((v) => !v)}
-										className="inline-flex items-center gap-1 text-[11px] text-orange-600 hover:text-orange-700 font-medium"
-									>
-										<Sparkles size={11} />
-										<span>Insert canned response</span>
-										<ChevronDown size={10} />
-									</button>
-									{showTemplates && (
-										<div className="absolute right-0 top-full mt-1 w-56 rounded-lg border border-border bg-popover shadow-md py-1 z-30 text-xs">
-											{templates.map((tpl) => (
-												<button
-													key={tpl.id}
-													type="button"
-													onClick={() => insertTemplate(tpl)}
-													className="w-full text-left px-3 py-1.5 hover:bg-muted text-xs truncate transition-colors"
-												>
-													{tpl.slug}
-												</button>
-											))}
-										</div>
-									)}
-								</div>
+								<DropdownMenu>
+									<DropdownMenuTrigger render={<Button type="button" variant="ghost" size="xs" />}>
+										<Sparkles className="text-primary" /> Insert canned response
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end" className="w-56">
+										{templates.map((tpl) => (
+											<DropdownMenuItem key={tpl.id} onClick={() => insertTemplate(tpl)}>
+												<span className="truncate">{tpl.slug}</span>
+											</DropdownMenuItem>
+										))}
+									</DropdownMenuContent>
+								</DropdownMenu>
 							)}
 						</div>
 						<Input
@@ -222,15 +214,17 @@ export default function ComposeModal({
 						{files.length > 0 && (
 							<div className="flex flex-wrap gap-1.5">
 								{files.map((file) => (
-									<button
+									<Button
 										key={file.filename}
+										variant="outline"
+										size="xs"
 										type="button"
 										onClick={() => setFiles((current) => current.filter((item) => item !== file))}
-										className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px]"
+										className="font-normal"
 									>
 										{file.filename}
-										<X size={10} />
-									</button>
+										<X />
+									</Button>
 								))}
 							</div>
 						)}
@@ -244,9 +238,8 @@ export default function ComposeModal({
 							type="submit"
 							size="sm"
 							disabled={sending || !body.trim() || !to.trim() || !from.trim()}
-							className="bg-orange-600 hover:bg-orange-700 text-white gap-1.5"
 						>
-							{sending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+							{sending ? <Spinner /> : <Send />}
 							<span>{sending ? "Sending…" : "Send message"}</span>
 						</Button>
 					</DialogFooter>

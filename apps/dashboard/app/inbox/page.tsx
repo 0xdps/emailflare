@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Layout from "@/components/Layout";
 import InboxClient from "@/components/modules/inbox/InboxClient";
@@ -26,7 +27,9 @@ export default async function RoutePage() {
 
 	return (
 		<Layout>
-			<InboxClient initialThreads={initialThreads as any} initialInboxes={initialInboxes as any} />
+			<Suspense fallback={null}>
+				<InboxClient initialThreads={initialThreads as any} initialInboxes={initialInboxes as any} />
+			</Suspense>
 		</Layout>
 	);
 }

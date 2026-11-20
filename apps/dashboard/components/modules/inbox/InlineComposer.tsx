@@ -1,25 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Send, Loader2, Sparkles, X, ChevronDown, Check } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Send, Sparkles, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { Inbox as InboxType, ThreadItem, getInboxTemplates, InboxTemplate } from "@/lib/api";
+import { getInboxTemplates, type Inbox, type InboxTemplate, type ThreadItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import FromSelect from "./FromSelect";
+
+export interface ReplyPayload {
+	from: string;
+	to: string;
+	subject: string;
+	text: string;
+	replyTarget?: ThreadItem | null;
+}
 
 interface InlineComposerProps {
 	to: string;
 	defaultSubject?: string;
-	inboxes: InboxType[];
+	inboxes: Inbox[];
 	defaultInbox?: string;
 	replyTarget?: ThreadItem | null;
-	onSend: (payload: {
-		from: string;
-		to: string;
-		subject: string;
-		text: string;
-		replyTarget?: ThreadItem | null;
-	}) => Promise<void>;
+	onSend: (payload: ReplyPayload) => Promise<void>;
 	onCancel?: () => void;
 	className?: string;
 }
@@ -35,22 +49,20 @@ export default function InlineComposer({
 	className,
 }: InlineComposerProps) {
 	const [from, setFrom] = useState(defaultInbox || inboxes[0]?.email || "");
-	const [subject, setSubject] = useState(
-		defaultSubject
-			? defaultSubject.toLowerCase().startsWith("re:")
-				? defaultSubject
-				: `Re: ${defaultSubject}`
-			: "",
-	);
 	const [body, setBody] = useState("");
 	const [sending, setSending] = useState(false);
 	const [templates, setTemplates] = useState<InboxTemplate[]>([]);
-	const [showTemplates, setShowTemplates] = useState(false);
+
+	const subject = defaultSubject
+		? defaultSubject.toLowerCase().startsWith("re:")
+			? defaultSubject
+			: `Re: ${defaultSubject}`
+		: "";
 
 	useEffect(() => {
 		if (defaultInbox) setFrom(defaultInbox);
 		else if (inboxes.length > 0 && !from) setFrom(inboxes[0].email);
-	}, [defaultInbox, inboxes]);
+	}, [defaultInbox, inboxes, from]);
 
 	useEffect(() => {
 		getInboxTemplates()
@@ -58,137 +70,98 @@ export default function InlineComposer({
 			.catch(() => {});
 	}, []);
 
-	async function handleSubmit(e?: React.FormEvent) {
-		if (e) e.preventDefault();
-		if (!body.trim() || !to.trim() || !from.trim() || sending) return;
+	const canSend = Boolean(body.trim() && to.trim() && from.trim()) && !sending;
 
+	async function submit() {
+		if (!canSend) return;
 		setSending(true);
 		try {
-			await onSend({
-				from,
-				to,
-				subject,
-				text: body.trim(),
-				replyTarget,
-			});
+			await onSend({ from, to, subject, text: body.trim(), replyTarget });
 			setBody("");
+			toast.success("Reply sent");
+			onCancel?.();
+		} catch {
+			toast.error("Couldn't send the reply. Try again.");
 		} finally {
 			setSending(false);
 		}
 	}
 
-	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-		// Cmd + Enter (Mac) or Ctrl + Enter (Windows) to send
-		if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-			e.preventDefault();
-			handleSubmit();
-		}
-	}
-
 	function insertTemplate(tpl: InboxTemplate) {
-		// Strip simple HTML tags if body is HTML
 		const plain = tpl.body_html.replace(/<[^>]*>/g, "").trim();
 		setBody((prev) => (prev ? `${prev}\n\n${plain}` : plain));
-		setShowTemplates(false);
 	}
 
 	return (
-		<div className={cn("border border-border/90 rounded-xl bg-card shadow-xs overflow-hidden", className)}>
-			{/* Top Bar: Sender / Recipient / Template Picker */}
-			<div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 border-b border-border/60 bg-muted/20 text-xs">
-				<div className="flex items-center gap-2 flex-wrap">
-					<div className="flex items-center gap-1.5">
-						<span className="text-muted-foreground font-medium">From:</span>
-						<select
-							value={from}
-							onChange={(e) => setFrom(e.target.value)}
-							className="h-6 px-2 rounded border border-border/80 bg-background text-xs font-medium focus:outline-hidden focus:border-orange-500"
-						>
-							{inboxes.map((ib) => (
-								<option key={ib.id} value={ib.email}>
-									{ib.display_name ? `${ib.display_name} <${ib.email}>` : ib.email}
-								</option>
-							))}
-						</select>
-					</div>
-
-					<div className="flex items-center gap-1 text-muted-foreground">
-						<span>→</span>
-						<span className="font-semibold text-foreground">{to}</span>
-					</div>
-				</div>
-
-				{/* Canned templates dropdown */}
-				{templates.length > 0 && (
-					<div className="relative">
-						<button
-							type="button"
-							onClick={() => setShowTemplates((v) => !v)}
-							className="inline-flex items-center gap-1 h-6 px-2 rounded border border-border/70 bg-background text-[11px] font-medium text-zinc-600 hover:text-foreground transition-colors"
-						>
-							<Sparkles size={11} className="text-orange-500" />
-							<span>Canned reply</span>
-							<ChevronDown size={10} />
-						</button>
-
-						{showTemplates && (
-							<div className="absolute right-0 bottom-full mb-1 w-64 rounded-lg border border-border bg-popover shadow-md py-1 z-30 text-xs">
-								<div className="px-3 py-1 font-semibold text-[10px] text-muted-foreground uppercase tracking-wider">
-									Saved Responses
-								</div>
-								{templates.map((tpl) => (
-									<button
-										key={tpl.id}
-										type="button"
-										onClick={() => insertTemplate(tpl)}
-										className="w-full text-left px-3 py-1.5 hover:bg-muted text-xs truncate transition-colors"
-									>
-										{tpl.slug}
-									</button>
-								))}
-							</div>
-						)}
-					</div>
+		<div
+			className={cn("overflow-hidden rounded-xl border bg-card shadow-sm focus-within:border-ring/60", className)}
+		>
+			<div className="flex items-center gap-2 border-b px-3 py-2 text-xs">
+				<span className="text-muted-foreground">From</span>
+				<FromSelect
+					inboxes={inboxes}
+					value={from}
+					onValueChange={setFrom}
+					className="max-w-64 border-0 bg-transparent shadow-none"
+				/>
+				<span className="text-muted-foreground">to</span>
+				<span className="min-w-0 truncate font-medium">{to}</span>
+				{onCancel && (
+					<Button
+						variant="ghost"
+						size="icon-xs"
+						className="ml-auto"
+						onClick={onCancel}
+						aria-label="Discard reply"
+					>
+						<X />
+					</Button>
 				)}
 			</div>
 
-			{/* Body Input */}
-			<div className="p-3">
-				<Textarea
-					value={body}
-					onChange={(e) => setBody(e.target.value)}
-					onKeyDown={handleKeyDown}
-					placeholder="Write your reply... (Cmd + Enter to send)"
-					rows={4}
-					className="w-full text-[13.5px] border-0 shadow-none focus-visible:ring-0 p-1 resize-none min-h-[90px] leading-relaxed bg-transparent"
-				/>
-			</div>
+			<Textarea
+				autoFocus
+				value={body}
+				onChange={(e) => setBody(e.target.value)}
+				onKeyDown={(e) => {
+					if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+						e.preventDefault();
+						submit();
+					}
+					if (e.key === "Escape" && !body) onCancel?.();
+				}}
+				placeholder="Write your reply…"
+				rows={4}
+				className="min-h-24 resize-none rounded-none border-0 bg-transparent px-4 py-3 shadow-none focus-visible:ring-0"
+			/>
 
-			{/* Bottom Action Footer */}
-			<div className="flex items-center justify-between px-3 py-2 border-t border-border/60 bg-muted/10">
-				<span className="text-[11px] text-muted-foreground hidden sm:inline">
-					Tip: Press{" "}
-					<kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px] font-mono">⌘</kbd> +{" "}
-					<kbd className="px-1 py-0.5 rounded border border-border bg-muted text-[10px] font-mono">Enter</kbd>{" "}
-					to send
-				</span>
+			<div className="flex items-center gap-2 border-t px-3 py-2">
+				{templates.length > 0 && (
+					<DropdownMenu>
+						<DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>
+							<Sparkles className="text-primary" /> Canned reply
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="start" side="top" className="w-60">
+							<DropdownMenuGroup>
+								<DropdownMenuLabel>Saved responses</DropdownMenuLabel>
+								{templates.map((tpl) => (
+									<DropdownMenuItem key={tpl.id} onClick={() => insertTemplate(tpl)}>
+										<span className="truncate">{tpl.slug}</span>
+									</DropdownMenuItem>
+								))}
+							</DropdownMenuGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
 
-				<div className="flex items-center gap-2 ml-auto">
-					{onCancel && (
-						<Button size="sm" variant="ghost" onClick={onCancel} className="h-7.5 text-xs">
-							Cancel
-						</Button>
-					)}
-					<Button
-						size="sm"
-						onClick={() => handleSubmit()}
-						disabled={sending || !body.trim() || !to.trim() || !from.trim()}
-						className="h-7.5 px-3 bg-orange-600 hover:bg-orange-700 text-white text-xs gap-1.5 font-medium shadow-xs"
-					>
-						{sending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-						<span>{sending ? "Sending…" : "Send reply"}</span>
-					</Button>
-				</div>
+				<KbdGroup className="ml-auto hidden text-muted-foreground sm:inline-flex">
+					<Kbd>⌘</Kbd>
+					<Kbd>↵</Kbd>
+				</KbdGroup>
+				<Button size="sm" onClick={submit} disabled={!canSend}>
+					{sending ? <Spinner /> : <Send />}
+					{sending ? "Sending…" : "Send"}
+				</Button>
 			</div>
 		</div>
 	);

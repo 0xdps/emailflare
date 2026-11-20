@@ -12,11 +12,11 @@ export default function OwnerAccessBanner() {
 	if (!isAdmin) return null;
 
 	return (
-		<div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-[12.5px] shrink-0">
-			<ShieldCheck size={13} className="shrink-0 text-amber-600" />
+		<div className="flex shrink-0 items-center gap-2 border-b bg-warning-muted px-4 py-1.5 text-xs text-warning-muted-foreground">
+			<ShieldCheck className="size-3.5 shrink-0" />
 			<span>
 				<span className="font-semibold">Viewing as administrator</span>
-				{" · "}You have global access to all mailboxes and settings.
+				{" · "}You have access to every mailbox.
 			</span>
 		</div>
 	);
