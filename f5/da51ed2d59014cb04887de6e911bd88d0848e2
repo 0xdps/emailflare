@@ -1,0 +1,54 @@
+apps/dashboard/lib/core/inbox.ts
+  s_31f384226fbd1c::t_ac2b953e91927f 208
+apps/dashboard/migrations/0005_thread_state.sql
+  s_31f384226fbd1c::t_95a42bb6adf146 1-12
+apps/dashboard/lib/core/thread-list.ts
+  s_31f384226fbd1c::t_6ecc852b726058 1-131
+apps/dashboard/worker/inbox/routes/inbox/threads.ts
+  s_31f384226fbd1c::t_0c24e558d597f7 36-37,56
+  s_31f384226fbd1c::t_1ccdc026b0f844 367-369
+  s_31f384226fbd1c::t_fc1d9bfb9c651e 5-7
+  s_31f384226fbd1c::t_692f48c7c55aec 103-142
+  s_31f384226fbd1c::t_04d2d505035e52 143,322-366,370-385
+  s_31f384226fbd1c::t_0d36d730def6f3 10-18,79,82,85,92
+  s_31f384226fbd1c::t_a127396ed5f816 144,386
+apps/dashboard/lib/api.ts
+  s_31f384226fbd1c::t_161705af9cc803 209-218,224,226-232,236-239,244-245
+  s_31f384226fbd1c::t_ac2b953e91927f 349,356,364,369
+  s_31f384226fbd1c::t_1ccdc026b0f844 240-243
+  s_31f384226fbd1c::t_2316642eda1962 246
+apps/dashboard/worker/inbox/email-handler.ts
+  s_31f384226fbd1c::t_4bc979f27bf1b7 132-134
+  s_31f384226fbd1c::t_27d7ceb46ca971 129-131
+apps/dashboard/lib/core/thread-views.ts
+  s_31f384226fbd1c::t_d7522890a0c87c 1-21
+apps/dashboard/lib/core/index.ts
+  s_31f384226fbd1c::t_0d36d730def6f3 8
+  s_31f384226fbd1c::t_b67d68244b65a7 7
+apps/dashboard/lib/server/queries.ts
+  s_31f384226fbd1c::t_0d36d730def6f3 624-625,628
+  s_31f384226fbd1c::t_1ccdc026b0f844 6-13
+  s_31f384226fbd1c::t_161705af9cc803 577-578
+  s_31f384226fbd1c::t_2f2dafea3dd4fd 585
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5da51ed2d59014cb04887de6e911bd88d0848e2",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_31f384226fbd1c": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "51492a6f-94b4-49a2-b31d-cc3ef72f5b2e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
