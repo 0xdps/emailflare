@@ -1,0 +1,279 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { BookOpen, ChevronsUpDown, Github, Check, PenLine, Inbox as InboxIcon } from "lucide-react";
+import AppLogo from "@/components/AppLogo";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Kbd } from "@/components/ui/kbd";
+import {
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuBadge,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarRail,
+	useSidebar,
+} from "@/components/ui/sidebar";
+import type { Inbox, ThreadCounts } from "@/lib/api";
+import {
+	ADMIN_NAV,
+	API_NAV,
+	INBOX_TEST,
+	INBOX_VIEWS,
+	INBOX_WORKFLOWS,
+	WORKSPACES,
+	isNavActive,
+	type NavContext,
+	type NavGroup,
+	type NavItem,
+	type Workspace,
+} from "@/lib/nav/config";
+
+interface AppSidebarProps {
+	workspace: Workspace;
+	available: Workspace[];
+	canAccessInbox: boolean;
+	canAccessTester: boolean;
+	mailboxes: Inbox[];
+	counts: ThreadCounts;
+}
+
+const ACTIVE_ICON = "data-active:[&>svg]:text-primary";
+
+function useNavContext(): NavContext {
+	const pathname = usePathname();
+	const params = useSearchParams();
+	return { pathname, params: new URLSearchParams(params.toString()) };
+}
+
+function NavLink({ item, ctx, badge }: { item: NavItem; ctx: NavContext; badge?: number }) {
+	const { setOpenMobile } = useSidebar();
+	return (
+		<SidebarMenuItem>
+			<SidebarMenuButton
+				isActive={isNavActive(item, ctx)}
+				tooltip={item.title}
+				className={ACTIVE_ICON}
+				render={<Link href={item.href} onClick={() => setOpenMobile(false)} />}
+			>
+				<item.icon />
+				<span>{item.title}</span>
+			</SidebarMenuButton>
+			{badge ? <SidebarMenuBadge className="text-primary">{badge > 99 ? "99+" : badge}</SidebarMenuBadge> : null}
+		</SidebarMenuItem>
+	);
+}
+
+function NavGroups({ groups, ctx }: { groups: NavGroup[]; ctx: NavContext }) {
+	return (
+		<>
+			{groups.map((group) => (
+				<SidebarGroup key={group.label}>
+					{group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{group.items.map((item) => (
+								<NavLink key={item.href} item={item} ctx={ctx} />
+							))}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+			))}
+		</>
+	);
+}
+
+function InboxNav({
+	ctx,
+	mailboxes,
+	counts,
+	canAccessInbox,
+	canAccessTester,
+}: Pick<AppSidebarProps, "mailboxes" | "counts" | "canAccessInbox" | "canAccessTester"> & { ctx: NavContext }) {
+	const { setOpenMobile } = useSidebar();
+	const viewBadge: Record<string, number> = { Inbox: counts.unread, Starred: counts.starred };
+
+	return (
+		<>
+			{canAccessInbox && (
+				<>
+					<SidebarGroup className="pb-0">
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									tooltip="Compose"
+									className="h-9 justify-center bg-primary font-medium text-primary-foreground shadow-xs hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground group-data-[collapsible=icon]:justify-center"
+									onClick={() => {
+										setOpenMobile(false);
+										window.dispatchEvent(new CustomEvent("emailflare:compose"));
+									}}
+								>
+									<PenLine />
+									<span>Compose</span>
+									<Kbd className="ml-auto bg-primary-foreground/15 text-primary-foreground group-data-[collapsible=icon]:hidden">
+										C
+									</Kbd>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+					</SidebarGroup>
+
+					<SidebarGroup>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{INBOX_VIEWS.map((item) => (
+									<NavLink key={item.href} item={item} ctx={ctx} badge={viewBadge[item.title]} />
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					{mailboxes.length > 0 && (
+						<SidebarGroup>
+							<SidebarGroupLabel>Mailboxes</SidebarGroupLabel>
+							<SidebarGroupContent>
+								<SidebarMenu>
+									{mailboxes.map((mailbox) => (
+										<NavLink
+											key={mailbox.id}
+											ctx={ctx}
+											badge={counts.perInbox[mailbox.email]}
+											item={{
+												title: mailbox.display_name || mailbox.email,
+												href: `/inbox?mailbox=${encodeURIComponent(mailbox.email)}`,
+												icon: InboxIcon,
+											}}
+										/>
+									))}
+								</SidebarMenu>
+							</SidebarGroupContent>
+						</SidebarGroup>
+					)}
+
+					<NavGroups groups={[{ label: "Workflows", items: INBOX_WORKFLOWS }]} ctx={ctx} />
+				</>
+			)}
+			{canAccessTester && <NavGroups groups={[{ label: "Testing", items: [INBOX_TEST] }]} ctx={ctx} />}
+		</>
+	);
+}
+
+function WorkspaceSwitcher({ workspace, available }: Pick<AppSidebarProps, "workspace" | "available">) {
+	const current = WORKSPACES[workspace];
+	return (
+		<SidebarMenu>
+			<SidebarMenuItem>
+				<DropdownMenu>
+					<DropdownMenuTrigger
+						render={
+							<SidebarMenuButton
+								size="lg"
+								className="data-open:bg-sidebar-accent"
+								tooltip="Switch workspace"
+							/>
+						}
+					>
+						<AppLogo size={28} />
+						<div className="grid flex-1 text-left leading-tight">
+							<span className="truncate text-sm font-semibold tracking-tight">EmailFlare</span>
+							<span className="truncate text-2xs text-muted-foreground">{current.label}</span>
+						</div>
+						<ChevronsUpDown className="ml-auto text-muted-foreground" />
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="start" className="w-60">
+						<DropdownMenuGroup>
+							<DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+							{available.map((id) => {
+								const ws = WORKSPACES[id];
+								return (
+									<DropdownMenuItem key={id} render={<Link href={ws.home} />} className="gap-3 py-2">
+										<span className="flex size-7 items-center justify-center rounded-md border bg-background">
+											<ws.icon className="size-4" />
+										</span>
+										<span className="grid flex-1 leading-tight">
+											<span className="text-sm font-medium">{ws.label}</span>
+											<span className="text-2xs text-muted-foreground">{ws.description}</span>
+										</span>
+										{id === workspace && <Check className="size-4 text-primary" />}
+									</DropdownMenuItem>
+								);
+							})}
+						</DropdownMenuGroup>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</SidebarMenuItem>
+		</SidebarMenu>
+	);
+}
+
+export default function AppSidebar(props: AppSidebarProps) {
+	const ctx = useNavContext();
+	return (
+		<Sidebar collapsible="icon">
+			<SidebarHeader>
+				<WorkspaceSwitcher workspace={props.workspace} available={props.available} />
+			</SidebarHeader>
+
+			<SidebarContent>
+				{props.workspace === "inbox" && (
+					<InboxNav
+						ctx={ctx}
+						mailboxes={props.mailboxes}
+						counts={props.counts}
+						canAccessInbox={props.canAccessInbox}
+						canAccessTester={props.canAccessTester}
+					/>
+				)}
+				{props.workspace === "api" && <NavGroups groups={API_NAV} ctx={ctx} />}
+				{props.workspace === "admin" && <NavGroups groups={ADMIN_NAV} ctx={ctx} />}
+			</SidebarContent>
+
+			<SidebarFooter>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							size="sm"
+							tooltip="API docs"
+							render={<a href="https://emailflare.dev/docs" target="_blank" rel="noopener noreferrer" />}
+						>
+							<BookOpen />
+							<span>API docs</span>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							size="sm"
+							tooltip="GitHub"
+							render={
+								<a
+									href="https://github.com/0xdps/emailflare"
+									target="_blank"
+									rel="noopener noreferrer"
+								/>
+							}
+						>
+							<Github />
+							<span>GitHub</span>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+			</SidebarFooter>
+			<SidebarRail />
+		</Sidebar>
+	);
+}
