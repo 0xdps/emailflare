@@ -1,0 +1,27 @@
+apps/dashboard/worker/inbox/index.ts
+  s_31f384226fbd1c::t_188ab57f4b87a2 52,98,103-109,115-120,123,126-131
+apps/dashboard/test/auth-guards.test.ts
+  s_31f384226fbd1c::t_9c5a4657846ddc 1-65
+apps/dashboard/worker/inbox/middleware/auth.ts
+  s_31f384226fbd1c::t_188ab57f4b87a2 7-8,161-175
+apps/dashboard/lib/core/email.ts
+  s_31f384226fbd1c::t_9c5a4657846ddc 187-189
+CHANGELOG.md
+  s_31f384226fbd1c::t_5bb8ac278babc4 26-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "22e15683590f2b20fcb7efe12a8cd0ac684edf43",
+  "prompts": {},
+  "sessions": {
+    "s_31f384226fbd1c": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "51492a6f-94b4-49a2-b31d-cc3ef72f5b2e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
