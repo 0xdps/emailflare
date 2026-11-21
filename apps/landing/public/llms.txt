@@ -1,0 +1,26 @@
+# EmailFlare
+
+> EmailFlare is source-available email infrastructure for Cloudflare. It combines a transactional send API and a shared team inbox in one Cloudflare Worker, backed by D1, R2, KV, Queues and Durable Objects in your own account. MIT licensed.
+
+## Product
+
+- [Home](https://emailflare.dev/): what EmailFlare is, who it is for and how it deploys
+- [Team inbox](https://emailflare.dev/inbox): shared mailboxes with threads, stars, archive and canned replies
+- [Email API](https://emailflare.dev/email-api): POST /v1/send, scoped API keys, suppressions and logs
+- [Templates](https://emailflare.dev/templates): built-in layouts and the Handlebars syntax guide
+- [Compare](https://emailflare.dev/compare): how it differs from hosted email tools
+
+## Documentation
+
+- [Docs](https://emailflare.dev/docs): quickstart, authentication, sending, domains, webhooks and operations
+- [API reference](https://emailflare.dev/api-reference): OpenAPI 3.1 specification, also at https://emailflare.dev/openapi.json
+- [Deploy to Cloudflare](https://emailflare.dev/cloudflare): bindings, secrets and Workers Builds settings
+- [Create a Cloudflare API token](https://emailflare.dev/cloudflare-token): required token permissions
+
+## Project
+
+- [Source code](https://github.com/0xdps/emailflare)
+- [Changelog](https://emailflare.dev/changelog)
+- [Security](https://emailflare.dev/security): how to report a vulnerability
+- [Sponsor](https://emailflare.dev/sponsor)
+- [License](https://emailflare.dev/license): Elastic License 2.0, free to self-host, not for resale as a hosted service

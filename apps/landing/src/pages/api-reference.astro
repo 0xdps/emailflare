@@ -1,0 +1,196 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import spec from "../../public/openapi.json";
+import Section from "@/components/site/Section.astro";
+import CodeBlock from "@/components/site/CodeBlock.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import DataTable from "@/components/product/DataTable.astro";
+
+type Schema = {
+	type?: string | string[];
+	description?: string;
+	enum?: string[];
+	format?: string;
+	$ref?: string;
+	properties?: Record<string, Schema>;
+	required?: string[];
+};
+type Operation = {
+	summary: string;
+	description?: string;
+	operationId: string;
+	tags: string[];
+	security?: unknown[];
+	parameters?: { name: string; in: string; required?: boolean; description?: string; $ref?: string }[];
+	requestBody?: {
+		content: Record<string, { schema: Schema; examples?: Record<string, { summary: string; value: unknown }> }>;
+	};
+	responses: Record<string, { description?: string; $ref?: string }>;
+};
+
+const schemas = spec.components.schemas as Record<string, Schema>;
+const resolve = (s: Schema): Schema => (s.$ref ? schemas[s.$ref.split("/").pop()!] : s);
+const typeOf = (s: Schema) => {
+	const r = resolve(s);
+	if (r.enum) return r.enum.map((e) => `\`${e}\``).join(", ");
+	if (Array.isArray(r.type)) return r.type.join(" or ");
+	return r.type ?? "string";
+};
+const methodTone: Record<string, string> = {
+	get: "bg-success-muted text-success",
+	post: "bg-primary-muted text-primary-muted-foreground",
+};
+
+const operations = Object.entries(spec.paths).flatMap(([path, methods]) =>
+	Object.entries(methods as Record<string, Operation>).map(([method, op]) => ({ path, method, op })),
+);
+
+const sendFields = (() => {
+	const s = schemas.SendRequest;
+	return Object.entries(s.properties ?? {}).map(([name, p]) => ({
+		field: `\`${name}\``,
+		type: name === "to" ? "string or string[]" : typeOf(p),
+		required: s.required?.includes(name) ? "Yes" : "No",
+		description: (resolve(p).description ?? p.description ?? "").replace(/\n/g, " "),
+	}));
+})();
+
+const errorText: Record<string, string> = {
+	"401": "No bearer token, or the key is unknown or revoked.",
+	"403": "The key's scope does not include the sender domain.",
+	"404": "No template matches the slug or ID, or the token is unknown.",
+	"429": "More than 100 requests in 60 seconds for this key.",
+	"500": "Unexpected error. Check the Worker logs with `wrangler tail`.",
+};
+const statusRows = (op: Operation) =>
+	Object.entries(op.responses).map(([code, r]) => {
+		const ref = r.$ref
+			? (spec.components.responses as Record<string, { description: string }>)[r.$ref.split("/").pop()!]
+			: r;
+		return {
+			status: `\`${code}\``,
+			meaning: r.$ref ? (errorText[code] ?? ref.description) : (ref.description ?? ""),
+		};
+	});
+
+const curl = `curl ${spec.servers[0].variables.baseUrl.default}/v1/send \\
+  -H "Authorization: Bearer eflive_xxx" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify((spec.paths["/v1/send"].post.requestBody.content["application/json"].examples as Record<string, { value: unknown }>).template.value, null, 2)}'`;
+---
+
+<Base
+	title="API reference"
+	description="The EmailFlare OpenAPI 3.1 specification: POST /v1/send, one-click unsubscribe and health check. Download openapi.json for your client generator."
+	path="/api-reference"
+>
+	<PageHero
+		eyebrow="OpenAPI 3.1"
+		title="API reference."
+		description="Every public endpoint of a self-hosted EmailFlare deployment, generated from one specification. Import it into your client generator, Postman or your editor."
+	>
+		<a href="/openapi.json" download class={buttonVariants({ size: "xl" })}>
+			<Icon name="lucide:download" />
+			Download openapi.json
+		</a>
+		<a href="/docs/send-an-email" class={buttonVariants({ size: "xl", variant: "outline" })}>
+			Read the guide
+		</a>
+	</PageHero>
+
+	<Section>
+		<div class="grid gap-3 sm:grid-cols-3">
+			<div class="rounded-xl border p-5">
+				<p class="text-muted-foreground font-mono text-xs uppercase">Server</p>
+				<p class="mt-2 font-mono text-sm break-all">{"{baseUrl}"}</p>
+				<p class="text-muted-foreground mt-1 text-sm">Your workers.dev address or custom domain.</p>
+			</div>
+			<div class="rounded-xl border p-5">
+				<p class="text-muted-foreground font-mono text-xs uppercase">Authentication</p>
+				<p class="mt-2 font-mono text-sm">Authorization: Bearer eflive_…</p>
+				<p class="text-muted-foreground mt-1 text-sm">Create keys under API keys in the dashboard.</p>
+			</div>
+			<div class="rounded-xl border p-5">
+				<p class="text-muted-foreground font-mono text-xs uppercase">Rate limit</p>
+				<p class="mt-2 font-mono text-sm">100 requests / 60 s</p>
+				<p class="text-muted-foreground mt-1 text-sm">Per API key. Exceeding it returns 429.</p>
+			</div>
+		</div>
+
+		<div class="mt-14 space-y-16">
+			{operations.map(({ path, method, op }) => (
+				<article id={op.operationId} class="scroll-mt-24">
+					<div class="flex flex-wrap items-center gap-3">
+						<Badge class={cn("h-7 rounded-md px-2.5 font-mono text-xs uppercase", methodTone[method])}>
+							{method}
+						</Badge>
+						<h2 class="font-mono text-xl font-semibold break-all">{path}</h2>
+					</div>
+					<p class="mt-3 text-lg font-medium">{op.summary}</p>
+					{op.description && <p class="text-muted-foreground mt-2 max-w-3xl leading-7">{op.description}</p>}
+
+					{op.parameters && (
+						<div class="mt-6">
+							<h3 class="mb-3 text-base font-semibold">Parameters</h3>
+							<DataTable
+								columns={[
+									{ key: "name", label: "Name" },
+									{ key: "in", label: "In" },
+									{ key: "required", label: "Required" },
+									{ key: "description", label: "Description" },
+								]}
+								rows={op.parameters.map((p) => {
+									const r = p.$ref
+										? (spec.components.parameters as Record<string, any>)[p.$ref.split("/").pop()!]
+										: p;
+									return {
+										name: `\`${r.name}\``,
+										in: r.in,
+										required: r.required ? "Yes" : "No",
+										description: r.description ?? "",
+									};
+								})}
+							/>
+						</div>
+					)}
+
+					{path === "/v1/send" && (
+						<>
+							<div class="mt-6">
+								<h3 class="mb-3 text-base font-semibold">Request body</h3>
+								<DataTable
+									columns={[
+										{ key: "field", label: "Field" },
+										{ key: "type", label: "Type" },
+										{ key: "required", label: "Required" },
+										{ key: "description", label: "Description" },
+									]}
+									rows={sendFields}
+								/>
+							</div>
+							<div class="mt-6">
+								<h3 class="mb-3 text-base font-semibold">Example</h3>
+								<CodeBlock code={curl} title="curl" />
+							</div>
+						</>
+					)}
+
+					<div class="mt-6">
+						<h3 class="mb-3 text-base font-semibold">Responses</h3>
+						<DataTable
+							columns={[
+								{ key: "status", label: "Status" },
+								{ key: "meaning", label: "Meaning" },
+							]}
+							rows={statusRows(op)}
+						/>
+					</div>
+				</article>
+			))}
+		</div>
+	</Section>
+</Base>

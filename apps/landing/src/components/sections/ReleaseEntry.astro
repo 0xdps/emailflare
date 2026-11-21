@@ -1,0 +1,63 @@
+---
+import { Icon } from "astro-icon/components";
+import { Badge } from "@/components/ui/badge";
+import { inlineMd } from "@/lib/inline-md";
+import type { Release } from "@/lib/changelog";
+
+interface Props {
+	release: Release;
+}
+const { release } = Astro.props;
+const date = release.date
+	? new Date(`${release.date}T00:00:00Z`).toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+			timeZone: "UTC",
+		})
+	: null;
+---
+
+<article id={release.anchor} class="relative border-l pb-14 pl-7 last:pb-0 md:pl-10">
+	<span
+		class="bg-primary ring-background absolute top-2.5 -left-[5px] size-2.5 rounded-full ring-4"
+		aria-hidden="true"
+	></span>
+	<header class="flex flex-wrap items-center gap-x-4 gap-y-2">
+		<h2 class="text-3xl leading-none font-semibold md:text-4xl">
+			<a href={`#${release.anchor}`} class="decoration-primary/40 underline-offset-4 hover:underline">
+				{release.version === "Unreleased" ? release.version : `v${release.version}`}
+			</a>
+		</h2>
+		{release.version === "Unreleased" && <Badge variant="secondary">Next release</Badge>}
+		{date && (
+			<time datetime={release.date ?? undefined} class="text-muted-foreground font-mono text-sm">
+				{date}
+			</time>
+		)}
+		<a
+			href={release.url}
+			target="_blank"
+			rel="noopener"
+			class="text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1 text-sm underline-offset-4 hover:underline"
+		>
+			{release.version === "Unreleased" ? "Recent commits" : "On GitHub"}
+			<Icon name="lucide:arrow-up-right" class="size-4" />
+		</a>
+	</header>
+
+	<div class="mt-8 space-y-8">
+		{release.groups.map((g) => (
+			<section aria-label={g.title}>
+				<h3 class="text-primary-muted-foreground font-mono text-xs font-medium tracking-wide uppercase">
+					{g.title}
+				</h3>
+				<ul class="marker:text-primary mt-3 list-disc space-y-3 pl-5">
+					{g.items.map((i) => (
+						<li class="text-muted-foreground text-[0.9375rem] leading-7" set:html={inlineMd(i)} />
+					))}
+				</ul>
+			</section>
+		))}
+	</div>
+</article>

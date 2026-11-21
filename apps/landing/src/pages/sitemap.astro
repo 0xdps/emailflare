@@ -1,0 +1,75 @@
+---
+import Base from "@/layouts/Base.astro";
+import Section from "@/components/site/Section.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import { getDocs, groupDocs } from "@/lib/docs";
+
+const groups = groupDocs(await getDocs());
+
+const pages = [
+	{
+		title: "Product",
+		items: [
+			{ title: "Home", href: "/" },
+			{ title: "Team inbox", href: "/inbox" },
+			{ title: "Email API", href: "/email-api" },
+			{ title: "Templates", href: "/templates" },
+			{ title: "Compare", href: "/compare" },
+		],
+	},
+	{
+		title: "Guides",
+		items: [
+			{ title: "Deploy to Cloudflare", href: "/cloudflare" },
+			{ title: "Create an API token", href: "/cloudflare-token" },
+			{ title: "API reference (OpenAPI)", href: "/api-reference" },
+			{ title: "openapi.json", href: "/openapi.json" },
+		],
+	},
+	{
+		title: "Project",
+		items: [
+			{ title: "Changelog", href: "/changelog" },
+			{ title: "Security", href: "/security" },
+			{ title: "License", href: "/license" },
+			{ title: "Sponsor", href: "/sponsor" },
+		],
+	},
+	{
+		title: "For crawlers",
+		items: [
+			{ title: "sitemap-index.xml", href: "/sitemap-index.xml" },
+			{ title: "llms.txt", href: "/llms.txt" },
+		],
+	},
+];
+---
+
+<Base title="Sitemap" description="Every page on the EmailFlare website, grouped by topic." path="/sitemap">
+	<PageHero
+		eyebrow="Sitemap"
+		title="Every page, in one place."
+		description="Looking for something? It is probably here."
+	/>
+	<Section>
+		<div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+			{[...pages, ...groups.map((g) => ({ title: `Docs: ${g.id}`, items: g.items }))].map((g) => (
+				<nav aria-label={g.title}>
+					<h2 class="font-display mb-4 text-lg font-semibold">{g.title}</h2>
+					<ul class="space-y-2.5">
+						{g.items.map((i) => (
+							<li>
+								<a
+									href={i.href}
+									class="text-muted-foreground hover:text-foreground text-[0.9375rem] underline-offset-4 hover:underline"
+								>
+									{i.title}
+								</a>
+							</li>
+						))}
+					</ul>
+				</nav>
+			))}
+		</div>
+	</Section>
+</Base>

@@ -1,0 +1,64 @@
+---
+import { Icon } from "astro-icon/components";
+
+const inputs = [
+	{ icon: "lucide:mail-plus", label: "Inbound mail", note: "Email Routing catch-all" },
+	{ icon: "lucide:globe", label: "Browser and API calls", note: "HTTPS to your Worker" },
+	{ icon: "lucide:clock", label: "Scheduled work", note: "Cron for sequences" },
+];
+const surfaces = [
+	{ icon: "lucide:layout-dashboard", label: "Dashboard", note: "Inbox and workspace" },
+	{ icon: "lucide:braces", label: "REST API", note: "/v1/send and /api/*" },
+	{ icon: "lucide:workflow", label: "Handlers", note: "email, queue, scheduled" },
+];
+const stores = [
+	{ icon: "lucide:database", label: "D1", note: "Threads, contacts, keys, logs" },
+	{ icon: "lucide:package", label: "R2", note: "Raw MIME and attachments" },
+	{ icon: "lucide:list-ordered", label: "Queues", note: "Reliable outbound sends" },
+	{ icon: "lucide:gauge", label: "KV", note: "Rate limits, short tokens" },
+	{ icon: "lucide:radio", label: "Durable Objects", note: "Live inbox updates" },
+];
+---
+
+<div class="grid items-stretch gap-4 lg:grid-cols-[1fr_1.35fr_1fr]">
+	<ul class="flex flex-col gap-3" aria-label="Entry points">
+		{inputs.map((i) => (
+			<li class="border-ink-border bg-ink-border/30 flex items-center gap-3 rounded-xl border p-4">
+				<Icon name={i.icon} class="text-ink-muted size-5 shrink-0" />
+				<div>
+					<p class="text-sm font-medium">{i.label}</p>
+					<p class="text-ink-muted text-xs">{i.note}</p>
+				</div>
+			</li>
+		))}
+	</ul>
+
+	<div class="border-primary/50 relative rounded-2xl border-2 border-dashed p-5">
+		<span class="bg-ink text-primary absolute -top-3 left-5 px-2 font-mono text-xs font-medium">
+			one Cloudflare Worker
+		</span>
+		<ul class="flex h-full flex-col gap-3">
+			{surfaces.map((s) => (
+				<li class="bg-primary/10 border-primary/30 flex flex-1 items-center gap-3 rounded-xl border p-4">
+					<Icon name={s.icon} class="text-primary size-5 shrink-0" />
+					<div>
+						<p class="text-sm font-medium">{s.label}</p>
+						<p class="text-ink-muted text-xs">{s.note}</p>
+					</div>
+				</li>
+			))}
+		</ul>
+	</div>
+
+	<ul class="flex flex-col gap-3" aria-label="Cloudflare services">
+		{stores.map((s) => (
+			<li class="border-ink-border bg-ink-border/30 flex items-center gap-3 rounded-xl border px-4 py-2.5">
+				<Icon name={s.icon} class="text-ink-muted size-5 shrink-0" />
+				<div class="min-w-0">
+					<p class="text-sm font-medium">{s.label}</p>
+					<p class="text-ink-muted truncate text-xs">{s.note}</p>
+				</div>
+			</li>
+		))}
+	</ul>
+</div>

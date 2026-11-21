@@ -1,0 +1,56 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+	columns: { key: string; label: string; class?: string }[];
+	/** Cell text. Backticks become inline code. */
+	rows: Record<string, string>[];
+	caption?: string;
+	class?: string;
+}
+const { columns, rows, caption, class: className } = Astro.props;
+
+const code = "bg-muted text-foreground rounded-md border px-1.5 py-0.5 font-mono text-[0.8125rem]";
+const cell = (text: string) =>
+	text
+		.split("`")
+		.map((part, i) => (i % 2 ? `<code class="${code}">${part}</code>` : part))
+		.join("");
+---
+
+<div class={cn("border-border bg-card overflow-x-auto rounded-xl border", className)}>
+	<table class="w-full min-w-[34rem] border-collapse text-left text-sm">
+		{caption && <caption class="sr-only">{caption}</caption>}
+		<thead>
+			<tr class="bg-muted/60 border-b">
+				{columns.map((c) => (
+					<th
+						scope="col"
+						class={cn(
+							"text-muted-foreground px-4 py-3 text-xs font-medium tracking-wide uppercase",
+							c.class,
+						)}
+					>
+						{c.label}
+					</th>
+				))}
+			</tr>
+		</thead>
+		<tbody class="divide-border divide-y">
+			{rows.map((r) => (
+				<tr>
+					{columns.map((c, i) => (
+						<td
+							class={cn(
+								"text-muted-foreground px-4 py-3 align-top leading-6",
+								i === 0 && "text-foreground font-medium whitespace-nowrap",
+								c.class,
+							)}
+							set:html={cell(r[c.key] ?? "")}
+						/>
+					))}
+				</tr>
+			))}
+		</tbody>
+	</table>
+</div>

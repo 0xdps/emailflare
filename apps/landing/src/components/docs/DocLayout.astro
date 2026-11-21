@@ -1,0 +1,18 @@
+---
+import Container from "@/components/site/Container.astro";
+import TocNav from "./TocNav.astro";
+
+interface Props {
+	toc: { id: string; label: string }[];
+}
+const { toc } = Astro.props;
+---
+
+<Container class="py-12 md:py-16">
+	<div class="grid gap-8 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-16">
+		<TocNav items={toc} />
+		<div class="max-w-3xl min-w-0 space-y-16">
+			<slot />
+		</div>
+	</div>
+</Container>

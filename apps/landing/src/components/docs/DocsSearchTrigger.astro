@@ -1,0 +1,30 @@
+---
+import { Icon } from "astro-icon/components";
+import { Kbd } from "@/components/ui/kbd";
+import { cn } from "@/lib/utils";
+
+interface Props {
+	class?: string;
+	/** Compact variant for the mobile bar */
+	compact?: boolean;
+}
+const { class: className, compact = false } = Astro.props;
+---
+
+<!-- Opens the search dialog. DocsSearch (a client island) listens for clicks on [data-docs-search]. -->
+<button
+	type="button"
+	data-docs-search
+	aria-label="Search the docs"
+	class={cn(
+		"border-input bg-card text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/50 flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-colors outline-none focus-visible:ring-3",
+		compact ? "flex-1" : "w-full",
+		className,
+	)}
+>
+	<Icon name="lucide:search" class="size-4 shrink-0" />
+	<span class="flex-1 text-left">Search docs</span>
+	<Kbd data-docs-search-key class="hidden sm:inline-flex">
+		Ctrl K
+	</Kbd>
+</button>

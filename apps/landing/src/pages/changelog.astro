@@ -1,0 +1,67 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { site } from "@/lib/site";
+import { parseChangelog } from "@/lib/changelog";
+import Section from "@/components/site/Section.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import ReleaseEntry from "@/components/sections/ReleaseEntry.astro";
+
+const releases = parseChangelog();
+---
+
+<Base
+	title="Changelog"
+	description="What changed in each EmailFlare release: new features, fixes, security changes and dependency updates, from the project's CHANGELOG."
+	path="/changelog"
+>
+	<PageHero
+		eyebrow="Changelog"
+		title="What changed, release by release."
+		description="Notable changes to EmailFlare, newest first. The project follows Keep a Changelog and semantic versioning."
+	>
+		<a href={`${site.repo}/releases`} target="_blank" rel="noopener" class={buttonVariants({ size: "xl" })}>
+			<Icon name="simple-icons:github" />
+			Releases on GitHub
+		</a>
+		<a
+			href={`${site.repo}/blob/trunk/CHANGELOG.md`}
+			target="_blank"
+			rel="noopener"
+			class={buttonVariants({ size: "xl", variant: "outline" })}
+		>
+			View the source file
+		</a>
+	</PageHero>
+
+	<Section size="narrow" class="py-14 md:py-20">
+		{releases.length > 0 ? (
+			<>
+				<nav aria-label="Releases" class="mb-12 flex flex-wrap gap-2">
+					{releases.map((r) => (
+						<a
+							href={`#${r.anchor}`}
+							class="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg border px-3 py-1 font-mono text-xs transition-colors"
+						>
+							{r.version === "Unreleased" ? r.version : `v${r.version}`}
+						</a>
+					))}
+				</nav>
+				<div>
+					{releases.map((r) => (
+						<ReleaseEntry release={r} />
+					))}
+				</div>
+			</>
+		) : (
+			<p class="text-muted-foreground">
+				The changelog could not be read. See it on{" "}
+				<a href={`${site.repo}/blob/trunk/CHANGELOG.md`} class="text-foreground underline underline-offset-4">
+					GitHub
+				</a>
+				.
+			</p>
+		)}
+	</Section>
+</Base>

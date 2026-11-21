@@ -1,0 +1,100 @@
+---
+import "@/styles/global.css";
+import Header from "@/components/site/Header.astro";
+import Footer from "@/components/site/Footer.astro";
+import { site } from "@/lib/site";
+
+interface Props {
+	title: string;
+	description?: string;
+	/** Path-only canonical override, e.g. "/docs" */
+	path?: string;
+	ogImage?: string;
+	noindex?: boolean;
+	/** JSON-LD objects rendered in the head */
+	jsonLd?: Record<string, unknown>[];
+	/** Hide the site header and footer (used by the 404 page's minimal variant) */
+	bare?: boolean;
+}
+
+const {
+	title,
+	description = site.description,
+	path,
+	ogImage = "/og.png",
+	noindex = false,
+	jsonLd = [],
+	bare = false,
+} = Astro.props;
+const canonical = new URL(path ?? Astro.url.pathname, site.url).href;
+const image = new URL(ogImage, site.url).href;
+const fullTitle = title.includes("EmailFlare") ? title : `${title} · EmailFlare`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<meta name="author" content="EmailFlare contributors" />
+		<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+		<meta name="color-scheme" content="light dark" />
+		<link rel="canonical" href={canonical} />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:site_name" content="EmailFlare" />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={image} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:locale" content="en_US" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={fullTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={image} />
+
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+		<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+
+		<!-- Set the theme before first paint to avoid a flash -->
+		<script is:inline>
+			(function () {
+				try {
+					var t = localStorage.getItem("ef-theme");
+					var dark = t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+					document.documentElement.classList.toggle("dark", dark);
+				} catch (e) {}
+			})();
+		</script>
+
+		{jsonLd.map((data) => (
+			<script type="application/ld+json" set:html={JSON.stringify(data)} />
+		))}
+		<slot name="head" />
+
+		<script
+			is:inline
+			defer
+			src="https://manage.anately.sh/script.js"
+			data-website-id="c517f1e2-5f2c-4659-948e-659371cdeb46"
+		></script>
+	</head>
+	<body class="flex min-h-screen flex-col">
+		<a
+			href="#main"
+			class="bg-primary text-primary-foreground sr-only z-50 rounded-lg px-4 py-2 focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+		>
+			Skip to content
+		</a>
+		{!bare && <Header />}
+		<main id="main" class="flex-1">
+			<slot />
+		</main>
+		{!bare && <Footer />}
+	</body>
+</html>

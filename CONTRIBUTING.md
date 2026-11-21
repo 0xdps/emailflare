@@ -1,6 +1,6 @@
 # Contributing to EmailFlare
 
-Thank you for your interest in contributing to EmailFlare! EmailFlare is an open-source, edge-native email engine and collaborative team inbox built for Cloudflare.
+Thank you for your interest in contributing to EmailFlare! EmailFlare is a source-available, edge-native email engine and collaborative team inbox built for Cloudflare.
 
 ---
 
@@ -78,4 +78,4 @@ Lefthook pre-commit hooks run automatically on staged files to check secrets, fo
 1. **Keep Changes Focused:** Target one feature, improvement, or bug fix per PR.
 2. **Preserve Documentation:** If introducing new capabilities, routes, or config parameters, update the relevant documentation in `docs/` and `README.md`.
 3. **UI Contributions:** If making visual modifications to the dashboard or inbox, include before/after screenshots or short screen captures in your PR description.
-4. **License:** All contributions are licensed under the [MIT License](./LICENSE).
+4. **License:** All contributions are licensed under the [Elastic License 2.0](./LICENSE).

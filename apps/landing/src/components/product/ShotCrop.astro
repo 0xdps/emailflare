@@ -1,0 +1,42 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+	file: string;
+	alt: string;
+	/** Crop rectangle in source pixels of the 1800x1125 screenshot */
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+	class?: string;
+}
+const { file, alt, x, y, w, h, class: className } = Astro.props;
+
+// Percentages are relative to the frame: width scales the image, left/top shift it.
+const pos = `width:${((1800 / w) * 100).toFixed(3)}%;left:${((-x / w) * 100).toFixed(3)}%;top:${((-y / h) * 100).toFixed(3)}%`;
+const img = "absolute max-w-none";
+---
+
+<!-- A zoomed region of a real dashboard screenshot. -->
+<figure
+	class={cn("border-border bg-card shadow-stamp relative overflow-hidden rounded-xl border", className)}
+	style={`aspect-ratio:${w}/${h}`}
+>
+	<img
+		src={`/shots/${file}-light.webp`}
+		alt={alt}
+		loading="lazy"
+		decoding="async"
+		class={cn(img, "dark:hidden")}
+		style={pos}
+	/>
+	<img
+		src={`/shots/${file}-dark.webp`}
+		alt={alt}
+		loading="lazy"
+		decoding="async"
+		class={cn(img, "hidden dark:block")}
+		style={pos}
+	/>
+</figure>

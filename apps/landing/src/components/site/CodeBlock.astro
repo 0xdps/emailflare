@@ -1,0 +1,40 @@
+---
+import { highlight, type Lang } from "@/lib/highlight";
+import { cn } from "@/lib/utils";
+import CopyButton from "@/components/islands/CopyButton";
+
+interface Props {
+	code: string;
+	lang?: Lang;
+	title?: string;
+	class?: string;
+}
+const { code, lang = "bash", title, class: className } = Astro.props;
+const html = await highlight(code, lang);
+const raw = code.replace(/^\n+|\s+$/g, "");
+---
+
+<figure
+	class={cn(
+		"bg-ink text-ink-foreground border-ink-border group relative overflow-hidden rounded-xl border",
+		className,
+	)}
+>
+	{title && (
+		<figcaption class="border-ink-border text-ink-muted flex items-center gap-2 border-b px-4 py-2 font-mono text-xs">
+			<span class="flex gap-1.5" aria-hidden="true">
+				<span class="bg-ink-border size-2.5 rounded-full" />
+				<span class="bg-ink-border size-2.5 rounded-full" />
+				<span class="bg-ink-border size-2.5 rounded-full" />
+			</span>
+			<span class="ml-1">{title}</span>
+		</figcaption>
+	)}
+	<div class="absolute top-2 right-2 z-10">
+		<CopyButton client:visible text={raw} />
+	</div>
+	<div
+		class="overflow-x-auto p-4 font-mono text-[0.8125rem] leading-6 [&_pre]:m-0 [&_pre]:!bg-transparent"
+		set:html={html}
+	/>
+</figure>

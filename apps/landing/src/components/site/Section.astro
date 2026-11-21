@@ -1,0 +1,24 @@
+---
+import { cn } from "@/lib/utils";
+import Container from "./Container.astro";
+
+interface Props {
+	id?: string;
+	tone?: "default" | "muted" | "ink";
+	size?: "default" | "narrow" | "wide";
+	class?: string;
+	containerClass?: string;
+}
+const { id, tone = "default", size = "default", class: className, containerClass } = Astro.props;
+const tones = {
+	default: "",
+	muted: "bg-muted/60 border-y",
+	ink: "bg-ink text-ink-foreground dark:border-y",
+};
+---
+
+<section id={id} class={cn("py-20 md:py-28", tones[tone], className)}>
+	<Container size={size} class={containerClass}>
+		<slot />
+	</Container>
+</section>

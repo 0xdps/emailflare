@@ -1,0 +1,42 @@
+---
+import { Icon } from "astro-icon/components";
+import { cn } from "@/lib/utils";
+import SectionHeading from "@/components/site/SectionHeading.astro";
+
+interface Props {
+	eyebrow: string;
+	title: string;
+	description: string;
+	/** Bullet list. Inline HTML (code, links) is allowed. */
+	points?: string[];
+	/** Put the media on the left at large widths */
+	reverse?: boolean;
+	class?: string;
+}
+const { eyebrow, title, description, points = [], reverse = false, class: className } = Astro.props;
+---
+
+<div class={cn("grid items-center gap-10 lg:grid-cols-2 lg:gap-16", className)}>
+	<div class={cn(reverse && "lg:order-2")}>
+		<SectionHeading
+			eyebrow={eyebrow}
+			title={title}
+			description={description}
+			class="[&_h2]:text-3xl md:[&_h2]:text-4xl"
+		/>
+		{points.length > 0 && (
+			<ul class="mt-6 space-y-3">
+				{points.map((p) => (
+					<li class="text-muted-foreground flex gap-3 text-[0.9375rem] leading-6">
+						<Icon name="lucide:check" class="text-primary mt-1 size-4 shrink-0" />
+						<span set:html={p} />
+					</li>
+				))}
+			</ul>
+		)}
+		<slot />
+	</div>
+	<div class={cn("min-w-0", reverse && "lg:order-1")}>
+		<slot name="media" />
+	</div>
+</div>

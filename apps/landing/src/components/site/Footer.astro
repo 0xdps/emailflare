@@ -1,0 +1,82 @@
+---
+import { Icon } from "astro-icon/components";
+import { footerNav, site } from "@/lib/site";
+import Container from "./Container.astro";
+import Logo from "./Logo.astro";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-ink text-ink-foreground dark:border-t">
+	<Container class="py-16">
+		<div class="grid gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+			<div class="max-w-xs">
+				<Logo inverse />
+				<p class="text-ink-muted mt-4 text-sm leading-6">
+					Source-available email for Cloudflare. A send API and a team inbox in one Worker, running in your
+					own account.
+				</p>
+				<div class="mt-5 flex gap-2">
+					<a
+						href={site.repo}
+						target="_blank"
+						rel="noopener"
+						aria-label="GitHub"
+						class="border-ink-border text-ink-muted hover:text-ink-foreground inline-flex size-9 items-center justify-center rounded-lg border transition-colors"
+					>
+						<Icon name="simple-icons:github" class="size-4" />
+					</a>
+					<a
+						href={site.sponsors}
+						target="_blank"
+						rel="noopener"
+						aria-label="Sponsor on GitHub"
+						class="border-ink-border text-ink-muted hover:text-ink-foreground inline-flex size-9 items-center justify-center rounded-lg border transition-colors"
+					>
+						<Icon name="lucide:heart" class="size-4" />
+					</a>
+				</div>
+			</div>
+			{footerNav.map((col) => (
+				<nav aria-label={col.title}>
+					<h2 class="text-ink-muted mb-4 font-sans text-xs font-medium tracking-wide uppercase">
+						{col.title}
+					</h2>
+					<ul class="space-y-2.5 text-sm">
+						{col.links.map((l) => (
+							<li>
+								<a
+									href={l.href}
+									class="text-ink-foreground/85 hover:text-ink-foreground transition-colors"
+									{...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}
+								>
+									{l.label}
+								</a>
+							</li>
+						))}
+					</ul>
+				</nav>
+			))}
+		</div>
+		<div class="border-ink-border text-ink-muted mt-14 flex flex-col justify-between gap-3 border-t pt-6 text-xs sm:flex-row">
+			<p>
+				© {year} {site.author.name} and EmailFlare contributors.{" "}
+				<a href="/license" class="hover:text-ink-foreground underline underline-offset-4">
+					Elastic License 2.0
+				</a>
+				.
+			</p>
+			<p>
+				Built by{" "}
+				<a href={site.author.url} class="text-ink-foreground hover:underline" target="_blank" rel="noopener">
+					{site.author.name}
+				</a>
+				, a project of{" "}
+				<a href={site.parent.url} class="text-ink-foreground hover:underline" target="_blank" rel="noopener">
+					{site.parent.name}
+				</a>
+				.
+			</p>
+		</div>
+	</Container>
+</footer>

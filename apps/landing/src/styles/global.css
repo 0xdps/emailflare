@@ -1,0 +1,251 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/bricolage-grotesque/wdth.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design tokens. This is the only file that defines colour.
+ * Components use semantic utilities (bg-background, text-muted-foreground,
+ * bg-primary, border-border) and never raw palette classes.
+ *
+ * Identity: cool paper, indigo ink, one orange "postmark".
+ */
+:root {
+	--radius: 0.75rem;
+
+	--background: oklch(0.982 0.004 280);
+	--foreground: oklch(0.2 0.045 275);
+	--card: oklch(1 0 0);
+	--card-foreground: var(--foreground);
+	--popover: oklch(1 0 0);
+	--popover-foreground: var(--foreground);
+
+	--primary: oklch(0.6 0.2 44);
+	--primary-foreground: oklch(0.99 0.005 60);
+	--secondary: oklch(0.955 0.01 280);
+	--secondary-foreground: var(--foreground);
+	--muted: oklch(0.962 0.008 280);
+	--muted-foreground: oklch(0.47 0.035 275);
+	--accent: oklch(0.955 0.012 280);
+	--accent-foreground: var(--foreground);
+	--destructive: oklch(0.55 0.2 27);
+
+	--border: oklch(0.9 0.012 280);
+	--input: oklch(0.9 0.012 280);
+	--ring: oklch(0.6 0.2 44);
+
+	/* Postmark wash behind hero and CTA */
+	--primary-muted: oklch(0.96 0.03 55);
+	--primary-muted-foreground: oklch(0.45 0.15 44);
+	/* Ink: the always-dark surface (terminal blocks, footer) */
+	--ink: oklch(0.2 0.045 275);
+	--ink-foreground: oklch(0.94 0.01 280);
+	--ink-muted: oklch(0.72 0.03 280);
+	--ink-border: oklch(1 0 0 / 12%);
+	--success: oklch(0.55 0.14 155);
+	--success-muted: oklch(0.95 0.045 155);
+
+	--shadow-stamp: 0 24px 60px -24px oklch(0.2 0.08 275 / 30%), 0 2px 6px oklch(0.2 0.08 275 / 8%);
+}
+
+.dark {
+	--background: oklch(0.155 0.03 275);
+	--foreground: oklch(0.96 0.008 280);
+	--card: oklch(0.2 0.032 275);
+	--card-foreground: var(--foreground);
+	--popover: oklch(0.2 0.032 275);
+	--popover-foreground: var(--foreground);
+
+	--primary: oklch(0.7 0.19 46);
+	--primary-foreground: oklch(0.18 0.04 275);
+	--secondary: oklch(0.25 0.035 275);
+	--secondary-foreground: var(--foreground);
+	--muted: oklch(0.23 0.032 275);
+	--muted-foreground: oklch(0.72 0.03 280);
+	--accent: oklch(0.27 0.04 275);
+	--accent-foreground: var(--foreground);
+	--destructive: oklch(0.7 0.18 25);
+
+	--border: oklch(1 0 0 / 11%);
+	--input: oklch(1 0 0 / 14%);
+	--ring: oklch(0.7 0.19 46);
+
+	--primary-muted: oklch(0.27 0.06 45);
+	--primary-muted-foreground: oklch(0.82 0.12 55);
+	--ink: oklch(0.12 0.03 275);
+	--ink-foreground: oklch(0.94 0.01 280);
+	--ink-muted: oklch(0.7 0.03 280);
+	--ink-border: oklch(1 0 0 / 10%);
+	--success: oklch(0.75 0.16 155);
+	--success-muted: oklch(0.3 0.06 155);
+
+	--shadow-stamp: 0 30px 70px -24px oklch(0 0 0 / 70%), 0 2px 6px oklch(0 0 0 / 40%);
+}
+
+@theme inline {
+	--font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-display: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-muted: var(--primary-muted);
+	--color-primary-muted-foreground: var(--primary-muted-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-ink: var(--ink);
+	--color-ink-foreground: var(--ink-foreground);
+	--color-ink-muted: var(--ink-muted);
+	--color-ink-border: var(--ink-border);
+	--color-success: var(--success);
+	--color-success-muted: var(--success-muted);
+
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--radius-2xl: calc(var(--radius) + 8px);
+
+	--shadow-stamp: var(--shadow-stamp);
+
+	--text-2xs: 0.6875rem;
+	--text-2xs--line-height: 1rem;
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	html {
+		scroll-behavior: smooth;
+		scroll-padding-top: 5.5rem;
+		-webkit-text-size-adjust: 100%;
+	}
+	body {
+		@apply bg-background text-foreground font-sans antialiased;
+	}
+	h1,
+	h2,
+	h3 {
+		@apply font-display text-balance;
+		letter-spacing: -0.025em;
+	}
+	::selection {
+		background: color-mix(in oklab, var(--primary) 30%, transparent);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+}
+
+@layer components {
+	/*
+	 * Perforated postage-stamp edge for product screenshots.
+	 * The padding ring is masked by a tile of quarter-circle cut-outs; the content box stays solid.
+	 */
+	.stamp {
+		padding: 16px;
+		background: var(--card);
+		box-shadow: var(--shadow-stamp);
+		-webkit-mask:
+			linear-gradient(#000 0 0) content-box,
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath fill-rule='evenodd' d='M0 0h24v24H0z M-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0 M19 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0 M-5 24a5 5 0 1 0 10 0a5 5 0 1 0 -10 0 M19 24a5 5 0 1 0 10 0a5 5 0 1 0 -10 0'/%3E%3C/svg%3E")
+				0 0 / 24px 24px round;
+		mask:
+			linear-gradient(#000 0 0) content-box,
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath fill-rule='evenodd' d='M0 0h24v24H0z M-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0 M19 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0 M-5 24a5 5 0 1 0 10 0a5 5 0 1 0 -10 0 M19 24a5 5 0 1 0 10 0a5 5 0 1 0 -10 0'/%3E%3C/svg%3E")
+				0 0 / 24px 24px round;
+		-webkit-mask-composite: source-over;
+		mask-composite: add;
+	}
+
+	.prose-docs {
+		@apply text-foreground max-w-none text-[0.9375rem] leading-7;
+	}
+	.prose-docs h1 {
+		@apply mb-4 text-4xl font-semibold;
+	}
+	.prose-docs h2 {
+		@apply mt-14 mb-4 scroll-mt-24 border-t pt-8 text-2xl font-semibold;
+	}
+	.prose-docs h3 {
+		@apply mt-9 mb-3 scroll-mt-24 text-lg font-semibold;
+	}
+	.prose-docs p {
+		@apply text-muted-foreground my-4;
+	}
+	.prose-docs a {
+		@apply text-primary-muted-foreground decoration-primary/40 hover:decoration-primary font-medium underline underline-offset-4;
+	}
+	.prose-docs ul {
+		@apply text-muted-foreground my-4 list-disc space-y-1.5 pl-5;
+	}
+	.prose-docs ol {
+		@apply text-muted-foreground my-4 list-decimal space-y-1.5 pl-5;
+	}
+	.prose-docs li::marker {
+		@apply text-primary;
+	}
+	.prose-docs strong {
+		@apply text-foreground font-semibold;
+	}
+	.prose-docs :not(pre) > code {
+		@apply bg-muted text-foreground rounded-md border px-1.5 py-0.5 font-mono text-[0.8125rem];
+	}
+	.prose-docs pre {
+		@apply bg-ink text-ink-foreground border-ink-border my-5 overflow-x-auto rounded-xl border p-4 font-mono text-[0.8125rem] leading-6;
+	}
+	.prose-docs pre code {
+		@apply border-0 bg-transparent p-0;
+	}
+	.prose-docs table {
+		@apply my-6 w-full border-collapse text-left text-sm;
+	}
+	.prose-docs th {
+		@apply bg-muted text-foreground border px-3 py-2 font-medium;
+	}
+	.prose-docs td {
+		@apply text-muted-foreground border px-3 py-2 align-top;
+	}
+	.prose-docs blockquote {
+		@apply border-primary bg-primary-muted my-5 rounded-r-lg border-l-4 px-4 py-3;
+	}
+	.prose-docs blockquote p {
+		@apply text-primary-muted-foreground my-0;
+	}
+	.prose-docs hr {
+		@apply my-10;
+	}
+}
+
+/* Code always sits on the ink surface, so Shiki's own background is dropped. */
+.shiki {
+	background-color: transparent !important;
+}

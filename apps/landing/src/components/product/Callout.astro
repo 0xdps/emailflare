@@ -1,0 +1,23 @@
+---
+import { Icon } from "astro-icon/components";
+import { cn } from "@/lib/utils";
+
+interface Props {
+	title: string;
+	icon?: string;
+	class?: string;
+}
+const { title, icon = "lucide:info", class: className } = Astro.props;
+---
+
+<aside class={cn("border-border bg-card flex gap-4 rounded-2xl border border-dashed p-6 md:p-8", className)}>
+	<span class="bg-muted text-muted-foreground hidden size-10 shrink-0 items-center justify-center rounded-xl sm:inline-flex">
+		<Icon name={icon} class="size-5" />
+	</span>
+	<div class="min-w-0">
+		<h3 class="text-xl font-semibold">{title}</h3>
+		<div class="text-muted-foreground [&_a]:text-foreground [&_code]:bg-muted [&_code]:text-foreground mt-3 space-y-3 text-[0.9375rem] leading-7 [&_a]:underline [&_a]:underline-offset-4 [&_code]:rounded-md [&_code]:border [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.8125rem] [&_li]:marker:text-primary [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5">
+			<slot />
+		</div>
+	</div>
+</aside>

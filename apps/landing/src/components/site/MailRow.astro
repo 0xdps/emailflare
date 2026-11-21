@@ -1,0 +1,31 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+	name: string;
+	/** The one row set in the display face: the page's headline */
+	subject?: boolean;
+	class?: string;
+}
+const { name, subject, class: className } = Astro.props;
+---
+
+<div class={cn("flex gap-3 border-b border-dashed py-2 last:border-0 sm:gap-4", subject && "py-5 sm:py-7", className)}>
+	<dt
+		class={cn(
+			"text-muted-foreground w-[4.25rem] shrink-0 text-xs leading-6 sm:w-[4.75rem]",
+			subject && "text-primary-muted-foreground font-medium sm:pt-3.5",
+		)}
+	>
+		{name}:
+	</dt>
+	<dd
+		class={cn(
+			"min-w-0 text-[0.8125rem] leading-6 break-words",
+			subject &&
+				"font-display text-[2.5rem] leading-[1.02] font-semibold tracking-tight text-balance sm:text-6xl lg:text-[4.5rem]",
+		)}
+	>
+		<slot />
+	</dd>
+</div>

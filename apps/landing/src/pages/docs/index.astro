@@ -1,0 +1,136 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import Container from "@/components/site/Container.astro";
+import DocsSearch from "@/components/docs/DocsSearch";
+import DocsSearchTrigger from "@/components/docs/DocsSearchTrigger.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { site } from "@/lib/site";
+import { docHref, getDocs, groupDocs } from "@/lib/docs";
+
+const docs = await getDocs();
+const groups = groupDocs(docs);
+
+const popularIds = ["quickstart", "send-an-email", "authentication", "templates", "domains-and-dns", "troubleshooting"];
+const popular = popularIds.map((id) => docs.find((d) => d.id === id)).filter((d): d is NonNullable<typeof d> => !!d);
+---
+
+<Base
+	title="Documentation"
+	description="Guides and API reference for EmailFlare: send your first email, manage keys, templates, domains and the shared inbox, and run it in your own Cloudflare account."
+	path="/docs"
+>
+	<PageHero
+		eyebrow="Documentation"
+		title="Send and receive email from your own Cloudflare account."
+		description="Guides and reference for the send API, templates, the shared inbox and running EmailFlare in your own Cloudflare account."
+	>
+		<a href={docHref("quickstart")} class={buttonVariants({ size: "xl" })}>
+			Start the quickstart
+			<Icon name="lucide:arrow-right" />
+		</a>
+		<a href={docHref("send-an-email")} class={buttonVariants({ size: "xl", variant: "outline" })}>
+			POST /v1/send reference
+		</a>
+	</PageHero>
+
+	<Container class="py-14 md:py-20">
+		<div class="max-w-md">
+			<DocsSearchTrigger />
+		</div>
+
+		<div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+			{groups.map((group) => (
+				<Card className="gap-4 py-5">
+					<CardHeader className="px-5">
+						<span class="bg-primary-muted text-primary-muted-foreground mb-2 flex size-9 items-center justify-center rounded-lg">
+							<Icon name={group.icon} class="size-4.5" />
+						</span>
+						<CardTitle className="font-display text-lg">{group.id}</CardTitle>
+						<CardDescription>{group.description}</CardDescription>
+					</CardHeader>
+					<CardContent className="px-5">
+						<ul class="flex flex-col gap-0.5">
+							{group.items.map((item) => (
+								<li>
+									<a
+										href={item.href}
+										class="text-muted-foreground hover:text-foreground hover:bg-muted -mx-2 flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors"
+									>
+										{item.title}
+										<Icon name="lucide:arrow-right" class="size-3.5 opacity-50" />
+									</a>
+								</li>
+							))}
+						</ul>
+					</CardContent>
+				</Card>
+			))}
+		</div>
+
+		<div class="mt-16 grid gap-10 lg:grid-cols-[1fr_1fr]">
+			<section aria-labelledby="popular">
+				<h2 id="popular" class="text-2xl font-semibold">
+					Popular
+				</h2>
+				<ul class="mt-5 divide-y rounded-xl border">
+					{popular.map((d) => (
+						<li>
+							<a
+								href={docHref(d.id)}
+								class="hover:bg-muted flex flex-col gap-0.5 px-4 py-3 transition-colors"
+							>
+								<span class="font-medium">{d.data.title}</span>
+								<span class="text-muted-foreground text-sm">{d.data.description}</span>
+							</a>
+						</li>
+					))}
+				</ul>
+			</section>
+			<section aria-labelledby="help" class="flex flex-col">
+				<h2 id="help" class="text-2xl font-semibold">
+					Need something else?
+				</h2>
+				<p class="text-muted-foreground mt-5 leading-7">
+					The docs live in the repository next to the code. If a page is wrong or missing, open an issue or
+					send a pull request. Every page has an edit link.
+				</p>
+				<div class="mt-6 flex flex-wrap gap-3">
+					<a
+						href={`${site.repo}/issues`}
+						target="_blank"
+						rel="noopener"
+						class={buttonVariants({ variant: "outline", size: "lg" })}
+					>
+						<Icon name="simple-icons:github" />
+						Open an issue
+					</a>
+					<a href="/cloudflare" class={buttonVariants({ variant: "ghost", size: "lg" })}>
+						Deploy to Cloudflare
+					</a>
+				</div>
+			</section>
+		</div>
+	</Container>
+
+	<DocsSearch client:load />
+</Base>
+
+<script is:inline>
+	// The old single-page docs used hash anchors. Send them to the page that now holds that content.
+	(function () {
+		var map = {
+			"#quickstart": "/docs/quickstart",
+			"#authentication": "/docs/authentication",
+			"#api-send": "/docs/send-an-email",
+			"#api-unsubscribe": "/docs/unsubscribe-and-suppressions",
+			"#templates": "/docs/templates",
+			"#errors": "/docs/send-an-email#errors",
+			"#troubleshooting": "/docs/troubleshooting",
+		};
+		var target = map[location.hash];
+		if (target) location.replace(target);
+	})();
+</script>

@@ -1,0 +1,242 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import Container from "@/components/site/Container.astro";
+import DocsNav from "@/components/docs/DocsNav";
+import DocsMobileNav from "@/components/docs/DocsMobileNav";
+import DocsSearch from "@/components/docs/DocsSearch";
+import DocsSearchTrigger from "@/components/docs/DocsSearchTrigger.astro";
+import DocsToc from "@/components/docs/DocsToc.astro";
+import { site } from "@/lib/site";
+import { docsRepoEdit, type NavGroup } from "@/lib/docs";
+
+interface Props {
+	title: string;
+	description: string;
+	section: string;
+	/** Entry id, which is also the file name without .md */
+	id: string;
+	groups: NavGroup[];
+	headings: { depth: number; slug: string; text: string }[];
+	prev?: { title: string; href: string };
+	next?: { title: string; href: string };
+}
+
+const { title, description, section, id, groups, headings, prev, next } = Astro.props;
+const href = `/docs/${id}`;
+const jsonLd = [
+	{
+		"@context": "https://schema.org",
+		"@type": "TechArticle",
+		headline: title,
+		description,
+		url: new URL(href, site.url).href,
+		isPartOf: { "@type": "WebSite", name: site.name, url: site.url },
+	},
+];
+---
+
+<Base title={`${title} · Docs`} description={description} path={href} jsonLd={jsonLd}>
+	<Container
+		size="wide"
+		class="grid gap-x-10 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_14rem]"
+	>
+		<aside class="hidden lg:block">
+			<div class="sticky top-16 flex max-h-[calc(100dvh-4rem)] flex-col gap-6 overflow-y-auto py-8 pr-2">
+				<DocsSearchTrigger />
+				<DocsNav groups={groups} current={href} />
+			</div>
+		</aside>
+
+		<div class="min-w-0 py-8 lg:py-12">
+			<div class="mb-8 flex items-center gap-2 lg:hidden">
+				<DocsMobileNav client:load groups={groups} current={href} />
+				<DocsSearchTrigger compact />
+			</div>
+
+			<article class="max-w-3xl" data-docs-article>
+				<nav aria-label="Breadcrumb" class="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm">
+					<a href="/docs" class="hover:text-foreground">
+						Docs
+					</a>
+					<Icon name="lucide:chevron-right" class="size-3.5" />
+					<span>{section}</span>
+				</nav>
+				<h1 class="text-4xl leading-tight font-semibold md:text-5xl">{title}</h1>
+				<p class="text-muted-foreground mt-4 text-lg leading-8">{description}</p>
+
+				<details class="bg-card mt-8 rounded-xl border px-4 py-3 text-sm xl:hidden">
+					<summary class="cursor-pointer font-medium">On this page</summary>
+					<DocsToc headings={headings} class="mt-3" />
+				</details>
+
+				<div class="prose-docs mt-8">
+					<slot />
+				</div>
+
+				<div class="mt-14 flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+					<a
+						href={`${docsRepoEdit}/${id}.md`}
+						target="_blank"
+						rel="noopener"
+						class="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-sm"
+					>
+						<Icon name="lucide:pencil" class="size-4" />
+						Edit this page on GitHub
+					</a>
+					<a
+						href={`${site.repo}/issues/new`}
+						target="_blank"
+						rel="noopener"
+						class="text-muted-foreground hover:text-foreground text-sm"
+					>
+						Report a problem
+					</a>
+				</div>
+
+				<nav aria-label="Pagination" class="mt-8 grid gap-3 sm:grid-cols-2">
+					{prev ? (
+						<a
+							href={prev.href}
+							class="hover:bg-muted flex flex-col gap-1 rounded-xl border p-4 transition-colors"
+						>
+							<span class="text-muted-foreground flex items-center gap-1.5 text-xs">
+								<Icon name="lucide:arrow-left" class="size-3.5" /> Previous
+							</span>
+							<span class="font-medium">{prev.title}</span>
+						</a>
+					) : (
+						<span />
+					)}
+					{next && (
+						<a
+							href={next.href}
+							class="hover:bg-muted flex flex-col items-end gap-1 rounded-xl border p-4 text-right transition-colors"
+						>
+							<span class="text-muted-foreground flex items-center gap-1.5 text-xs">
+								Next <Icon name="lucide:arrow-right" class="size-3.5" />
+							</span>
+							<span class="font-medium">{next.title}</span>
+						</a>
+					)}
+				</nav>
+			</article>
+		</div>
+
+		<aside class="hidden xl:block">
+			<div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-12">
+				<DocsToc headings={headings} />
+			</div>
+		</aside>
+	</Container>
+
+	<DocsSearch client:load />
+</Base>
+
+<style is:global>
+	/* Astro's Shiki output carries an inline background. Code sits on the ink surface instead. */
+	.prose-docs pre.astro-code {
+		background-color: var(--ink) !important;
+	}
+	/* Until the script wraps tables, let wide ones scroll instead of widening the page. */
+	.prose-docs > table {
+		display: block;
+		overflow-x: auto;
+	}
+</style>
+
+<script>
+	// Copy buttons, heading anchors and TOC scroll-spy for the docs article.
+	const article = document.querySelector<HTMLElement>("[data-docs-article]");
+
+	const copyIcon =
+		'<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+	const checkIcon =
+		'<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+	if (article) {
+		article.querySelectorAll<HTMLPreElement>(".prose-docs pre").forEach((pre) => {
+			const wrap = document.createElement("div");
+			wrap.className = "group/code relative";
+			pre.replaceWith(wrap);
+			wrap.append(pre);
+
+			const button = document.createElement("button");
+			button.type = "button";
+			button.setAttribute("aria-label", "Copy code");
+			button.className =
+				"text-ink-muted hover:bg-ink-border hover:text-ink-foreground focus-visible:ring-ring/50 absolute top-2 right-2 inline-flex size-7 items-center justify-center rounded-md opacity-0 transition focus-visible:opacity-100 focus-visible:ring-3 group-hover/code:opacity-100 [@media(hover:none)]:opacity-100";
+			button.innerHTML = copyIcon;
+			button.addEventListener("click", async () => {
+				await navigator.clipboard.writeText(pre.innerText.replace(/\n$/, ""));
+				button.innerHTML = checkIcon;
+				button.classList.add("text-success");
+				button.setAttribute("aria-label", "Copied");
+				setTimeout(() => {
+					button.innerHTML = copyIcon;
+					button.classList.remove("text-success");
+					button.setAttribute("aria-label", "Copy code");
+				}, 1600);
+			});
+			wrap.append(button);
+		});
+
+		article.querySelectorAll<HTMLTableElement>(".prose-docs table").forEach((table) => {
+			const wrap = document.createElement("div");
+			wrap.className = "my-6 overflow-x-auto";
+			table.replaceWith(wrap);
+			wrap.append(table);
+			table.classList.add("my-0");
+		});
+
+		article.querySelectorAll<HTMLHeadingElement>(".prose-docs h2[id], .prose-docs h3[id]").forEach((h) => {
+			h.classList.add("group/heading");
+			const a = document.createElement("a");
+			a.href = `#${h.id}`;
+			a.textContent = "#";
+			a.setAttribute("aria-label", `Link to ${h.textContent}`);
+			a.className =
+				"text-primary ml-2 no-underline opacity-0 transition-opacity group-hover/heading:opacity-100 focus-visible:opacity-100";
+			h.append(a);
+		});
+	}
+
+	// Scroll-spy: mark the last heading above the top of the viewport.
+	const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-docs-toc] a"));
+	const headings = links
+		.map((l) => document.getElementById(decodeURIComponent(l.hash.slice(1))))
+		.filter((h): h is HTMLElement => !!h);
+	const seen = new Set(headings);
+	const targets = Array.from(seen);
+
+	if (targets.length) {
+		const setActive = (id: string | null) => {
+			links.forEach((l) => {
+				if (id && decodeURIComponent(l.hash.slice(1)) === id) l.setAttribute("aria-current", "location");
+				else l.removeAttribute("aria-current");
+			});
+		};
+		const update = () => {
+			let current = targets[0];
+			for (const h of targets) {
+				if (h.getBoundingClientRect().top <= 120) current = h;
+				else break;
+			}
+			setActive(current.id);
+		};
+		update();
+		let ticking = false;
+		window.addEventListener(
+			"scroll",
+			() => {
+				if (ticking) return;
+				ticking = true;
+				requestAnimationFrame(() => {
+					update();
+					ticking = false;
+				});
+			},
+			{ passive: true },
+		);
+	}
+</script>
