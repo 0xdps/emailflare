@@ -1,0 +1,424 @@
+apps/landing/src/pages/docs/index.astro
+  s_4f0e2ea6eb187d::t_f7ff0f345d4967 1-28,30-44,47-49,51-52,54-123
+  s_4f0e2ea6eb187d::t_af1a26465b6a22 29
+  s_31f384226fbd1c::t_5a8aec58f1f993 45-46,50,53
+  s_4f0e2ea6eb187d::t_10ca4fa1f32db8 124-126
+apps/landing/src/content/docs/self-hosting-and-updating.md
+  s_4f0e2ea6eb187d::t_a703973e0dadde 1-23,25-84
+  s_4f0e2ea6eb187d::t_c549075d0a5409 24
+apps/landing/src/content/docs/troubleshooting.md
+  s_4f0e2ea6eb187d::t_db8895571228e4 1-85,88-92
+  s_4f0e2ea6eb187d::t_bff9dc6c06938f 86-87
+apps/landing/src/components/site/SectionHeading.astro
+  s_31f384226fbd1c::t_54ee2e9e24fc55 1-24
+apps/landing/src/layouts/Base.astro
+  s_31f384226fbd1c::t_586702c577cff9 1-88
+  s_31f384226fbd1c::t_aba3311d61b1ea 89-91
+apps/landing/src/components/product/Callout.astro
+  s_92afb9170f08d6::t_20170f0bdbbc37 1-23
+apps/landing/src/pages/security.astro
+  s_2cd8e8b6e010eb::t_51850080e264db 1-187
+  s_2cd8e8b6e010eb::t_42bb4ee69a4c6e 188-190
+apps/landing/src/components/ui/command.tsx
+  s_4f0e2ea6eb187d::t_df30b65865def4 1-27,29-32,34-120
+  s_4f0e2ea6eb187d::t_c5a82a562277f6 33
+  s_4f0e2ea6eb187d::t_d32583c3b9a6a3 28
+apps/landing/src/lib/site.ts
+  s_31f384226fbd1c::t_f46cb3b4123c36 1-5,7-10,14-39,41-57,60-69,73-75
+  s_31f384226fbd1c::t_f25fb80ae06c83 6,11-13
+  s_31f384226fbd1c::t_78eb11b3b68403 40
+  s_31f384226fbd1c::t_2b69c42893a009 58
+  s_31f384226fbd1c::t_f9e632dc66369b 70,72
+  s_31f384226fbd1c::t_3c577181869c6e 71
+  s_31f384226fbd1c::t_c5097c779535bf 59
+apps/landing/src/components/site/Section.astro
+  s_31f384226fbd1c::t_54ee2e9e24fc55 1-22
+  s_31f384226fbd1c::t_8e2f5c014d745f 23-24
+apps/landing/src/components/ui/separator.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-20
+apps/landing/src/components/ui/sheet.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-102
+apps/landing/src/components/site/Footer.astro
+  s_31f384226fbd1c::t_82f330839688c9 1-15,17-63,67-70
+  s_31f384226fbd1c::t_0279eadf2e854e 16,64-66
+  s_31f384226fbd1c::t_0ddebb72baabbc 71-73
+apps/landing/astro.config.mjs
+  s_31f384226fbd1c::t_78eb11b3b68403 11
+  s_31f384226fbd1c::t_57e9882aee5852 13-16
+  s_31f384226fbd1c::t_0b9102789d8675 3-5,8,10,12
+  s_31f384226fbd1c::t_845da9ff44ea35 17-18
+apps/landing/src/components/docs/DocsSearchTrigger.astro
+  s_4f0e2ea6eb187d::t_011fe8f6cfada0 1-28
+  s_4f0e2ea6eb187d::t_8143e6d8f34929 29-30
+apps/landing/src/content/docs/templates.md
+  s_4f0e2ea6eb187d::t_50d9d5286cf33a 1-124
+apps/landing/src/components/ui/kbd.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-20
+apps/landing/src/pages/docs/[...slug].astro
+  s_4f0e2ea6eb187d::t_76d4992722a719 1-36
+README.md
+  s_31f384226fbd1c::t_c1620d84c6c353 233-235
+  s_31f384226fbd1c::t_754d6fa52321a7 10,19
+apps/landing/public/robots.txt
+  s_31f384226fbd1c::t_78eb11b3b68403 3
+  s_31f384226fbd1c::t_6d0ecc67846112 5
+apps/landing/src/components/ui/dropdown-menu.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-222,224,228-231,234-235,237,240,242-247
+  s_31f384226fbd1c::t_d9384b0a716a9f 223
+  s_31f384226fbd1c::t_41bd5b629483db 225-227
+  s_31f384226fbd1c::t_a6b3e87dd8c93a 232-233
+  s_31f384226fbd1c::t_edef3c05520633 236
+  s_31f384226fbd1c::t_0fed51d81a7743 238-239
+  s_31f384226fbd1c::t_2e50a41cca08c2 241
+  s_31f384226fbd1c::t_f8de346f3d259e 248-250
+apps/landing/src/pages/api-reference.astro
+  s_31f384226fbd1c::t_743b5048c0b963 1-38,40-42,50-52,54-58,60-163
+  s_31f384226fbd1c::t_da3799135c200a 39,43-49,53,59
+  s_31f384226fbd1c::t_9ac1d0e6a36b4d 164-166
+apps/landing/src/content/docs/test-mailbox-and-playground.md
+  s_4f0e2ea6eb187d::t_ac8bf583d7f01b 1-18,20-41
+  s_4f0e2ea6eb187d::t_f9155fa3ac9c5f 19
+apps/landing/src/content/docs/unsubscribe-and-suppressions.md
+  s_4f0e2ea6eb187d::t_823394e5ac1146 1-53,55-95
+  s_4f0e2ea6eb187d::t_0ea3f5843589c2 54
+apps/landing/src/components/product/TemplateGallery.tsx
+  s_92afb9170f08d6::t_4177cb478c142a 172
+  s_92afb9170f08d6::t_66f457f2f1777e 1-73,99-101,103-105,107-136,139-157,159-171,174-202
+  s_92afb9170f08d6::t_95c1a53d485e43 137,173
+  s_92afb9170f08d6::t_a34587d85ca3b4 158
+  s_92afb9170f08d6::t_28ac01ca743411 74-98,102,106,138
+  s_92afb9170f08d6::t_b83136e5eab4f5 203-205
+apps/landing/src/components/docs/DocsToc.astro
+  s_4f0e2ea6eb187d::t_24226b7a54889d 1-36
+apps/landing/src/components/sections/Architecture.astro
+  s_31f384226fbd1c::t_27a42ac8fcf78d 1-64
+apps/landing/src/pages/cloudflare-token.astro
+  s_2cd8e8b6e010eb::t_4557749431edec 193,202,211
+  s_2cd8e8b6e010eb::t_3b5fe10aab47ca 182-183,191-192,200-201
+  s_2cd8e8b6e010eb::t_dc35d205b5547c 2-81,85-87,89-134,137,140-141,143-146,148,150-153,155-156,158-161,163-165,167-170,172-174,176-179,181,185-189,194-198,203-210
+  s_2cd8e8b6e010eb::t_4973719ff67874 190
+  s_2cd8e8b6e010eb::t_ed7e7868122a7a 199
+  s_2cd8e8b6e010eb::t_49d6fe0c43e5ec 212-214
+apps/landing/src/components/ui/button.tsx
+  s_31f384226fbd1c::t_770cef42610f41 12
+  s_31f384226fbd1c::t_11a176a10e0d7e 27
+  s_31f384226fbd1c::t_0b9102789d8675 1-11,13-26,28-51
+apps/landing/public/_redirects
+  s_31f384226fbd1c::t_cd2e4a1c11599f 4-8
+apps/landing/src/components/product/jsonld.ts
+  s_92afb9170f08d6::t_f3abddf3750857 1-13
+apps/landing/public/openapi.json
+  s_31f384226fbd1c::t_668e604ed86365 1-132,134-145,147-161,163-171,173-243,245-282
+  s_31f384226fbd1c::t_1496828733d9b6 133,146,172
+  s_31f384226fbd1c::t_b37b82c53734f9 162
+  s_31f384226fbd1c::t_c092e3787fee7d 244
+  s_31f384226fbd1c::t_2ded10ed0c6ebc 283-285
+apps/landing/src/components/site/Logo.astro
+  s_31f384226fbd1c::t_54ee2e9e24fc55 1-14
+  s_31f384226fbd1c::t_61e4822bd25822 15-17
+apps/landing/src/components/site/Container.astro
+  s_31f384226fbd1c::t_54ee2e9e24fc55 1-13
+  s_31f384226fbd1c::t_c47b51bf883b10 14-15
+apps/landing/src/pages/sponsor.astro
+  s_2cd8e8b6e010eb::t_b6e0c072985c21 1-72,74-78,80-99,103-124,128-129,132-150,152-154,156-172,178-185
+  s_31f384226fbd1c::t_cf305de56b0150 155
+  s_2cd8e8b6e010eb::t_3b5fe10aab47ca 100-101,125-126,130
+  s_31f384226fbd1c::t_e239a31e1b8e91 73,79,151,173-177
+  s_2cd8e8b6e010eb::t_4557749431edec 102,127
+  s_2cd8e8b6e010eb::t_868fcc8d9d96b6 131
+  s_2cd8e8b6e010eb::t_4ab20d8a6c3053 186-188
+apps/landing/src/pages/cloudflare.astro
+  s_2cd8e8b6e010eb::t_e822e9b9f0470d 3-196,200-202,204-227,229-260,262-272,274-278,280-356
+  s_2cd8e8b6e010eb::t_ab1c6d309d39d5 357-359
+apps/landing/src/content/docs/authentication.md
+  s_4f0e2ea6eb187d::t_9ef4dd1827f5cb 1-63
+apps/landing/src/lib/highlight.ts
+  s_31f384226fbd1c::t_a8d64dd6e3efe3 1-8
+apps/landing/src/components/product/FeatureRow.astro
+  s_92afb9170f08d6::t_659949b871008b 1-37
+  s_92afb9170f08d6::t_d7eb9ff9fd0a5e 38-40
+apps/landing/src/layouts/DocsLayout.astro
+  s_4f0e2ea6eb187d::t_849366e1aa0a0c 127-131,168-175
+  s_4f0e2ea6eb187d::t_af1a26465b6a22 88,100
+  s_4f0e2ea6eb187d::t_b90332e46d515a 1-87,89-99,101-121,134-167,176-228
+  s_4f0e2ea6eb187d::t_4b2da31c223282 122-126,132-133
+  s_4f0e2ea6eb187d::t_c173a8d9eeb856 229-231
+apps/landing/src/components/islands/MobileNav.tsx
+  s_31f384226fbd1c::t_1daf28b0139d81 1-47
+apps/landing/src/pages/changelog.astro
+  s_2cd8e8b6e010eb::t_23b0ba008c0dbc 49
+  s_2cd8e8b6e010eb::t_fc3e9098234398 1-48,50-61
+  s_2cd8e8b6e010eb::t_a009039108e856 62-64
+apps/landing/src/components/sections/DeploySteps.astro
+  s_31f384226fbd1c::t_46dd32f8c0205f 1-11,15-18,20-35
+  s_31f384226fbd1c::t_770cef42610f41 12-14
+  s_31f384226fbd1c::t_5a8aec58f1f993 19
+apps/landing/src/lib/utils.ts
+  s_31f384226fbd1c::t_0b9102789d8675 1-6
+apps/landing/src/content/docs/webhooks.md
+  s_4f0e2ea6eb187d::t_30e2a3daf579de 14
+  s_4f0e2ea6eb187d::t_a282f9366e9ba1 1-13,15-102
+apps/landing/src/content/docs/introduction.md
+  s_4f0e2ea6eb187d::t_a8254bc05b5ca0 1-38
+  s_31f384226fbd1c::t_71f634b39e4314 39
+apps/landing/src/components/docs/TocNav.astro
+  s_2cd8e8b6e010eb::t_64834299195997 1-69
+apps/landing/src/pages/compare.astro
+  s_2cd8e8b6e010eb::t_150cc51414d049 1-34,36-219,221-231,233-243,245-253
+  s_31f384226fbd1c::t_06c3ccb40592ea 35
+  s_2cd8e8b6e010eb::t_3b5fe10aab47ca 232,244
+  s_2cd8e8b6e010eb::t_4557749431edec 220
+  s_2cd8e8b6e010eb::t_0fca62c668a96e 254-256
+apps/landing/src/components/product/FeatureCard.astro
+  s_31f384226fbd1c::t_5a8aec58f1f993 16-17
+  s_92afb9170f08d6::t_fe30df705de82d 1-15,18-25
+apps/landing/src/components/islands/ProductTour.tsx
+  s_31f384226fbd1c::t_7fbc16cad9fa3d 1-56
+  s_31f384226fbd1c::t_1c664ad69ca3d1 57-59
+apps/landing/src/content/docs/sequences.md
+  s_4f0e2ea6eb187d::t_034ac4705cfa5c 73
+  s_4f0e2ea6eb187d::t_b37240167292f9 1-72
+apps/landing/src/components/docs/DocsNav.tsx
+  s_4f0e2ea6eb187d::t_ef25035709efa2 1-50
+apps/landing/src/components/islands/Faq.tsx
+  s_31f384226fbd1c::t_7a4f54a538aa31 1-22
+apps/landing/src/content.config.ts
+  s_4f0e2ea6eb187d::t_464e108b6267b7 1-15
+apps/landing/src/pages/docs/search.json.ts
+  s_4f0e2ea6eb187d::t_41c761bb967b64 1-16,20-59
+  s_4f0e2ea6eb187d::t_cb7b53a53e4563 17
+  s_4f0e2ea6eb187d::t_66a400e55db498 18-19
+LICENSE
+  s_31f384226fbd1c::t_650b9b4ea2e7a7 1-95
+apps/landing/src/pages/404.astro
+  s_2cd8e8b6e010eb::t_4557749431edec 61
+  s_4f0e2ea6eb187d::t_2b61167aa616d9 57
+  s_2cd8e8b6e010eb::t_6f008ad12e8da1 1-56,58-59,62-81
+  s_2cd8e8b6e010eb::t_3b5fe10aab47ca 60
+  s_2cd8e8b6e010eb::t_d34c7c60638b28 82-84
+apps/landing/components.json
+  s_31f384226fbd1c::t_0b9102789d8675 1-21
+apps/landing/src/components/docs/DocSection.astro
+  s_4f0e2ea6eb187d::t_51d0f360cc4b67 1-14
+  s_4f0e2ea6eb187d::t_9697b28ac0c235 15-17
+apps/landing/public/llms.txt
+  s_31f384226fbd1c::t_2c8688afb4f714 16,26
+  s_31f384226fbd1c::t_52989b9c56d1a2 3
+  s_31f384226fbd1c::t_e6e0237fcd5ced 1-2,4-15,17-25
+apps/landing/src/content/docs/roles-and-access.md
+  s_4f0e2ea6eb187d::t_f9291c0c8ea044 22
+  s_4f0e2ea6eb187d::t_4719181dc6c660 1-21,23-58
+apps/landing/src/content/docs/quickstart.md
+  s_4f0e2ea6eb187d::t_eae07e9e56b9a3 1-57,60-72
+  s_4f0e2ea6eb187d::t_c549075d0a5409 58-59
+apps/landing/src/pages/sitemap.astro
+  s_31f384226fbd1c::t_2a52f9a4bb8ad8 1-70
+  s_31f384226fbd1c::t_6c24b6673e1259 71-73
+apps/landing/src/components/sections/SponsorBand.astro
+  s_31f384226fbd1c::t_923811ce13fbb3 46
+  s_31f384226fbd1c::t_4fa4bca9716d65 27
+  s_31f384226fbd1c::t_c5f533b4f27fac 1-26,28-43,47-65
+  s_31f384226fbd1c::t_5a8aec58f1f993 44-45
+  s_31f384226fbd1c::t_2a6574d1bf317e 66-68
+apps/landing/src/components/sections/CompareTable.astro
+  s_2cd8e8b6e010eb::t_a5db8792536d86 1-66
+  s_2cd8e8b6e010eb::t_071e212c9b81c8 67-69
+apps/landing/src/pages/index.astro
+  s_31f384226fbd1c::t_5a8aec58f1f993 70,123,278-279,292-293,323-324,443
+  s_31f384226fbd1c::t_c7a62a86019670 3-46,48-69,71-97,100-122,124-151,154-165,167-186,188-203,208-221,223-224,226-234,236-241,243-246,248-250,253-263,267-277,280-283,285-291,294-321,325-336,338-345,347-384,387-391,394-398,400-414,416-418,420-422,425-432,436-442,444-450,452-459
+  s_31f384226fbd1c::t_cc7d866c51f1de 385
+  s_31f384226fbd1c::t_e848bc2300adcd 204,222,235,434
+  s_31f384226fbd1c::t_78eb11b3b68403 47,98-99,152-153,166,187,392-393
+  s_31f384226fbd1c::t_9b61c80094191b 460-462
+apps/landing/src/content/docs/domains-and-dns.md
+  s_4f0e2ea6eb187d::t_bdc6228b5e4daf 41
+  s_4f0e2ea6eb187d::t_517b072cc597be 1-27,31,36-38,40,42-52,54-73
+  s_4f0e2ea6eb187d::t_ab1fa7e5b00f1e 28-30,32-35,39,53
+apps/landing/src/pages/email-api.astro
+  s_92afb9170f08d6::t_abbcec628ab6a1 3-21,23,25-39,41-54,56-57,59,61-74,76,78-84,86-94,96-99,101-117,122-149,151-168,170-243,250,252-255,257-324,326-404,407-408,411,413-420,422,424-428,430-441,444-447,449-450,454-486
+  s_92afb9170f08d6::t_1fdd4599d5a92a 150,448
+  s_92afb9170f08d6::t_d39670f007e1ef 452
+  s_92afb9170f08d6::t_a7fa991c909b79 244-249,251,429
+  s_92afb9170f08d6::t_3d4206c060a4e1 118-121,169
+  s_92afb9170f08d6::t_cb3b83ca7ec4e1 256
+  s_92afb9170f08d6::t_cb15ce1bfeb285 451
+  s_92afb9170f08d6::t_5062331d288887 453
+apps/landing/public/_headers
+  s_31f384226fbd1c::t_784d825face537 15-20
+apps/landing/src/components/site/Header.astro
+  s_31f384226fbd1c::t_2d0a3b02344805 1-60
+apps/landing/src/components/docs/DocsSearch.tsx
+  s_4f0e2ea6eb187d::t_ffbf5b2fe675d8 1-166
+  s_4f0e2ea6eb187d::t_7472fc691b9e9a 167-169
+apps/landing/src/components/sections/ReleaseEntry.astro
+  s_2cd8e8b6e010eb::t_23b0ba008c0dbc 10
+  s_2cd8e8b6e010eb::t_6ef881b34e950d 1-9,11-51
+  s_2cd8e8b6e010eb::t_192b9e4608c796 52-54
+apps/landing/src/components/docs/Callout.astro
+  s_4f0e2ea6eb187d::t_51d0f360cc4b67 1-32
+  s_4f0e2ea6eb187d::t_2606844923e15d 33-35
+apps/landing/src/components/docs/DocLayout.astro
+  s_4f0e2ea6eb187d::t_51d0f360cc4b67 1-16
+  s_4f0e2ea6eb187d::t_e58480b5cc0c9b 17-18
+apps/landing/src/components/docs/Prose.astro
+  s_4f0e2ea6eb187d::t_51d0f360cc4b67 1-23
+apps/landing/tsconfig.json
+  s_31f384226fbd1c::t_0b9102789d8675 1-11
+apps/landing/src/components/product/Screenshot.astro
+  s_92afb9170f08d6::t_5cbe3118ee2098 1-20
+  s_92afb9170f08d6::t_3c0e6834cae8e8 21-23
+apps/landing/src/components/ui/tabs.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-72
+apps/landing/src/components/product/ShotCrop.astro
+  s_92afb9170f08d6::t_ece5060880b1e2 1-25
+  s_92afb9170f08d6::t_f9f4a454184188 26-28
+apps/landing/src/components/docs/DocsMobileNav.tsx
+  s_4f0e2ea6eb187d::t_5f100e9cfc3d32 1-31
+apps/landing/package.json
+  s_31f384226fbd1c::t_0668e1852f64af 29
+  s_31f384226fbd1c::t_e68431fc473268 12-17,20,22-27,30-37
+  s_31f384226fbd1c::t_364893339ab3b6 28
+apps/landing/src/components/site/MailRow.astro
+  s_31f384226fbd1c::t_2fde1d359bd506 1-31
+CONTRIBUTING.md
+  s_31f384226fbd1c::t_c05ea4d509cc8b 3,81
+apps/landing/src/components/ui/tooltip.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-53
+apps/landing/src/pages/license.astro
+  s_31f384226fbd1c::t_77780d26528a7e 1-91,93-99
+  s_31f384226fbd1c::t_f4df7a02b2bdb4 92
+  s_31f384226fbd1c::t_b5f71894e94b9f 100-102
+apps/landing/src/components/site/CodeBlock.astro
+  s_31f384226fbd1c::t_9cd41687bc70c8 1-32
+  s_31f384226fbd1c::t_aeb8b987011251 33-35
+apps/landing/src/lib/github.ts
+  s_31f384226fbd1c::t_50735bdb9ab085 10-24
+  s_31f384226fbd1c::t_a0a984e7a443a2 1-9
+apps/landing/src/components/product/FlowSteps.astro
+  s_92afb9170f08d6::t_945dc5acc0df76 1-54
+  s_92afb9170f08d6::t_437c28275d9232 55
+apps/landing/src/content/docs/mailboxes-and-shared-inbox.md
+  s_4f0e2ea6eb187d::t_7adced6c8e6baa 74
+  s_4f0e2ea6eb187d::t_6cb5c0466fe94b 1-73,75-76
+apps/landing/src/lib/docs.ts
+  s_4f0e2ea6eb187d::t_445d781296f922 12
+  s_4f0e2ea6eb187d::t_3f49499c5528ef 1-11,13-44
+  s_4f0e2ea6eb187d::t_eb82fcc916f685 45-47
+apps/landing/src/components/sections/PageHero.astro
+  s_31f384226fbd1c::t_893930858f3ee4 1-24
+  s_31f384226fbd1c::t_fad10b4571ce9f 25-27
+apps/landing/src/components/islands/ThemeToggle.tsx
+  s_31f384226fbd1c::t_0a985b686c0e10 1-26
+  s_31f384226fbd1c::t_40ee18f072a905 27-29
+apps/landing/src/components/islands/CodeTabs.tsx
+  s_31f384226fbd1c::t_63469e265954df 1-58
+  s_31f384226fbd1c::t_a89913d450f85f 59-61
+apps/landing/src/lib/faq.ts
+  s_31f384226fbd1c::t_fda79219e2c3d7 7,12-13,39
+  s_31f384226fbd1c::t_cf305de56b0150 10
+  s_31f384226fbd1c::t_94e15af16e5022 1-6,8-9,14-38,40-53
+  s_31f384226fbd1c::t_2c9e21b3fd03b8 11
+apps/landing/src/pages/templates/previews/[theme]/[slug].html.ts
+  s_92afb9170f08d6::t_2534a6046b87ab 1-10
+apps/landing/src/components/docs/DocTable.astro
+  s_4f0e2ea6eb187d::t_51d0f360cc4b67 1-38
+  s_4f0e2ea6eb187d::t_f3bb7b12ee8228 39-41
+apps/landing/src/pages/inbox.astro
+  s_92afb9170f08d6::t_8dc524f4175256 201,216,224
+  s_92afb9170f08d6::t_d4cce221800654 3-153,157-160,162-182,184-193,195-200,202-215,217-223,225-278
+  s_92afb9170f08d6::t_8971f0ba1bd1a5 279-281
+apps/landing/src/components/product/render-sample.ts
+  s_92afb9170f08d6::t_b0dafe72e99f56 1-6
+apps/landing/src/components/product/SyntaxExample.astro
+  s_92afb9170f08d6::t_e020bdd309c9a2 1-15,17-31
+  s_92afb9170f08d6::t_5d84e0fbda987d 16
+apps/landing/src/lib/changelog.ts
+  s_2cd8e8b6e010eb::t_bd6db60d01de2f 1-65
+  s_2cd8e8b6e010eb::t_f78bae3fa6937f 66-68
+apps/landing/src/components/site/MailHeader.astro
+  s_31f384226fbd1c::t_332e2f90413a95 1-11
+  s_31f384226fbd1c::t_008d24d87b6aa1 12-13
+apps/landing/src/components/ui/card.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-69
+apps/landing/src/components/docs/Step.astro
+  s_4f0e2ea6eb187d::t_51d0f360cc4b67 1-18
+  s_4f0e2ea6eb187d::t_0b9ada7f781ea5 19-21
+apps/landing/src/pages/templates.astro
+  s_92afb9170f08d6::t_1d26a7e5083f4a 56,61
+  s_92afb9170f08d6::t_ba83172b24fc49 2-55,57-60,62-73,79-101,106-109,111-138,140-146,148-162,164-219,221-223,225-232
+  s_92afb9170f08d6::t_1cba7c0ab26318 74-78,147,220
+  s_92afb9170f08d6::t_7cf89c9b77b408 233-235
+apps/landing/src/components/islands/CopyButton.tsx
+  s_31f384226fbd1c::t_7315933a308b3b 1-32
+apps/landing/src/components/product/ShortcutGroups.astro
+  s_92afb9170f08d6::t_dc8f93f1b7f6d3 1-38
+apps/landing/src/components/sections/CtaBand.astro
+  s_31f384226fbd1c::t_40b991141f6c8f 1-5,7-42
+  s_31f384226fbd1c::t_9ce97cdf0161ca 6
+  s_31f384226fbd1c::t_eced18c867982e 43-44
+apps/landing/src/components/product/templates-data.ts
+  s_92afb9170f08d6::t_2515d1997ead8d 1-198
+  s_92afb9170f08d6::t_55809e11795b30 199-201
+apps/landing/src/components/product/DataTable.astro
+  s_92afb9170f08d6::t_b4522eb9895ca1 1-41
+  s_92afb9170f08d6::t_6aa6e6bea56714 42-44
+apps/landing/src/content/docs/send-an-email.md
+  s_4f0e2ea6eb187d::t_970295e8c6fb4d 33,94
+  s_4f0e2ea6eb187d::t_b6e518a9cfbfdc 1-32,34-93,95-185
+apps/landing/src/styles/global.css
+  s_31f384226fbd1c::t_b980988db8b8fb 2,4-247,250-251
+  s_31f384226fbd1c::t_1b0991bac74367 3
+  s_31f384226fbd1c::t_2d2cce0da6c785 248-249
+  s_2cd8e8b6e010eb::t_995b72e86d8bb5 1
+apps/landing/src/components/ui/badge.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-48
+apps/landing/src/components/ui/accordion.tsx
+  s_31f384226fbd1c::t_0b9102789d8675 1-61
+apps/landing/src/lib/inline-md.ts
+  s_2cd8e8b6e010eb::t_df8798c56f7f93 1-17
+  s_2cd8e8b6e010eb::t_6c0fee2e043756 18-20
+apps/landing/src/components/product/ThemeSwatches.astro
+  s_92afb9170f08d6::t_7ca36f74afa81a 1-28
+pnpm-lock.yaml
+  s_31f384226fbd1c::t_2d7715ef1641b0 49,115,122,140,143,152,159-176,183-185,188,192-231,381-383,391-417,932-934,1673-1674,1677-1678,1681-1682,1685-1686,1689-1690,1693-1694,1697-1698,1701-1702,1817-1821,1890-1892,2866-2867,4020-4021,4050-4054,4063-4066,4607-4611,4656-4658,4783,4787-4797,4809-4848,5122,5127,5326-5327,5825,5911,5913-5915,5917,5919,5921-5922,5925,5927-5928,5930,5932,5934,5936-5937,5940,5942,5944,5946,5949,6035-6041,6104,6118-6121,6149,6152,6154,6158,6161,6163-6168,6180-6181,6339,6380,6389-6390,7160,7326,8285,8287-8293,8330-8335,8340-8341,8516-8517,8650,8655,8660,8664,8683,8697,8699,8713,8715,8717,8719,8721,8836-8837,8890-8891
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c2216d27765bc77ac21db1b4c8b9eab9e331e4f",
+  "prompts": {},
+  "sessions": {
+    "s_2cd8e8b6e010eb": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "117c402d-28f5-430d-812f-cd3148c46306",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_31f384226fbd1c": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "51492a6f-94b4-49a2-b31d-cc3ef72f5b2e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_4f0e2ea6eb187d": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "94466048-e5df-493c-900a-b07b45ce40a4",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_92afb9170f08d6": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "352edaef-5272-41c2-887a-ba2e8249633b",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
