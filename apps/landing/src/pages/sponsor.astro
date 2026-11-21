@@ -1,0 +1,218 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { site } from "@/lib/site";
+import Section from "@/components/site/Section.astro";
+import SectionHeading from "@/components/site/SectionHeading.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import SponsorBand from "@/components/sections/SponsorBand.astro";
+
+const funds = [
+	{
+		icon: "lucide:shield-check",
+		title: "Security reports and advisories",
+		body: "Reading private reports, reproducing them, shipping a fix and publishing an advisory. See the security page for how reports are handled.",
+	},
+	{
+		icon: "lucide:cloud-cog",
+		title: "Keeping up with Cloudflare",
+		body: "EmailFlare sits on Workers, D1, R2, Queues, Durable Objects and Cloudflare's email services. When they change, the app and its migrations have to follow.",
+	},
+	{
+		icon: "lucide:package-check",
+		title: "Dependencies and releases",
+		body: "Reviewing the weekly dependency updates, running the tests, writing the changelog and tagging releases.",
+	},
+	{
+		icon: "lucide:book-open",
+		title: "Docs, recipes and templates",
+		body: "Clearer guides, more send recipes and more template layouts, so a first deploy takes fewer wrong turns.",
+	},
+	{
+		icon: "lucide:message-square-more",
+		title: "Answering issues",
+		body: "Triaging bug reports, asking for the missing detail and fixing what can be reproduced.",
+	},
+];
+
+const free = [
+	{
+		icon: "lucide:star",
+		title: "Star the repository",
+		body: "Stars help other people find the project.",
+		href: site.repo,
+		label: "Star on GitHub",
+	},
+	{
+		icon: "lucide:bug",
+		title: "Report a bug",
+		body: "Say what you did, what you expected and what happened. Steps to reproduce make a fix possible.",
+		href: `${site.repo}/issues`,
+		label: "Open an issue",
+	},
+	{
+		icon: "lucide:git-pull-request",
+		title: "Contribute",
+		body: "Fixes, docs and templates are welcome. The contributing guide covers local setup and the pre-PR checks.",
+		href: `${site.repo}/blob/trunk/CONTRIBUTING.md`,
+		label: "Read the guide",
+	},
+	{
+		icon: "lucide:share-2",
+		title: "Tell someone",
+		body: "If it replaced a bill for you, a post or a message to a teammate with the same bill is a real contribution.",
+	},
+];
+---
+
+<Base
+	title="Sponsor EmailFlare"
+	description="EmailFlare is free to use and self-host, with no paid tier and no hosted version. Sponsor Devendra Pratap Singh on GitHub, buy a coffee, or help for free with a star, a bug report or a contribution."
+	path="/sponsor"
+>
+	<PageHero
+		eyebrow="Support the project"
+		title="Keep EmailFlare maintained."
+		description="EmailFlare is free to use and self-host. There is no paid tier and no hosted version. Sponsorship pays for the time it takes to keep it working."
+	>
+		<a href={site.sponsors} target="_blank" rel="noopener" class={buttonVariants({ size: "xl" })}>
+			<Icon name="lucide:heart" />
+			Sponsor on GitHub
+		</a>
+		<a href={site.coffee} target="_blank" rel="noopener" class={buttonVariants({ size: "xl", variant: "outline" })}>
+			<Icon name="lucide:coffee" />
+			Buy me a coffee
+		</a>
+	</PageHero>
+
+	<Section id="funds">
+		<SectionHeading
+			eyebrow="Where support goes"
+			title="What sponsorship funds."
+			description="Sponsorship funds maintenance time. It does not fund a company, a hosted service or a roadmap with dates."
+		/>
+		<ul class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+			{funds.map((f) => (
+				<li class="flex">
+					<Card className="w-full">
+						<CardContent className="px-6 py-2">
+							<span class="bg-primary-muted text-primary-muted-foreground mb-4 inline-flex size-10 items-center justify-center rounded-xl">
+								<Icon name={f.icon} class="size-5" />
+							</span>
+							<h3 class="text-lg leading-snug font-semibold">{f.title}</h3>
+							<p class="text-muted-foreground mt-2 text-sm leading-6">{f.body}</p>
+						</CardContent>
+					</Card>
+				</li>
+			))}
+		</ul>
+	</Section>
+
+	<Section id="free" tone="muted">
+		<SectionHeading
+			eyebrow="Free ways to help"
+			title="Not sponsoring? These count too."
+			description="A project like this runs on people using it, finding problems and telling others. None of these cost anything."
+		/>
+		<ul class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+			{free.map((f) => (
+				<li class="flex">
+					<Card className="w-full">
+						<CardContent className="flex flex-1 flex-col px-6 py-2">
+							<Icon name={f.icon} class="text-primary mb-4 size-6" />
+							<h3 class="text-lg leading-snug font-semibold">{f.title}</h3>
+							<p class="text-muted-foreground mb-5 mt-2 text-sm leading-6">{f.body}</p>
+							{f.href && (
+								<a
+									href={f.href}
+									target="_blank"
+									rel="noopener"
+									class={cn(buttonVariants({ variant: "outline", size: "lg" }), "mt-auto self-start")}
+								>
+									{f.label}
+									<Icon name="lucide:arrow-up-right" />
+								</a>
+							)}
+						</CardContent>
+					</Card>
+				</li>
+			))}
+		</ul>
+	</Section>
+
+	<Section id="note" size="narrow">
+		<SectionHeading eyebrow="From the maintainer" title="A note from Devendra." />
+		<figure class="mt-8">
+			<blockquote class="text-muted-foreground space-y-4 border-l-4 pl-6 text-lg leading-8">
+				<p>
+					I'm Devendra. I build EmailFlare under{" "}
+					<a
+						href={site.parent.url}
+						target="_blank"
+						rel="noopener"
+						class="text-foreground underline underline-offset-4"
+					>
+						{site.parent.name}
+					</a>
+					, my studio at 0xlabs.space. The code is public and free for you to run, change and use in your own
+					business. The one thing the{" "}
+					<a href="/license" class="text-foreground underline underline-offset-4">
+						license
+					</a>{" "}
+					rules out is reselling it to others as a hosted service. There is no paid tier or hosted version
+					behind it.
+				</p>
+				<p>
+					If it saves you money or time, sponsoring is the most direct way to help me keep it maintained. If
+					you cannot, a star, a clear bug report or a recipe you share helps just as much.
+				</p>
+				<p>Thank you for using it.</p>
+			</blockquote>
+			<figcaption class="mt-6 flex items-center gap-3 text-sm">
+				<span class="bg-primary-muted text-primary-muted-foreground inline-flex size-10 items-center justify-center rounded-full">
+					<Icon name="lucide:user-round" class="size-5" />
+				</span>
+				<span>
+					<span class="text-foreground block font-medium">{site.author.name}</span>
+					<a
+						href="https://github.com/0xdps"
+						target="_blank"
+						rel="noopener"
+						class="text-muted-foreground hover:text-foreground"
+					>
+						@{site.author.handle}
+					</a>
+					<span class="text-muted-foreground" aria-hidden="true">
+						{" "}
+						·{" "}
+					</span>
+					<a
+						href={site.author.url}
+						target="_blank"
+						rel="noopener"
+						class="text-muted-foreground hover:text-foreground"
+					>
+						dps.codes
+					</a>
+					<span class="text-muted-foreground" aria-hidden="true">
+						{" "}
+						·{" "}
+					</span>
+					<a
+						href={site.parent.url}
+						target="_blank"
+						rel="noopener"
+						class="text-muted-foreground hover:text-foreground"
+					>
+						0xlabs.space
+					</a>
+				</span>
+			</figcaption>
+		</figure>
+	</Section>
+
+	<SponsorBand compact />
+</Base>

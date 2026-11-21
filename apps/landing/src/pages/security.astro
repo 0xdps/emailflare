@@ -1,0 +1,225 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { site } from "@/lib/site";
+import { inlineMd } from "@/lib/inline-md";
+import PageHero from "@/components/sections/PageHero.astro";
+import DocLayout from "@/components/docs/DocLayout.astro";
+import DocSection from "@/components/docs/DocSection.astro";
+import DocTable from "@/components/docs/DocTable.astro";
+import Prose from "@/components/docs/Prose.astro";
+import Callout from "@/components/docs/Callout.astro";
+
+const reportUrl = `${site.repo}/security/advisories/new`;
+const advisoriesUrl = `${site.repo}/security/advisories`;
+const policyUrl = `${site.repo}/blob/trunk/SECURITY.md`;
+
+const toc = [
+	{ id: "report", label: "Report a vulnerability" },
+	{ id: "protections", label: "What the app does" },
+	{ id: "responsibility", label: "Shared responsibility" },
+	{ id: "limits", label: "Known limits" },
+	{ id: "advisories", label: "Advisories" },
+];
+
+const protections = [
+	[
+		"Passwords",
+		"Hashed with PBKDF2-SHA256, 100,000 iterations and a random 16-byte salt, through Web Crypto. Sign-in and password-reset requests are limited to 10 attempts per minute per IP address, counted in KV.",
+	],
+	[
+		"Sessions",
+		"A token signed with HS256 using `SESSION_SECRET`, in an `HttpOnly`, `SameSite=Lax` cookie that is `Secure` outside local development. It lasts 7 days. A user's role and access are read from the database on every request, so a demotion applies immediately.",
+	],
+	[
+		"Two-factor sign-in",
+		"Optional TOTP with 6-digit codes and 30 second steps, plus one-time backup codes stored as hashes. Turning it on or off is written to the audit log.",
+	],
+	[
+		"Roles and access",
+		"Administrators and members. Members get any of `inbox`, `api` and `tester`, and only see mailboxes assigned to them. Each API router sits behind one guard, with regression tests. The last administrator cannot be demoted.",
+	],
+	[
+		"API keys",
+		"Each key is 20 random bytes with an `eflive_` or `eftest_` prefix. Only a SHA-256 hash is stored, and the full key is shown once, when you create it. Keys can be limited to specific domains and revoked. Test keys capture mail in the sandbox mailbox instead of delivering it.",
+	],
+	[
+		"Per-key rate limit",
+		"100 requests per 60 seconds for each API key, through the Workers Rate Limiting binding. The binding needs a Workers Paid plan. Without it, keys are not rate limited.",
+	],
+	[
+		"Unsubscribe links",
+		"Each link carries a random, single-use token stored in D1. Using it adds a suppression and deletes the token. One-click `POST` unsubscribe (RFC 8058) is supported.",
+	],
+	[
+		"Webhooks",
+		"Each delivery is signed with HMAC-SHA256 over the request body, using that webhook's own secret. The signature is in the `X-EmailFlare-Signature` header.",
+	],
+	[
+		"Inbound HTML mail",
+		'Rendered in an iframe with `sandbox="allow-popups allow-same-origin"`. It does not set `allow-scripts`, so scripts in a message do not run. Remote images and CSS background images are blocked until the reader chooses to load them. Links open in a new tab.',
+	],
+	[
+		"Audit log",
+		"Records who did what for invites, password changes, two-factor changes, webhook changes and suppression edits.",
+	],
+	[
+		"Project hygiene",
+		"Dependabot opens weekly dependency updates, and pre-commit hooks check staged files for secrets.",
+	],
+];
+
+const roles = [
+	[
+		"EmailFlare (the code)",
+		"Authentication, access control and input handling in the app. Keeping dependencies current. Fixing reported vulnerabilities and publishing releases.",
+	],
+	[
+		"Cloudflare",
+		"Running Workers, D1, R2, KV, Queues and Durable Objects, the network in front of them, and the Email Routing and Email Sending services.",
+	],
+	[
+		"You",
+		"Your secrets, your API token, who can access your Cloudflare account, who you invite, and deploying updates. The checklist below covers the details.",
+	],
+];
+
+const checklist = [
+	"Set `SESSION_SECRET` to at least 32 random characters, for example with `openssl rand -hex 32`, and keep it out of Git. Anyone who has it can sign session tokens.",
+	"Give the Cloudflare API token only the [listed permissions](/cloudflare-token#permissions) and only the zones you use. Roll it if it leaks.",
+	"Serve the dashboard over HTTPS and set `PUBLIC_URL` to your real origin.",
+	"Turn on two-factor sign-in for administrators. Give members the narrowest access types and mailboxes that let them work.",
+	"Create one API key per application, scope it to a domain where you can, and revoke keys you no longer use.",
+	"Limit who can open your Cloudflare account, D1 database and R2 bucket. They hold your mail and contacts, and two-factor secrets are stored in D1 as they are.",
+	"Add the Workers Rate Limiting binding if you want per-key API limits. It needs a Workers Paid plan.",
+	"Pull new releases into your repository and deploy them. A fix only protects you once it is deployed.",
+];
+
+const limits = [
+	"EmailFlare has no published third-party security audit.",
+	"The HTML mail viewer sets `allow-same-origin` so the dashboard can measure the frame's height. Scripts still cannot run, but the frame is less isolated than one with an empty `sandbox`.",
+	"Remote content blocking covers `<img>`, `srcset` and CSS background images. It does not block every kind of remote resource.",
+	"Sign-in rate limiting reads and writes a KV counter without a lock, so a fast burst can slightly exceed the limit.",
+	"Two-factor secrets are stored in D1 without a second layer of encryption.",
+	"There is no service-level agreement.",
+];
+---
+
+<Base
+	title="Security"
+	description="How to report a vulnerability in EmailFlare, what the app does to protect your mail, what you are responsible for when you self-host, and the limits of those protections."
+	path="/security"
+>
+	<PageHero
+		eyebrow="Security"
+		title="Report a problem. Know what you are running."
+		description="EmailFlare runs in your own Cloudflare account, so security is shared: the code is ours, the platform is Cloudflare's and the configuration is yours. This page says what each side does."
+	>
+		<a href={reportUrl} target="_blank" rel="noopener" class={buttonVariants({ size: "xl" })}>
+			<Icon name="lucide:shield-alert" />
+			Report a vulnerability
+		</a>
+		<a
+			href={advisoriesUrl}
+			target="_blank"
+			rel="noopener"
+			class={buttonVariants({ size: "xl", variant: "outline" })}
+		>
+			Published advisories
+			<Icon name="lucide:arrow-up-right" />
+		</a>
+	</PageHero>
+
+	<DocLayout toc={toc}>
+		<DocSection id="report" title="Report a vulnerability">
+			<Callout tone="warning" title="Do not post exploit details in a public issue">
+				<p>
+					Report privately first. A public issue with reproduction steps puts every deployment at risk before
+					a fix exists.
+				</p>
+			</Callout>
+			<Prose>
+				<p>
+					Use{" "}
+					<a href={reportUrl} target="_blank" rel="noopener">
+						GitHub private vulnerability reporting
+					</a>
+					. Only the maintainers can see what you submit.
+				</p>
+				<h3>What to include</h3>
+				<ol>
+					<li>A clear description of the vulnerability.</li>
+					<li>The affected files, routes or endpoints.</li>
+					<li>Steps or a proof of concept to reproduce it.</li>
+					<li>The impact you expect, such as unauthorized access, data exposure or cross-site scripting.</li>
+					<li>A suggested fix or mitigation, if you have one.</li>
+				</ol>
+				<h3>What to expect</h3>
+				<p>
+					The{" "}
+					<a href={policyUrl} target="_blank" rel="noopener">
+						security policy
+					</a>{" "}
+					says maintainers review each report promptly, validate it, prepare a fix and coordinate public
+					disclosure once a patch is released. It does not set fixed response times, so none are promised
+					here.
+				</p>
+			</Prose>
+		</DocSection>
+
+		<DocSection id="protections" title="What the app does">
+			<Prose>
+				<p>
+					Each row below was checked against the source in <code>apps/dashboard</code>.
+				</p>
+			</Prose>
+			<DocTable
+				caption="Security controls in EmailFlare"
+				columns={["Area", "What it does"]}
+				rows={protections}
+				minWidth="min-w-[32rem]"
+			/>
+		</DocSection>
+
+		<DocSection id="responsibility" title="Shared responsibility">
+			<DocTable
+				caption="Who is responsible for what"
+				columns={["Who", "Responsible for"]}
+				rows={roles}
+				minWidth="min-w-[32rem]"
+			/>
+			<Prose>
+				<h3>Your checklist</h3>
+				<ul>
+					{checklist.map((item) => (
+						<li set:html={inlineMd(item)} />
+					))}
+				</ul>
+			</Prose>
+		</DocSection>
+
+		<DocSection id="limits" title="Known limits">
+			<Prose>
+				<p>No security feature is absolute. These are the limits to know about.</p>
+				<ul>
+					{limits.map((item) => (
+						<li set:html={inlineMd(item)} />
+					))}
+				</ul>
+			</Prose>
+		</DocSection>
+
+		<DocSection id="advisories" title="Advisories">
+			<Prose>
+				<p>
+					Fixed vulnerabilities are disclosed as GitHub security advisories. Read the{" "}
+					<a href={advisoriesUrl} target="_blank" rel="noopener">
+						published advisories
+					</a>{" "}
+					and the <a href="/changelog">changelog</a>, which lists security fixes under their own heading.
+				</p>
+			</Prose>
+		</DocSection>
+	</DocLayout>
+</Base>

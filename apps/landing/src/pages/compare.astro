@@ -1,0 +1,260 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { faqJsonLd } from "@/lib/faq";
+import type { FaqItem } from "@/components/islands/Faq";
+import Faq from "@/components/islands/Faq";
+import Section from "@/components/site/Section.astro";
+import SectionHeading from "@/components/site/SectionHeading.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import CompareTable from "@/components/sections/CompareTable.astro";
+import CtaBand from "@/components/sections/CtaBand.astro";
+
+const columns = [
+	{ name: "EmailFlare", note: "Self-hosted on Cloudflare", highlight: true },
+	{ name: "Hosted sending APIs", note: "Such as Resend or Postmark" },
+	{ name: "Hosted shared inboxes", note: "Such as Front or Help Scout" },
+	{ name: "Self-hosted mail server", note: "Such as Postfix" },
+];
+
+const rows = [
+	{
+		label: "Who holds your data",
+		cells: [
+			"You. Messages, contacts and logs live in your own D1 database and R2 bucket.",
+			"The vendor. Message content, recipient data and logs sit in their systems for a retention period they set.",
+			"The vendor. Conversations, contacts and attachments sit in their systems.",
+			"You, on a server you run and secure.",
+		],
+	},
+	{
+		label: "Pricing model",
+		cells: [
+			"Free to self-host under ELv2. You pay Cloudflare for what you use. No per-email markup and no per-seat fee.",
+			"Usually tiered by monthly email volume, sometimes with a free tier.",
+			"Usually per seat, per month.",
+			"Server and IP costs, plus your time.",
+		],
+	},
+	{
+		label: "Sending API",
+		cells: [
+			"REST only: `POST /v1/send` with scoped keys, templates, logs and suppressions. No SMTP relay and no official SDKs.",
+			"Mature REST and SMTP APIs, usually with official SDKs and webhooks.",
+			"Built for replying to conversations, not for mail your app generates.",
+			"SMTP. You choose or build any API on top.",
+		],
+	},
+	{
+		label: "Shared inbox",
+		cells: [
+			"Yes. A mailbox per address, threads, stars, archive, canned replies and live updates. No conversation assignment and no help centre.",
+			"Rarely. Some forward inbound mail to a webhook, but there is no inbox to work in.",
+			"Yes. It is the core product, usually with assignment, automation, reporting and a help centre.",
+			"Not included. You pair it with a webmail client or another tool.",
+		],
+	},
+	{
+		label: "Templates",
+		cells: [
+			"50+ layouts, Handlebars variables, conditionals and loops, and a live preview.",
+			"Varies. Many offer a template editor and variables.",
+			"Saved replies and snippets.",
+			"Bring your own.",
+		],
+	},
+	{
+		label: "Setup effort",
+		cells: [
+			"Deploy button, an API token, and DNS records for each domain. Your domains must be on Cloudflare.",
+			"Sign up, verify your domain's DNS and create a key.",
+			"Sign up, then connect or forward your mailboxes.",
+			"Install and harden the server, configure DNS and TLS, and warm up the IP. The most work of the four.",
+		],
+	},
+	{
+		label: "Maintenance",
+		cells: [
+			"You pull updates and redeploy. There is no server or OS to patch, and Cloudflare runs the platform.",
+			"The vendor.",
+			"The vendor.",
+			"You: patching, backups, monitoring and blocklist checks.",
+		],
+	},
+	{
+		label: "Deliverability",
+		cells: [
+			"Shared. Mail leaves through Cloudflare's email service. You own your domain's SPF, DKIM and DMARC and the quality of your lists. EmailFlare suppresses bounces, complaints and unsubscribes.",
+			"The vendor runs the sending infrastructure and reputation tooling. You still own your domain setup and your content.",
+			"Mostly the vendor for replies. You still set up your domain.",
+			"All yours: IP reputation, warm-up, feedback loops and blocklists.",
+		],
+	},
+	{
+		label: "Service guarantees",
+		cells: [
+			"No SLA from the project. Availability depends on Cloudflare and your deployment.",
+			"Often an uptime commitment on paid plans.",
+			"Often an uptime commitment on paid plans.",
+			"Whatever you build.",
+		],
+	},
+	{
+		label: "Support",
+		cells: [
+			"Community, through GitHub issues.",
+			"Vendor support. Response times depend on your plan.",
+			"Vendor support. Response times depend on your plan.",
+			"Yourself and the community.",
+		],
+	},
+];
+
+const hostedWins = [
+	{
+		icon: "lucide:server",
+		title: "You need dedicated IPs or very high volume",
+		body: "Hosted sending services sell dedicated IP pools, warm-up help and deliverability staff. EmailFlare sends through Cloudflare and offers none of that.",
+	},
+	{
+		icon: "lucide:life-buoy",
+		title: "You need an SLA or priority support",
+		body: "EmailFlare support is the community on GitHub. If you need a contract, a response-time commitment or vendor paperwork, buy it from a vendor.",
+	},
+	{
+		icon: "lucide:plug",
+		title: "You need SMTP or many SDKs",
+		body: "EmailFlare is REST only. Hosted APIs usually add SMTP relay and official libraries for most languages.",
+	},
+	{
+		icon: "lucide:users",
+		title: "Your support team needs more than a shared inbox",
+		body: "Assignment, automation, reporting, a help centre and other channels are standard in hosted inboxes. EmailFlare's inbox covers threads, stars, archive and canned replies.",
+	},
+	{
+		icon: "lucide:hand-helping",
+		title: "Nobody wants to own a deployment",
+		body: "With EmailFlare you run the update, watch the Cloudflare bill and keep secrets safe. A hosted service takes that off your list.",
+	},
+	{
+		icon: "lucide:coins",
+		title: "A free tier already covers you",
+		body: "At low volume, a hosted free tier can cost less than the time spent setting up and maintaining your own.",
+	},
+];
+
+const fits = [
+	"You already run on Cloudflare, or your domains are there.",
+	"Per-email or per-seat pricing is the part that hurts.",
+	"You want sending and replies in one place, with one history per customer.",
+	"You want messages in your own account rather than a vendor's.",
+	"Community support and reading the source are fine for you.",
+];
+
+const faq: FaqItem[] = [
+	{
+		q: "Is EmailFlare cheaper than a hosted service?",
+		a: `It can be, but it depends on your volume and your time. There is no per-email markup and no per-seat fee, and you pay Cloudflare for the Workers, D1, R2, Queues and email services you use. Check <a href="https://developers.cloudflare.com/workers/platform/pricing/" target="_blank" rel="noopener">Cloudflare's pricing</a> and the pricing of whichever hosted service you use, then add the cost of maintaining your deployment.`,
+	},
+	{
+		q: "How hard is it to move off a hosted sending API?",
+		a: `EmailFlare sends with a single <code>POST /v1/send</code> call using <code>from</code>, <code>to</code>, <code>subject</code> and <code>html</code> or a template. Switching a sender is usually a change of URL, key and payload. Templates need to be recreated in Handlebars. See the <a href="/email-api">Email API page</a>.`,
+	},
+	{
+		q: "Will my mail reach the inbox?",
+		a: `No tool can promise that. EmailFlare checks your SPF, DKIM, DMARC and MX records, and suppresses bounces, complaints and unsubscribes. Placement then depends on your domain's reputation, your content and how Cloudflare's sending service performs for you.`,
+	},
+	{
+		q: "What do I give up by leaving a hosted shared inbox?",
+		a: `Mainly assignment, automation, reporting and a help centre. EmailFlare's inbox has shared mailboxes, threads, stars, archive, unread state, canned replies and live updates. See the <a href="/inbox">inbox page</a> and compare it against your workflow before you switch.`,
+	},
+	{
+		q: "Why not just run a mail server?",
+		a: `A self-hosted mail server gives you full control and takes full responsibility: IP reputation, warm-up, patching, backups and blocklists. EmailFlare avoids that by receiving mail through Cloudflare Email Routing and sending through Cloudflare's email service, so there is no mail server to run.`,
+	},
+];
+---
+
+<Base
+	title="EmailFlare vs hosted email tools"
+	description="How EmailFlare compares with hosted sending APIs, hosted shared inboxes and a self-hosted mail server: data, pricing model, setup, maintenance and support, including where hosted services do better."
+	path="/compare"
+	jsonLd={[faqJsonLd(faq)]}
+>
+	<PageHero
+		eyebrow="Compare"
+		title="EmailFlare vs hosted email tools"
+		description="A structural comparison with the tools EmailFlare replaces: who holds the data, how you pay, what you maintain. Hosted services win in some cases, and this page says which."
+	>
+		<a href="/cloudflare" class={buttonVariants({ size: "xl" })}>
+			<Icon name="lucide:cloud-upload" />
+			Deploy guide
+		</a>
+		<a href="#hosted-better" class={buttonVariants({ size: "xl", variant: "outline" })}>
+			When hosted is better
+		</a>
+	</PageHero>
+
+	<Section id="table">
+		<SectionHeading
+			eyebrow="Side by side"
+			title="Four ways to handle email."
+			description="The columns describe typical products in each category, not a specific plan or a price list. Services change, so check any vendor's current terms before you decide."
+		/>
+		<div class="mt-10">
+			<CompareTable
+				caption="EmailFlare compared with hosted sending APIs, hosted shared inboxes and a self-hosted mail server"
+				columns={columns}
+				rows={rows}
+			/>
+		</div>
+		<p class="text-muted-foreground mt-6 max-w-3xl text-sm leading-6">
+			Resend, Postmark, Front, Help Scout and Postfix are named as examples of each category. They are not
+			endorsements, and no price or limit is quoted for any of them.
+		</p>
+	</Section>
+
+	<Section id="hosted-better" tone="muted">
+		<SectionHeading
+			eyebrow="Be honest about the trade-offs"
+			title="When a hosted service is the better choice."
+			description="EmailFlare trades vendor features for ownership and a different cost model. If one of these describes you, a hosted service will serve you better."
+		/>
+		<div class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+			{hostedWins.map((w) => (
+				<Card>
+					<CardContent className="px-6 py-2">
+						<Icon name={w.icon} class="text-primary mb-4 size-6" />
+						<h3 class="text-lg leading-snug font-semibold">{w.title}</h3>
+						<p class="text-muted-foreground mt-2 text-sm leading-6">{w.body}</p>
+					</CardContent>
+				</Card>
+			))}
+		</div>
+	</Section>
+
+	<Section id="fits">
+		<div class="max-w-3xl">
+			<SectionHeading eyebrow="Where it fits" title="When EmailFlare makes sense." />
+			<ul class="mt-8 space-y-4">
+				{fits.map((f) => (
+					<li class="flex gap-3 text-[0.9375rem] leading-7">
+						<Icon name="lucide:check" class="text-success mt-1.5 size-4 shrink-0" />
+						{f}
+					</li>
+				))}
+			</ul>
+		</div>
+	</Section>
+
+	<Section id="faq" tone="muted" size="narrow">
+		<SectionHeading align="center" eyebrow="FAQ" title="Questions about switching." />
+		<div class="mt-10">
+			<Faq client:visible items={faq} />
+		</div>
+	</Section>
+
+	<CtaBand />
+</Base>

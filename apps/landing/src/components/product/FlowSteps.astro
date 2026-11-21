@@ -1,0 +1,55 @@
+---
+import { Icon } from "astro-icon/components";
+import { cn } from "@/lib/utils";
+
+interface Step {
+	icon: string;
+	label: string;
+	note: string;
+	/** Highlight the step that runs your code (the Worker) */
+	accent?: boolean;
+}
+interface Props {
+	steps: Step[];
+	label: string;
+	class?: string;
+}
+const { steps, label, class: className } = Astro.props;
+---
+
+<ol aria-label={label} class={cn("grid gap-3 lg:auto-cols-fr lg:grid-flow-col lg:gap-0", className)}>
+	{steps.map((s, i) => (
+		<li class="relative flex lg:block">
+			<div
+				class={cn(
+					"flex h-full flex-1 items-start gap-4 rounded-2xl border p-5 lg:flex-col lg:gap-3",
+					s.accent ? "border-primary/50 bg-primary-muted shadow-stamp" : "border-border bg-card",
+				)}
+			>
+				<span
+					class={cn(
+						"inline-flex size-10 shrink-0 items-center justify-center rounded-xl",
+						s.accent ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+					)}
+				>
+					<Icon name={s.icon} class="size-5" />
+				</span>
+				<div class="min-w-0">
+					<p class="text-muted-foreground mb-1 font-mono text-2xs tracking-wide uppercase">Step {i + 1}</p>
+					<p class="font-medium">{s.label}</p>
+					<p class="text-muted-foreground mt-1 text-sm leading-6">{s.note}</p>
+				</div>
+			</div>
+			{i < steps.length - 1 && (
+				<span
+					class="text-muted-foreground absolute top-1/2 -right-3 z-10 hidden size-6 -translate-y-1/2 items-center justify-center lg:inline-flex"
+					aria-hidden="true"
+				>
+					<span class="bg-background border-border inline-flex size-6 items-center justify-center rounded-full border">
+						<Icon name="lucide:arrow-right" class="size-3.5" />
+					</span>
+				</span>
+			)}
+		</li>
+	))}
+</ol>

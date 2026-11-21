@@ -1,0 +1,349 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "EmailFlare API",
+		"version": "1.0.0",
+		"summary": "Send transactional email from your own Cloudflare account.",
+		"description": "The public HTTP API of a self-hosted EmailFlare deployment. Replace the server URL with your own Worker address. Dashboard-only endpoints under `/api/*` use browser sessions and are not part of this specification.",
+		"license": {
+			"name": "Elastic License 2.0",
+			"url": "https://www.elastic.co/licensing/elastic-license"
+		},
+		"contact": {
+			"name": "Devendra Pratap Singh",
+			"url": "https://dps.codes"
+		}
+	},
+	"servers": [
+		{
+			"url": "{baseUrl}",
+			"description": "Your EmailFlare Worker",
+			"variables": {
+				"baseUrl": {
+					"default": "https://your-emailflare.workers.dev",
+					"description": "The workers.dev address or custom domain of your deployment."
+				}
+			}
+		}
+	],
+	"tags": [
+		{ "name": "Send", "description": "Send email with a scoped API key." },
+		{
+			"name": "Unsubscribe",
+			"description": "Public endpoints that unsubscribe a recipient with a one-time token."
+		},
+		{ "name": "Health", "description": "Liveness check." }
+	],
+	"paths": {
+		"/v1/send": {
+			"post": {
+				"tags": ["Send"],
+				"operationId": "sendEmail",
+				"summary": "Send an email",
+				"description": "Sends one message to one or more recipients. Each recipient gets their own message. Provide a stored template (`templateSlug` or `templateId`) or raw `html` and `text`. The status is `200` when at least one recipient succeeded, `202` for a scheduled send, and `502` when every recipient failed.",
+				"security": [{ "apiKey": [] }],
+				"parameters": [
+					{
+						"name": "Idempotency-Key",
+						"in": "header",
+						"required": false,
+						"description": "A repeat request with the same key and API key returns the first recorded result with `cached: true` instead of sending again. Use one recipient per idempotent request.",
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/SendRequest" },
+							"examples": {
+								"template": {
+									"summary": "Stored template",
+									"value": {
+										"from": "hello@yourdomain.com",
+										"fromName": "Acme",
+										"to": "alex@example.com",
+										"templateSlug": "welcome",
+										"themeId": "ocean",
+										"variables": { "name": "Alex", "appName": "Acme" }
+									}
+								},
+								"raw": {
+									"summary": "Raw HTML",
+									"value": {
+										"from": "hello@yourdomain.com",
+										"to": ["alex@example.com", "sam@example.com"],
+										"subject": "Your receipt",
+										"html": "<p>Thanks for your order.</p>",
+										"text": "Thanks for your order."
+									}
+								},
+								"scheduled": {
+									"summary": "Scheduled send",
+									"value": {
+										"from": "hello@yourdomain.com",
+										"to": "alex@example.com",
+										"subject": "Your trial ends tomorrow",
+										"html": "<p>Your trial ends tomorrow.</p>",
+										"sendAt": "2026-03-01T09:00:00Z"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "At least one recipient succeeded. Check `results` for per-recipient errors. A cached idempotent replay also returns `200`.",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/SendResponse" }
+							}
+						}
+					},
+					"202": {
+						"description": "The message was queued for delivery at `sendAt`.",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ScheduledResponse" }
+							}
+						}
+					},
+					"400": {
+						"description": "A field is missing or malformed: an invalid address, more than 50 recipients, or none of `templateSlug`, `templateId`, `html`, `text`.",
+						"content": {
+							"application/json": { "schema": { "type": "object", "additionalProperties": true } }
+						}
+					},
+					"401": { "$ref": "#/components/responses/Error" },
+					"403": { "$ref": "#/components/responses/Error" },
+					"404": { "$ref": "#/components/responses/Error" },
+					"429": { "$ref": "#/components/responses/Error" },
+					"500": { "$ref": "#/components/responses/Error" },
+					"502": {
+						"description": "Every recipient failed. The body still lists the per-recipient errors.",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/SendResponse" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/unsubscribe": {
+			"get": {
+				"tags": ["Unsubscribe"],
+				"operationId": "unsubscribePage",
+				"security": [],
+				"summary": "Unsubscribe from a link",
+				"description": "Opened from the unsubscribe link in an email. Consumes the single-use token, suppresses the address and returns a confirmation page.",
+				"parameters": [{ "$ref": "#/components/parameters/UnsubscribeToken" }],
+				"responses": {
+					"200": {
+						"description": "Unsubscribed. Returns an HTML confirmation page.",
+						"content": { "text/html": { "schema": { "type": "string" } } }
+					},
+					"400": {
+						"description": "The token is missing.",
+						"content": { "text/html": { "schema": { "type": "string" } } }
+					},
+					"404": {
+						"description": "The token is invalid or already used.",
+						"content": { "text/html": { "schema": { "type": "string" } } }
+					}
+				}
+			},
+			"post": {
+				"tags": ["Unsubscribe"],
+				"operationId": "unsubscribeOneClick",
+				"security": [],
+				"summary": "One-click unsubscribe (RFC 8058)",
+				"description": "Mail clients post to this URL when the recipient presses unsubscribe. The token can be in the query string or a form field.",
+				"parameters": [{ "$ref": "#/components/parameters/UnsubscribeToken" }],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/x-www-form-urlencoded": {
+							"schema": {
+								"type": "object",
+								"properties": { "List-Unsubscribe": { "type": "string", "const": "One-Click" } }
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Unsubscribed.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": { "ok": { "type": "boolean", "const": true } }
+								}
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/Error" },
+					"404": { "$ref": "#/components/responses/Error" }
+				}
+			}
+		},
+		"/health": {
+			"get": {
+				"tags": ["Health"],
+				"operationId": "health",
+				"security": [],
+				"summary": "Health check",
+				"responses": {
+					"200": {
+						"description": "The Worker is running.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"required": ["ok", "service"],
+									"properties": {
+										"ok": { "type": "boolean", "const": true },
+										"service": { "type": "string", "examples": ["emailflare-inbox"] }
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"apiKey": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "eflive_…",
+				"description": "A key created in the dashboard under API keys. A key is limited to the domains and scope you gave it. Keys are rate limited to 100 requests per 60 seconds."
+			}
+		},
+		"parameters": {
+			"UnsubscribeToken": {
+				"name": "token",
+				"in": "query",
+				"required": true,
+				"description": "The one-time token from the unsubscribe link.",
+				"schema": { "type": "string" }
+			}
+		},
+		"responses": {
+			"Error": {
+				"description": "An error. Status codes: `401` missing, invalid or revoked key; `403` key not authorized for the sender domain; `404` template or token not found; `429` rate limit exceeded; `500` unexpected error.",
+				"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+			}
+		},
+		"schemas": {
+			"Error": {
+				"type": "object",
+				"required": ["error"],
+				"properties": { "error": { "type": "string", "examples": ["Invalid or revoked API key"] } }
+			},
+			"Recipients": {
+				"oneOf": [
+					{ "type": "string", "format": "email" },
+					{ "type": "array", "items": { "type": "string", "format": "email" }, "minItems": 1, "maxItems": 50 }
+				],
+				"description": "One address, or up to 50. Duplicates are removed."
+			},
+			"SendRequest": {
+				"type": "object",
+				"required": ["from", "to"],
+				"description": "Include at least one of `templateSlug`, `templateId`, `html` or `text`.",
+				"properties": {
+					"from": {
+						"type": "string",
+						"format": "email",
+						"description": "Sender address. For a non-global key, its domain must be one the key may use."
+					},
+					"fromName": { "type": "string", "description": "Display name for the From header." },
+					"to": { "$ref": "#/components/schemas/Recipients" },
+					"replyTo": { "type": "string", "format": "email" },
+					"subject": {
+						"type": "string",
+						"description": "Overrides a template's subject. Set it for raw html or text sends."
+					},
+					"html": { "type": "string", "description": "HTML body. Ignored when you reference a template." },
+					"text": {
+						"type": "string",
+						"description": "Plain-text body. Ignored when you reference a template."
+					},
+					"templateSlug": {
+						"type": "string",
+						"description": "Slug of a stored template. Preferred over `templateId`. Case-sensitive."
+					},
+					"templateId": {
+						"type": "string",
+						"description": "ID of a stored template. Use `templateSlug` where you can."
+					},
+					"variables": {
+						"type": "object",
+						"additionalProperties": true,
+						"description": "Values for the template's placeholders. Nested objects work with dot paths. Never applied to raw html or text."
+					},
+					"themeId": {
+						"type": "string",
+						"enum": ["default", "ocean", "forest", "violet", "slate"],
+						"description": "Colour theme for a built-in layout. Ignored for custom templates."
+					},
+					"listId": {
+						"type": "string",
+						"description": "Audience list ID. Adds one-click unsubscribe headers."
+					},
+					"listUnsubscribe": {
+						"type": "string",
+						"description": "Your own unsubscribe URL, passed through as the List-Unsubscribe header."
+					},
+					"listUnsubscribePost": {
+						"type": "boolean",
+						"description": "Adds `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. Defaults to true with `listId`."
+					},
+					"track": {
+						"type": "boolean",
+						"description": "Rewrite links and add an open pixel in the HTML body."
+					},
+					"sendAt": {
+						"type": "string",
+						"format": "date-time",
+						"description": "ISO 8601 UTC time. More than five seconds ahead queues the message. Live keys only, and within 12 hours."
+					}
+				}
+			},
+			"RecipientResult": {
+				"type": "object",
+				"required": ["to"],
+				"properties": {
+					"to": { "type": "string", "format": "email" },
+					"cfId": { "type": "string", "description": "Message ID from Cloudflare Email Sending." },
+					"error": { "type": "string", "examples": ["Suppressed: hard_bounce"] }
+				}
+			},
+			"SendResponse": {
+				"type": "object",
+				"required": ["results"],
+				"properties": {
+					"results": { "type": "array", "items": { "$ref": "#/components/schemas/RecipientResult" } },
+					"cached": {
+						"type": "boolean",
+						"description": "True when an idempotent request returned an earlier result."
+					}
+				}
+			},
+			"ScheduledResponse": {
+				"type": "object",
+				"required": ["scheduled", "id", "sendAt"],
+				"properties": {
+					"scheduled": { "type": "boolean", "const": true },
+					"id": { "type": "string" },
+					"sendAt": { "type": "string", "format": "date-time" }
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,60 @@
+---
+import { Icon } from "astro-icon/components";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { formatCount, getStars } from "@/lib/github";
+import { mainNav, site } from "@/lib/site";
+import ThemeToggle from "@/components/islands/ThemeToggle";
+import MobileNav from "@/components/islands/MobileNav";
+import Container from "./Container.astro";
+import Logo from "./Logo.astro";
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const stars = await getStars();
+const isActive = (href: string) => path === href || (href !== "/" && path.startsWith(`${href}/`));
+---
+
+<header class="bg-background/80 sticky top-0 z-40 border-b backdrop-blur-lg">
+	<Container size="wide" class="flex h-16 items-center justify-between gap-4">
+		<div class="flex items-center gap-8">
+			<Logo />
+			<nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
+				{mainNav.map((l) => (
+					<a
+						href={l.href}
+						aria-current={isActive(l.href) ? "page" : undefined}
+						class={cn(
+							"text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+							isActive(l.href) && "text-foreground bg-muted",
+						)}
+					>
+						{l.label}
+					</a>
+				))}
+			</nav>
+		</div>
+		<div class="flex items-center gap-1.5">
+			<a
+				href={site.repo}
+				target="_blank"
+				rel="noopener"
+				class={cn(buttonVariants({ variant: "ghost", size: "default" }), "hidden gap-2 sm:inline-flex")}
+				aria-label="EmailFlare on GitHub"
+			>
+				<Icon name="simple-icons:github" class="size-4" />
+				{stars !== null && <span class="font-mono text-xs tabular-nums">{formatCount(stars)}</span>}
+			</a>
+			<ThemeToggle client:load />
+			<a href={site.deploy} class={cn(buttonVariants({ size: "lg" }), "hidden sm:inline-flex")}>
+				<Icon name="lucide:cloud-upload" />
+				Deploy
+			</a>
+			<MobileNav
+				client:load
+				links={[{ label: "Home", href: "/" }, ...mainNav, { label: "Deploy guide", href: "/cloudflare" }]}
+				deployHref={site.deploy}
+				repoHref={site.repo}
+			/>
+		</div>
+	</Container>
+</header>

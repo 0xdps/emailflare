@@ -1,0 +1,24 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+	eyebrow?: string;
+	title: string;
+	description?: string;
+	align?: "left" | "center";
+	as?: "h1" | "h2";
+	class?: string;
+}
+const { eyebrow, title, description, align = "left", as: Tag = "h2", class: className } = Astro.props;
+---
+
+<div class={cn("max-w-2xl", align === "center" && "mx-auto text-center", className)}>
+	{eyebrow && (
+		<p class="text-primary-muted-foreground mb-3 font-mono text-xs font-medium tracking-wide uppercase">
+			{eyebrow}
+		</p>
+	)}
+	<Tag class="text-3xl leading-[1.1] font-semibold md:text-5xl">{title}</Tag>
+	{description && <p class="text-muted-foreground mt-4 text-lg leading-8">{description}</p>}
+	<slot />
+</div>

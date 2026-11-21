@@ -1,0 +1,95 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { site } from "@/lib/site";
+import Container from "@/components/site/Container.astro";
+import MailHeader from "@/components/site/MailHeader.astro";
+import MailRow from "@/components/site/MailRow.astro";
+
+const links = [
+	{ icon: "lucide:inbox", label: "Team inbox", note: "Shared mailboxes with live threads.", href: "/inbox" },
+	{ icon: "lucide:send", label: "Email API", note: "Send with one POST request.", href: "/email-api" },
+	{
+		icon: "lucide:layout-template",
+		label: "Templates",
+		note: "Layouts with Handlebars variables.",
+		href: "/templates",
+	},
+	{ icon: "lucide:book-open", label: "Docs", note: "Setup, API reference and recipes.", href: "/docs" },
+	{ icon: "simple-icons:github", label: "GitHub", note: "Source code and issues.", href: site.repo },
+];
+---
+
+<Base
+	title="Page not found"
+	description="This page does not exist on emailflare.dev. Try the home page, the docs, the inbox, the API or the templates."
+	path="/404"
+	noindex
+>
+	<div class="from-primary-muted/60 bg-gradient-to-b to-transparent">
+		<Container class="pt-14 pb-10 md:pt-24">
+			<div class="mx-auto max-w-5xl">
+				<MailHeader>
+					<MailRow name="Status">404 Not Found</MailRow>
+					<MailRow name="To">you</MailRow>
+					<MailRow name="Subject" subject>
+						<h1>
+							This page <span class="text-primary">bounced.</span>
+						</h1>
+					</MailRow>
+					<MailRow name="Reason">
+						No page lives at this address. The link may be old, or the address mistyped.
+					</MailRow>
+				</MailHeader>
+				<div class="mt-8 flex flex-wrap items-center gap-3">
+					<a href="/" class={buttonVariants({ size: "xl" })}>
+						<Icon name="lucide:arrow-left" />
+						Back to the home page
+					</a>
+					<a href="/docs" class={buttonVariants({ size: "xl", variant: "outline" })}>
+						Read the docs
+					</a>
+				</div>
+			</div>
+		</Container>
+	</div>
+
+	<Container class="pt-6 pb-20 md:pb-28">
+		<div class="mx-auto max-w-5xl">
+			<h2 class="text-muted-foreground mb-5 font-mono text-xs font-medium tracking-wide uppercase">
+				Try one of these instead
+			</h2>
+			<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				{links.map((l) => (
+					<li class="flex">
+						<a
+							href={l.href}
+							class="group block w-full"
+							{...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}
+						>
+							<Card className="group-hover:ring-primary/50 h-full transition-shadow">
+								<CardContent className="flex items-start gap-4 px-5 py-1">
+									<span class="bg-primary-muted text-primary-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-xl">
+										<Icon name={l.icon} class="size-5" />
+									</span>
+									<span class="min-w-0">
+										<span class="flex items-center gap-1 font-medium">
+											{l.label}
+											<Icon
+												name="lucide:arrow-right"
+												class="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5"
+											/>
+										</span>
+										<span class="text-muted-foreground mt-1 block text-sm leading-6">{l.note}</span>
+									</span>
+								</CardContent>
+							</Card>
+						</a>
+					</li>
+				))}
+			</ul>
+		</div>
+	</Container>
+</Base>

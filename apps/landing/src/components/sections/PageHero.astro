@@ -1,0 +1,34 @@
+---
+import { cn } from "@/lib/utils";
+import Container from "@/components/site/Container.astro";
+
+interface Props {
+	eyebrow?: string;
+	title: string;
+	description?: string;
+	class?: string;
+}
+const { eyebrow, title, description, class: className } = Astro.props;
+---
+
+<!-- Hero for inner pages. Slot takes actions. -->
+<div class={cn("from-primary-muted/70 border-b bg-gradient-to-b to-transparent", className)}>
+	<Container class="py-16 md:py-24">
+		<div class="max-w-3xl">
+			{eyebrow && (
+				<p class="text-primary-muted-foreground mb-4 font-mono text-xs font-medium tracking-wide uppercase">
+					{eyebrow}
+				</p>
+			)}
+			<h1 class="text-4xl leading-[1.05] font-semibold md:text-6xl">{title}</h1>
+			{description && (
+				<p class="text-muted-foreground mt-5 max-w-2xl text-lg leading-8 md:text-xl md:leading-9">
+					{description}
+				</p>
+			)}
+			<div class="mt-8 flex flex-wrap gap-3 empty:hidden">
+				<slot />
+			</div>
+		</div>
+	</Container>
+</div>

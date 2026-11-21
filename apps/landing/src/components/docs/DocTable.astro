@@ -1,0 +1,44 @@
+---
+import { inlineMd } from "@/lib/inline-md";
+
+interface Props {
+	columns: string[];
+	/** Cells accept `code`, **bold** and [links](url). The first cell of each row is the row header. */
+	rows: string[][];
+	caption: string;
+	minWidth?: string;
+}
+const { columns, rows, caption, minWidth = "min-w-[36rem]" } = Astro.props;
+---
+
+<div class="bg-card overflow-x-auto rounded-xl border">
+	<table class={`w-full border-collapse text-left text-sm ${minWidth}`}>
+		<caption class="sr-only">{caption}</caption>
+		<thead class="bg-muted text-foreground">
+			<tr>
+				{columns.map((c) => (
+					<th scope="col" class="px-4 py-2.5 font-medium whitespace-nowrap">
+						{c}
+					</th>
+				))}
+			</tr>
+		</thead>
+		<tbody class="divide-y">
+			{rows.map((row) => (
+				<tr>
+					{row.map((cell, i) =>
+						i === 0 ? (
+							<th
+								scope="row"
+								class="text-foreground px-4 py-3 text-left align-top font-medium"
+								set:html={inlineMd(cell)}
+							/>
+						) : (
+							<td class="text-muted-foreground px-4 py-3 align-top leading-6" set:html={inlineMd(cell)} />
+						),
+					)}
+				</tr>
+			))}
+		</tbody>
+	</table>
+</div>

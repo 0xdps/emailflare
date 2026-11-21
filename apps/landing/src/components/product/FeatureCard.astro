@@ -1,0 +1,25 @@
+---
+import { Icon } from "astro-icon/components";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+interface Props {
+	icon: string;
+	title: string;
+	/** Inline HTML allowed */
+	body?: string;
+	class?: string;
+}
+const { icon, title, body, class: className } = Astro.props;
+---
+
+<Card className={cn("h-full", className)}>
+	<CardContent className="p-6">
+		<span class="bg-primary-muted text-primary-muted-foreground mb-4 inline-flex size-10 items-center justify-center rounded-xl">
+			<Icon name={icon} class="size-5" />
+		</span>
+		<h3 class="text-lg font-semibold">{title}</h3>
+		{body && <p class="text-muted-foreground mt-2 text-sm leading-6" set:html={body} />}
+		<slot />
+	</CardContent>
+</Card>

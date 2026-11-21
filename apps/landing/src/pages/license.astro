@@ -1,0 +1,147 @@
+---
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { site } from "@/lib/site";
+import Section from "@/components/site/Section.astro";
+import SectionHeading from "@/components/site/SectionHeading.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+
+const can = [
+	"Deploy it to your own Cloudflare account and use it for your company, free.",
+	"Read, change and extend the source for your own use.",
+	"Copy and share it, as long as you pass on the license text and your change notices.",
+	"Use the send API and inbox to run your own product's email.",
+];
+const cannot = [
+	"Offer EmailFlare to other people as a hosted or managed service, paid or free, where they get a substantial part of its features.",
+	"Remove or hide licensing and copyright notices.",
+	"Use the EmailFlare name or marks in ways the law does not allow.",
+];
+---
+
+<Base
+	title="License"
+	description="EmailFlare is source-available under the Elastic License 2.0. Use it, change it and self-host it for free. You cannot offer it to others as a hosted or managed service."
+	path="/license"
+>
+	<PageHero
+		eyebrow="Elastic License 2.0"
+		title="Free to use. Not free to resell as a service."
+		description="The code is public and you can run it yourself. What the license rules out is turning EmailFlare into someone else's paid, hosted email product."
+	>
+		<a
+			href={`${site.repo}/blob/trunk/LICENSE`}
+			target="_blank"
+			rel="noopener"
+			class={buttonVariants({ size: "xl" })}
+		>
+			<Icon name="lucide:scale" />
+			Read the full license
+		</a>
+		<a
+			href={site.license.url}
+			target="_blank"
+			rel="noopener"
+			class={buttonVariants({ size: "xl", variant: "outline" })}
+		>
+			About ELv2
+		</a>
+	</PageHero>
+
+	<Section>
+		<SectionHeading
+			eyebrow="In plain words"
+			title="What you can and cannot do."
+			description="This page is a summary. The LICENSE file in the repository is the text that applies."
+		/>
+		<div class="mt-12 grid gap-5 md:grid-cols-2">
+			<Card>
+				<CardContent className="p-7">
+					<p class="text-success mb-5 font-mono text-xs tracking-wide uppercase">You can</p>
+					<ul class="space-y-3.5">
+						{can.map((c) => (
+							<li class="flex gap-3 text-[0.9375rem] leading-6">
+								<Icon name="lucide:check" class="text-success mt-1 size-4 shrink-0" />
+								{c}
+							</li>
+						))}
+					</ul>
+				</CardContent>
+			</Card>
+			<Card>
+				<CardContent className="p-7">
+					<p class="text-destructive mb-5 font-mono text-xs tracking-wide uppercase">You cannot</p>
+					<ul class="space-y-3.5">
+						{cannot.map((c) => (
+							<li class="flex gap-3 text-[0.9375rem] leading-6">
+								<Icon name="lucide:x" class="text-destructive mt-1 size-4 shrink-0" />
+								{c}
+							</li>
+						))}
+					</ul>
+				</CardContent>
+			</Card>
+		</div>
+	</Section>
+
+	<Section tone="muted" size="narrow">
+		<SectionHeading eyebrow="Good to know" title="A few details." />
+		<dl class="mt-8 space-y-7">
+			<div>
+				<dt class="font-semibold">Source-available, not open source</dt>
+				<dd class="text-muted-foreground mt-1 leading-7">
+					The license restricts offering the software as a service, so it is not an OSI-approved open source
+					license. The source is public and you can use it freely within these terms.
+				</dd>
+			</div>
+			<div>
+				<dt class="font-semibold">Earlier releases</dt>
+				<dd class="text-muted-foreground mt-1 leading-7">
+					Versions released before this change were published under the MIT License. Those copies stay
+					available under MIT for anyone who already has them.
+				</dd>
+			</div>
+			<div>
+				<dt class="font-semibold">Contributions</dt>
+				<dd class="text-muted-foreground mt-1 leading-7">
+					Contributions to the repository are licensed under the Elastic License 2.0, as the{" "}
+					<a
+						class="text-foreground underline underline-offset-4"
+						href={`${site.repo}/blob/trunk/CONTRIBUTING.md`}
+					>
+						contributing guide
+					</a>{" "}
+					says.
+				</dd>
+			</div>
+			<div>
+				<dt class="font-semibold">Not sure if your use counts?</dt>
+				<dd class="text-muted-foreground mt-1 leading-7">
+					If you plan to run EmailFlare for other organizations, or build a product on top of it, ask first.
+					Open an{" "}
+					<a class="text-foreground underline underline-offset-4" href={`${site.repo}/issues`}>
+						issue
+					</a>{" "}
+					or get in touch through{" "}
+					<a class="text-foreground underline underline-offset-4" href={site.parent.url}>
+						{site.parent.name}
+					</a>
+					.
+				</dd>
+			</div>
+		</dl>
+		<p class="text-muted-foreground mt-10 text-sm">
+			EmailFlare is a project of{" "}
+			<a class="text-foreground underline underline-offset-4" href={site.parent.url}>
+				{site.parent.name}
+			</a>
+			, built by{" "}
+			<a class="text-foreground underline underline-offset-4" href={site.author.url}>
+				{site.author.name}
+			</a>
+			.
+		</p>
+	</Section>
+</Base>

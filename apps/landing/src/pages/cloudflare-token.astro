@@ -1,713 +1,270 @@
 ---
-import Base from "../layouts/Base.astro";
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import CodeBlock from "@/components/site/CodeBlock.astro";
+import Section from "@/components/site/Section.astro";
+import SectionHeading from "@/components/site/SectionHeading.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import DocLayout from "@/components/docs/DocLayout.astro";
+import DocSection from "@/components/docs/DocSection.astro";
+import DocTable from "@/components/docs/DocTable.astro";
+import Prose from "@/components/docs/Prose.astro";
+import Callout from "@/components/docs/Callout.astro";
+import Step from "@/components/docs/Step.astro";
+
+const toc = [
+	{ id: "permissions", label: "Permissions" },
+	{ id: "create", label: "Create the token" },
+	{ id: "add", label: "Add it to the Worker" },
+	{ id: "verify", label: "Check it works" },
+	{ id: "troubleshooting", label: "Troubleshooting" },
+];
+
+const permissions = [
+	[
+		"Email Sending",
+		"Account",
+		"Edit",
+		"Sending mail through the Cloudflare API, and creating a sending subdomain for each domain you enable.",
+	],
+	["Zone", "Zone", "Read", "Listing your zones for the domain picker, and finding the zone that owns a hostname."],
+	["DNS", "Zone", "Edit", "Publishing the DNS records Email Sending asks for (SPF, DKIM and return path)."],
+	[
+		"Zone Settings",
+		"Zone",
+		"Edit",
+		"Turning on Email Routing for the zone. Cloudflare gates the enable call on this permission, not on Email Routing Rules.",
+	],
+	["Email Routing Rules", "Zone", "Edit", "Setting the zone's catch-all rule so inbound mail goes to your Worker."],
+	["Account Settings", "Account", "Read", "Optional. Lets the dashboard show your account name in the token status."],
+];
+
+const troubleshooting = [
+	[
+		"Domain setup says the token is missing a permission",
+		"One of Email Sending, Zone Read or the other permissions above is absent, or the zone is outside the token's Zone Resources.",
+		"Edit the token, compare it with the table, and include the zone under Zone Resources.",
+	],
+	[
+		"The domain is saved but inbound mail does not arrive",
+		"Zone Settings: Edit or Email Routing Rules: Edit is missing, so EmailFlare could not enable routing or set the catch-all.",
+		"Add both permissions, or set the catch-all by hand. See the [deployment guide](/cloudflare#after-deploy).",
+	],
+	[
+		"DNS records are listed for you to add manually",
+		"DNS: Edit is missing, or a record could not be written.",
+		"Add DNS: Edit to the token, or create the listed records in your DNS settings.",
+	],
+	[
+		"The domain picker is empty",
+		"Zone: Read is missing, or the token's Zone Resources exclude your domain.",
+		"Add Zone: Read and include the zone.",
+	],
+	[
+		"Token status says the token is not active",
+		"The token has expired, was rolled or was deleted.",
+		"Create a new token and set `CF_API_TOKEN` again.",
+	],
+	[
+		"Token status cannot find the account",
+		"`CF_ACCOUNT_ID` is wrong, or the token has no Account Settings: Read permission.",
+		"Check the ID. Account Settings: Read only affects the status display.",
+	],
+];
+
+const prodSecrets = `just dashboard-secret CF_API_TOKEN
+just dashboard-secret CF_ACCOUNT_ID`;
+
+const devVars = `CF_API_TOKEN=your_token_value
+CF_ACCOUNT_ID=your_account_id`;
 ---
 
 <Base
-	title="Creating your Cloudflare API token — EmailFlare"
-	description="Step-by-step guide to creating the Cloudflare API token EmailFlare needs for Email Sending, DNS, and routing — with exact permissions listed."
-	keywords="cloudflare api token emailflare, email sending cloudflare token, cloudflare email permissions, wrangler api token setup"
-	canonical="https://emailflare.dev/cloudflare-token"
-	ogUrl="https://emailflare.dev/cloudflare-token"
-	ogType="article"
-	navType="docs"
-	navTitle="CF Token"
+	title="Create a Cloudflare API token for EmailFlare"
+	description="The Cloudflare API token permissions EmailFlare needs for sending, DNS and Email Routing, with a step-by-step guide and troubleshooting."
+	path="/cloudflare-token"
 >
-	<style is:global>
-		/* ── CLOUDFLARE TOKEN PAGE ────────────────────────────────── */
-		.page-hero {
-			background: oklch(11% 0.02 230);
-			padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(1.5rem, 4vw, 2.5rem);
-			border-bottom: 1px solid oklch(22% 0.04 230 / 0.8);
-		}
+	<PageHero
+		eyebrow="Cloudflare setup"
+		title="Create the Cloudflare API token"
+		description="EmailFlare uses one API token to set up sending domains, publish DNS records, route inbound mail and send. Give it these permissions and no more."
+	>
+		<a
+			href="https://dash.cloudflare.com/profile/api-tokens"
+			target="_blank"
+			rel="noopener"
+			class={buttonVariants({ size: "xl" })}
+		>
+			Open Cloudflare API tokens
+			<Icon name="lucide:arrow-up-right" />
+		</a>
+		<a href="/cloudflare" class={buttonVariants({ size: "xl", variant: "outline" })}>
+			Deployment guide
+		</a>
+	</PageHero>
 
-		.page-badge {
-			display: inline-flex;
-			align-items: center;
-			gap: 7px;
-			background: oklch(20% 0.06 230 / 0.6);
-			color: oklch(75% 0.12 230);
-			border: 1px solid oklch(35% 0.1 230 / 0.5);
-			font-size: 12px;
-			font-weight: 500;
-			padding: 4px 13px;
-			border-radius: 100px;
-			margin-bottom: 18px;
-		}
+	<DocLayout toc={toc}>
+		<DocSection id="permissions" title="Permissions">
+			<Prose>
+				<p>
+					These are the permissions the code uses. Each row names the Cloudflare API call that needs it, so
+					you can leave out anything for a feature you will not use.
+				</p>
+			</Prose>
+			<DocTable
+				caption="Cloudflare API token permissions"
+				columns={["Permission", "Level", "Access", "Used for"]}
+				rows={permissions}
+				minWidth="min-w-[42rem]"
+			/>
+			<Callout tone="warning" title="Zone Settings: Edit is the one people miss">
+				<p>
+					Enabling Email Routing calls <code>POST /zones/&#123;id&#125;/email/routing/enable</code>.
+					Cloudflare allows that call with <strong>Zone Settings: Edit</strong>. Without it, enabling a domain
+					fails to switch routing on even though the other steps work.
+				</p>
+			</Callout>
+		</DocSection>
 
-		.page-hero h1 {
-			font-family: var(--font-display);
-			font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-			font-weight: 400;
-			line-height: 1.15;
-			letter-spacing: -0.025em;
-			color: oklch(95% 0.008 58);
-			margin-bottom: 14px;
-		}
-
-		.page-hero-sub {
-			font-size: 1rem;
-			color: oklch(58% 0.01 58);
-			line-height: 1.7;
-			max-width: 600px;
-		}
-
-		.page-hero code {
-			background: oklch(20% 0.04 230) !important;
-			color: oklch(80% 0.08 230) !important;
-			border-color: oklch(30% 0.06 230) !important;
-		}
-
-		/* ── GUIDE LAYOUT ─────────────────────────────────────────── */
-		.guide-wrap {
-			padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(3rem, 6vw, 5rem);
-		}
-
-		.guide-inner {
-			display: flex;
-			flex-direction: column;
-			gap: 0;
-		}
-
-		/* ── STEP ─────────────────────────────────────────────────── */
-		.step {
-			display: grid;
-			grid-template-columns: 48px 1fr;
-			gap: 0 20px;
-			position: relative;
-			margin-bottom: 24px;
-		}
-
-		.step:not(:last-child)::before {
-			content: "";
-			position: absolute;
-			left: 23px;
-			top: 44px;
-			bottom: -24px;
-			width: 2px;
-			background: var(--border);
-		}
-
-		.step-num {
-			width: 36px;
-			height: 36px;
-			border-radius: 50%;
-			background: var(--bg-card);
-			border: 1.5px solid var(--border-strong);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			font-size: 13px;
-			font-weight: 600;
-			color: var(--text-muted);
-			flex-shrink: 0;
-			z-index: 1;
-		}
-
-		.step-body {
-			background: var(--bg-card);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-lg);
-			padding: 20px 22px;
-		}
-
-		.step-body h3 {
-			font-size: 0.9375rem;
-			font-weight: 600;
-			margin-bottom: 10px;
-		}
-
-		.step-body p {
-			font-size: 0.875rem;
-			color: var(--text-muted);
-			line-height: 1.7;
-			margin-bottom: 12px;
-		}
-
-		.step-body p:last-child {
-			margin-bottom: 0;
-		}
-
-		.step-body a.inline-link {
-			color: var(--orange);
-			text-decoration: none;
-		}
-		.step-body a.inline-link:hover {
-			text-decoration: underline;
-		}
-
-		/* ── INLINE CODE ──────────────────────────────────────────── */
-		.step-body code {
-			font-family: var(--font-mono);
-			font-size: 12px;
-			background: oklch(93% 0.006 60);
-			border: 1px solid var(--border-strong);
-			padding: 1px 5px;
-			border-radius: 4px;
-			color: var(--orange-dark);
-		}
-
-		/* ── PERMISSIONS TABLE ────────────────────────────────────── */
-		.perm-table {
-			width: 100%;
-			border-collapse: collapse;
-			margin: 14px 0;
-			font-size: 13px;
-		}
-		.perm-table th {
-			text-align: left;
-			padding: 8px 12px;
-			font-size: 11px;
-			font-weight: 600;
-			letter-spacing: 0.06em;
-			text-transform: uppercase;
-			color: var(--text-muted);
-			border-bottom: 1px solid var(--border);
-			background: var(--bg-alt);
-		}
-		.perm-table td {
-			padding: 9px 12px;
-			border-bottom: 1px solid var(--border);
-			color: var(--text);
-			vertical-align: middle;
-		}
-		.perm-table tr:last-child td {
-			border-bottom: none;
-		}
-		.perm-table code {
-			font-family: var(--font-mono);
-			font-size: 11.5px;
-			background: var(--orange-light);
-			border: 1px solid var(--orange-mid);
-			color: var(--orange-dark);
-			padding: 1px 5px;
-			border-radius: 4px;
-			white-space: nowrap;
-		}
-		.perm-access {
-			font-size: 12px;
-			font-weight: 500;
-			color: var(--text-muted);
-		}
-
-		/* ── RESOURCE MOCKUP ──────────────────────────────────────── */
-		.resource-mockup {
-			background: var(--bg-alt);
-			border: 1px solid var(--border);
-			border-radius: var(--radius);
-			padding: 14px 16px;
-			margin: 14px 0;
-			font-family: var(--font-mono);
-			font-size: 12.5px;
-			line-height: 1.9;
-		}
-
-		.rm-label {
-			font-family: var(--font-sans);
-			font-size: 11px;
-			font-weight: 600;
-			letter-spacing: 0.07em;
-			text-transform: uppercase;
-			color: var(--text-muted);
-			margin-bottom: 8px;
-		}
-		.rm-row {
-			display: flex;
-			align-items: center;
-			gap: 12px;
-		}
-		.rm-key {
-			color: var(--text-muted);
-			min-width: 80px;
-		}
-		.rm-arrow {
-			color: oklch(72% 0.04 58);
-		}
-		.rm-val {
-			color: var(--text);
-		}
-
-		/* ── INFO / WARNING BOXES ─────────────────────────────────── */
-		.info-box {
-			display: flex;
-			gap: 10px;
-			align-items: flex-start;
-			padding: 13px 16px;
-			border-radius: var(--radius);
-			font-size: 0.85rem;
-			line-height: 1.65;
-			margin: 12px 0;
-		}
-
-		.info-tip {
-			background: oklch(95% 0.012 150);
-			border: 1px solid oklch(82% 0.08 150);
-			color: oklch(36% 0.1 150);
-		}
-
-		.info-warn {
-			background: oklch(96% 0.016 80);
-			border: 1px solid oklch(82% 0.1 80);
-			color: oklch(42% 0.12 60);
-		}
-
-		.info-box-icon {
-			font-size: 14px;
-			flex-shrink: 0;
-		}
-
-		pre.env-block,
-		.env-block {
-			background: var(--bg-alt);
-			border: 1px solid var(--border);
-			border-radius: var(--radius);
-			padding: 14px 18px;
-			font-family: var(--font-mono);
-			font-size: 12.5px;
-			line-height: 1.9;
-			margin: 12px 0;
-			white-space: pre;
-		}
-
-		.env-block code {
-			background: transparent !important;
-			border: none !important;
-			padding: 0 !important;
-			border-radius: 0 !important;
-			color: inherit !important;
-			font-size: inherit !important;
-			line-height: inherit !important;
-			font-family: inherit !important;
-		}
-
-		.ev-key {
-			color: oklch(58% 0.13 165);
-		}
-		.ev-val {
-			color: oklch(62% 0.12 48);
-		}
-		.ev-cmt {
-			color: var(--text-muted);
-			font-style: italic;
-		}
-
-		/* ── WHAT'S NEXT ──────────────────────────────────────────── */
-		.next-section {
-			background: var(--bg-alt);
-			border-top: 1px solid var(--border);
-			padding: clamp(2.5rem, 6vw, 4rem) 0;
-		}
-
-		.next-cards {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-			gap: 16px;
-			margin-top: 28px;
-		}
-
-		.next-card {
-			background: var(--bg-card);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-lg);
-			padding: 20px 22px;
-			text-decoration: none;
-			color: var(--text);
-			transition: border-color 0.15s;
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-		}
-
-		.next-card:hover {
-			border-color: var(--border-strong);
-		}
-		.next-card .nc-label {
-			font-size: 11px;
-			font-weight: 600;
-			letter-spacing: 0.08em;
-			text-transform: uppercase;
-			color: var(--orange);
-		}
-		.next-card h3 {
-			font-size: 0.9375rem;
-			font-weight: 600;
-		}
-		.next-card p {
-			font-size: 0.875rem;
-			color: var(--text-muted);
-			line-height: 1.6;
-		}
-	</style>
-
-	<!-- HERO -->
-	<div class="page-hero">
-		<div class="container-narrow">
-			<div class="page-badge">Cloudflare Setup</div>
-			<h1>Creating your Cloudflare API token</h1>
-			<p class="page-hero-sub">
-				EmailFlare needs a Cloudflare API token with specific Email Sending, DNS, and routing permissions. This
-				guide walks through every step — from the API Tokens page to your{" "}
-				<code style="font-family:var(--font-mono);font-size:13px;background:oklch(93% 0.006 60);border:1px solid var(--border-strong);padding:1px 5px;border-radius:4px;">
-					.env.local
-				</code>{" "}
-				file.
-			</p>
-		</div>
-	</div>
-
-	<!-- GUIDE -->
-	<div class="guide-wrap">
-		<div class="container-narrow">
-			<div class="guide-inner">
-				<!-- STEP 1 -->
-				<div class="step">
-					<div class="step-num">1</div>
-					<div class="step-body">
-						<h3>Open the API Tokens page</h3>
+		<DocSection id="create" title="Create the token">
+			<ol class="list-none">
+				<Step n={1} title="Open the API Tokens page">
+					<Prose>
 						<p>
 							Go to{" "}
-							<a
-								class="inline-link"
-								href="https://dash.cloudflare.com/profile/api-tokens"
-								target="_blank"
-								rel="noopener"
-							>
+							<a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">
 								dash.cloudflare.com/profile/api-tokens
 							</a>
-							. Click <strong>Create Token</strong> and choose <strong>Create Custom Token</strong> at the
-							bottom of the template list.
+							, select <strong>Create Token</strong>, then choose <strong>Create Custom Token</strong> at
+							the bottom of the template list.
 						</p>
-					</div>
-				</div>
-
-				<!-- STEP 2 -->
-				<div class="step">
-					<div class="step-num">2</div>
-					<div class="step-body">
-						<h3>Name the token</h3>
+					</Prose>
+				</Step>
+				<Step n={2} title="Name the token">
+					<Prose>
 						<p>
-							Give it a descriptive name so you can identify it later — for example{" "}
-							<code>emailflare-deploy</code> or <code>emailflare-prod</code>.
+							Use a name you will recognise later, such as <code>emailflare-production</code>.
 						</p>
-					</div>
-				</div>
-
-				<!-- STEP 3 -->
-				<div class="step">
-					<div class="step-num">3</div>
-					<div class="step-body">
-						<h3>Add permissions</h3>
+					</Prose>
+				</Step>
+				<Step n={3} title="Add the permissions">
+					<Prose>
 						<p>
-							Under <strong>Permissions</strong>, add each row in the table below. For each permission,
-							you select the resource type and the access level from dropdowns.
+							Under <strong>Permissions</strong>, add one row for each permission in the table above. Pick
+							the level (Account or Zone), the permission, then the access.
 						</p>
-
-						<table class="perm-table">
-							<thead>
-								<tr>
-									<th>Permission</th>
-									<th>Scope</th>
-									<th>Access</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td>
-										<code>Email Sending</code>
-									</td>
-									<td>Account</td>
-									<td>
-										<span class="perm-access">Edit</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>Email Security</code>
-									</td>
-									<td>Account</td>
-									<td>
-										<span class="perm-access">Edit</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>Workers Scripts</code>
-									</td>
-									<td>Account</td>
-									<td>
-										<span class="perm-access">Edit</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>Access: Users</code>
-									</td>
-									<td>Account</td>
-									<td>
-										<span class="perm-access">Read</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>Account Settings</code>
-									</td>
-									<td>Account</td>
-									<td>
-										<span class="perm-access">Read</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>Email Routing Rules</code>
-									</td>
-									<td>Zone</td>
-									<td>
-										<span class="perm-access">Edit</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>Zone</code>
-									</td>
-									<td>Zone</td>
-									<td>
-										<span class="perm-access">Read</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>Zone Settings</code>
-									</td>
-									<td>Zone</td>
-									<td>
-										<span class="perm-access">Edit</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<code>DNS</code>
-									</td>
-									<td>Zone</td>
-									<td>
-										<span class="perm-access">Edit</span>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-
-						<div class="info-box info-warn">
-							<span class="info-box-icon">⚠️</span>
-							<span>
-								<strong>Zone Settings: Edit is the one most people miss.</strong>
-								Enabling Email Routing (<code>POST /zones/&#123;id&#125;/email/routing/enable</code>) is
-								gated by <strong>Zone Settings: Edit</strong> — <em>not</em> by "Email Routing Rules".
-								There is no obvious "Email Routing" entry in the permission list, so without Zone
-								Settings: Edit the enable step fails with an authentication error even though everything
-								else works.
-							</span>
-						</div>
-
-						<div class="info-box info-tip">
-							<span class="info-box-icon">💡</span>
-							<span>
-								<strong>Zone Read</strong> is required for the domain picker. Without it, Workspace
-								cannot list zones.
-								<strong>Email Routing Rules (Zone · Edit)</strong> and{" "}
-								<strong>Zone Settings (Zone · Edit)</strong>
-								let Enable write the catch-all. Without them, Enable still saves the domain and shows
-								the rule to add by hand.
-								<br />
-								<br />
-								<strong>DNS Edit</strong> is only needed if EmailFlare is managing your MX records
-								automatically. If you handle DNS manually, DNS Read is sufficient.
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- STEP 4 -->
-				<div class="step">
-					<div class="step-num">4</div>
-					<div class="step-body">
-						<h3>Set the resource scope</h3>
+					</Prose>
+				</Step>
+				<Step n={4} title="Set the resources">
+					<Prose>
 						<p>
-							Under <strong>Account Resources</strong>, set to your Cloudflare account. Under{" "}
-							<strong>Zone Resources</strong>, you can either include all zones or restrict to a specific
-							zone for the sending domain.
+							Under <strong>Account Resources</strong>, include your account. Under{" "}
+							<strong>Zone Resources</strong>, include only the zones you will send from and receive on. A
+							token limited to those zones does less damage if it leaks.
 						</p>
-
-						<div class="resource-mockup">
-							<div class="rm-label">Account Resources</div>
-							<div class="rm-row">
-								<span class="rm-key">Include</span>
-								<span class="rm-arrow">→</span>
-								<span class="rm-val">
-									Your Account · <em style="color:var(--text-muted);">yourname</em>
-								</span>
-							</div>
-						</div>
-
-						<div class="resource-mockup">
-							<div class="rm-label">Zone Resources</div>
-							<div class="rm-row">
-								<span class="rm-key">Include</span>
-								<span class="rm-arrow">→</span>
-								<span class="rm-val">
-									All zones from account · <em style="color:var(--text-muted);">yourname</em>
-								</span>
-							</div>
-						</div>
-
-						<div class="info-box info-tip">
-							<span class="info-box-icon">💡</span>
-							<span>
-								For production, restrict Zone Resources to only the domain(s) you use for sending — this
-								limits the blast radius if the token is ever compromised.
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- STEP 5 -->
-				<div class="step">
-					<div class="step-num">5</div>
-					<div class="step-body">
-						<h3>Create the token</h3>
+					</Prose>
+				</Step>
+				<Step n={5} title="Create it and copy the value">
+					<Prose>
 						<p>
-							Click <strong>Continue to summary</strong>, review the permissions, then click{" "}
-							<strong>Create Token</strong>. Cloudflare will show you the token value once — copy it
-							immediately.
+							Select <strong>Continue to summary</strong>, check the list, then{" "}
+							<strong>Create Token</strong>. Cloudflare shows the token once. Copy it into a password
+							manager before you leave the page.
 						</p>
-						<div class="info-box info-warn">
-							<span class="info-box-icon">⚠️</span>
-							<span>
-								You will not be able to see this token value again after leaving the page. Copy it now
-								and store it securely — a password manager is ideal.
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- STEP 6 -->
-				<div class="step">
-					<div class="step-num">6</div>
-					<div class="step-body">
-						<h3>Find your Account ID</h3>
+					</Prose>
+				</Step>
+				<Step n={6} title="Find your account ID">
+					<Prose>
 						<p>
-							Go to{" "}
-							<a class="inline-link" href="https://dash.cloudflare.com" target="_blank" rel="noopener">
-								dash.cloudflare.com
-							</a>
-							, click any domain, and look at the right sidebar under <strong>API</strong>. Your Account
-							ID is a 32-character hex string.
+							In the Cloudflare dashboard, open <strong>Workers &amp; Pages</strong>. The{" "}
+							<strong>Account ID</strong> is a 32-character hex string in the sidebar. It also appears in
+							the dashboard URL after <code>dash.cloudflare.com/</code>.
 						</p>
-						<div class="info-box info-tip">
-							<span class="info-box-icon">💡</span>
-							<span>
-								You can also find your Account ID in the URL when you're on the Cloudflare dashboard:{" "}
-								<code>
-									dash.cloudflare.com/
-									<strong style="color:var(--orange-dark);">&lt;account-id&gt;</strong>/…
-								</code>
-							</span>
-						</div>
-					</div>
-				</div>
+					</Prose>
+				</Step>
+			</ol>
+		</DocSection>
 
-				<!-- STEP 7 -->
-				<div class="step">
-					<div class="step-num">7</div>
-					<div class="step-body">
-						<h3>Add credentials to your Worker</h3>
-						<p>
-							For production deployment, set Worker secrets using Wrangler. For local development with
-							Miniflare, add them to <code>apps/dashboard/.dev.vars</code>.
+		<DocSection id="add" title="Add it to the Worker">
+			<Prose>
+				<p>
+					Both values are secrets. For a deployed Worker, set them with the just recipe or{" "}
+					<code>wrangler secret put</code>:
+				</p>
+			</Prose>
+			<CodeBlock code={prodSecrets} title="Production" />
+			<Prose>
+				<p>
+					For local development, put them in <code>apps/dashboard/.dev.vars</code>, which is gitignored:
+				</p>
+			</Prose>
+			<CodeBlock code={devVars} lang="text" title="apps/dashboard/.dev.vars" />
+			<Callout>
+				<p>
+					Never commit the token or put it in a Wrangler config file. If it leaks, roll it from the API Tokens
+					page and set the secret again.
+				</p>
+			</Callout>
+		</DocSection>
+
+		<DocSection id="verify" title="Check it works">
+			<Prose>
+				<p>
+					After the Worker has both secrets, the dashboard checks the token with Cloudflare and reports
+					whether it is active and which account it belongs to. Then enable a domain. If a permission is
+					missing, the dashboard says so and shows what is left to do by hand.
+				</p>
+			</Prose>
+		</DocSection>
+
+		<DocSection id="troubleshooting" title="Troubleshooting">
+			<DocTable
+				caption="Token problems and fixes"
+				columns={["Symptom", "Cause", "Fix"]}
+				rows={troubleshooting}
+				minWidth="min-w-[44rem]"
+			/>
+		</DocSection>
+	</DocLayout>
+
+	<Section tone="muted" class="py-16 md:py-20">
+		<SectionHeading eyebrow="Next" title="Keep going." />
+		<div class="mt-8 grid gap-5 md:grid-cols-3">
+			<a href="/cloudflare" class="group block">
+				<Card className="group-hover:ring-primary/50 h-full transition-shadow">
+					<CardContent className="px-6 py-2">
+						<Icon name="lucide:cloud-upload" class="text-primary mb-4 size-6" />
+						<h3 class="text-lg font-semibold">Deploy the Worker</h3>
+						<p class="text-muted-foreground mt-2 text-sm leading-6">
+							Bindings, secrets and the Workers Builds settings.
 						</p>
-
-						<p>
-							<strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">
-								Production (Wrangler secrets)
-							</strong>
-						</p>
-						<pre class="env-block"><code><span class="ev-cmt"># Using just recipe:</span>
-<span class="ev-key">just dashboard-secret CF_API_TOKEN</span>
-<span class="ev-key">just dashboard-secret CF_ACCOUNT_ID</span></code></pre>
-
-						<p>
-							<strong style="font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted);">
-								Local Development (apps/dashboard/.dev.vars)
-							</strong>
-						</p>
-						<pre class="env-block"><code><span class="ev-key">CF_API_TOKEN</span>=<span class="ev-val">your_token_value_here</span>
-<span class="ev-key">CF_ACCOUNT_ID</span>=<span class="ev-val">your_32_char_account_id</span></code></pre>
-
-						<div class="info-box info-tip">
-							<span class="info-box-icon">✅</span>
-							<span>
-								That's it. Run <code>just dashboard-deploy</code> to deploy or{" "}
-								<code>just dashboard-dev</code> for local testing — EmailFlare will use these
-								credentials for all Cloudflare Email Sending and Routing operations.
-							</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- WHAT'S NEXT -->
-	<section class="next-section">
-		<div class="container">
-			<h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">
-				Continue setting up EmailFlare
-			</h2>
-			<p style="font-size:0.9rem;color:var(--text-muted);">Next steps after creating your API token.</p>
-			<div class="next-cards">
-				<a class="next-card" href="/cloudflare">
-					<span class="nc-label">Deploy</span>
-					<h3>Deploy to Cloudflare Workers</h3>
-					<p>
-						Use your new API token to deploy EmailFlare to the edge. One-command setup with D1, KV, and the
-						Workspace.
-					</p>
-				</a>
-				<a class="next-card" href="/docs">
-					<span class="nc-label">API Reference</span>
-					<h3>Read the API docs</h3>
-					<p>
-						The complete reference for <code>/v1/send</code>, authentication, templates, error codes, and
-						troubleshooting.
-					</p>
-				</a>
-				<a
-					class="next-card"
-					href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md"
-					target="_blank"
-					rel="noopener"
-				>
-					<span class="nc-label">Security</span>
-					<h3>Security policy</h3>
-					<p>
-						How to responsibly report vulnerabilities and the security practices that protect EmailFlare
-						deployments.
-					</p>
-				</a>
-			</div>
-		</div>
-	</section>
-
-	<ul slot="footer-links" class="footer-links">
-		<li>
-			<a href="/">Home</a>
-		</li>
-		<li>
-			<a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
-				GitHub
+					</CardContent>
+				</Card>
 			</a>
-		</li>
-		<li>
-			<a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">
-				Security
+			<a href="/docs" class="group block">
+				<Card className="group-hover:ring-primary/50 h-full transition-shadow">
+					<CardContent className="px-6 py-2">
+						<Icon name="lucide:book-open" class="text-primary mb-4 size-6" />
+						<h3 class="text-lg font-semibold">Read the docs</h3>
+						<p class="text-muted-foreground mt-2 text-sm leading-6">
+							The send API, templates, keys and error codes.
+						</p>
+					</CardContent>
+				</Card>
 			</a>
-		</li>
-	</ul>
+			<a href="/security" class="group block">
+				<Card className="group-hover:ring-primary/50 h-full transition-shadow">
+					<CardContent className="px-6 py-2">
+						<Icon name="lucide:shield-check" class="text-primary mb-4 size-6" />
+						<h3 class="text-lg font-semibold">Security</h3>
+						<p class="text-muted-foreground mt-2 text-sm leading-6">
+							What you are responsible for when you self-host.
+						</p>
+					</CardContent>
+				</Card>
+			</a>
+		</div>
+	</Section>
 </Base>

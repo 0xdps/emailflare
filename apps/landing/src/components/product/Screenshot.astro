@@ -1,0 +1,34 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+	/** Base name in /shots, e.g. "inbox" for inbox-light.webp and inbox-dark.webp */
+	file: string;
+	alt: string;
+	/** Perforated stamp frame (hero shots) or a plain bordered frame */
+	frame?: "stamp" | "plain";
+	loading?: "eager" | "lazy";
+	class?: string;
+}
+const { file, alt, frame = "stamp", loading = "lazy", class: className } = Astro.props;
+const img = "border-border w-full rounded-sm border";
+---
+
+<div class={cn(frame === "stamp" ? "stamp" : "shadow-stamp bg-card rounded-xl p-2", className)}>
+	<img
+		src={`/shots/${file}-light.webp`}
+		alt={alt}
+		width="1800"
+		height="1125"
+		loading={loading}
+		class={cn(img, "block dark:hidden")}
+	/>
+	<img
+		src={`/shots/${file}-dark.webp`}
+		alt={alt}
+		width="1800"
+		height="1125"
+		loading={loading}
+		class={cn(img, "hidden dark:block")}
+	/>
+</div>

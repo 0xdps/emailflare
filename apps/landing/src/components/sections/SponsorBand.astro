@@ -1,0 +1,92 @@
+---
+import { Icon } from "astro-icon/components";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { site } from "@/lib/site";
+import Section from "@/components/site/Section.astro";
+import SectionHeading from "@/components/site/SectionHeading.astro";
+
+interface Props {
+	compact?: boolean;
+}
+const { compact } = Astro.props;
+
+const funds = [
+	{
+		icon: "lucide:shield-check",
+		title: "Security fixes",
+		body: "Triage and patch reports quickly, with advisories.",
+	},
+	{
+		icon: "lucide:wrench",
+		title: "Maintenance",
+		body: "Keep dependencies, migrations and the Cloudflare integration current.",
+	},
+	{ icon: "lucide:book-open", title: "Docs and templates", body: "More recipes, more layouts, clearer guides." },
+];
+---
+
+<Section id="sponsor" tone="muted">
+	<div class="grid items-center gap-12 lg:grid-cols-[1fr_minmax(0,26rem)]">
+		<div>
+			<SectionHeading
+				eyebrow="Support the project"
+				title="Free to self-host. Sponsored by people who use it."
+				description="EmailFlare has no paid tier and no hosted upsell. If it replaces a monthly bill for you or your team, a small sponsorship is what keeps it maintained."
+			/>
+			{!compact && (
+				<ul class="mt-8 grid gap-5 sm:grid-cols-3">
+					{funds.map((f) => (
+						<li>
+							<Icon name={f.icon} class="text-primary mb-3 size-5" />
+							<p class="font-medium">{f.title}</p>
+							<p class="text-muted-foreground mt-1 text-sm leading-6">{f.body}</p>
+						</li>
+					))}
+				</ul>
+			)}
+		</div>
+		<Card className="shadow-stamp">
+			<CardContent className="flex flex-col gap-3 p-6">
+				<p class="font-display mb-2 text-xl font-semibold">Pick what suits you</p>
+				<a
+					href={site.sponsors}
+					target="_blank"
+					rel="noopener"
+					class={cn(buttonVariants({ size: "xl" }), "w-full justify-between")}
+				>
+					<span class="inline-flex items-center gap-2">
+						<Icon name="lucide:heart" /> Sponsor on GitHub
+					</span>
+					<Icon name="lucide:arrow-up-right" />
+				</a>
+				<a
+					href={site.coffee}
+					target="_blank"
+					rel="noopener"
+					class={cn(buttonVariants({ size: "xl", variant: "outline" }), "w-full justify-between")}
+				>
+					<span class="inline-flex items-center gap-2">
+						<Icon name="lucide:coffee" /> Buy me a coffee
+					</span>
+					<Icon name="lucide:arrow-up-right" />
+				</a>
+				<a
+					href={site.repo}
+					target="_blank"
+					rel="noopener"
+					class={cn(buttonVariants({ size: "xl", variant: "ghost" }), "w-full justify-between")}
+				>
+					<span class="inline-flex items-center gap-2">
+						<Icon name="lucide:star" /> Star the repository
+					</span>
+					<Icon name="lucide:arrow-up-right" />
+				</a>
+				<p class="text-muted-foreground mt-1 text-xs leading-5">
+					Can't sponsor? Reporting bugs, sharing a recipe or telling a teammate helps just as much.
+				</p>
+			</CardContent>
+		</Card>
+	</div>
+</Section>

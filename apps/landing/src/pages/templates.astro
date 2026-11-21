@@ -1,807 +1,264 @@
 ---
-import Base from "../layouts/Base.astro";
-const samples = [
-	"<p>Hi {{name}},</p>\n<p>Order <strong>{{orderId}}</strong> is on its way.</p>",
-	'{\n  "to": "alex@example.com",\n  "templateSlug": "order-confirmation",\n  "variables": { "name": "Alex", "orderId": "ORD-1042" }\n}',
-	"{{#if items}}\n  <ul>\n    {{#each items}}\n      <li>{{name}} — {{price}}</li>\n    {{/each}}\n  </ul>\n{{else}}\n  <p>Your cart is empty.</p>\n{{/if}}",
-	'{\n  "templateSlug": "cart-summary",\n  "variables": {\n    "items": [\n      { "name": "Widget", "price": "$9.00" },\n      { "name": "Gadget", "price": "$14.50" }\n    ]\n  }\n}',
-	'<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">\n  <h1 style="color: #f97316;">Hello {{name}}</h1>\n  <p style="color: #333; line-height: 1.6;">Your order {{orderId}} is confirmed.</p>\n',
-	'<h1 style="color: {{primaryColor}}; font-family: {{font}};">Hello {{name}}</h1>',
-	'{\n  "variables": {\n    "name": "Alex",\n    "primaryColor": "#f97316",\n    "font": "Arial, sans-serif"\n  }\n}',
-	'{{#with theme}}\n  <div style="background: {{bg}}; color: {{text}};">\n    <h1 style="color: {{primary}};">Hello {{../name}}</h1>\n  </div>\n{{/with}}',
-	'{\n  "variables": {\n    "name": "Alex",\n    "theme": { "primary": "#f97316", "bg": "#fafafa", "text": "#333" }\n  }\n}',
-	'{\n  "to": "alex@example.com",\n  "templateSlug": "welcome",\n  "variables": { "name": "Alex", "appName": "Acme" }\n}',
-	"GET    /api/templates\nGET    /api/templates/:idOrSlug\nPOST   /api/templates\nPUT    /api/templates/:id\nDELETE /api/templates/:id\nPOST   /api/templates/:id/preview",
-	'{\n  "name": "Order confirmation",\n  "slug": "order-confirmation",\n  "subject": "Your order {{orderId}} is confirmed",\n  "htmlBody": "<p>Hi {{name}},</p><p>Order {{orderId}} is confirmed.</p>",\n  "textBody": "Hi {{name}}, your order {{orderId}} is confirmed."\n}',
-	'POST https://your-emailflare.com/v1/send\nAuthorization: Bearer eflive_xxx\n\n{\n  "from": "hello@yourdomain.com",\n  "to": "alex@example.com",\n  "templateSlug": "order-confirmation",\n  "variables": { "name": "Alex", "orderId": "ORD-1042" }\n}',
+import { Icon } from "astro-icon/components";
+import Base from "@/layouts/Base.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { site } from "@/lib/site";
+import { faqJsonLd } from "@/lib/faq";
+import type { FaqItem } from "@/components/islands/Faq";
+import Section from "@/components/site/Section.astro";
+import SectionHeading from "@/components/site/SectionHeading.astro";
+import CodeBlock from "@/components/site/CodeBlock.astro";
+import PageHero from "@/components/sections/PageHero.astro";
+import CtaBand from "@/components/sections/CtaBand.astro";
+import Faq from "@/components/islands/Faq";
+import TemplateGallery from "@/components/product/TemplateGallery";
+import ShotCrop from "@/components/product/ShotCrop.astro";
+import FeatureRow from "@/components/product/FeatureRow.astro";
+import FeatureCard from "@/components/product/FeatureCard.astro";
+import SyntaxExample from "@/components/product/SyntaxExample.astro";
+import ThemeSwatches from "@/components/product/ThemeSwatches.astro";
+import Callout from "@/components/product/Callout.astro";
+import { categories, layouts, themeList } from "@/components/product/templates-data";
+import { renderSample } from "@/components/product/render-sample";
+import { breadcrumbJsonLd } from "@/components/product/jsonld";
+
+const count = layouts.length;
+
+const examples = [
+	{
+		title: "Variables",
+		body: "Put a value in double braces. Pass the values in <code>variables</code> when you send. The same variables fill the subject line.",
+		template: `<p>Hi {{name}},</p>\n<p>Order <strong>{{orderId}}</strong> is on its way.</p>`,
+		data: { name: "Alex", orderId: "ORD-1042" },
+	},
+	{
+		title: "Nested values",
+		body: "Reach into objects with dots. <code>variables</code> can hold objects as well as strings and numbers.",
+		template: `{{plan.name}} plan, renews {{plan.renewsOn}}`,
+		data: { plan: { name: "Pro", renewsOn: "Dec 1" } },
+	},
+	{
+		title: "Conditionals",
+		body: "Show a block only when a value is set, with an optional <code>else</code>. <code>unless</code> does the reverse. Empty strings, empty lists, zero and false count as not set.",
+		template: `{{#if trialDays}}\n  Your trial ends in {{trialDays}} days.\n{{else}}\n  Thanks for being a customer.\n{{/if}}`,
+		data: { trialDays: 3 },
+	},
+	{
+		title: "Missing values",
+		body: "A variable you do not send renders as nothing. It never shows as <code>{{code}}</code> to your customer, but it can leave a gap, so check the output in the playground.",
+		template: `Hi {{name}}, your code is {{code}}.`,
+		data: { name: "Alex" },
+	},
+	{
+		title: "Repeated rows",
+		body: "Build lists in your own code and pass the finished markup. The template inserts it as written.",
+		template: `<ul>{{items}}</ul>`,
+		data: { items: "<li>Widget</li><li>Gadget</li>" },
+	},
+	{
+		title: "Styling",
+		body: "Use inline CSS, which is the most reliable across mail clients. Pass colours and fonts as variables to reuse one template across brands.",
+		template: `<h1 style="color: {{brandColor}};\n           font-family: {{font}};">\n  Hello {{name}}\n</h1>`,
+		data: { name: "Alex", brandColor: "#f97316", font: "Arial, sans-serif" },
+	},
+].map((e) => ({ ...e, output: renderSample(e.template, e.data) }));
+
+const sendBySlug = `curl -X POST ${site.demoApi}/v1/send \\
+  -H "Authorization: Bearer eflive_your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "from": "hello@yourdomain.com",
+    "to": "alex@example.com",
+    "templateSlug": "welcome",
+    "themeId": "ocean",
+    "variables": {
+      "name": "Alex",
+      "appName": "Acme",
+      "loginUrl": "https://app.acme.dev/login"
+    }
+  }'`;
+
+const faq: FaqItem[] = [
+	{
+		q: "Can I edit a built-in layout?",
+		a: "No. Built-in layouts are system templates, and the app does not let you edit or delete them. For a design of your own, create a custom template.",
+	},
+	{
+		q: "Do themes apply to custom templates?",
+		a: "No. <code>themeId</code> only changes built-in layouts. Style a custom template with inline CSS, or pass colours as variables.",
+	},
+	{
+		q: "Are variables escaped?",
+		a: "No. Values are inserted exactly as you send them. If a value comes from user input, escape it before you pass it in.",
+	},
+	{
+		q: "Can I manage templates with an API key?",
+		a: "An API key can send with any template through <code>/v1/send</code>. Creating and editing templates uses the dashboard, or the <code>/api/templates</code> endpoints with a signed-in session.",
+	},
+	{
+		q: "Which Handlebars features work?",
+		a: "Variables, nested paths, <code>if</code>, <code>else</code> and <code>unless</code>. Workers cannot compile templates, so EmailFlare runs its own small interpreter instead of the Handlebars library. Loops and <code>with</code> blocks are not dependable yet.",
+	},
 ];
 ---
 
 <Base
-	title="Email templates — EmailFlare"
-	description="Create custom email templates with Handlebars variables, loops, and conditionals — or use one of 50 built-in React Email layouts with themes. Reference any template by slug from POST /v1/send."
-	keywords="emailflare templates, email template handlebars, custom email templates, react email layouts, email template variables, template slug"
-	canonical="https://emailflare.dev/templates"
-	ogUrl="https://emailflare.dev/templates"
-	ogType="article"
-	navType="docs"
-	navTitle="Templates"
+	title="Email template library and Handlebars guide"
+	description={`${count} built-in transactional email layouts with five colour themes, plus custom templates written in Handlebars. Send any of them by slug from POST /v1/send.`}
+	path="/templates"
+	jsonLd={[faqJsonLd(faq), breadcrumbJsonLd("Templates", "/templates")]}
 >
-	<style is:global>
-		/* ── TEMPLATES PAGE ───────────────────────────────────────── */
+	<PageHero
+		eyebrow="Templates"
+		title="The mail every app sends, ready to go."
+		description={`${count} built-in layouts for sign-in, security, billing and product notices, in five colour themes. Or write your own in Handlebars. Send either one by slug.`}
+	>
+		<a href="#library" class={buttonVariants({ size: "xl" })}>
+			Browse the library
+			<Icon name="lucide:arrow-down" />
+		</a>
+		<a href="/docs/send-an-email" class={buttonVariants({ size: "xl", variant: "outline" })}>
+			Send with a template
+		</a>
+	</PageHero>
 
-		/* HERO */
-		.tpl-hero {
-			background: oklch(14% 0.016 48);
-			padding: clamp(3rem, 7vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
-			overflow: hidden;
-		}
+	<Section id="library">
+		<SectionHeading
+			eyebrow="Built-in layouts"
+			title={`${count} layouts, rendered for real.`}
+			description="Every thumbnail below is the HTML the Worker produces for that layout with sample values. Pick a theme, filter by category and open one to see its variables."
+		/>
+		<div class="mt-10">
+			<TemplateGallery
+				client:visible
+				layouts={layouts}
+				categories={[...categories]}
+				themes={themeList}
+				apiHost={site.demoApi}
+			/>
+		</div>
+		<p class="text-muted-foreground mt-8 max-w-3xl text-sm leading-6">
+			The built-in layouts share one structure, so they differ in the fields they show and the words around them,
+			not in their design. They are read-only. If you want a specific look, write a custom template.
+		</p>
+	</Section>
 
-		.tpl-badge {
-			display: inline-flex;
-			align-items: center;
-			gap: 7px;
-			background: oklch(22% 0.04 48 / 0.8);
-			color: oklch(68% 0.14 55);
-			font-size: 12px;
-			font-weight: 500;
-			padding: 4px 13px;
-			border-radius: 100px;
-			border: 1px solid oklch(35% 0.08 55 / 0.5);
-			margin-bottom: 22px;
-		}
+	<Section id="kinds" tone="muted">
+		<SectionHeading
+			eyebrow="Two kinds"
+			title="Built-in layouts and your own templates."
+			description="You send both the same way. A slug in the request is all it takes."
+		/>
+		<div class="mt-12 grid gap-5 md:grid-cols-2">
+			<FeatureCard
+				icon="lucide:layout-template"
+				title={`${count} built-in layouts`}
+				body="Added to your database by a migration when you deploy, as system templates. Each one lists the variables it uses. Change the look with a theme, and send by slug, such as welcome or password-reset. They cannot be edited or deleted."
+			/>
+			<FeatureCard
+				icon="lucide:code-xml"
+				title="Custom templates"
+				body="Write your own subject, HTML body and optional plain-text body. Choose a slug of lowercase letters, numbers and hyphens, and optionally scope the template to one domain. If the slug is taken, EmailFlare adds a short suffix and tells you the final one."
+			/>
+		</div>
+	</Section>
 
-		.tpl-hero h1 {
-			font-family: var(--font-display);
-			font-size: clamp(1.875rem, 4vw, 2.75rem);
-			font-weight: 400;
-			line-height: 1.1;
-			letter-spacing: -0.025em;
-			color: oklch(95% 0.008 58);
-			margin-bottom: 16px;
-		}
-
-		.tpl-hero h1 em {
-			font-style: italic;
-			color: var(--orange);
-		}
-
-		.tpl-hero-sub {
-			font-size: 1rem;
-			color: oklch(58% 0.01 58);
-			line-height: 1.7;
-			max-width: 600px;
-		}
-
-		/* LAYOUT */
-		.tpl-layout {
-			display: grid;
-			grid-template-columns: 230px 1fr;
-			gap: 0;
-			max-width: 1100px;
-			margin: 0 auto;
-			padding: 0 24px;
-			align-items: start;
-		}
-
-		@media (max-width: 760px) {
-			.tpl-layout {
-				grid-template-columns: 1fr;
-			}
-			.tpl-sidebar {
-				display: none;
-			}
-		}
-
-		.tpl-sidebar {
-			position: sticky;
-			top: 82px;
-			padding: 32px 0 32px;
-			border-right: 1px solid var(--border);
-		}
-
-		.tpl-label {
-			font-size: 10.5px;
-			font-weight: 700;
-			letter-spacing: 0.1em;
-			text-transform: uppercase;
-			color: var(--text-muted);
-			padding: 0 16px;
-			margin-bottom: 10px;
-		}
-
-		.tpl-nav {
-			list-style: none;
-		}
-		.tpl-nav li a {
-			display: block;
-			padding: 6px 16px;
-			font-size: 13px;
-			color: var(--text-muted);
-			text-decoration: none;
-			border-left: 2px solid transparent;
-			transition:
-				color 0.12s,
-				border-color 0.12s;
-		}
-		.tpl-nav li a:hover {
-			color: var(--text);
-			border-left-color: var(--orange);
-		}
-
-		.tpl-main {
-			padding: 32px 0 56px 40px;
-		}
-		@media (max-width: 760px) {
-			.tpl-main {
-				padding: 32px 0 48px;
-			}
-		}
-
-		/* SECTION */
-		.tpl-section {
-			background: var(--bg-card);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-lg);
-			overflow: hidden;
-			margin-bottom: 14px;
-			padding: 0;
-		}
-
-		.tpl-section-header {
-			display: flex;
-			align-items: center;
-			gap: 12px;
-			padding: 18px 24px;
-			border-bottom: 1px solid var(--border);
-			background: var(--bg-alt);
-		}
-
-		.tpl-section-header h2 {
-			font-size: 1.0625rem;
-			font-weight: 600;
-			letter-spacing: -0.01em;
-			flex: 1;
-			margin: 0;
-		}
-
-		.tpl-anchor {
-			font-size: 12px;
-			color: var(--text-muted);
-			text-decoration: none;
-			font-family: var(--font-mono);
-		}
-		.tpl-anchor:hover {
-			color: var(--orange);
-		}
-
-		.tpl-body {
-			padding: 16px 20px 18px;
-		}
-		.tpl-body > p:first-child {
-			margin-top: 0;
-		}
-		.tpl-body > *:last-child {
-			margin-bottom: 0;
-		}
-
-		.tpl-body p {
-			font-size: 0.9rem;
-			color: var(--text-muted);
-			line-height: 1.75;
-			margin-bottom: 14px;
-		}
-
-		.tpl-body h3 {
-			font-size: 0.875rem;
-			font-weight: 600;
-			letter-spacing: -0.005em;
-			margin: 22px 0 12px;
-			color: var(--text);
-		}
-		.tpl-body h3:first-child {
-			margin-top: 0;
-		}
-
-		.tpl-body ul {
-			padding-left: 18px;
-			margin-bottom: 14px;
-		}
-		.tpl-body ul li {
-			font-size: 0.9rem;
-			color: var(--text-muted);
-			line-height: 1.75;
-			margin-bottom: 5px;
-		}
-		.tpl-body ul li::marker {
-			color: var(--orange);
-		}
-
-		.tpl-body code {
-			font-family: var(--font-mono);
-			font-size: 12px;
-			background: oklch(93% 0.006 60);
-			border: 1px solid var(--border-strong);
-			padding: 1px 5px;
-			border-radius: 4px;
-			color: var(--orange-dark);
-		}
-
-		/* TABLE */
-		.tpl-table-wrap {
-			overflow-x: auto;
-			margin: 14px 0;
-		}
-		.tpl-body table {
-			width: 100%;
-			border-collapse: collapse;
-			font-size: 13px;
-		}
-		.tpl-body th {
-			text-align: left;
-			padding: 9px 12px;
-			font-size: 11px;
-			font-weight: 600;
-			letter-spacing: 0.06em;
-			text-transform: uppercase;
-			color: var(--text-muted);
-			border-bottom: 1px solid var(--border);
-			background: var(--bg-alt);
-		}
-		.tpl-body td {
-			padding: 9px 12px;
-			border-bottom: 1px solid var(--border);
-			color: var(--text);
-			vertical-align: top;
-			line-height: 1.6;
-		}
-		.tpl-body tr:last-child td {
-			border-bottom: none;
-		}
-		.tpl-body td:first-child code {
-			background: var(--orange-light);
-			border-color: var(--orange-mid);
-			color: var(--orange-dark);
-		}
-
-		/* CODE BLOCK */
-		.tpl-code {
-			background: oklch(14% 0.016 48);
-			border: 1px solid oklch(24% 0.016 48);
-			border-radius: 8px;
-			padding: 12px 14px;
-			font-family: var(--font-mono);
-			font-size: 12.5px;
-			line-height: 1.65;
-			overflow-x: auto;
-			margin: 10px 0;
-			white-space: pre;
-			color: oklch(92% 0.012 70);
-		}
-		.tc-cmd {
-			color: oklch(82% 0.06 58);
-		}
-		.tc-str {
-			color: oklch(74% 0.12 140);
-		}
-		.tc-key {
-			color: oklch(78% 0.12 230);
-		}
-		.tc-punct {
-			color: oklch(62% 0.06 58);
-		}
-		.tc-cmt {
-			color: oklch(44% 0.01 58);
-			font-style: italic;
-		}
-		.tc-plain {
-			color: oklch(75% 0.01 58);
-		}
-
-		/* CALLOUT */
-		.tpl-callout {
-			display: flex;
-			gap: 11px;
-			align-items: flex-start;
-			padding: 13px 16px;
-			border-radius: var(--radius);
-			font-size: 0.875rem;
-			line-height: 1.65;
-			margin: 16px 0;
-		}
-		.tpl-callout-icon {
-			font-size: 15px;
-			flex-shrink: 0;
-		}
-		.tpl-callout-orange {
-			background: var(--orange-light);
-			border: 1px solid var(--orange-mid);
-			color: var(--orange-dark);
-		}
-		.tpl-callout-green {
-			background: oklch(95% 0.012 150);
-			border: 1px solid oklch(82% 0.08 150);
-			color: oklch(36% 0.1 150);
-		}
-
-		/* THEME CHIPS */
-		.tpl-themes {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 8px;
-			margin: 12px 0;
-		}
-		.tpl-theme-chip {
-			display: inline-flex;
-			align-items: center;
-			gap: 7px;
-			background: var(--bg-alt);
-			border: 1px solid var(--border);
-			border-radius: 100px;
-			padding: 5px 14px;
-			font-size: 13px;
-		}
-		.tpl-theme-dot {
-			width: 10px;
-			height: 10px;
-			border-radius: 50%;
-			flex-shrink: 0;
-		}
-
-		/* NEXT CARDS */
-		.tpl-next {
-			background: var(--bg-alt);
-			border-top: 1px solid var(--border);
-			padding: clamp(2.5rem, 6vw, 4rem) 0;
-		}
-		.tpl-next-cards {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-			gap: 16px;
-			margin-top: 28px;
-		}
-		.tpl-next-card {
-			background: var(--bg-card);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-lg);
-			padding: 20px 22px;
-			text-decoration: none;
-			color: var(--text);
-			transition: border-color 0.15s;
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-		}
-		.tpl-next-card:hover {
-			border-color: var(--border-strong);
-		}
-		.tpl-next-card .nc-label {
-			font-size: 11px;
-			font-weight: 600;
-			letter-spacing: 0.08em;
-			text-transform: uppercase;
-			color: var(--orange);
-		}
-		.tpl-next-card h3 {
-			font-size: 0.9375rem;
-			font-weight: 600;
-		}
-		.tpl-next-card p {
-			font-size: 0.875rem;
-			color: var(--text-muted);
-			line-height: 1.6;
-		}
-	</style>
-
-	<!-- HERO -->
-	<div class="tpl-hero">
-		<div class="container">
-			<div class="tpl-badge">Templates</div>
-			<h1>
-				Email templates with <em>Handlebars</em>,<br />
-				or one of 50 built-in layouts.
-			</h1>
-			<p class="tpl-hero-sub">
-				Store custom templates with variables, loops, and conditionals — or reference a React Email layout and
-				switch themes per send. Every template is sent by
-				<code style="font-family:var(--font-mono);font-size:12px;background:oklch(24% 0.03 48);border:1px solid oklch(32% 0.02 48);color:oklch(74% 0.1 55);padding:1px 5px;border-radius:4px;">
-					templateSlug
-				</code>
-				.
+	<Section id="syntax">
+		<SectionHeading
+			eyebrow="Handlebars guide"
+			title="The syntax, with real output."
+			description="Each result below was produced by the same renderer your Worker runs, when this page was built."
+		/>
+		<div class="divide-border mt-12 space-y-12 divide-y">
+			{examples.map((e, i) => (
+				<div class={i > 0 ? "pt-12" : ""}>
+					<SyntaxExample
+						title={e.title}
+						body={e.body}
+						template={e.template}
+						data={e.data}
+						output={e.output}
+					/>
+				</div>
+			))}
+		</div>
+		<Callout title="What this is, and is not" icon="lucide:triangle-alert" class="mt-14">
+			<p>
+				Cloudflare Workers cannot compile templates at runtime, so EmailFlare uses a small Handlebars-compatible
+				interpreter instead of the Handlebars library. It supports the pieces above, plus <code>unless</code>.
 			</p>
+			<p>
+				Loops (<code>each</code>) and <code>with</code> blocks are not dependable yet, so build repeated markup
+				in your code. Values are not HTML-escaped, so escape anything a user typed before you send it.
+			</p>
+		</Callout>
+	</Section>
+
+	<Section id="themes" tone="muted">
+		<SectionHeading
+			eyebrow="Themes"
+			title="Five colour themes for the built-in layouts."
+			description="Set themeId on the request. The theme changes the accent, background and text colours, and nothing else."
+		/>
+		<div class="mt-10">
+			<ThemeSwatches themes={themeList} />
 		</div>
-	</div>
+	</Section>
 
-	<!-- LAYOUT -->
-	<div style="border-bottom: 1px solid var(--border);">
-		<div class="tpl-layout">
-			<!-- SIDEBAR -->
-			<aside class="tpl-sidebar">
-				<div class="tpl-label">On this page</div>
-				<ul class="tpl-nav">
-					<li>
-						<a href="#custom">Custom templates</a>
-					</li>
-					<li>
-						<a href="#variables">Variables</a>
-					</li>
-					<li>
-						<a href="#logic">Loops &amp; conditionals</a>
-					</li>
-					<li>
-						<a href="#styling">Styling</a>
-					</li>
-					<li>
-						<a href="#layouts">Built-in layouts</a>
-					</li>
-					<li>
-						<a href="#managing">Managing templates</a>
-					</li>
-					<li>
-						<a href="#sending">Sending with a template</a>
-					</li>
-				</ul>
-			</aside>
-
-			<!-- MAIN -->
-			<main class="tpl-main">
-				<!-- CUSTOM -->
-				<section class="tpl-section" id="custom">
-					<div class="tpl-section-header">
-						<h2>Custom templates</h2>
-						<a class="tpl-anchor" href="#custom">
-							#custom
-						</a>
-					</div>
-					<div class="tpl-body">
-						<p>
-							A custom template is an HTML body (with an optional plain-text fallback) that you create and
-							store. Reference it by its <code>slug</code>.
-						</p>
-
-						<div class="tpl-table-wrap">
-							<table>
-								<thead>
-									<tr>
-										<th>Field</th>
-										<th>Required</th>
-										<th>Notes</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>
-											<code>name</code>
-										</td>
-										<td>✅</td>
-										<td>Label shown in the UI.</td>
-									</tr>
-									<tr>
-										<td>
-											<code>slug</code>
-										</td>
-										<td>✅</td>
-										<td>
-											Stable identifier used by <code>templateSlug</code>. Lowercase letters,
-											numbers, hyphens.
-										</td>
-									</tr>
-									<tr>
-										<td>
-											<code>subject</code>
-										</td>
-										<td>✅</td>
-										<td>May contain Handlebars placeholders.</td>
-									</tr>
-									<tr>
-										<td>
-											<code>htmlBody</code>
-										</td>
-										<td>✅</td>
-										<td>The HTML body with Handlebars placeholders.</td>
-									</tr>
-									<tr>
-										<td>
-											<code>textBody</code>
-										</td>
-										<td>—</td>
-										<td>Optional plain-text fallback.</td>
-									</tr>
-									<tr>
-										<td>
-											<code>domainId</code>
-										</td>
-										<td>—</td>
-										<td>Optionally scope the template to a domain.</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-
-						<div class="tpl-callout tpl-callout-orange">
-							<span class="tpl-callout-icon">⚡</span>
-							<span>
-								<strong>Slugs are mandatory.</strong> If the slug you pick already exists, EmailFlare
-								appends a short suffix to keep it unique — always read the create response for the final
-								slug.
-							</span>
-						</div>
-					</div>
-				</section>
-
-				<!-- VARIABLES -->
-				<section class="tpl-section" id="variables">
-					<div class="tpl-section-header">
-						<h2>Variables</h2>
-						<a class="tpl-anchor" href="#variables">
-							#variables
-						</a>
-					</div>
-					<div class="tpl-body">
-						<p>
-							Insert values with double curly braces, then pass them via <code>variables</code> on{" "}
-							<code>/v1/send</code>:
-						</p>
-
-						<pre class="tpl-code">{samples[0]}</pre>
-
-						<pre class="tpl-code">{samples[1]}</pre>
-
-						<div class="tpl-callout tpl-callout-green">
-							<span class="tpl-callout-icon">💡</span>
-							<span>
-								If a variable is missing from the payload, it renders as an{" "}
-								<strong>empty string</strong> — not as a literal{" "}
-								<code>&#123;&#123;name&#125;&#125;</code> placeholder.
-							</span>
-						</div>
-					</div>
-				</section>
-
-				<!-- LOOPS & CONDITIONALS -->
-				<section class="tpl-section" id="logic">
-					<div class="tpl-section-header">
-						<h2>Loops &amp; conditionals</h2>
-						<a class="tpl-anchor" href="#logic">
-							#logic
-						</a>
-					</div>
-					<div class="tpl-body">
-						<p>
-							Custom templates render with{" "}
-							<a
-								href="https://handlebarsjs.com/"
-								target="_blank"
-								rel="noopener"
-								style="color:var(--orange);text-decoration:none;"
-							>
-								Handlebars
-							</a>
-							, so the full block syntax is available:
-						</p>
-
-						<pre class="tpl-code">{samples[2]}</pre>
-
-						<p>
-							<code>variables</code> accepts nested objects and arrays, so the example above works with:
-						</p>
-
-						<pre class="tpl-code">{samples[3]}</pre>
-
-						<p>
-							Built-in helpers (<code>&#123;&#123;#unless&#125;&#125;</code>,{" "}
-							<code>&#123;&#123;#with&#125;&#125;</code>, …) are all available.
-						</p>
-					</div>
-				</section>
-
-				<!-- STYLING -->
-				<section class="tpl-section" id="styling">
-					<div class="tpl-section-header">
-						<h2>Styling</h2>
-						<a class="tpl-anchor" href="#styling">
-							#styling
-						</a>
-					</div>
-					<div class="tpl-body">
-						<p>
-							Custom templates use <strong>inline CSS</strong> — write styles directly in the HTML body.
-							This is the standard approach for HTML email and the most reliable across email clients:
-						</p>
-
-						<pre class="tpl-code">{samples[4]}</pre>
-
-						<p>
-							There is no separate theme system for custom templates — <code>themeId</code> on{" "}
-							<code>/v1/send</code> only applies to built-in React Email layouts. For reusable styling,
-							you have a few options:
-						</p>
-
-						<h3>Style variables</h3>
-						<p>Pass colours and fonts as template variables:</p>
-
-						<pre class="tpl-code">{samples[5]}</pre>
-
-						<pre class="tpl-code">{samples[6]}</pre>
-
-						<h3>
-							Theme object with <code>&#123;&#123;#with&#125;&#125;</code>
-						</h3>
-						<p>Pass a nested theme object and scope into it:</p>
-
-						<pre class="tpl-code">{samples[7]}</pre>
-
-						<pre class="tpl-code">{samples[8]}</pre>
-
-						<h3>Base layout in the template</h3>
-						<p>
-							Put your wrapper HTML (header, footer, brand styles) directly in each template body. Since
-							templates are stored per-slug, you can copy-paste a consistent base layout across templates.
-						</p>
-					</div>
-				</section>
-
-				<!-- LAYOUTS -->
-				<section class="tpl-section" id="layouts">
-					<div class="tpl-section-header">
-						<h2>Built-in layouts</h2>
-						<a class="tpl-anchor" href="#layouts">
-							#layouts
-						</a>
-					</div>
-					<div class="tpl-body">
-						<p>
-							EmailFlare seeds 50 system templates — one per React Email layout — on first run. Their HTML
-							body is empty because the layout <em>is</em> the content. Reference them by slug exactly
-							like custom templates:
-						</p>
-
-						<pre class="tpl-code">{samples[9]}</pre>
-
-						<h3>Themes</h3>
-						<p>
-							Layout templates support colour themes via <code>themeId</code>. Switch per send — no CSS
-							edits needed.
-						</p>
-						<div class="tpl-themes">
-							<div class="tpl-theme-chip">
-								<span class="tpl-theme-dot" style="background:#f97316;"></span>
-								<code>default</code>
-							</div>
-							<div class="tpl-theme-chip">
-								<span class="tpl-theme-dot" style="background:#0ea5e9;"></span>
-								<code>ocean</code>
-							</div>
-							<div class="tpl-theme-chip">
-								<span class="tpl-theme-dot" style="background:#16a34a;"></span>
-								<code>forest</code>
-							</div>
-							<div class="tpl-theme-chip">
-								<span class="tpl-theme-dot" style="background:#7c3aed;"></span>
-								<code>violet</code>
-							</div>
-							<div class="tpl-theme-chip">
-								<span class="tpl-theme-dot" style="background:#334155;"></span>
-								<code>slate</code>
-							</div>
-						</div>
-
-						<div class="tpl-callout tpl-callout-orange">
-							<span class="tpl-callout-icon">⚡</span>
-							<span>
-								<code>themeId</code> only applies to layout templates. Custom HTML templates ignore it —
-								you control styling directly in the body.
-							</span>
-						</div>
-					</div>
-				</section>
-
-				<!-- MANAGING -->
-				<section class="tpl-section" id="managing">
-					<div class="tpl-section-header">
-						<h2>Managing templates</h2>
-						<a class="tpl-anchor" href="#managing">
-							#managing
-						</a>
-					</div>
-					<div class="tpl-body">
-						<p>
-							Create and edit templates from the <strong>Templates</strong> page under API — the live
-							preview highlights resolved variables inline. Or use the admin API (session-authenticated{" "}
-							<code>/api/templates</code>):
-						</p>
-
-						<pre class="tpl-code">{samples[10]}</pre>
-
-						<p>Create example:</p>
-
-						<pre class="tpl-code">{samples[11]}</pre>
-					</div>
-				</section>
-
-				<!-- SENDING -->
-				<section class="tpl-section" id="sending">
-					<div class="tpl-section-header">
-						<h2>Sending with a template</h2>
-						<a class="tpl-anchor" href="#sending">
-							#sending
-						</a>
-					</div>
-					<div class="tpl-body">
-						<p>Send by slug (preferred) or by id:</p>
-
-						<pre class="tpl-code">{samples[12]}</pre>
-
-						<ul>
-							<li>
-								<code>subject</code> on the send payload overrides the template subject.
-							</li>
-							<li>
-								<code>variables</code> are applied to both the subject and the body.
-							</li>
-							<li>
-								At least one of <code>templateSlug</code>, <code>templateId</code>, <code>html</code>,
-								or <code>text</code> must be present.
-							</li>
-							<li>
-								Test keys (<code>eftest_</code>) capture the rendered email into the Test Mailbox —
-								verify without burning real delivery.
-							</li>
-						</ul>
-					</div>
-				</section>
-			</main>
-		</div>
-	</div>
-
-	<!-- NEXT -->
-	<section class="tpl-next">
-		<div class="container">
-			<h2 style="font-family:var(--font-display);font-size:1.6rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:8px;">
-				Keep going
-			</h2>
-			<p style="font-size:0.9rem;color:var(--text-muted);">More EmailFlare reference material.</p>
-			<div class="tpl-next-cards">
-				<a class="tpl-next-card" href="/docs">
-					<span class="nc-label">API Reference</span>
-					<h3>Read the API docs</h3>
-					<p>
-						The complete reference for <code>/v1/send</code>, authentication, error codes, and
-						troubleshooting.
-					</p>
-				</a>
-				<a class="tpl-next-card" href="/cloudflare-token">
-					<span class="nc-label">Setup</span>
-					<h3>Cloudflare API token guide</h3>
-					<p>Exact permissions needed for Email Sending, DNS, and routing rules.</p>
-				</a>
-				<a
-					class="tpl-next-card"
-					href="https://github.com/0xdps/emailflare/blob/trunk/docs/TEMPLATES.md"
-					target="_blank"
-					rel="noopener"
-				>
-					<span class="nc-label">Source</span>
-					<h3>Templates on GitHub</h3>
-					<p>The Markdown version of this guide, kept in the repository.</p>
-				</a>
+	<Section id="use">
+		<FeatureRow
+			eyebrow="In your code"
+			title="Send by slug. Pass the variables."
+			description="No template engine in your app and no HTML in your repository. Change the email in the dashboard and the next send uses it."
+			points={[
+				"<code>subject</code> in the request overrides the template subject",
+				"<code>variables</code> fill the subject and, for custom templates, the body",
+				"A test key renders the template into the test mailbox without delivering it",
+			]}
+		>
+			<a href="/email-api" class={buttonVariants({ size: "lg", variant: "outline" }) + " mt-8"}>
+				See the full API
+			</a>
+			<div slot="media" class="min-w-0">
+				<CodeBlock code={sendBySlug} lang="bash" title="POST /v1/send" />
 			</div>
-		</div>
-	</section>
+		</FeatureRow>
+	</Section>
 
-	<ul slot="footer-links" class="footer-links">
-		<li>
-			<a href="/">Home</a>
-		</li>
-		<li>
-			<a href="https://github.com/0xdps/emailflare" target="_blank" rel="noopener">
-				GitHub
-			</a>
-		</li>
-		<li>
-			<a href="https://github.com/0xdps/emailflare/blob/trunk/SECURITY.md" target="_blank" rel="noopener">
-				Security
-			</a>
-		</li>
-	</ul>
+	<Section id="editor" tone="muted">
+		<FeatureRow
+			reverse
+			eyebrow="In the dashboard"
+			title="Search, preview and write templates."
+			description="The Templates page lists every layout and custom template. Open one to preview it with sample variables and a theme, or create a new template."
+			points={[
+				"Search by name, slug or subject",
+				"Preview built-in layouts in any theme",
+				"Create custom templates with a subject, HTML and plain-text body",
+				"Test a send from the playground before you ship",
+			]}
+		>
+			<ShotCrop
+				slot="media"
+				file="templates"
+				alt="The Templates page listing built-in layouts with a search box and category filters"
+				x={320}
+				y={60}
+				w={700}
+				h={480}
+			/>
+		</FeatureRow>
+	</Section>
+
+	<Section id="faq" size="narrow">
+		<SectionHeading align="center" eyebrow="FAQ" title="Template questions." />
+		<div class="mt-10">
+			<Faq client:visible items={faq} />
+		</div>
+	</Section>
+
+	<CtaBand
+		title="Stop hard-coding email in your app."
+		description="Deploy EmailFlare, pick a layout and send it by slug. Your templates and your mail stay in your own account."
+	/>
 </Base>

@@ -1,0 +1,22 @@
+---
+interface Props {
+	n: number;
+	title: string;
+}
+const { n, title } = Astro.props;
+---
+
+<!-- One item in a numbered sequence. Wrap in <ol class="list-none">. -->
+<li class="group relative pb-10 pl-12 last:pb-0">
+	<span
+		class="bg-primary text-primary-foreground absolute top-0 left-0 inline-flex size-8 items-center justify-center rounded-full font-mono text-sm font-semibold"
+		aria-hidden="true"
+	>
+		{n}
+	</span>
+	<span class="bg-border absolute top-10 bottom-2 left-4 w-px group-last:hidden" aria-hidden="true"></span>
+	<h3 class="text-xl leading-8 font-semibold">{title}</h3>
+	<div class="mt-3 min-w-0 space-y-4">
+		<slot />
+	</div>
+</li>

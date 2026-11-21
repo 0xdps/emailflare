@@ -1,0 +1,38 @@
+---
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
+
+interface Group {
+	title: string;
+	items: { label: string; keys: string[][] }[];
+}
+interface Props {
+	groups: Group[];
+}
+const { groups } = Astro.props;
+---
+
+<div class="grid gap-5 md:grid-cols-3">
+	{groups.map((g) => (
+		<section class="border-ink-border bg-ink-border/30 rounded-2xl border p-6">
+			<h3 class="text-ink-muted mb-4 font-mono text-xs font-medium tracking-wide uppercase">{g.title}</h3>
+			<ul class="space-y-3">
+				{g.items.map((it) => (
+					<li class="flex items-center justify-between gap-4 text-sm">
+						<span>{it.label}</span>
+						<span class="flex shrink-0 items-center gap-1.5">
+							{it.keys.map((combo) => (
+								<KbdGroup>
+									{combo.map((k) => (
+										<Kbd class="bg-ink-border text-ink-foreground h-6 min-w-6 px-1.5 font-mono">
+											{k}
+										</Kbd>
+									))}
+								</KbdGroup>
+							))}
+						</span>
+					</li>
+				))}
+			</ul>
+		</section>
+	))}
+</div>

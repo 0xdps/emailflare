@@ -1,0 +1,35 @@
+---
+import CodeBlock from "@/components/site/CodeBlock.astro";
+
+const steps = [
+	{
+		title: "Deploy the Worker",
+		body: "The deploy button forks the repository into your account and provisions the D1 database, R2 bucket, KV namespace and queue it needs. Nothing to install locally.",
+	},
+	{
+		title: "Create your admin account",
+		body: "Open the new workers.dev address. The /setup wizard creates the first administrator and your workspace.",
+		code: `wrangler secret put SESSION_SECRET
+wrangler secret put CF_API_TOKEN
+wrangler secret put CF_ACCOUNT_ID`,
+		codeTitle: "Set the three secrets",
+	},
+	{
+		title: "Add a domain and send",
+		body: "Enable a domain from the dashboard. EmailFlare routes catch-all mail to the Worker, shows the DNS records still missing, and your first API key can send straight away.",
+	},
+];
+---
+
+<ol class="relative grid gap-6 lg:grid-cols-3">
+	{steps.map((s, i) => (
+		<li class="bg-card relative flex flex-col rounded-2xl border p-6">
+			<span class="bg-primary text-primary-foreground mb-5 inline-flex size-8 items-center justify-center rounded-full font-mono text-sm font-semibold">
+				{i + 1}
+			</span>
+			<h3 class="text-xl font-semibold">{s.title}</h3>
+			<p class="text-muted-foreground mt-2 text-[0.9375rem] leading-7">{s.body}</p>
+			{s.code && <CodeBlock class="mt-5" code={s.code} title={s.codeTitle} />}
+		</li>
+	))}
+</ol>

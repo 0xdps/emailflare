@@ -1,0 +1,22 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+	class?: string;
+	inverse?: boolean;
+}
+const { class: className, inverse } = Astro.props;
+---
+
+<a
+	href="/"
+	class={cn(
+		"inline-flex items-center gap-2.5 font-display text-lg font-semibold tracking-tight",
+		inverse && "text-ink-foreground",
+		className,
+	)}
+	aria-label="EmailFlare home"
+>
+	<img src="/favicon.svg" alt="" width="28" height="28" class="size-7" />
+	EmailFlare
+</a>

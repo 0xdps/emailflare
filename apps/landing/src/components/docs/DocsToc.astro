@@ -1,0 +1,36 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Heading {
+	depth: number;
+	slug: string;
+	text: string;
+}
+interface Props {
+	headings: Heading[];
+	class?: string;
+}
+const { headings, class: className } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{items.length > 1 && (
+	<nav aria-label="On this page" class={cn("text-sm", className)} data-docs-toc>
+		<p class="text-muted-foreground text-2xs mb-3 font-mono font-medium tracking-wide uppercase">On this page</p>
+		<ul class="border-border flex flex-col border-l">
+			{items.map((h) => (
+				<li>
+					<a
+						href={`#${h.slug}`}
+						class={cn(
+							"text-muted-foreground hover:text-foreground aria-[current=location]:border-primary aria-[current=location]:text-foreground -ml-px block border-l-2 border-transparent py-1 leading-snug transition-colors aria-[current=location]:font-medium",
+							h.depth === 3 ? "pl-7 text-[0.8125rem]" : "pl-4",
+						)}
+					>
+						{h.text}
+					</a>
+				</li>
+			))}
+		</ul>
+	</nav>
+)}

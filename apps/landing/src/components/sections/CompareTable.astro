@@ -1,0 +1,79 @@
+---
+import { cn } from "@/lib/utils";
+import { inlineMd } from "@/lib/inline-md";
+
+interface Props {
+	columns: { name: string; note?: string; highlight?: boolean }[];
+	rows: { label: string; cells: string[] }[];
+	caption: string;
+}
+const { columns, rows, caption } = Astro.props;
+---
+
+<!-- Wide screens get a table. Narrow screens get one card per row so nothing scrolls sideways. -->
+<div class="bg-card hidden overflow-hidden rounded-2xl border lg:block">
+	<table class="w-full table-fixed border-collapse text-left text-sm">
+		<caption class="sr-only">{caption}</caption>
+		<thead>
+			<tr class="border-b">
+				<th scope="col" class="w-[13%] px-4 py-4">
+					<span class="sr-only">Topic</span>
+				</th>
+				{columns.map((c) => (
+					<th scope="col" class={cn("px-4 py-4 align-bottom", c.highlight && "bg-primary-muted")}>
+						<span
+							class={cn(
+								"font-display text-base font-semibold",
+								c.highlight && "text-primary-muted-foreground",
+							)}
+						>
+							{c.name}
+						</span>
+						{c.note && <span class="text-muted-foreground mt-0.5 block text-xs font-normal">{c.note}</span>}
+					</th>
+				))}
+			</tr>
+		</thead>
+		<tbody class="divide-y">
+			{rows.map((r) => (
+				<tr>
+					<th scope="row" class="text-foreground px-4 py-4 text-left align-top font-medium">
+						{r.label}
+					</th>
+					{r.cells.map((cell, i) => (
+						<td
+							class={cn(
+								"text-muted-foreground px-4 py-4 align-top leading-6",
+								columns[i]?.highlight && "bg-primary-muted/40 text-foreground",
+							)}
+							set:html={inlineMd(cell)}
+						/>
+					))}
+				</tr>
+			))}
+		</tbody>
+	</table>
+</div>
+
+<div class="space-y-4 lg:hidden">
+	{rows.map((r) => (
+		<section class="bg-card rounded-2xl border p-5" aria-label={r.label}>
+			<h3 class="text-lg font-semibold">{r.label}</h3>
+			<dl class="mt-4 space-y-4">
+				{r.cells.map((cell, i) => (
+					<div class={cn("rounded-xl p-3", columns[i]?.highlight && "bg-primary-muted/60")}>
+						<dt
+							class={cn(
+								"text-muted-foreground font-mono text-xs tracking-wide uppercase",
+								columns[i]?.highlight && "text-primary-muted-foreground",
+							)}
+						>
+							{columns[i]?.name}
+						</dt>
+						<dd class="mt-1 text-sm leading-6" set:html={inlineMd(cell)} />
+					</div>
+				))}
+			</dl>
+		</section>
+	))}
+</div>

@@ -1,0 +1,23 @@
+---
+import { cn } from "@/lib/utils";
+
+interface Props {
+	class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<!-- Body copy for guide pages. Keep code blocks (CodeBlock) outside this wrapper. -->
+<div
+	class={cn(
+		"text-muted-foreground space-y-4 text-[0.9375rem] leading-7",
+		"[&_a]:text-primary-muted-foreground [&_a]:decoration-primary/40 [&_a:hover]:decoration-primary [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4",
+		"[&_strong]:text-foreground [&_strong]:font-semibold",
+		"[&_code]:bg-muted [&_code]:text-foreground [&_code]:rounded-md [&_code]:border [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.8125rem] [&_code]:break-words",
+		"[&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_li]:marker:text-primary",
+		"[&_h3]:text-foreground [&_h3]:font-display [&_h3]:pt-2 [&_h3]:text-lg [&_h3]:font-semibold",
+		className,
+	)}
+>
+	<slot />
+</div>

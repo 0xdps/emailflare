@@ -1,7 +1,8 @@
 /cloudflare-token.html  /cloudflare-token  301
 /mesahub.html           /cloudflare        301
 /mesahub                /cloudflare        301
-/docs.html              /docs              301
-/inbox.html             /inbox             301
-/email-api.html         /email-api         301
-/templates.html         /templates         301
+/docs.html               /docs              301
+/inbox.html              /inbox             301
+/email-api.html          /email-api         301
+/templates.html          /templates         301
+/sitemap.xml             /sitemap-index.xml 301

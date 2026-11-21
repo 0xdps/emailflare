@@ -7,7 +7,7 @@
 <h1 align="center">EmailFlare</h1>
 
 <p align="center">
-  <strong>The open-source, edge-native email API and shared team inbox for Cloudflare.</strong><br />
+  <strong>The source-available, edge-native email API and shared team inbox for Cloudflare.</strong><br />
   A modern transactional email engine and collaborative customer inbox — deployed to your Cloudflare account in one click.
 </p>
 
@@ -16,7 +16,7 @@
     <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare" />
   </a>
   <a href="https://github.com/0xdps/emailflare/blob/trunk/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" />
+    <img src="https://img.shields.io/badge/license-ELv2-blue.svg" alt="License: Elastic License 2.0" />
   </a>
   <a href="https://emailflare.dev">
     <img src="https://img.shields.io/badge/website-emailflare.dev-orange.svg" alt="Website" />
@@ -230,4 +230,6 @@ docs                  Architecture deep dives, template guides, and deployment r
 
 ## License
 
-EmailFlare is open-source software licensed under the [MIT License](./LICENSE).
+EmailFlare is source-available software licensed under the [Elastic License 2.0](./LICENSE). You can use, modify and self-host it, including for your own business, but you may not offer it to others as a hosted or managed service. Releases published before this change remain available under the MIT License they were released with.
+
+EmailFlare is built by [Devendra Pratap Singh](https://dps.codes) under [0xlabs](https://0xlabs.space). To support it, see [GitHub Sponsors](https://github.com/sponsors/0xdps) or [Buy Me a Coffee](https://buymeacoffee.com/0xdps).
