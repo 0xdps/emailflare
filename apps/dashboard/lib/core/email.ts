@@ -650,14 +650,50 @@ export async function resolveDomainId(db: Pick<DbQueryHandle, "query">, fromAddr
 	return (result.rows[0]?.id as string | undefined) ?? null;
 }
 
+export interface SuppressionMatch {
+	reason: string;
+	list_id: string | null;
+}
+
+/** What kind of mail is being sent; decides which unsubscribes apply. */
+export interface SuppressionScope {
+	/** The list this send belongs to. Unsubscribes from this list (or from all marketing) apply. */
+	listId?: string | null;
+	/** Marketing mail with no list (sequences): every unsubscribe applies. */
+	marketing?: boolean;
+}
+
 /**
- * Check whether an address is suppressed. Returns the suppression reason, or
- * null if the address is safe to send to.
+ * Pick the suppression row that blocks this send, if any.
+ *
+ * Bounces, complaints and manual suppressions are about deliverability or an
+ * admin's decision, so they block everything. An unsubscribe only withdraws
+ * consent for marketing, so it must not block transactional mail (password
+ * resets, login codes, receipts) unless the send is for that list. An
+ * unsubscribe with no list is a global marketing opt-out and applies to every
+ * list send.
  */
-export async function checkSuppressed(db: Pick<DbQueryHandle, "query">, email: string): Promise<string | null> {
+export function blockingSuppression(rows: SuppressionMatch[], scope: SuppressionScope = {}): string | null {
+	const hard = rows.find((r) => r.reason !== "unsubscribed");
+	if (hard) return hard.reason;
+	const unsub = rows.find(
+		(r) => scope.marketing || (scope.listId && (r.list_id == null || r.list_id === scope.listId)),
+	);
+	return unsub ? unsub.reason : null;
+}
+
+/**
+ * Check whether an address is suppressed for this kind of send. Returns the
+ * suppression reason, or null if the address is safe to send to.
+ */
+export async function checkSuppressed(
+	db: Pick<DbQueryHandle, "query">,
+	email: string,
+	scope: SuppressionScope = {},
+): Promise<string | null> {
 	// Addresses are stored lowercase (see apps/dashboard/migrations/0001_schema.sql).
-	const result = await db.query("SELECT reason FROM suppressions WHERE email = ? LIMIT 1", [email.toLowerCase()]);
-	return (result.rows[0]?.reason as string | undefined) ?? null;
+	const result = await db.query("SELECT reason, list_id FROM suppressions WHERE email = ?", [email.toLowerCase()]);
+	return blockingSuppression(result.rows as unknown as SuppressionMatch[], scope);
 }
 
 /**
@@ -806,7 +842,7 @@ export async function executeSend(deps: ExecuteSendDeps, input: ExecuteSendInput
 	const publicOrigin = input.publicOrigin.replace(/\/$/, "");
 
 	for (const recipient of toList) {
-		const reason = await checkSuppressed(deps.db, recipient);
+		const reason = await checkSuppressed(deps.db, recipient, { listId: body.listId });
 		if (reason) {
 			results.push({ to: recipient, error: `Suppressed: ${reason}` });
 			continue;

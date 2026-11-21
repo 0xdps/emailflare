@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sidebar:** the inbox mailbox list is now a dropdown (with per-mailbox unread counts) that filters whichever view is open; the collapsed rail centres the logo and shows Compose as an icon.
 - `Button` now sets `nativeButton={false}` when given a custom `render` (e.g. a `Link`).
 
+### Fixes
+
+- **Unsubscribes no longer block transactional mail (#194):** an unsubscribe now only blocks sends to its own list (or all list sends and sequences if it has no list). Password resets, login codes and receipts still go out. Bounces, complaints and manual suppressions keep blocking everything.
+
 ### Inbox
 
 - **Redesigned from scratch:** resizable list/reader panes, date-grouped threads, collapsible messages, one-click sender verification (SPF/DKIM/DMARC) popover, themed HTML mail rendering, toasts with undo, and a shortcuts dialog (`?`).

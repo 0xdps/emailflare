@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
 	applyVariables,
+	blockingSuppression,
 	executeSend,
 	listUnsubscribeHeaders,
 	type EmailLogRow,
@@ -12,7 +13,7 @@ import {
 
 interface Memory {
 	domains: Array<{ id: string; name: string }>;
-	suppressions: Array<{ email: string; reason: string }>;
+	suppressions: Array<{ email: string; reason: string; list_id?: string | null }>;
 	tokens: Array<{ token: string; email: string; listId: string | null }>;
 	logs: EmailLogRow[];
 	delivered: SendWithLogMessage[];
@@ -40,8 +41,10 @@ function memory(seed?: Partial<Memory>): { mem: Memory; deps: ExecuteSendDeps } 
 				}
 				if (sql.includes("FROM suppressions")) {
 					const email = String(params[0]);
-					const row = mem.suppressions.find((s) => s.email === email);
-					return { rows: row ? [row] : [] };
+					const rows = mem.suppressions
+						.filter((s) => s.email === email)
+						.map((s) => ({ reason: s.reason, list_id: s.list_id ?? null }));
+					return { rows };
 				}
 				return { rows: [] };
 			},
@@ -207,4 +210,51 @@ test("executeSend renders a layout and resolves the sender domain", async () => 
 	assert.deepEqual(mem.delivered[0].from, { address: "news@mail.example.com", name: "News" });
 	assert.equal(mem.logs[0].domain_id, "dom_9");
 	assert.equal(mem.logs[0].template_id, "tpl_1");
+});
+
+const send = (deps: ExecuteSendDeps, extra: { listId?: string } = {}) =>
+	executeSend(deps, {
+		body: { from: "from@example.com", to: "carol@example.com", subject: "Hi", text: "hello", ...extra },
+		apiKey: liveKey,
+		idempotencyKey: null,
+		publicOrigin: "https://app.example.com",
+	});
+
+test("an unsubscribe does not block transactional mail but still blocks that list (#194)", async () => {
+	const seed = { suppressions: [{ email: "carol@example.com", reason: "unsubscribed", list_id: "news" }] };
+
+	const transactional = memory(seed);
+	assert.equal((await send(transactional.deps)).status, 200);
+	assert.equal(transactional.mem.delivered.length, 1);
+
+	const sameList = memory(seed);
+	const blocked = await send(sameList.deps, { listId: "news" });
+	assert.equal(blocked.status, 502);
+	assert.equal(sameList.mem.delivered.length, 0);
+
+	const otherList = memory(seed);
+	assert.equal((await send(otherList.deps, { listId: "offers" })).status, 200);
+});
+
+test("bounces and manual suppressions still block transactional mail (#194)", async () => {
+	for (const reason of ["hard_bounce", "complaint", "manual"] as const) {
+		const { mem, deps } = memory({ suppressions: [{ email: "carol@example.com", reason }] });
+		const result = await send(deps);
+		assert.equal(result.status, 502, reason);
+		assert.equal(mem.delivered.length, 0, reason);
+	}
+});
+
+test("blockingSuppression: global opt-out blocks every list and sequences, never transactional", () => {
+	const global = [{ reason: "unsubscribed", list_id: null }];
+	assert.equal(blockingSuppression(global, {}), null);
+	assert.equal(blockingSuppression(global, { listId: "news" }), "unsubscribed");
+	assert.equal(blockingSuppression(global, { marketing: true }), "unsubscribed");
+
+	const perList = [{ reason: "unsubscribed", list_id: "news" }];
+	assert.equal(blockingSuppression(perList, { marketing: true }), "unsubscribed");
+	assert.equal(blockingSuppression(perList, { listId: "offers" }), null);
+
+	assert.equal(blockingSuppression([...perList, { reason: "complaint", list_id: null }], {}), "complaint");
+	assert.equal(blockingSuppression([], { marketing: true }), null);
 });

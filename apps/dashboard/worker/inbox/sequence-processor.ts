@@ -5,7 +5,8 @@
 // Queue: sends the individual step email via CF Email API.
 
 import { sendEmail } from "./services/cloudflare.ts";
-import { generateId, listUnsubscribeHeaders, applyVariables, createLogger } from "@/lib/core";
+import { generateId, listUnsubscribeHeaders, applyVariables, createLogger, checkSuppressed } from "@/lib/core";
+import { D1Db } from "./db.ts";
 import type { Env, ScheduledSendMessage, SequenceQueueMessage } from "./env.ts";
 import { dispatchWebhooks } from "./lib/webhooks.ts";
 
@@ -99,11 +100,10 @@ export async function handleSequenceQueueMessage(msg: SequenceQueueMessage, env:
 	const vars: Record<string, string> = JSON.parse(enrollment.variables);
 
 	// ── Suppression check: skip unsubscribed/bounced addresses ────────────────
-	const suppressed = await env.DB.prepare("SELECT reason FROM suppressions WHERE email = ? LIMIT 1")
-		.bind(person.email.toLowerCase())
-		.first<{ reason: string }>();
+	// Sequences are marketing mail, so every unsubscribe applies as well as bounces.
+	const suppressed = await checkSuppressed(new D1Db(env.DB), person.email, { marketing: true });
 	if (suppressed) {
-		log.info("skipping suppressed recipient", { email: person.email, reason: suppressed.reason });
+		log.info("skipping suppressed recipient", { email: person.email, reason: suppressed });
 		// Advance so the sequence doesn't stall on this step
 		await env.DB.prepare(`UPDATE sequence_enrollments SET current_step = ? WHERE id = ?`)
 			.bind(msg.stepIndex + 1, enrollment.id)
