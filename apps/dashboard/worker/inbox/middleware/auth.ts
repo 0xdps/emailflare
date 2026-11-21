@@ -4,6 +4,8 @@
 import { SignJWT, jwtVerify } from "jose";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
+import { Hono } from "hono";
+import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { Context } from "hono";
 import type { HonoEnv } from "../env.ts";
@@ -156,3 +158,18 @@ export const requireTester = requireAccess("tester");
 
 /** Middleware: require Inbox access. */
 export const requireInbox = requireAccess("inbox");
+
+/**
+ * Wrap a router so `guard` runs only for that router's own routes.
+ *
+ * Do not use `group.use("/*", guard)` on a sub-app mounted at "/": Hono applies
+ * it to every route registered after it, so one group's guard (say requireAdmin)
+ * silently blocks the groups mounted below it. Mount each guarded router at its
+ * own prefix instead: `app.route("/keys", guarded(requireAdmin, keysRouter))`.
+ */
+export function guarded(guard: MiddlewareHandler<HonoEnv>, router: Hono<HonoEnv>): Hono<HonoEnv> {
+	const wrapper = new Hono<HonoEnv>();
+	wrapper.use("*", guard);
+	wrapper.route("/", router);
+	return wrapper;
+}

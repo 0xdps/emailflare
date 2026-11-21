@@ -49,7 +49,7 @@ import adminUsersRouter from "./routes/admin/users.ts";
 // ── Middleware
 import { checkRateLimit } from "./middleware/rateLimit.ts";
 import { requireApiKey } from "./middleware/apiKey.ts";
-import { requireSession, requireAdmin, requireApi, requireTester, requireInbox } from "./middleware/auth.ts";
+import { guarded, requireSession, requireAdmin, requireApi, requireTester, requireInbox } from "./middleware/auth.ts";
 import { seedSystemTemplates } from "./seed.ts";
 
 // ── Email + sequence handlers
@@ -95,51 +95,40 @@ app.use("/v1/*", async (c, next) => {
 app.route("/v1/send", sendRouter);
 
 // ── Authenticated session routes ──────────────────────────────────────────────
+// Every router is mounted at its own prefix behind exactly one guard (see `guarded`).
 const sessionApp = new Hono<HonoEnv>();
 sessionApp.use("/*", requireSession);
 
 // 1. Admin-only routes (requireAdmin)
-const adminApp = new Hono<HonoEnv>();
-adminApp.use("/*", requireAdmin);
-adminApp.route("/domains", domainsRouter);
-adminApp.route("/keys", keysRouter);
-adminApp.route("/admin/users", adminUsersRouter);
-adminApp.route("/suppressions", suppressionsRouter);
-adminApp.route("/webhooks", webhooksRouter);
-adminApp.route("/audit", auditRouter);
-adminApp.post("/seed", async (c) => {
+sessionApp.route("/domains", guarded(requireAdmin, domainsRouter));
+sessionApp.route("/keys", guarded(requireAdmin, keysRouter));
+sessionApp.route("/admin/users", guarded(requireAdmin, adminUsersRouter));
+sessionApp.route("/suppressions", guarded(requireAdmin, suppressionsRouter));
+sessionApp.route("/webhooks", guarded(requireAdmin, webhooksRouter));
+sessionApp.route("/audit", guarded(requireAdmin, auditRouter));
+sessionApp.post("/seed", requireAdmin, async (c) => {
 	await seedSystemTemplates(c.env.DB);
 	return c.json({ ok: true });
 });
-sessionApp.route("/", adminApp);
 
 // 2. API Dashboard routes (requireApi)
-const apiApp = new Hono<HonoEnv>();
-apiApp.use("/*", requireApi);
-apiApp.route("/logs", logsRouter);
-apiApp.route("/templates", templatesRouter);
-apiApp.route("/stats", statsRouter);
-apiApp.route("/cloudflare", cloudflareRouter);
-apiApp.route("/lists", listsRouter);
-apiApp.route("/playground", playgroundRouter);
-sessionApp.route("/", apiApp);
+sessionApp.route("/logs", guarded(requireApi, logsRouter));
+sessionApp.route("/templates", guarded(requireApi, templatesRouter));
+sessionApp.route("/stats", guarded(requireApi, statsRouter));
+sessionApp.route("/cloudflare", guarded(requireApi, cloudflareRouter));
+sessionApp.route("/lists", guarded(requireApi, listsRouter));
+sessionApp.route("/playground", guarded(requireApi, playgroundRouter));
 
 // 3. Test Mailbox route (requireTester)
-const testMailboxApp = new Hono<HonoEnv>();
-testMailboxApp.use("/*", requireTester);
-testMailboxApp.route("/test-emails", testEmailsRouter);
-sessionApp.route("/", testMailboxApp);
+sessionApp.route("/test-emails", guarded(requireTester, testEmailsRouter));
 
 // 4. Inbox routes (requireInbox)
-const inboxApp = new Hono<HonoEnv>();
-inboxApp.use("/*", requireInbox);
-inboxApp.route("/inbox/people", peopleRouter);
-inboxApp.route("/inbox/threads", threadsRouter);
-inboxApp.route("/inbox/compose", composeRouter);
-inboxApp.route("/inbox/inboxes", inboxesRouter);
-inboxApp.route("/inbox/sequences", sequencesRouter);
-inboxApp.route("/inbox/templates", inboxTemplatesRouter);
-sessionApp.route("/", inboxApp);
+sessionApp.route("/inbox/people", guarded(requireInbox, peopleRouter));
+sessionApp.route("/inbox/threads", guarded(requireInbox, threadsRouter));
+sessionApp.route("/inbox/compose", guarded(requireInbox, composeRouter));
+sessionApp.route("/inbox/inboxes", guarded(requireInbox, inboxesRouter));
+sessionApp.route("/inbox/sequences", guarded(requireInbox, sequencesRouter));
+sessionApp.route("/inbox/templates", guarded(requireInbox, inboxTemplatesRouter));
 
 // WebSocket notification endpoint (per-user DO)
 sessionApp.get("/notifications/ws", async (c) => {

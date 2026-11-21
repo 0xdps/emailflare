@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sidebar:** the inbox mailbox list is now a dropdown (with per-mailbox unread counts) that filters whichever view is open; the collapsed rail centres the logo and shows Compose as an icon.
 - `Button` now sets `nativeButton={false}` when given a custom `render` (e.g. a `Link`).
 
+### Security
+
+- **Route guards no longer leak across groups.** `requireAdmin` / `requireApi` were applied to every route mounted after them, so members with inbox access got 403 on all inbox APIs (threads, compose, people…). Each router is now mounted at its own prefix behind exactly one guard (`guarded()`), with regression tests. This also keeps the fixes for the reported member-role issues intact: members cannot list, mint or revoke API keys, and cannot compose from a mailbox they are not assigned to.
+- API key creation now requires an explicit `type` and `scope` instead of defaulting to a global live key.
+
 ### Fixes
 
 - **Unsubscribes no longer block transactional mail (#194):** an unsubscribe now only blocks sends to its own list (or all list sends and sequences if it has no list). Password resets, login codes and receipts still go out. Bounces, complaints and manual suppressions keep blocking everything.

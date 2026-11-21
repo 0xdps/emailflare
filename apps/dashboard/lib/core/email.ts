@@ -184,8 +184,9 @@ export type TemplateInput = z.infer<typeof templateSchema>;
 /** POST /api/keys — create an API key. */
 export const keyCreateSchema = z.object({
 	name: z.string().min(1),
-	type: z.enum(["test", "live"]).default("live"),
-	scope: z.enum(["global", "domain", "multi"]).default("global"),
+	// No defaults: a request that omits these must fail, not mint the broadest key.
+	type: z.enum(["test", "live"]),
+	scope: z.enum(["global", "domain", "multi"]),
 	domainIds: z.array(z.string()).optional(),
 });
 
