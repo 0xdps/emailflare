@@ -8,7 +8,10 @@ export function fakeKV() {
 	const store = new Map<string, string>();
 	return {
 		store,
-		get: async (key: string) => store.get(key) ?? null,
+		get: async (key: string, type?: string) => {
+			const value = store.get(key) ?? null;
+			return value !== null && type === "json" ? JSON.parse(value) : value;
+		},
 		put: async (key: string, value: string) => void store.set(key, value),
 		delete: async (key: string) => void store.delete(key),
 	};

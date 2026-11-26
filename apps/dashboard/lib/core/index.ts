@@ -8,3 +8,4 @@ export * from "./password.ts";
 export * from "./thread-views.ts";
 export * from "./thread-list.ts";
 export * from "./signing.ts";
+export * from "./domain-health.ts";

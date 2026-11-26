@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { makeDb, deleteDomainCascade } from "../db.ts";
+import { checkDomainHealth, enableDomain, invalidateDomainCaches, PERMISSION_MESSAGE } from "../services/domains.ts";
 import {
 	CloudflareApiError,
 	createSendingSubdomain,
@@ -31,16 +32,9 @@ export interface DomainCatalogEntry {
 	dns: "written" | "manual" | "unknown";
 }
 
-async function resolveZone(name: string, zoneName: string | undefined, token: string): Promise<CFZone | null> {
-	const host = name.toLowerCase();
-	const root = (zoneName ?? name).toLowerCase();
-	if (host !== root && !host.endsWith(`.${root}`)) return null;
-	return getZoneByHostname(root, token);
-}
-
 function permissionMessage(error: CloudflareApiError): string | null {
 	if (error.code === 10000 || error.code === 9109 || error.status === 401 || error.status === 403) {
-		return "Cloudflare token is missing a required permission. Enable needs Zone Read, DNS Write, Email Sending, and Email Routing.";
+		return PERMISSION_MESSAGE;
 	}
 	return null;
 }
@@ -88,6 +82,9 @@ app.get("/", async (c) => {
 	return c.json(rows);
 });
 
+// GET /api/domains/health — live sending and receiving state per domain
+app.get("/health", async (c) => c.json(await checkDomainHealth(c.env, { fresh: c.req.query("fresh") === "1" })));
+
 // GET /api/domains/:id
 app.get("/:id", async (c) => {
 	const { domains } = makeDb(c.env.DB);
@@ -99,83 +96,12 @@ app.get("/:id", async (c) => {
 // POST /api/domains — enable a zone the token can already see. The browser sends
 // the zone name, never a zone ID.
 app.post("/", zValidator("json", domainCreateSchema), async (c) => {
-	const { name, zoneName } = c.req.valid("json");
-	const { domains } = makeDb(c.env.DB);
-	const token = c.env.CF_API_TOKEN;
-	if (!token) return c.json({ error: "CF_API_TOKEN is not configured." }, 422);
-
-	const existing = await domains.findOne({ where: { name } });
-	if (existing) return c.json({ error: `Domain "${name}" is already registered` }, 409);
-
-	const zone = await resolveZone(name, zoneName, token);
-	if (!zone) {
-		return c.json(
-			{
-				error: `No active Cloudflare zone found for "${name}". Add the domain to this Cloudflare account, or use a name the token can read.`,
-			},
-			422,
-		);
+	const result = await enableDomain(c.env, c.req.valid("json"));
+	if (!result.ok) {
+		const { status, ...body } = result;
+		return c.json(body, status);
 	}
-
-	let cfResult: CFSubdomain;
-	try {
-		const allSubdomains = await listSendingSubdomains(zone.id, token);
-		cfResult = allSubdomains.find((s) => s.name === name) ?? (await createSendingSubdomain(zone.id, name, token));
-	} catch (error) {
-		if (error instanceof CloudflareApiError) {
-			const denied = permissionMessage(error);
-			if (denied) return c.json({ error: denied, cfCode: error.code, cfPath: error.path }, 422);
-			return c.json({ error: error.message, cfCode: error.code, cfPath: error.path }, 502);
-		}
-		throw error;
-	}
-
-	const [dnsOutcome, routingStatus] = await Promise.all([
-		(async (): Promise<{ status: "written" | "manual"; records: CFDnsRecord[] }> => {
-			try {
-				const records = await getSubdomainDnsRecords(zone.id, cfResult.tag, token);
-				if (records.length === 0) return { status: "written", records };
-				const write = await upsertDnsRecords(zone.id, records, token);
-				return { status: write.failed.length === 0 ? "written" : "manual", records };
-			} catch (error) {
-				if (!(error instanceof CloudflareApiError)) throw error;
-				return { status: "manual", records: [] };
-			}
-		})(),
-		(async (): Promise<"ready" | "pending"> => {
-			try {
-				await enableEmailRouting(zone.id, token);
-				await setCatchAllToWorker(zone.id, inboxWorkerName(c.env), token);
-				return "ready";
-			} catch {
-				return "pending";
-			}
-		})(),
-	]);
-	const dnsStatus = dnsOutcome.status;
-	const dnsRecords = dnsOutcome.records;
-
-	const row = await domains.insert({
-		id: generateId(),
-		name,
-		cf_zone_id: zone.id,
-		cf_subdomain_id: cfResult.tag,
-		dkim_selector: cfResult.dkim_selector ?? null,
-		return_path_domain: cfResult.return_path_domain ?? null,
-		verified: cfResult.enabled ? 1 : 0,
-		dns_status: dnsStatus,
-		routing_status: routingStatus,
-		created_at: new Date().toISOString(),
-	});
-
-	return c.json(
-		{
-			...row,
-			dns: { status: dnsStatus, records: dnsStatus === "manual" ? dnsRecords : [] },
-			routing: routingStatus,
-		},
-		201,
-	);
+	return c.json({ ...result.domain, dns: result.dns, routing: result.routing }, 201);
 });
 
 // GET /api/domains/:id/dns
@@ -208,6 +134,7 @@ app.post("/:id/verify", async (c) => {
 		},
 	});
 
+	await invalidateDomainCaches(c.env);
 	return c.json({ verified: cfData.enabled });
 });
 
@@ -218,6 +145,7 @@ app.delete("/:id", async (c) => {
 	if (!domain) return c.json({ error: "Domain not found" }, 404);
 
 	await deleteDomainCascade(c.env.DB, domain.id);
+	await invalidateDomainCaches(c.env);
 	return c.json({ deleted: true });
 });
 

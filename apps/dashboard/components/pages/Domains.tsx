@@ -1,21 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-	Plus,
-	RefreshCw,
-	Trash2,
-	CheckCircle2,
-	Clock,
-	ExternalLink,
-	Globe,
-	ShieldCheck,
-	ShieldOff,
-	Copy,
-} from "lucide-react";
+import { Plus, RefreshCw, Trash2, ExternalLink, Globe, Copy } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
-import { createDomainAction, verifyDomainAction, deleteDomainAction } from "@/app/actions/domains";
+import {
+	createDomainAction,
+	verifyDomainAction,
+	deleteDomainAction,
+	getDomainHealthAction,
+} from "@/app/actions/domains";
+import HealthChips from "@/components/modules/domains/HealthChips";
+import {
+	ENABLE_EXPLAINER,
+	RECEIVING_WARNING,
+	REMOVE_DOMAIN_NOTE,
+	SENDING_NAME_HELP,
+	defaultSendingName,
+} from "@/components/modules/domains/copy";
+import type { DomainHealth } from "@/lib/core/domain-health";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +92,19 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		isManual?: boolean;
 	} | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [health, setHealth] = useState<Map<string, DomainHealth> | null>(null);
+	const [healthError, setHealthError] = useState(false);
+
+	// Health is asked of Cloudflare, so it loads after the list instead of delaying it.
+	async function loadHealth(fresh = false) {
+		setHealthError(false);
+		try {
+			const rows = await getDomainHealthAction({ fresh });
+			setHealth(new Map(rows.map((row) => [row.id, row])));
+		} catch {
+			setHealthError(true);
+		}
+	}
 
 	async function load() {
 		setLoading(true);
@@ -108,6 +124,10 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		}
 	}, [initialDomains]);
 
+	useEffect(() => {
+		void loadHealth();
+	}, []);
+
 	async function enable(name: string, zoneName: string) {
 		setFormError(null);
 		setSubmitting(zoneName);
@@ -118,6 +138,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			setManual(false);
 			setForm({ name: "", zoneName: "" });
 			await load();
+			void loadHealth(true);
 			if (result.dns.status === "manual" && result.dns.records.length > 0) {
 				const records = result.dns.records.map((record) => ({ ...record, required: true }));
 				setManualRecords(records);
@@ -133,13 +154,12 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		}
 	}
 
+	// Always confirm first: enabling can replace the zone's Email Routing catch-all rule.
 	function startEnable(zone: CatalogZone) {
 		setFormError(null);
-		if (zone.sendingName && zone.sending !== "off") {
-			void enable(zone.sendingName, zone.zoneName);
-			return;
-		}
-		setSendingName(`mail.${zone.zoneName}`);
+		setSendingName(
+			zone.sendingName && zone.sending !== "off" ? zone.sendingName : defaultSendingName(zone.zoneName),
+		);
 		setSendingChoice(zone);
 	}
 
@@ -150,6 +170,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			if (res.verified) {
 				setDomains((prev) => prev.map((d) => (d.id === domain.id ? { ...d, verified: 1 } : d)));
 			}
+			await loadHealth(true);
 		} finally {
 			setVerifying(null);
 		}
@@ -164,7 +185,8 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		if (!deleteId) return;
 		await deleteDomainAction(deleteId);
 		setDeleteId(null);
-		load();
+		await load();
+		void loadHealth(true);
 	}
 
 	function handleCopy(text: string, label: string) {
@@ -180,18 +202,15 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			<Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Delete sending domain?</DialogTitle>
-						<DialogDescription>
-							This domain will be removed from your EmailFlare organization. Any keys restricted to it
-							will be invalidated.
-						</DialogDescription>
+						<DialogTitle>Remove domain from EmailFlare?</DialogTitle>
+						<DialogDescription>{REMOVE_DOMAIN_NOTE}</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setDeleteId(null)}>
 							Cancel
 						</Button>
 						<Button variant="destructive" onClick={confirmDelete}>
-							Delete Domain
+							Remove domain
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -200,11 +219,8 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			<Dialog open={!!sendingChoice} onOpenChange={(open) => !open && setSendingChoice(null)}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle>Choose the sending name</DialogTitle>
-						<DialogDescription>
-							{sendingChoice?.zoneName} has no Email Sending subdomain yet. Use the root, or a subdomain
-							such as mail.
-						</DialogDescription>
+						<DialogTitle>Enable {sendingChoice?.zoneName}</DialogTitle>
+						<DialogDescription>{ENABLE_EXPLAINER}</DialogDescription>
 					</DialogHeader>
 					{formError && (
 						<Alert variant="destructive">
@@ -218,7 +234,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 							if (sendingChoice) void enable(sendingName, sendingChoice.zoneName);
 						}}
 					>
-						<Label htmlFor="sending-name">Sending domain</Label>
+						<Label htmlFor="sending-name">Send from</Label>
 						<Input
 							id="sending-name"
 							value={sendingName}
@@ -226,11 +242,16 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 							className="font-mono text-xs"
 							required
 						/>
+						<p className="text-2xs text-muted-foreground">{SENDING_NAME_HELP}</p>
+						<Alert variant="warning">
+							<AlertDescription>{RECEIVING_WARNING}</AlertDescription>
+						</Alert>
 						<DialogFooter>
 							<Button type="button" variant="ghost" onClick={() => setSendingChoice(null)}>
 								Cancel
 							</Button>
 							<Button type="submit" disabled={!!submitting}>
+								{submitting && <Spinner />}
 								Enable
 							</Button>
 						</DialogFooter>
@@ -241,7 +262,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			<PageHeader
 				eyebrow="DNS & Delivery"
 				title="Domains"
-				description="Turn on a Cloudflare zone. Sending and receiving are set up separately."
+				description="Enable a Cloudflare domain to send and receive mail. Each row shows what the domain can do right now."
 				actions={
 					<Button variant="outline" onClick={() => setManual((open) => !open)}>
 						<Plus />
@@ -358,7 +379,10 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 			<Card className="gap-0 overflow-hidden py-0">
 				<div className="flex items-center justify-between border-b border-border bg-muted/20 px-5 py-3.5">
 					<span className="text-sm font-semibold text-foreground">Configured Domains ({domains.length})</span>
-					<span className="text-2xs text-muted-foreground">Requires SPF & DKIM DNS records</span>
+					<Button variant="ghost" size="xs" onClick={() => void loadHealth(true)}>
+						<RefreshCw />
+						<span>Re-check all</span>
+					</Button>
 				</div>
 
 				{loading ? (
@@ -386,38 +410,25 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 								key={d.id}
 								className="flex flex-col justify-between gap-3 p-4 transition-colors hover:bg-muted/30 md:flex-row md:items-center md:px-5"
 							>
-								<div className="min-w-0 space-y-1">
+								<div className="min-w-0 space-y-1.5">
 									<div className="flex flex-wrap items-center gap-2">
-										{d.verified ? (
-											<CheckCircle2 className="size-4 shrink-0 text-success" />
-										) : (
-											<Clock className="size-4 shrink-0 text-warning" />
-										)}
-
 										<span className="font-mono text-sm font-semibold text-foreground">
 											{d.name}
 										</span>
-
-										{d.verified ? (
-											<Badge variant="success">VERIFIED</Badge>
-										) : (
-											<Badge variant="warning">PENDING DNS</Badge>
+										{health?.get(d.id) && (
+											<span className="text-2xs text-muted-foreground">
+												{health.get(d.id)!.mailboxes}{" "}
+												{health.get(d.id)!.mailboxes === 1 ? "mailbox" : "mailboxes"}
+											</span>
 										)}
-
-										<span
-											className="inline-flex items-center gap-1 text-2xs text-muted-foreground"
-											title={d.dkim_selector ? "DKIM selector active" : "DKIM not configured"}
-										>
-											{d.dkim_selector ? (
-												<ShieldCheck className="size-3.5 text-success" />
-											) : (
-												<ShieldOff className="size-3.5 text-muted-foreground/40" />
-											)}
-											<span>{d.dkim_selector ? "DKIM Configured" : "No DKIM"}</span>
-										</span>
 									</div>
-
-									<div className="font-mono text-2xs text-muted-foreground">ID: {d.id}</div>
+									{healthError ? (
+										<p className="text-2xs text-muted-foreground">
+											Could not check Cloudflare. Showing the last saved state.
+										</p>
+									) : (
+										<HealthChips health={health?.get(d.id)} />
+									)}
 								</div>
 
 								<div className="flex shrink-0 items-center gap-2">
@@ -433,13 +444,13 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 										disabled={verifying === d.id}
 									>
 										<RefreshCw className={verifying === d.id ? "animate-spin" : ""} />
-										<span>{verifying === d.id ? "Checking..." : "Verify DNS"}</span>
+										<span>{verifying === d.id ? "Checking…" : "Re-check"}</span>
 									</Button>
 
 									<Button
 										variant="ghost"
 										size="icon-sm"
-										aria-label="Delete domain"
+										aria-label="Remove domain"
 										onClick={() => setDeleteId(d.id)}
 										className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
 									>

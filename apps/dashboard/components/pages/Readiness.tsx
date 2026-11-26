@@ -14,6 +14,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
 import type { CatalogZone } from "@/components/pages/Domains";
+import {
+	ENABLE_EXPLAINER,
+	RECEIVING_WARNING,
+	SENDING_NAME_HELP,
+	defaultSendingName,
+} from "@/components/modules/domains/copy";
 
 const STEPS = ["Account", "Infrastructure", "Domain", "Launch"];
 const SCOPES = ["Zone Read", "DNS Write", "Email Sending", "Email Routing"];
@@ -33,7 +39,6 @@ export default function ReadinessPage({
 	const [zones, setZones] = useState<CatalogZone[]>(initialCatalog);
 	const [error, setError] = useState<string | null>(catalogError);
 	const [busy, setBusy] = useState<string | null>(null);
-	const [phase, setPhase] = useState<string | null>(null);
 	const [useSubdomain, setUseSubdomain] = useState(true);
 	const [checking, setChecking] = useState(false);
 
@@ -59,24 +64,14 @@ export default function ReadinessPage({
 	}
 
 	async function enable(zone: CatalogZone) {
-		const name = useSubdomain ? `mail.${zone.zoneName}` : zone.zoneName;
 		setBusy(zone.zoneName);
 		setError(null);
-		const phases = ["Resolving zone", "Creating sending name", "Publishing DNS", "Checking routing"];
-		let index = 0;
-		setPhase(phases[0]);
-		const timer = setInterval(() => {
-			index = Math.min(phases.length - 1, index + 1);
-			setPhase(phases[index]);
-		}, 700);
 		try {
-			await enableSetupDomain(zone.zoneName, name);
+			await enableSetupDomain(zone.zoneName, defaultSendingName(zone.zoneName, useSubdomain));
 			await recheck();
 		} catch (err: unknown) {
 			setError(err instanceof Error ? err.message : "Could not enable domain");
 		} finally {
-			clearInterval(timer);
-			setPhase(null);
 			setBusy(null);
 		}
 	}
@@ -175,9 +170,9 @@ export default function ReadinessPage({
 									</Label>
 								</div>
 							</div>
-							<p className="text-xs text-muted-foreground">
-								A subdomain keeps sending reputation off the apex domain.
-							</p>
+							<p className="text-xs text-muted-foreground">{ENABLE_EXPLAINER}</p>
+							<p className="text-xs text-muted-foreground">{SENDING_NAME_HELP}</p>
+							<p className="text-xs text-warning-muted-foreground">{RECEIVING_WARNING}</p>
 							{zones.length === 0 ? (
 								<p className="text-xs text-muted-foreground">
 									No zones yet. Add one in Cloudflare, then re-test.
@@ -187,7 +182,7 @@ export default function ReadinessPage({
 									<div key={zone.zoneName} className="flex items-center justify-between gap-3">
 										<div>
 											<p className="font-mono text-xs">
-												{useSubdomain ? `mail.${zone.zoneName}` : zone.zoneName}
+												{defaultSendingName(zone.zoneName, useSubdomain)}
 											</p>
 											<p className="text-2xs text-muted-foreground">{zone.zoneName}</p>
 										</div>
@@ -196,14 +191,15 @@ export default function ReadinessPage({
 											disabled={!!busy || !status.token.active}
 											onClick={() => void enable(zone)}
 										>
-											{busy === zone.zoneName ? (phase ?? "Enabling…") : "Enable"}
+											{busy === zone.zoneName ? "Setting up…" : "Enable"}
 										</Button>
 									</div>
 								))
 							)}
-							{phase && (
+							{busy && (
 								<p className="flex items-center gap-2 text-xs text-muted-foreground">
-									<Spinner className="size-3" /> {phase}
+									<Spinner className="size-3" /> Setting up sending and receiving. This can take a few
+									seconds.
 								</p>
 							)}
 						</CardContent>
