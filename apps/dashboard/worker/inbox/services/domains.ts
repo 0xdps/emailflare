@@ -5,22 +5,28 @@ import {
 	DOMAIN_STEPS,
 	buildPlan,
 	classifyMx,
+	checkRecord,
 	deriveReceiving,
 	deriveSending,
+	emailBelongsToDomain,
 	generateId,
 	receivingRecommended,
 	type DomainFacts,
 	type DomainHealth,
 	type DomainPlan,
 	type DomainStep,
+	type RecordCheck,
 	type StepResult,
 } from "@/lib/core";
-import { makeDb } from "../db.ts";
+import { deleteDomainCascade, makeDb } from "../db.ts";
 import { inboxWorkerName, type Env } from "../env.ts";
 import {
 	CloudflareApiError,
 	createSendingSubdomain,
+	deleteSendingSubdomain,
+	disableCatchAll,
 	enableEmailRouting,
+	sendEmail,
 	getCatchAllRule,
 	getSendingSubdomain,
 	getSubdomainDnsRecords,
@@ -362,10 +368,9 @@ export async function checkDomainHealth(env: Env, opts: { fresh?: boolean } = {}
 	const rows = await domains.find();
 	const workerName = inboxWorkerName(env);
 
-	const counts = await env.DB.prepare(
-		"SELECT d.id AS id, COUNT(i.id) AS n FROM domains d LEFT JOIN inboxes i ON lower(i.email) LIKE '%@' || lower(d.name) GROUP BY d.id",
-	).all<{ id: string; n: number }>();
-	const mailboxes = new Map((counts.results ?? []).map((r) => [r.id, r.n]));
+	const inboxes = await env.DB.prepare("SELECT email FROM inboxes").all<{ email: string }>();
+	const mailboxCount = (domainName: string) =>
+		(inboxes.results ?? []).filter((i) => emailBelongsToDomain(i.email, domainName)).length;
 
 	// Several domains can share a zone (apex and mail.), and the catch-all belongs to the zone.
 	const rules = new Map<string, Promise<Awaited<ReturnType<typeof getCatchAllRule>> | null>>();
@@ -414,7 +419,7 @@ export async function checkDomainHealth(env: Env, opts: { fresh?: boolean } = {}
 				sending,
 				receiving: receiving.state,
 				receivingTarget: receiving.target,
-				mailboxes: mailboxes.get(row.id) ?? 0,
+				mailboxes: mailboxCount(row.name),
 				checkedAt,
 			};
 		}),
@@ -424,4 +429,189 @@ export async function checkDomainHealth(env: Env, opts: { fresh?: boolean } = {}
 		() => undefined,
 	);
 	return health;
+}
+
+// ── Domain detail ─────────────────────────────────────────────────────────────
+
+async function loadDomain(env: Env, id: string) {
+	const domain = await makeDb(env.DB).domains.findOne({ where: { id } });
+	if (!domain) throw new Error("Domain not found");
+	return domain;
+}
+
+/** Compares every DNS record Cloudflare expects for sending with what the zone really holds. */
+export async function checkDomainRecords(
+	env: Env,
+	id: string,
+): Promise<{ records: RecordCheck[]; sendingEnabled: boolean | null }> {
+	const domain = await loadDomain(env, id);
+	const token = env.CF_API_TOKEN;
+	if (!domain.cf_subdomain_id) return { records: [], sendingEnabled: null };
+
+	const [expected, sub] = await Promise.all([
+		getSubdomainDnsRecords(domain.cf_zone_id, domain.cf_subdomain_id, token),
+		getSendingSubdomain(domain.cf_zone_id, domain.cf_subdomain_id, token).catch(() => null),
+	]);
+	const records = await Promise.all(
+		expected.map(async (record) => {
+			const found = await listDnsRecords(domain.cf_zone_id, token, { type: record.type, name: record.name });
+			return checkRecord(
+				{ type: record.type, name: record.name, content: record.content, ttl: record.ttl },
+				found,
+			);
+		}),
+	);
+	return { records, sendingEnabled: sub ? sub.enabled : null };
+}
+
+/**
+ * Writes the records that are missing. Records that exist with another value are left alone:
+ * overwriting them could break mail the reader set up on purpose, so they are reported instead.
+ */
+export async function fixDomainRecords(env: Env, id: string) {
+	const domain = await loadDomain(env, id);
+	const token = env.CF_API_TOKEN;
+	const before = await checkDomainRecords(env, id);
+	const missing = before.records.filter((r) => r.status === "missing");
+	if (missing.length > 0) {
+		await upsertDnsRecords(
+			domain.cf_zone_id,
+			missing.map((r) => ({ type: r.type, name: r.name, content: r.content, ttl: r.ttl })),
+			token,
+		);
+	}
+	const after = await checkDomainRecords(env, id);
+	if (after.sendingEnabled !== null) {
+		await makeDb(env.DB).domains.update({
+			where: { id },
+			set: { verified: after.sendingEnabled ? 1 : 0, ...(after.sendingEnabled ? { dns_status: "written" } : {}) },
+		});
+	}
+	await invalidateDomainCaches(env);
+	return { ...after, fixed: missing.length };
+}
+
+/**
+ * Points a mailbox's domain at this inbox. A catch-all that already sends mail somewhere else
+ * is never replaced from here; that needs the explicit choice made on the domain page.
+ */
+export async function configureInboxRouting(env: Env, email: string): Promise<{ configured: boolean; error?: string }> {
+	try {
+		const token = env.CF_API_TOKEN;
+		const domain = email.split("@")[1];
+		const zone = await getZoneByHostname(domain, token);
+		if (!zone) return { configured: false, error: `No active Cloudflare zone found for "${domain}"` };
+
+		const rule = await getCatchAllRule(zone.id, token).catch(() => null);
+		const receiving = deriveReceiving(rule, inboxWorkerName(env));
+		if (receiving.state === "ready") return { configured: true };
+		if (receiving.state === "elsewhere") {
+			return {
+				configured: false,
+				error: `Mail for ${domain} is routed to ${receiving.target ?? "another destination"}. Turn on receiving for the domain to route it here.`,
+			};
+		}
+		await enableEmailRouting(zone.id, token);
+		await setCatchAllToWorker(zone.id, inboxWorkerName(env), token);
+		return { configured: true };
+	} catch (err) {
+		return { configured: false, error: err instanceof Error ? err.message : "Email Routing configuration failed" };
+	}
+}
+
+/** The explicit choice: send this domain's incoming mail to the inbox, replacing the current catch-all. */
+export async function enableReceiving(env: Env, id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+	const domain = await loadDomain(env, id);
+	try {
+		await enableEmailRouting(domain.cf_zone_id, env.CF_API_TOKEN);
+		await setCatchAllToWorker(domain.cf_zone_id, inboxWorkerName(env), env.CF_API_TOKEN);
+		await makeDb(env.DB).domains.update({ where: { id }, set: { routing_status: "ready" } });
+		await env.DB.prepare(
+			"UPDATE inboxes SET routing_configured = 1, routing_error = NULL WHERE lower(email) LIKE ?",
+		)
+			.bind(`%@${domain.name.toLowerCase()}`)
+			.run();
+		await invalidateDomainCaches(env);
+		return { ok: true };
+	} catch (err) {
+		return { ok: false, error: err instanceof Error ? err.message : "Could not turn on receiving" };
+	}
+}
+
+export async function sendDomainTestEmail(
+	env: Env,
+	id: string,
+	to: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+	const domain = await loadDomain(env, id);
+	try {
+		await sendEmail(
+			{
+				from: { address: `test@${domain.name}`, name: "EmailFlare" },
+				to,
+				subject: `EmailFlare test from ${domain.name}`,
+				text: `This message confirms that ${domain.name} can send mail through EmailFlare.\n\nIf you received it, sending works. Reply to it to check that receiving works too.`,
+			},
+			env.CF_API_TOKEN,
+			env.CF_ACCOUNT_ID,
+		);
+		return { ok: true };
+	} catch (err) {
+		return { ok: false, error: err instanceof Error ? err.message : "The test email could not be sent" };
+	}
+}
+
+export interface RemoveOptions {
+	/** Also delete the sending domain, and the DNS records Cloudflare created for it. */
+	deleteSending: boolean;
+	/** Also stop the zone's catch-all from delivering to this inbox. Refused if another domain uses the zone. */
+	stopRouting: boolean;
+}
+
+/**
+ * Removes a domain from EmailFlare, and from Cloudflare when asked. Cloudflare is cleaned up first
+ * so a failure leaves the domain listed and the removal can be retried.
+ */
+export async function removeDomain(
+	env: Env,
+	id: string,
+	opts: RemoveOptions,
+): Promise<{ ok: true; cleaned: string[] } | { ok: false; error: string }> {
+	const domain = await loadDomain(env, id);
+	const token = env.CF_API_TOKEN;
+	const cleaned: string[] = [];
+	const missingIsFine = (err: unknown) => err instanceof CloudflareApiError && err.status === 404;
+
+	try {
+		if (opts.stopRouting) {
+			const sharing = await env.DB.prepare("SELECT COUNT(*) AS n FROM domains WHERE cf_zone_id = ? AND id <> ?")
+				.bind(domain.cf_zone_id, id)
+				.first<{ n: number }>();
+			if ((sharing?.n ?? 0) > 0) {
+				return { ok: false, error: "Another domain uses this zone's mail routing, so it was left unchanged." };
+			}
+			const rule = await getCatchAllRule(domain.cf_zone_id, token).catch(() => null);
+			if (deriveReceiving(rule, inboxWorkerName(env)).state === "ready") {
+				await disableCatchAll(domain.cf_zone_id, token);
+				cleaned.push("Stopped routing mail to this inbox");
+			}
+		}
+		if (opts.deleteSending && domain.cf_subdomain_id) {
+			try {
+				await deleteSendingSubdomain(domain.cf_zone_id, domain.cf_subdomain_id, token);
+				cleaned.push("Deleted the sending domain and its DNS records in Cloudflare");
+			} catch (err) {
+				if (!missingIsFine(err)) throw err;
+			}
+		}
+	} catch (err) {
+		return {
+			ok: false,
+			error: `${err instanceof Error ? err.message : "Cloudflare cleanup failed"}. The domain is still listed so you can retry.`,
+		};
+	}
+
+	await deleteDomainCascade(env.DB, id);
+	await invalidateDomainCaches(env);
+	return { ok: true, cleaned };
 }

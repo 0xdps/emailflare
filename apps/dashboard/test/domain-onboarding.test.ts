@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildPlan, classifyMx, receivingRecommended, type DomainFacts } from "../lib/core/domain-plan.ts";
-import { previewDomain, runDomainStep } from "../worker/inbox/services/domains.ts";
+import {
+	checkDomainRecords,
+	configureInboxRouting,
+	fixDomainRecords,
+	previewDomain,
+	removeDomain,
+	runDomainStep,
+} from "../worker/inbox/services/domains.ts";
 import { fakeDB, fakeKV } from "./helpers.ts";
 
 const facts = (over: Partial<DomainFacts> = {}): DomainFacts => ({
@@ -106,6 +113,7 @@ function cloudflare(opts: {
 		calls.push({ method, url });
 		if (url.includes("/zones?")) return ok([{ id: "z1", name: "a.test", status: "active" }]);
 		if (url.includes("/email/sending/subdomains") && url.endsWith("/dns")) return ok(opts.dnsRecords ?? []);
+		if (url.includes("/email/sending/subdomains/") && method === "DELETE") return ok({});
 		if (url.includes("/email/sending/subdomains") && method === "POST") {
 			const created = { tag: "sub1", name: "mail.a.test", enabled: false };
 			subs.push(created);
@@ -148,7 +156,8 @@ function env(initialDomains: Array<Record<string, unknown>> = []) {
 			domains.push({ name: args[1] });
 			return {};
 		}
-		if (sql.includes("FROM domains")) return { all: domains, first: domains.find((d) => d.name === args[0]) };
+		if (sql.includes("FROM domains"))
+			return { all: domains, first: domains.find((d) => d.name === args[0] || d.id === args[0]) };
 		return {};
 	});
 	return {
@@ -267,5 +276,86 @@ test("save inserts the domain once, even if the stage is repeated", async () => 
 		assert.equal(writes.length, 1);
 	} finally {
 		cf.restore();
+	}
+});
+
+// ── Domain detail ─────────────────────────────────────────────────────────────
+
+const row = { id: "d1", name: "mail.a.test", cf_zone_id: "z1", cf_subdomain_id: "sub1", verified: 1 };
+
+test("each expected record is compared with the zone, and only missing ones are written", async () => {
+	const cf = cloudflare({
+		subdomains: [{ tag: "sub1", name: "mail.a.test", enabled: true }],
+		dnsRecords: [
+			{ type: "TXT", name: "mail.a.test", content: "v=spf1 -all", ttl: 1 },
+			{ type: "TXT", name: "cf._domainkey.mail.a.test", content: "k=rsa", ttl: 1 },
+			{ type: "MX", name: "mail.a.test", content: "mx.example.net", ttl: 1 },
+		],
+		zoneRecords: {
+			"TXT:mail.a.test": [{ type: "TXT", name: "mail.a.test", content: '"v=spf1 -all"' }],
+			"MX:mail.a.test": [{ type: "MX", name: "mail.a.test", content: "other.example.net" }],
+		},
+	});
+	try {
+		const { env: e } = env([row]);
+		const check = await checkDomainRecords(e, "d1");
+		assert.deepEqual(
+			check.records.map((r) => r.status),
+			["ok", "missing", "wrong"],
+		);
+		await fixDomainRecords(e, "d1");
+		const writes = cf.calls.filter((c) => c.method === "POST" && c.url.includes("/dns_records"));
+		assert.equal(writes.length, 1, "only the missing record is written; the different one is left alone");
+	} finally {
+		cf.restore();
+	}
+});
+
+test("a mailbox never replaces a catch-all that sends mail elsewhere", async () => {
+	const cf = cloudflare({ catchAll: { enabled: true, actions: [{ type: "forward", value: ["me@x.test"] }] } });
+	try {
+		const result = await configureInboxRouting(env().env, "support@a.test");
+		assert.equal(result.configured, false);
+		assert.match(result.error ?? "", /forward: me@x\.test/);
+		assert.ok(!cf.calls.some((c) => c.method === "PUT"));
+	} finally {
+		cf.restore();
+	}
+});
+
+test("a mailbox turns routing on when nothing is routed, and leaves our own rule alone", async () => {
+	const none = cloudflare({ catchAll: { enabled: false, actions: [] } });
+	try {
+		assert.equal((await configureInboxRouting(env().env, "support@a.test")).configured, true);
+		assert.ok(none.calls.some((c) => c.method === "PUT"));
+	} finally {
+		none.restore();
+	}
+	const ours = cloudflare({ catchAll: { enabled: true, actions: [{ type: "worker", value: ["emailflare"] }] } });
+	try {
+		assert.equal((await configureInboxRouting(env().env, "support@a.test")).configured, true);
+		assert.ok(!ours.calls.some((c) => c.method === "PUT"));
+	} finally {
+		ours.restore();
+	}
+});
+
+test("removing a domain only touches Cloudflare for what was asked, and keeps the row if cleanup fails", async () => {
+	const cf = cloudflare({ catchAll: { enabled: true, actions: [{ type: "worker", value: ["emailflare"] }] } });
+	const original = globalThis.fetch;
+	try {
+		const plain = env([row]);
+		const res = await removeDomain(plain.env, "d1", { deleteSending: false, stopRouting: false });
+		assert.ok(res.ok);
+		assert.equal(cf.calls.length, 0, "EmailFlare-only removal makes no Cloudflare calls");
+
+		const cleanup = env([row]);
+		const full = await removeDomain(cleanup.env, "d1", { deleteSending: true, stopRouting: true });
+		assert.ok(full.ok && full.cleaned.length === 2);
+		assert.ok(cf.calls.some((c) => c.method === "DELETE" && c.url.includes("/subdomains/sub1")));
+		assert.ok(cf.calls.some((c) => c.method === "PUT" && c.url.includes("catch_all")));
+	} finally {
+		cf.restore();
+		globalThis.fetch = original;
 	}
 });

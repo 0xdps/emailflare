@@ -68,3 +68,45 @@ export function healthHint(health: Pick<DomainHealth, "sending" | "receiving" | 
 	}
 	return null;
 }
+
+/**
+ * Mail addresses that belong to a domain. A sending subdomain such as mail.example.com is
+ * usually paired with mailboxes on example.com, because that is the zone whose catch-all
+ * routes incoming mail, so both names count.
+ */
+export function mailboxDomains(domainName: string): string[] {
+	const labels = domainName.toLowerCase().split(".");
+	const names: string[] = [];
+	for (let i = 0; i <= labels.length - 2; i++) names.push(labels.slice(i).join("."));
+	return names;
+}
+
+export function emailBelongsToDomain(email: string, domainName: string): boolean {
+	const host = email.toLowerCase().split("@")[1] ?? "";
+	return mailboxDomains(domainName).includes(host);
+}
+
+export type RecordStatus = "ok" | "missing" | "wrong";
+
+export interface RecordCheck {
+	type: string;
+	name: string;
+	content: string;
+	ttl: number;
+	status: RecordStatus;
+	/** What the zone has instead, when status is "wrong". */
+	actual?: string;
+}
+
+const normalizeRecordValue = (value: string) => value.replace(/^"|"$/g, "").trim().toLowerCase().replace(/\.$/, "");
+
+/** Compares one expected record with what the zone holds under the same type and name. */
+export function checkRecord(
+	expected: { type: string; name: string; content: string; ttl: number },
+	found: Array<{ content: string }>,
+): RecordCheck {
+	const want = normalizeRecordValue(expected.content);
+	if (found.some((f) => normalizeRecordValue(f.content) === want)) return { ...expected, status: "ok" };
+	if (found.length > 0) return { ...expected, status: "wrong", actual: found[0].content };
+	return { ...expected, status: "missing" };
+}

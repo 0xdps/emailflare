@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deriveReceiving, deriveSending, healthHint } from "../lib/core/domain-health.ts";
+import {
+	checkRecord,
+	emailBelongsToDomain,
+	deriveReceiving,
+	deriveSending,
+	healthHint,
+	mailboxDomains,
+} from "../lib/core/domain-health.ts";
 import { checkDomainHealth } from "../worker/inbox/services/domains.ts";
 import { fakeDB, fakeKV } from "./helpers.ts";
 
@@ -42,7 +49,8 @@ type Row = Record<string, unknown>;
 function healthEnv(rows: Row[]) {
 	const updates: Array<{ id: unknown; set: string }> = [];
 	const db = fakeDB((sql, args) => {
-		if (sql.includes("COUNT(i.id)")) return { all: rows.map((r) => ({ id: r.id, n: r.id === "d1" ? 2 : 0 })) };
+		if (sql.includes("FROM inboxes"))
+			return { all: [{ email: "a@mail.a.test" }, { email: "b@a.test" }, { email: "c@z.test" }] };
 		if (sql.toUpperCase().startsWith("SELECT")) return { all: rows };
 		if (sql.toUpperCase().startsWith("UPDATE")) updates.push({ id: args[args.length - 1], set: sql });
 	});
@@ -142,4 +150,22 @@ test("health is cached, and fresh bypasses the cache", async () => {
 	} finally {
 		globalThis.fetch = original;
 	}
+});
+
+test("a sending subdomain counts mailboxes on itself and on its parent zone", () => {
+	assert.deepEqual(mailboxDomains("mail.a.test"), ["mail.a.test", "a.test"]);
+	assert.deepEqual(mailboxDomains("a.test"), ["a.test"]);
+	assert.equal(emailBelongsToDomain("Support@A.test", "mail.a.test"), true);
+	assert.equal(emailBelongsToDomain("x@other.test", "mail.a.test"), false);
+	assert.equal(emailBelongsToDomain("x@test", "a.test"), false);
+});
+
+test("record checks tolerate quoting, case and trailing dots, and report different values", () => {
+	const want = { type: "TXT", name: "mail.a.test", content: "v=spf1 include:x -all", ttl: 1 };
+	assert.equal(checkRecord(want, [{ content: '"V=SPF1 include:x -all"' }]).status, "ok");
+	assert.equal(checkRecord({ ...want, type: "CNAME", content: "t.cf.net" }, [{ content: "T.CF.net." }]).status, "ok");
+	assert.deepEqual(checkRecord(want, []).status, "missing");
+	const wrong = checkRecord(want, [{ content: "v=spf1 -all" }]);
+	assert.equal(wrong.status, "wrong");
+	assert.equal(wrong.actual, "v=spf1 -all");
 });

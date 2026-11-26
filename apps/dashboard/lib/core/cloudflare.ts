@@ -230,6 +230,11 @@ export async function listSendingSubdomains(zoneId: string, cfApiToken: string):
 	return cfFetch<CFSubdomain[]>(`/zones/${zoneId}/email/sending/subdomains`, cfApiToken);
 }
 
+/** Disables sending on a subdomain and removes the DNS records Cloudflare created for it. */
+export async function deleteSendingSubdomain(zoneId: string, subdomainId: string, cfApiToken: string): Promise<void> {
+	await cfFetch(`/zones/${zoneId}/email/sending/subdomains/${subdomainId}`, cfApiToken, { method: "DELETE" });
+}
+
 // ── DNS Records ───────────────────────────────────────────────────────────────
 
 export interface CFDnsRecord {
@@ -364,6 +369,19 @@ export async function setCatchAllToWorker(
 			name: ruleName,
 			matchers: [{ type: "all" }],
 			actions: [{ type: "worker", value: [workerName] }],
+		}),
+	});
+}
+
+/** Stops the zone's catch-all from delivering anywhere. Used when a domain leaves EmailFlare. */
+export async function disableCatchAll(zoneId: string, cfApiToken: string): Promise<void> {
+	await cfFetch(`/zones/${zoneId}/email/routing/rules/catch_all`, cfApiToken, {
+		method: "PUT",
+		body: JSON.stringify({
+			enabled: false,
+			name: "Catch-all (disabled by EmailFlare)",
+			matchers: [{ type: "all" }],
+			actions: [{ type: "drop" }],
 		}),
 	});
 }

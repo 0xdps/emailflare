@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, RefreshCw, Trash2, ExternalLink, Globe, Copy } from "lucide-react";
-import { toast } from "sonner";
+import Link from "next/link";
+import { Plus, RefreshCw, Settings2, Globe } from "lucide-react";
 import api from "@/lib/api";
-import { verifyDomainAction, deleteDomainAction, getDomainHealthAction } from "@/app/actions/domains";
+import { verifyDomainAction, getDomainHealthAction } from "@/app/actions/domains";
 import EnableDomainDialog, { type EnableTarget } from "@/components/modules/domains/EnableDomainDialog";
 import HealthChips from "@/components/modules/domains/HealthChips";
-import { REMOVE_DOMAIN_NOTE, defaultSendingName } from "@/components/modules/domains/copy";
+import { defaultSendingName } from "@/components/modules/domains/copy";
 import type { DomainHealth } from "@/lib/core/domain-health";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,14 +17,6 @@ import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { PageHeader, PageShell } from "@/components/app/PageHeader";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-	DialogFooter,
-} from "@/components/ui/dialog";
 
 export interface Domain {
 	id: string;
@@ -70,11 +62,6 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 	const [form, setForm] = useState({ name: "", zoneName: "" });
 	const [enableTarget, setEnableTarget] = useState<EnableTarget | null>(null);
 	const [verifying, setVerifying] = useState<string | null>(null);
-	const [dnsModal, setDnsModal] = useState<{
-		domain: Domain;
-		records: DnsRecord[];
-	} | null>(null);
-	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [health, setHealth] = useState<Map<string, DomainHealth> | null>(null);
 	const [healthError, setHealthError] = useState(false);
 
@@ -138,46 +125,8 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		}
 	}
 
-	async function handleDns(domain: Domain) {
-		const { data } = await api.get<DnsRecord[]>(`/api/domains/${domain.id}/dns`);
-		setDnsModal({ domain, records: data });
-	}
-
-	async function confirmDelete() {
-		if (!deleteId) return;
-		await deleteDomainAction(deleteId);
-		setDeleteId(null);
-		await load();
-		void loadHealth(true);
-	}
-
-	function handleCopy(text: string, label: string) {
-		navigator.clipboard.writeText(text).then(
-			() => toast.success(`${label} copied`),
-			() => toast.error("Could not copy to clipboard"),
-		);
-	}
-
 	return (
 		<PageShell>
-			{/* Delete Confirm Dialog */}
-			<Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Remove domain from EmailFlare?</DialogTitle>
-						<DialogDescription>{REMOVE_DOMAIN_NOTE}</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setDeleteId(null)}>
-							Cancel
-						</Button>
-						<Button variant="destructive" onClick={confirmDelete}>
-							Remove domain
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-
 			<EnableDomainDialog
 				target={enableTarget}
 				onClose={() => setEnableTarget(null)}
@@ -311,9 +260,12 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 							>
 								<div className="min-w-0 space-y-1.5">
 									<div className="flex flex-wrap items-center gap-2">
-										<span className="font-mono text-sm font-semibold text-foreground">
+										<Link
+											href={`/domains/${d.id}`}
+											className="font-mono text-sm font-semibold text-foreground hover:underline"
+										>
 											{d.name}
-										</span>
+										</Link>
 										{health?.get(d.id) && (
 											<span className="text-2xs text-muted-foreground">
 												{health.get(d.id)!.mailboxes}{" "}
@@ -331,13 +283,15 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 								</div>
 
 								<div className="flex shrink-0 items-center gap-2">
-									<Button variant="outline" size="sm" onClick={() => handleDns(d)}>
-										<ExternalLink />
-										<span>DNS Records</span>
-									</Button>
-
+									<Link
+										href={`/domains/${d.id}`}
+										className={buttonVariants({ variant: "outline", size: "sm" })}
+									>
+										<Settings2 />
+										<span>Manage</span>
+									</Link>
 									<Button
-										variant="outline"
+										variant="ghost"
 										size="sm"
 										onClick={() => handleVerify(d)}
 										disabled={verifying === d.id}
@@ -345,107 +299,12 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 										<RefreshCw className={verifying === d.id ? "animate-spin" : ""} />
 										<span>{verifying === d.id ? "Checking…" : "Re-check"}</span>
 									</Button>
-
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										aria-label="Remove domain"
-										onClick={() => setDeleteId(d.id)}
-										className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-									>
-										<Trash2 />
-									</Button>
 								</div>
 							</div>
 						))}
 					</div>
 				)}
 			</Card>
-
-			{/* DNS Records Modal */}
-			<Dialog open={!!dnsModal} onOpenChange={(open) => !open && setDnsModal(null)}>
-				<DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-					<DialogHeader>
-						<div className="flex items-center gap-2">
-							<DialogTitle>DNS Configuration Records</DialogTitle>
-							{dnsModal?.domain.verified ? (
-								<Badge variant="success">VERIFIED</Badge>
-							) : (
-								<Badge variant="secondary">CONFIGURED</Badge>
-							)}
-						</div>
-						<DialogDescription>
-							{dnsModal?.domain.verified ? (
-								<>
-									Active DNS configuration records for{" "}
-									<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
-									These records are already configured in Cloudflare.
-								</>
-							) : (
-								<>
-									DNS configuration records for{" "}
-									<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
-									Cloudflare will verify them once propagation completes.
-								</>
-							)}
-						</DialogDescription>
-					</DialogHeader>
-
-					<div className="space-y-3 pt-2">
-						{dnsModal?.records.map((r, i) => (
-							<div
-								key={i}
-								className="space-y-2 rounded-xl border border-border bg-muted/20 p-3.5 text-xs"
-							>
-								<div className="flex items-center justify-between">
-									<Badge variant="soft" className="font-mono font-bold">
-										{r.type}
-									</Badge>
-									<span className="text-2xs text-muted-foreground">TTL: {r.ttl || "Auto"}</span>
-								</div>
-
-								<div className="space-y-1">
-									<div className="flex items-center justify-between text-2xs text-muted-foreground">
-										<span>Hostname / Name</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="xs"
-											className="text-primary"
-											onClick={() => handleCopy(r.name, "Hostname")}
-										>
-											<Copy />
-											<span>Copy</span>
-										</Button>
-									</div>
-									<div className="rounded border border-border bg-background p-2 font-mono text-xs break-all text-foreground select-all">
-										{r.name}
-									</div>
-								</div>
-
-								<div className="space-y-1">
-									<div className="flex items-center justify-between text-2xs text-muted-foreground">
-										<span>Value / Target</span>
-										<Button
-											type="button"
-											variant="ghost"
-											size="xs"
-											className="text-primary"
-											onClick={() => handleCopy(r.content, "Value")}
-										>
-											<Copy />
-											<span>Copy</span>
-										</Button>
-									</div>
-									<div className="rounded border border-border bg-background p-2 font-mono text-xs break-all text-foreground select-all">
-										{r.content}
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
-				</DialogContent>
-			</Dialog>
 		</PageShell>
 	);
 }

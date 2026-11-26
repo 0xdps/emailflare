@@ -3,22 +3,30 @@
 import { env } from "cloudflare:workers";
 import { z } from "zod";
 import { DOMAIN_STEPS, domainCreateSchema, type DomainHealth } from "@/lib/core";
-import { makeDb, deleteDomainCascade } from "@/worker/inbox/db";
+import { makeDb } from "@/worker/inbox/db";
 import { getSendingSubdomain } from "@/worker/inbox/services/cloudflare";
 import {
 	checkDomainHealth,
+	checkDomainRecords,
+	enableReceiving,
+	fixDomainRecords,
 	invalidateDomainCaches,
 	previewDomain,
+	removeDomain,
 	runDomainStep,
+	sendDomainTestEmail,
 } from "@/worker/inbox/services/domains";
+import { writeAudit } from "@/worker/inbox/lib/audit";
 import { requireAdmin } from "./auth";
-import { inboxWorkerName, type Env } from "@/worker/inbox/env";
+import type { Env } from "@/worker/inbox/env";
 
 /** Read-only look at the zone, and the plan for enabling the domain. Writes nothing. */
 export async function previewDomainAction(input: { name: string; zoneName?: string }) {
 	await requireAdmin();
 	return previewDomain(env as unknown as Env, domainCreateSchema.parse(input));
 }
+
+const workerDb = () => (env as unknown as Env).DB;
 
 const stepSchema = domainCreateSchema.extend({
 	step: z.enum(DOMAIN_STEPS),
@@ -63,15 +71,50 @@ export async function verifyDomainAction(id: string): Promise<{ verified: boolea
 	return { verified: cfData.enabled };
 }
 
-export async function deleteDomainAction(id: string): Promise<{ deleted: boolean }> {
+export async function getDomainRecordsAction(id: string) {
 	await requireAdmin();
-	const workerEnv = env as unknown as Env;
-	const { domains } = makeDb(workerEnv.DB);
+	return checkDomainRecords(env as unknown as Env, id);
+}
 
-	const domain = await domains.findOne({ where: { id } });
-	if (!domain) throw new Error("Domain not found");
+/** Writes the DNS records that are missing; see fixDomainRecords. */
+export async function fixDomainRecordsAction(id: string) {
+	await requireAdmin();
+	return fixDomainRecords(env as unknown as Env, id);
+}
 
-	await deleteDomainCascade(workerEnv.DB, domain.id);
-	await invalidateDomainCaches(workerEnv);
-	return { deleted: true };
+/** Sends this domain's incoming mail to the inbox, replacing the zone's current catch-all. */
+export async function enableReceivingAction(id: string) {
+	const session = await requireAdmin();
+	const result = await enableReceiving(env as unknown as Env, id);
+	if (result.ok)
+		await writeAudit(workerDb(), {
+			actorId: session.userId,
+			action: "domain.enable_receiving",
+			targetType: "domain",
+			targetId: id,
+		});
+	return result;
+}
+
+/** Sends a test message from the domain to the signed-in admin. */
+export async function sendDomainTestEmailAction(id: string) {
+	const session = await requireAdmin();
+	return sendDomainTestEmail(env as unknown as Env, id, session.email);
+}
+
+const removeSchema = z.object({ deleteSending: z.boolean(), stopRouting: z.boolean() });
+
+export async function removeDomainAction(id: string, options: z.input<typeof removeSchema>) {
+	const session = await requireAdmin();
+	const result = await removeDomain(env as unknown as Env, id, removeSchema.parse(options));
+	if (result.ok) {
+		await writeAudit(workerDb(), {
+			actorId: session.userId,
+			action: "domain.remove",
+			targetType: "domain",
+			targetId: id,
+			detail: result.cleaned.join("; ") || "EmailFlare only",
+		});
+	}
+	return result;
 }
