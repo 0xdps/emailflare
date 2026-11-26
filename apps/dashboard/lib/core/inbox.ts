@@ -173,7 +173,7 @@ export interface EmailPayload {
  */
 export const userLoginSchema = z.object({
 	email: z.string().email().toLowerCase(),
-	password: z.string().min(1),
+	password: z.string().min(1).max(1024),
 });
 
 export type UserLoginInput = z.infer<typeof userLoginSchema>;

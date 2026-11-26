@@ -1,7 +1,4 @@
-// Cookie-based session for inbox: email+password auth.
-// Fresh permissions are resolved from the database on every authenticated request.
-
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT } from "jose";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { Hono } from "hono";
@@ -9,83 +6,22 @@ import type { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { Context } from "hono";
 import type { HonoEnv } from "../env.ts";
+import {
+	SESSION_ALG,
+	SESSION_COOKIE,
+	SESSION_TTL,
+	sessionKey,
+	verifySession,
+	type AccessType,
+	type SessionPayload,
+	type UserType,
+} from "../lib/session.ts";
 
-export type UserType = "admin" | "member";
-export type AccessType = "inbox" | "api" | "tester";
+export type { AccessType, SessionPayload, UserType };
 
-export interface SessionPayload {
-	userId: string;
-	userType: UserType;
-	accessTypes: AccessType[];
-	name: string;
-	email: string;
-}
-
-const SESSION_COOKIE = "ef_inbox_session";
-const SESSION_TTL = 60 * 60 * 24 * 7; // 7 days
-const ALG = "HS256";
-
-function secretKey(secret: string): Uint8Array {
-	return new TextEncoder().encode(secret);
-}
-
-function parseAccessTypes(raw?: string | null): AccessType[] {
-	if (!raw) return [];
-	try {
-		const parsed = JSON.parse(raw);
-		if (Array.isArray(parsed)) {
-			return parsed.filter((t): t is AccessType => t === "inbox" || t === "api" || t === "tester");
-		}
-	} catch {
-		// ignore
-	}
-	return [];
-}
-
-/**
- * Resolves session from cookie, then fetches the fresh user row from DB
- * so demotions and capability revocations take effect immediately.
- */
+/** Resolves the session from the cookie; see verifySession for what is checked. */
 export async function getSession(c: Context<HonoEnv>): Promise<SessionPayload | null> {
-	const token = getCookie(c, SESSION_COOKIE);
-	if (!token) return null;
-	try {
-		const { payload } = await jwtVerify(token, secretKey(c.env.SESSION_SECRET));
-		const userId = payload["userId"];
-		if (typeof userId !== "string" || !userId) {
-			return null;
-		}
-
-		// Always re-read the user from DB on each request
-		const user = await c.env.DB.prepare(
-			"SELECT id, name, email, user_type, access_types FROM users WHERE id = ? LIMIT 1",
-		)
-			.bind(userId)
-			.first<{
-				id: string;
-				name: string;
-				email: string;
-				user_type: "admin" | "member";
-				access_types: string;
-			}>();
-
-		if (!user) return null;
-
-		const userType: UserType = user.user_type === "admin" ? "admin" : "member";
-		// Admin automatically has all capabilities; for members, let the set be the set (no forcing inbox).
-		const accessTypes: AccessType[] =
-			userType === "admin" ? ["inbox", "api", "tester"] : parseAccessTypes(user.access_types);
-
-		return {
-			userId: user.id,
-			userType,
-			accessTypes,
-			name: user.name,
-			email: user.email,
-		};
-	} catch {
-		return null;
-	}
+	return verifySession(getCookie(c, SESSION_COOKIE), c.env);
 }
 
 export async function saveSession(c: Context<HonoEnv>, data: SessionPayload): Promise<void> {
@@ -99,10 +35,10 @@ export async function saveSession(c: Context<HonoEnv>, data: SessionPayload): Pr
 		name: data.name,
 		email: data.email,
 	})
-		.setProtectedHeader({ alg: ALG })
+		.setProtectedHeader({ alg: SESSION_ALG })
 		.setIssuedAt()
 		.setExpirationTime(`${SESSION_TTL}s`)
-		.sign(secretKey(c.env.SESSION_SECRET));
+		.sign(sessionKey(c.env.SESSION_SECRET));
 
 	const hostname = new URL(c.req.url).hostname;
 	const isLocalDev = hostname === "localhost" || hostname === "127.0.0.1";
