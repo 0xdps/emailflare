@@ -4,15 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check, ExternalLink } from "lucide-react";
 import api from "@/lib/api";
-import { enableSetupDomain, getReadiness, type Readiness } from "@/app/actions/setup";
+import { getReadiness, type Readiness } from "@/app/actions/setup";
+import EnableDomainDialog, { type EnableTarget } from "@/components/modules/domains/EnableDomainDialog";
 import AppLogo from "@/components/AppLogo";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
 import type { CatalogZone } from "@/components/pages/Domains";
 import {
 	ENABLE_EXPLAINER,
@@ -38,8 +36,7 @@ export default function ReadinessPage({
 	const [status, setStatus] = useState<Readiness | null>(initialReadiness);
 	const [zones, setZones] = useState<CatalogZone[]>(initialCatalog);
 	const [error, setError] = useState<string | null>(catalogError);
-	const [busy, setBusy] = useState<string | null>(null);
-	const [useSubdomain, setUseSubdomain] = useState(true);
+	const [target, setTarget] = useState<EnableTarget | null>(null);
 	const [checking, setChecking] = useState(false);
 
 	const ready = (status?.domains ?? 0) > 0;
@@ -60,19 +57,6 @@ export default function ReadinessPage({
 			setError(err instanceof Error ? err.message : "Could not recheck the token.");
 		} finally {
 			setChecking(false);
-		}
-	}
-
-	async function enable(zone: CatalogZone) {
-		setBusy(zone.zoneName);
-		setError(null);
-		try {
-			await enableSetupDomain(zone.zoneName, defaultSendingName(zone.zoneName, useSubdomain));
-			await recheck();
-		} catch (err: unknown) {
-			setError(err instanceof Error ? err.message : "Could not enable domain");
-		} finally {
-			setBusy(null);
 		}
 	}
 
@@ -157,22 +141,8 @@ export default function ReadinessPage({
 				{!ready ? (
 					<Card>
 						<CardContent className="space-y-3">
-							<div className="flex items-center justify-between">
-								<p className="text-sm font-medium">Sending domain</p>
-								<div className="flex items-center gap-2">
-									<Checkbox
-										id="use-subdomain"
-										checked={useSubdomain}
-										onCheckedChange={(checked) => setUseSubdomain(checked === true)}
-									/>
-									<Label htmlFor="use-subdomain" className="text-xs font-normal">
-										Use mail. subdomain
-									</Label>
-								</div>
-							</div>
+							<p className="text-sm font-medium">Sending domain</p>
 							<p className="text-xs text-muted-foreground">{ENABLE_EXPLAINER}</p>
-							<p className="text-xs text-muted-foreground">{SENDING_NAME_HELP}</p>
-							<p className="text-xs text-warning-muted-foreground">{RECEIVING_WARNING}</p>
 							{zones.length === 0 ? (
 								<p className="text-xs text-muted-foreground">
 									No zones yet. Add one in Cloudflare, then re-test.
@@ -181,26 +151,25 @@ export default function ReadinessPage({
 								zones.map((zone) => (
 									<div key={zone.zoneName} className="flex items-center justify-between gap-3">
 										<div>
-											<p className="font-mono text-xs">
-												{defaultSendingName(zone.zoneName, useSubdomain)}
+											<p className="font-mono text-xs">{zone.zoneName}</p>
+											<p className="text-2xs text-muted-foreground">
+												Sends from {defaultSendingName(zone.zoneName)} by default
 											</p>
-											<p className="text-2xs text-muted-foreground">{zone.zoneName}</p>
 										</div>
 										<Button
 											size="sm"
-											disabled={!!busy || !status.token.active}
-											onClick={() => void enable(zone)}
+											disabled={!status.token.active}
+											onClick={() =>
+												setTarget({
+													zoneName: zone.zoneName,
+													sendingName: defaultSendingName(zone.zoneName),
+												})
+											}
 										>
-											{busy === zone.zoneName ? "Setting up…" : "Enable"}
+											Set up
 										</Button>
 									</div>
 								))
-							)}
-							{busy && (
-								<p className="flex items-center gap-2 text-xs text-muted-foreground">
-									<Spinner className="size-3" /> Setting up sending and receiving. This can take a few
-									seconds.
-								</p>
 							)}
 						</CardContent>
 					</Card>
@@ -231,6 +200,8 @@ export default function ReadinessPage({
 						</CardContent>
 					</Card>
 				)}
+
+				<EnableDomainDialog target={target} onClose={() => setTarget(null)} onFinished={() => void recheck()} />
 
 				{error && (
 					<Alert variant="destructive">

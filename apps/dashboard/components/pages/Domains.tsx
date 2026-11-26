@@ -4,27 +4,15 @@ import { useEffect, useState } from "react";
 import { Plus, RefreshCw, Trash2, ExternalLink, Globe, Copy } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
-import {
-	createDomainAction,
-	verifyDomainAction,
-	deleteDomainAction,
-	getDomainHealthAction,
-} from "@/app/actions/domains";
+import { verifyDomainAction, deleteDomainAction, getDomainHealthAction } from "@/app/actions/domains";
+import EnableDomainDialog, { type EnableTarget } from "@/components/modules/domains/EnableDomainDialog";
 import HealthChips from "@/components/modules/domains/HealthChips";
-import {
-	ENABLE_EXPLAINER,
-	RECEIVING_WARNING,
-	REMOVE_DOMAIN_NOTE,
-	SENDING_NAME_HELP,
-	defaultSendingName,
-} from "@/components/modules/domains/copy";
+import { REMOVE_DOMAIN_NOTE, defaultSendingName } from "@/components/modules/domains/copy";
 import type { DomainHealth } from "@/lib/core/domain-health";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Spinner } from "@/components/ui/spinner";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
@@ -80,16 +68,11 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 	const [loading, setLoading] = useState(!initialDomains);
 	const [manual, setManual] = useState(false);
 	const [form, setForm] = useState({ name: "", zoneName: "" });
-	const [sendingChoice, setSendingChoice] = useState<CatalogZone | null>(null);
-	const [sendingName, setSendingName] = useState("");
-	const [formError, setFormError] = useState<string | null>(null);
-	const [submitting, setSubmitting] = useState<string | null>(null);
-	const [manualRecords, setManualRecords] = useState<DnsRecord[] | null>(null);
+	const [enableTarget, setEnableTarget] = useState<EnableTarget | null>(null);
 	const [verifying, setVerifying] = useState<string | null>(null);
 	const [dnsModal, setDnsModal] = useState<{
 		domain: Domain;
 		records: DnsRecord[];
-		isManual?: boolean;
 	} | null>(null);
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [health, setHealth] = useState<Map<string, DomainHealth> | null>(null);
@@ -128,39 +111,18 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 		void loadHealth();
 	}, []);
 
-	async function enable(name: string, zoneName: string) {
-		setFormError(null);
-		setSubmitting(zoneName);
-		setManualRecords(null);
-		try {
-			const result = await createDomainAction({ name, zoneName });
-			setSendingChoice(null);
-			setManual(false);
-			setForm({ name: "", zoneName: "" });
-			await load();
-			void loadHealth(true);
-			if (result.dns.status === "manual" && result.dns.records.length > 0) {
-				const records = result.dns.records.map((record) => ({ ...record, required: true }));
-				setManualRecords(records);
-				const { data } = await api.get<Domain[]>("/api/domains");
-				setDomains(data);
-				const created = data.find((domain) => domain.name === name);
-				if (created) setDnsModal({ domain: created, records, isManual: true });
-			}
-		} catch (err: unknown) {
-			setFormError(err instanceof Error ? err.message : "Failed to enable domain");
-		} finally {
-			setSubmitting(null);
-		}
+	function startEnable(zone: CatalogZone) {
+		setEnableTarget({
+			zoneName: zone.zoneName,
+			sendingName:
+				zone.sendingName && zone.sending !== "off" ? zone.sendingName : defaultSendingName(zone.zoneName),
+		});
 	}
 
-	// Always confirm first: enabling can replace the zone's Email Routing catch-all rule.
-	function startEnable(zone: CatalogZone) {
-		setFormError(null);
-		setSendingName(
-			zone.sendingName && zone.sending !== "off" ? zone.sendingName : defaultSendingName(zone.zoneName),
-		);
-		setSendingChoice(zone);
+	// The dialog saved a domain: refresh everything that depends on it.
+	async function handleEnabled() {
+		await load();
+		void loadHealth(true);
 	}
 
 	async function handleVerify(domain: Domain) {
@@ -178,7 +140,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 
 	async function handleDns(domain: Domain) {
 		const { data } = await api.get<DnsRecord[]>(`/api/domains/${domain.id}/dns`);
-		setDnsModal({ domain, records: data, isManual: false });
+		setDnsModal({ domain, records: data });
 	}
 
 	async function confirmDelete() {
@@ -216,48 +178,11 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 				</DialogContent>
 			</Dialog>
 
-			<Dialog open={!!sendingChoice} onOpenChange={(open) => !open && setSendingChoice(null)}>
-				<DialogContent className="sm:max-w-md">
-					<DialogHeader>
-						<DialogTitle>Enable {sendingChoice?.zoneName}</DialogTitle>
-						<DialogDescription>{ENABLE_EXPLAINER}</DialogDescription>
-					</DialogHeader>
-					{formError && (
-						<Alert variant="destructive">
-							<AlertDescription>{formError}</AlertDescription>
-						</Alert>
-					)}
-					<form
-						className="space-y-3"
-						onSubmit={(e) => {
-							e.preventDefault();
-							if (sendingChoice) void enable(sendingName, sendingChoice.zoneName);
-						}}
-					>
-						<Label htmlFor="sending-name">Send from</Label>
-						<Input
-							id="sending-name"
-							value={sendingName}
-							onChange={(e) => setSendingName(e.target.value.toLowerCase().trim())}
-							className="font-mono text-xs"
-							required
-						/>
-						<p className="text-2xs text-muted-foreground">{SENDING_NAME_HELP}</p>
-						<Alert variant="warning">
-							<AlertDescription>{RECEIVING_WARNING}</AlertDescription>
-						</Alert>
-						<DialogFooter>
-							<Button type="button" variant="ghost" onClick={() => setSendingChoice(null)}>
-								Cancel
-							</Button>
-							<Button type="submit" disabled={!!submitting}>
-								{submitting && <Spinner />}
-								Enable
-							</Button>
-						</DialogFooter>
-					</form>
-				</DialogContent>
-			</Dialog>
+			<EnableDomainDialog
+				target={enableTarget}
+				onClose={() => setEnableTarget(null)}
+				onFinished={() => void handleEnabled()}
+			/>
 
 			<PageHeader
 				eyebrow="DNS & Delivery"
@@ -307,12 +232,7 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 								{zone.enabled ? (
 									<Badge variant="outline">Enabled</Badge>
 								) : (
-									<Button
-										size="sm"
-										disabled={submitting === zone.zoneName}
-										onClick={() => startEnable(zone)}
-									>
-										{submitting === zone.zoneName && <Spinner />}
+									<Button size="sm" onClick={() => startEnable(zone)}>
 										Enable
 									</Button>
 								)}
@@ -327,52 +247,31 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 					className="space-y-3 rounded-xl border border-border p-4"
 					onSubmit={(e) => {
 						e.preventDefault();
-						void enable(form.name, form.zoneName || form.name);
+						const zoneName = form.zoneName.trim();
+						setEnableTarget({ zoneName, sendingName: form.name.trim() || defaultSendingName(zoneName) });
+						setManual(false);
+						setForm({ name: "", zoneName: "" });
 					}}
 				>
-					<p className="text-xs text-muted-foreground">Only if the zone is missing from the list above.</p>
+					<p className="text-xs text-muted-foreground">
+						Only if the domain is missing from the list above. It must be an active zone in the Cloudflare
+						account this token belongs to.
+					</p>
 					<Input
 						value={form.zoneName}
 						onChange={(e) => setForm({ ...form, zoneName: e.target.value.toLowerCase().trim() })}
-						placeholder="Zone name, e.g. acme.com"
+						placeholder="Domain, e.g. acme.com"
 						className="font-mono text-xs"
 						required
 					/>
 					<Input
 						value={form.name}
 						onChange={(e) => setForm({ ...form, name: e.target.value.toLowerCase().trim() })}
-						placeholder="Sending name, e.g. mail.acme.com"
+						placeholder="Send from (optional), defaults to mail.<domain>"
 						className="font-mono text-xs"
-						required
 					/>
-					{formError && <p className="text-xs text-destructive">{formError}</p>}
-					<Button type="submit" disabled={!!submitting}>
-						Enable this name
-					</Button>
+					<Button type="submit">Review</Button>
 				</form>
-			)}
-
-			{manualRecords && (
-				<Alert>
-					<AlertDescription className="flex items-center justify-between gap-3">
-						<span>DNS was not written. Add the records, then verify.</span>
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							onClick={() => {
-								const domain = domains.find((item) =>
-									manualRecords.some(
-										(record) => record.name.endsWith(item.name) || record.name === item.name,
-									),
-								);
-								if (domain) setDnsModal({ domain, records: manualRecords, isManual: true });
-							}}
-						>
-							View DNS records
-						</Button>
-					</AlertDescription>
-				</Alert>
 			)}
 
 			{/* Domains Card */}
@@ -471,19 +370,12 @@ export default function DomainsPage({ initialDomains, initialCatalog, catalogErr
 							<DialogTitle>DNS Configuration Records</DialogTitle>
 							{dnsModal?.domain.verified ? (
 								<Badge variant="success">VERIFIED</Badge>
-							) : dnsModal?.isManual ? (
-								<Badge variant="warning">ACTION REQUIRED</Badge>
 							) : (
 								<Badge variant="secondary">CONFIGURED</Badge>
 							)}
 						</div>
 						<DialogDescription>
-							{dnsModal?.isManual ? (
-								<>
-									These records could not be written automatically. Add them in Cloudflare DNS for{" "}
-									<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.
-								</>
-							) : dnsModal?.domain.verified ? (
+							{dnsModal?.domain.verified ? (
 								<>
 									Active DNS configuration records for{" "}
 									<strong className="font-mono text-foreground">{dnsModal?.domain.name}</strong>.

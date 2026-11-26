@@ -3,7 +3,6 @@
 import { env } from "cloudflare:workers";
 import { getCloudflareTokenStatus } from "@/worker/inbox/services/cloudflare";
 import { requireAdmin } from "./auth";
-import { createDomainAction } from "./domains";
 import type { Env } from "@/worker/inbox/env";
 
 export interface Readiness {
@@ -52,9 +51,4 @@ export async function getReadiness(): Promise<Readiness> {
 		readyDomain: ready?.name ?? null,
 		adminEmail: admin?.email ?? null,
 	};
-}
-
-export async function enableSetupDomain(zoneName: string, sendingName: string) {
-	await requireAdmin();
-	return createDomainAction({ name: sendingName, zoneName });
 }

@@ -9,3 +9,4 @@ export * from "./thread-views.ts";
 export * from "./thread-list.ts";
 export * from "./signing.ts";
 export * from "./domain-health.ts";
+export * from "./domain-plan.ts";

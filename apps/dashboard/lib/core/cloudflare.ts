@@ -301,6 +301,25 @@ export async function upsertDnsRecords(
 	return { written, failed };
 }
 
+export interface CFZoneDnsRecord {
+	type: string;
+	name: string;
+	content: string;
+	priority?: number;
+}
+
+/** Read-only lookup of records already in the zone, optionally narrowed by type and exact name. */
+export async function listDnsRecords(
+	zoneId: string,
+	cfApiToken: string,
+	query: { type?: string; name?: string } = {},
+): Promise<CFZoneDnsRecord[]> {
+	const params = new URLSearchParams({ per_page: "100" });
+	if (query.type) params.set("type", query.type);
+	if (query.name) params.set("name", query.name);
+	return cfFetch<CFZoneDnsRecord[]>(`/zones/${zoneId}/dns_records?${params}`, cfApiToken);
+}
+
 // ── Email Routing (inbound) ──────────────────────────────────────────────────
 
 export interface CFEmailRoutingCatchAll {

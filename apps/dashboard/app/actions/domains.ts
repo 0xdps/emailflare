@@ -1,18 +1,35 @@
 "use server";
 
 import { env } from "cloudflare:workers";
-import { domainCreateSchema, type DomainHealth } from "@/lib/core";
+import { z } from "zod";
+import { DOMAIN_STEPS, domainCreateSchema, type DomainHealth } from "@/lib/core";
 import { makeDb, deleteDomainCascade } from "@/worker/inbox/db";
 import { getSendingSubdomain } from "@/worker/inbox/services/cloudflare";
-import { checkDomainHealth, enableDomain, invalidateDomainCaches } from "@/worker/inbox/services/domains";
+import {
+	checkDomainHealth,
+	invalidateDomainCaches,
+	previewDomain,
+	runDomainStep,
+} from "@/worker/inbox/services/domains";
 import { requireAdmin } from "./auth";
 import { inboxWorkerName, type Env } from "@/worker/inbox/env";
 
-export async function createDomainAction(input: { name: string; zoneName?: string }) {
+/** Read-only look at the zone, and the plan for enabling the domain. Writes nothing. */
+export async function previewDomainAction(input: { name: string; zoneName?: string }) {
 	await requireAdmin();
-	const result = await enableDomain(env as unknown as Env, domainCreateSchema.parse(input));
-	if (!result.ok) throw new Error(result.error);
-	return { ...result.domain, dns: result.dns, routing: result.routing };
+	return previewDomain(env as unknown as Env, domainCreateSchema.parse(input));
+}
+
+const stepSchema = domainCreateSchema.extend({
+	step: z.enum(DOMAIN_STEPS),
+	receiving: z.boolean(),
+	dnsStatus: z.enum(["written", "manual"]).optional(),
+});
+
+/** Runs one stage of enabling a domain. Safe to repeat; see runDomainStep. */
+export async function runDomainStepAction(input: z.input<typeof stepSchema>) {
+	await requireAdmin();
+	return runDomainStep(env as unknown as Env, stepSchema.parse(input));
 }
 
 /** Live sending and receiving state for every domain; see checkDomainHealth. */

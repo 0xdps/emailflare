@@ -1,7 +1,20 @@
 // Domain onboarding and health, shared by the Hono API and the Next.js server actions.
 // One implementation so the two entry points cannot drift apart.
 
-import { deriveReceiving, deriveSending, generateId, type DomainHealth } from "@/lib/core";
+import {
+	DOMAIN_STEPS,
+	buildPlan,
+	classifyMx,
+	deriveReceiving,
+	deriveSending,
+	generateId,
+	receivingRecommended,
+	type DomainFacts,
+	type DomainHealth,
+	type DomainPlan,
+	type DomainStep,
+	type StepResult,
+} from "@/lib/core";
 import { makeDb } from "../db.ts";
 import { inboxWorkerName, type Env } from "../env.ts";
 import {
@@ -12,11 +25,10 @@ import {
 	getSendingSubdomain,
 	getSubdomainDnsRecords,
 	getZoneByHostname,
+	listDnsRecords,
 	listSendingSubdomains,
 	setCatchAllToWorker,
 	upsertDnsRecords,
-	type CFDnsRecord,
-	type CFSubdomain,
 	type CFZone,
 } from "./cloudflare.ts";
 
@@ -30,15 +42,6 @@ export const PERMISSION_MESSAGE =
 function isPermissionError(error: CloudflareApiError): boolean {
 	return error.code === 10000 || error.code === 9109 || error.status === 401 || error.status === 403;
 }
-
-export type EnableDomainResult =
-	| {
-			ok: true;
-			domain: Awaited<ReturnType<ReturnType<typeof makeDb>["domains"]["insert"]>>;
-			dns: { status: "written" | "manual"; records: CFDnsRecord[] };
-			routing: "ready" | "pending";
-	  }
-	| { ok: false; status: 409 | 422 | 502; error: string; cfCode?: number | null; cfPath?: string | null };
 
 async function resolveZone(name: string, zoneName: string | undefined, token: string): Promise<CFZone | null> {
 	const host = name.toLowerCase();
@@ -55,79 +58,289 @@ export async function invalidateDomainCaches(env: Pick<Env, "RATE_LIMIT_KV">): P
 	]).catch(() => undefined);
 }
 
-export async function enableDomain(env: Env, input: { name: string; zoneName?: string }): Promise<EnableDomainResult> {
+interface DomainInput {
+	name: string;
+	zoneName?: string;
+}
+
+const NO_ZONE = (name: string) =>
+	`No active Cloudflare zone found for "${name}". Add the domain to this Cloudflare account, or use a name the token can read.`;
+
+function failure(step: DomainStep, error: unknown): StepResult {
+	if (error instanceof CloudflareApiError) {
+		return isPermissionError(error)
+			? {
+					step,
+					status: "failed",
+					message: PERMISSION_MESSAGE,
+					httpStatus: 422,
+					cfCode: error.code,
+					cfPath: error.path,
+				}
+			: {
+					step,
+					status: "failed",
+					message: error.message,
+					httpStatus: 502,
+					cfCode: error.code,
+					cfPath: error.path,
+				};
+	}
+	throw error;
+}
+
+// ── Preflight (read-only) ─────────────────────────────────────────────────────
+
+const normalizeTxt = (value: string) => value.replace(/^"|"$/g, "").trim();
+
+/**
+ * Looks at what the zone already has so the reader can see what enabling will change.
+ * Nothing is written. Anything Cloudflare will not tell us becomes "unknown" rather than an error.
+ */
+export async function previewDomain(
+	env: Env,
+	input: DomainInput,
+): Promise<{ ok: true; facts: DomainFacts; plan: DomainPlan } | { ok: false; error: string }> {
 	const token = env.CF_API_TOKEN;
-	if (!token) return { ok: false, status: 422, error: "CF_API_TOKEN is not configured." };
+	if (!token) return { ok: false, error: "CF_API_TOKEN is not configured." };
+
+	const { name, zoneName } = input;
+	let zone: CFZone | null;
+	try {
+		zone = await resolveZone(name, zoneName, token);
+	} catch (error) {
+		if (error instanceof CloudflareApiError) {
+			return { ok: false, error: isPermissionError(error) ? PERMISSION_MESSAGE : error.message };
+		}
+		throw error;
+	}
+	if (!zone) return { ok: false, error: NO_ZONE(name) };
+
+	const { domains } = makeDb(env.DB);
+	const registered = !!(await domains.findOne({ where: { name } }));
+	const workerName = inboxWorkerName(env);
+
+	const [subdomains, mxRecords, rule, dmarc] = await Promise.all([
+		listSendingSubdomains(zone.id, token).catch(() => null),
+		listDnsRecords(zone.id, token, { type: "MX", name: zone.name }).catch(() => null),
+		getCatchAllRule(zone.id, token).catch(() => null),
+		listDnsRecords(zone.id, token, { type: "TXT", name: `_dmarc.${zone.name}` }).catch(() => null),
+	]);
+
+	const existing = subdomains?.find((s) => s.name === name) ?? null;
+	let sendingRecords: DomainFacts["sendingRecords"] = null;
+	if (existing) {
+		try {
+			const expected = await getSubdomainDnsRecords(zone.id, existing.tag, token);
+			const present = await Promise.all(
+				expected.map(async (record) => {
+					const found = await listDnsRecords(zone.id, token, { type: record.type, name: record.name });
+					return found.some((f) => normalizeTxt(f.content) === normalizeTxt(record.content));
+				}),
+			);
+			sendingRecords = {
+				present: present.filter(Boolean).length,
+				missing: present.filter((ok) => !ok).length,
+			};
+		} catch {
+			sendingRecords = null;
+		}
+	}
+
+	const mxHosts = (mxRecords ?? []).map((r) => r.content);
+	const receiving = deriveReceiving(rule, workerName);
+	const facts: DomainFacts = {
+		zoneName: zone.name,
+		sendingName: name,
+		registered,
+		sendingSubdomain: existing ? "exists" : "new",
+		sendingRecords,
+		mx: { state: mxRecords === null ? "unknown" : classifyMx(mxHosts), hosts: mxHosts },
+		catchAll: {
+			state:
+				receiving.state === "ready"
+					? "ours"
+					: receiving.state === "elsewhere"
+						? "elsewhere"
+						: receiving.state === "off"
+							? "off"
+							: rule === null
+								? "unknown"
+								: "none",
+			target: receiving.target,
+		},
+		dmarc: dmarc === null ? "unknown" : dmarc.some((r) => /^"?v=DMARC1/i.test(r.content)) ? "present" : "absent",
+	};
+	return { ok: true, facts, plan: buildPlan(facts, { receiving: receivingRecommended(facts) }) };
+}
+
+// ── Staged apply ──────────────────────────────────────────────────────────────
+
+/**
+ * Runs one stage of enabling a domain. Every stage is safe to repeat, so a failed stage can be
+ * retried on its own and an abandoned run can be resumed by running the stages again.
+ */
+export async function runDomainStep(
+	env: Env,
+	input: DomainInput & { step: DomainStep; receiving: boolean; dnsStatus?: "written" | "manual" },
+): Promise<StepResult> {
+	const { step } = input;
+	const token = env.CF_API_TOKEN;
+	if (!token) return { step, status: "failed", message: "CF_API_TOKEN is not configured.", httpStatus: 422 };
 
 	const { name, zoneName } = input;
 	const { domains } = makeDb(env.DB);
 
-	if (await domains.findOne({ where: { name } })) {
-		return { ok: false, status: 409, error: `Domain "${name}" is already registered` };
-	}
-
-	const zone = await resolveZone(name, zoneName, token);
-	if (!zone) {
+	if (step === "routing" && !input.receiving) {
 		return {
-			ok: false,
-			status: 422,
-			error: `No active Cloudflare zone found for "${name}". Add the domain to this Cloudflare account, or use a name the token can read.`,
+			step,
+			status: "skipped",
+			message: "Receiving was left off. Mail routing is unchanged.",
+			routing: "pending",
 		};
 	}
 
-	let sub: CFSubdomain;
-	try {
-		const existing = await listSendingSubdomains(zone.id, token);
-		sub = existing.find((s) => s.name === name) ?? (await createSendingSubdomain(zone.id, name, token));
-	} catch (error) {
-		if (!(error instanceof CloudflareApiError)) throw error;
-		return isPermissionError(error)
-			? { ok: false, status: 422, error: PERMISSION_MESSAGE, cfCode: error.code, cfPath: error.path }
-			: { ok: false, status: 502, error: error.message, cfCode: error.code, cfPath: error.path };
+	if (step === "sending" && (await domains.findOne({ where: { name } }))) {
+		return { step, status: "failed", message: `Domain "${name}" is already registered`, httpStatus: 409 };
 	}
 
-	const [dns, routing] = await Promise.all([
-		(async (): Promise<{ status: "written" | "manual"; records: CFDnsRecord[] }> => {
-			try {
-				const records = await getSubdomainDnsRecords(zone.id, sub.tag, token);
-				if (records.length === 0) return { status: "written", records };
-				const write = await upsertDnsRecords(zone.id, records, token);
-				return { status: write.failed.length === 0 ? "written" : "manual", records };
-			} catch (error) {
-				if (!(error instanceof CloudflareApiError)) throw error;
-				return { status: "manual", records: [] };
-			}
-		})(),
-		(async (): Promise<"ready" | "pending"> => {
-			try {
-				await enableEmailRouting(zone.id, token);
-				await setCatchAllToWorker(zone.id, inboxWorkerName(env), token);
-				return "ready";
-			} catch {
-				return "pending";
-			}
-		})(),
-	]);
+	let zone: CFZone | null;
+	try {
+		zone = await resolveZone(name, zoneName, token);
+	} catch (error) {
+		return failure(step, error);
+	}
+	if (!zone) return { step, status: "failed", message: NO_ZONE(name), httpStatus: 422 };
 
-	const domain = await domains.insert({
-		id: generateId(),
-		name,
-		cf_zone_id: zone.id,
-		cf_subdomain_id: sub.tag,
-		dkim_selector: sub.dkim_selector ?? null,
-		return_path_domain: sub.return_path_domain ?? null,
-		verified: sub.enabled ? 1 : 0,
-		dns_status: dns.status,
-		routing_status: routing,
-		created_at: new Date().toISOString(),
-	});
+	try {
+		if (step === "sending") {
+			const existing = (await listSendingSubdomains(zone.id, token)).find((s) => s.name === name);
+			if (existing)
+				return { step, status: "done", message: `${name} already exists in Cloudflare Email Sending.` };
+			await createSendingSubdomain(zone.id, name, token);
+			return { step, status: "done", message: `Created ${name} in Cloudflare Email Sending.` };
+		}
 
-	await invalidateDomainCaches(env);
+		if (step === "dns") {
+			const sub = (await listSendingSubdomains(zone.id, token)).find((s) => s.name === name);
+			if (!sub)
+				return {
+					step,
+					status: "failed",
+					message: "The sending domain does not exist yet. Run the first step again.",
+				};
+			const records = await getSubdomainDnsRecords(zone.id, sub.tag, token);
+			if (records.length === 0)
+				return { step, status: "done", dnsStatus: "written", message: "No DNS records are needed." };
+			const write = await upsertDnsRecords(zone.id, records, token);
+			if (write.failed.length === 0) {
+				return {
+					step,
+					status: "done",
+					dnsStatus: "written",
+					message: `Published ${records.length} DNS records.`,
+				};
+			}
+			return {
+				step,
+				status: "warning",
+				dnsStatus: "manual",
+				records: records.map((r) => ({
+					type: r.type,
+					name: r.name,
+					content: r.content,
+					ttl: r.ttl,
+					priority: r.priority,
+				})),
+				message: `${write.failed.length} of ${records.length} records could not be written (${write.failed[0].error}). Add them in Cloudflare DNS, then re-check the domain.`,
+			};
+		}
+
+		if (step === "routing") {
+			await enableEmailRouting(zone.id, token);
+			await setCatchAllToWorker(zone.id, inboxWorkerName(env), token);
+			return {
+				step,
+				status: "done",
+				routing: "ready",
+				message: "Email Routing is on and the catch-all points at this inbox.",
+			};
+		}
+
+		// save
+		const sub = (await listSendingSubdomains(zone.id, token)).find((s) => s.name === name);
+		if (!sub)
+			return {
+				step,
+				status: "failed",
+				message: "The sending domain does not exist yet. Run the first step again.",
+			};
+		if (await domains.findOne({ where: { name } })) {
+			return { step, status: "done", message: "Already saved." };
+		}
+		const rule = input.receiving ? await getCatchAllRule(zone.id, token).catch(() => null) : null;
+		await domains.insert({
+			id: generateId(),
+			name,
+			cf_zone_id: zone.id,
+			cf_subdomain_id: sub.tag,
+			dkim_selector: sub.dkim_selector ?? null,
+			return_path_domain: sub.return_path_domain ?? null,
+			verified: sub.enabled ? 1 : 0,
+			dns_status: input.dnsStatus ?? (sub.enabled ? "written" : "manual"),
+			routing_status: deriveReceiving(rule, inboxWorkerName(env)).state === "ready" ? "ready" : "pending",
+			created_at: new Date().toISOString(),
+		});
+		await invalidateDomainCaches(env);
+		return { step, status: "done", message: `${name} is saved. Cloudflare confirms sending once DNS propagates.` };
+	} catch (error) {
+		return failure(step, error);
+	}
+}
+
+export type EnableDomainResult =
+	| {
+			ok: true;
+			domain: Awaited<ReturnType<ReturnType<typeof makeDb>["domains"]["insert"]>>;
+			dns: { status: "written" | "manual"; records: StepResult["records"] };
+			routing: "ready" | "pending";
+	  }
+	| { ok: false; status: 409 | 422 | 502; error: string; cfCode?: number | null; cfPath?: string | null };
+
+/** The whole flow in one call, for the public API. Receiving is on unless the caller opts out. */
+export async function enableDomain(
+	env: Env,
+	input: DomainInput & { receiving?: boolean },
+): Promise<EnableDomainResult> {
+	const receiving = input.receiving ?? true;
+	const results: StepResult[] = [];
+	let dnsStatus: "written" | "manual" | undefined;
+
+	for (const step of DOMAIN_STEPS) {
+		// Routing is independent of DNS, so a routing problem does not stop the domain from being saved.
+		const result = await runDomainStep(env, { ...input, step, receiving, dnsStatus });
+		results.push(result);
+		if (result.dnsStatus) dnsStatus = result.dnsStatus;
+		if (result.status === "failed" && step !== "routing") {
+			return {
+				ok: false,
+				status: result.httpStatus ?? 502,
+				error: result.message,
+				cfCode: result.cfCode,
+				cfPath: result.cfPath,
+			};
+		}
+	}
+
+	const domain = await makeDb(env.DB).domains.findOne({ where: { name: input.name } });
+	if (!domain) return { ok: false, status: 502, error: "The domain could not be saved." };
+	const dns = results.find((r) => r.step === "dns");
+	const routing = results.find((r) => r.step === "routing");
 	return {
 		ok: true,
 		domain,
-		dns: { status: dns.status, records: dns.status === "manual" ? dns.records : [] },
-		routing,
+		dns: { status: dns?.dnsStatus ?? "written", records: dns?.status === "warning" ? dns.records : [] },
+		routing: routing?.routing ?? "pending",
 	};
 }
 
