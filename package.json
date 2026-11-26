@@ -5,7 +5,7 @@
 	"scripts": {
 		"build": "pnpm --filter @emailflare/dashboard build",
 		"build:dashboard": "pnpm --filter @emailflare/dashboard build",
-		"test": "tsx --test apps/dashboard/test/*.test.ts",
+		"test": "tsx --tsconfig apps/dashboard/tsconfig.json --test apps/dashboard/test/*.test.ts",
 		"typecheck": "pnpm --filter @emailflare/dashboard exec tsc --noEmit",
 		"lint:ui": "node apps/dashboard/scripts/check-ui-tokens.mjs",
 		"format": "prettier --write .",

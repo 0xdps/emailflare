@@ -12,6 +12,7 @@
 
 import { z } from "zod";
 import { customAlphabet } from "nanoid";
+import { trackingSignature } from "./signing.ts";
 
 export {
 	isBounce,
@@ -504,15 +505,30 @@ export function dailySendLimit(raw: string | number | undefined | null): number 
 	return Math.floor(parsed);
 }
 
-/** Rewrite http(s) links through the click tracker and append a 1x1 open pixel. */
-export function instrumentTracking(html: string, origin: string, token: string): string {
+/**
+ * Rewrite http(s) links through the click tracker and append a 1x1 open pixel.
+ * Each tracked link carries a signature (`s`) so the redirect cannot be pointed at other URLs.
+ */
+export async function instrumentTracking(html: string, origin: string, token: string, secret: string): Promise<string> {
 	const base = origin.replace(/\/$/, "");
 	if (!base || !html) return html;
-	const rewritten = html.replace(/href=(["'])(https?:\/\/[^"']+)\1/gi, (_match, quote: string, url: string) => {
-		if (url.startsWith(`${base}/v1/`)) return `href=${quote}${url}${quote}`;
-		const tracked = `${base}/v1/t/c/${encodeURIComponent(token)}?u=${encodeURIComponent(url)}`;
-		return `href=${quote}${tracked}${quote}`;
+
+	const links: Array<{ match: string; quote: string; url: string }> = [];
+	html.replace(/href=(["'])(https?:\/\/[^"']+)\1/gi, (match: string, quote: string, url: string) => {
+		links.push({ match, quote, url });
+		return match;
 	});
+
+	let rewritten = html;
+	for (const { match, quote, url } of links) {
+		if (url.startsWith(`${base}/v1/`)) continue;
+		// Attribute values are HTML-escaped; the redirect target must be the real URL.
+		const target = url.replace(/&amp;/gi, "&");
+		const signature = await trackingSignature(secret, token, target);
+		const tracked = `${base}/v1/t/c/${encodeURIComponent(token)}?u=${encodeURIComponent(target)}&s=${signature}`;
+		rewritten = rewritten.split(match).join(`href=${quote}${tracked}${quote}`);
+	}
+
 	const pixel = `<img src="${base}/v1/t/o/${encodeURIComponent(token)}" width="1" height="1" alt="" style="display:none" />`;
 	if (/<\/body>/i.test(rewritten)) return rewritten.replace(/<\/body>/i, `${pixel}</body>`);
 	return rewritten + pixel;

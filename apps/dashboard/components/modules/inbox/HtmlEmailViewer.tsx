@@ -50,8 +50,19 @@ const FRAME_STYLE = `
 	.plain { white-space: pre-wrap; }
 `;
 
-function buildSrcDoc(body: string): string {
-	return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank"><style>${FRAME_STYLE}</style></head><body>${body}</body></html>`;
+// The CSP is the real boundary: the regex rewrite below only swaps in friendly placeholders.
+// Without it, `<td background>`, `<link>`, `@import` and non-background `url()` could still
+// load remote content and report that the message was opened.
+function buildSrcDoc(body: string, allowRemote: boolean): string {
+	const csp = [
+		"default-src 'none'",
+		`img-src data: ${allowRemote ? "https: http:" : ""}`.trim(),
+		"style-src 'unsafe-inline'",
+		"font-src data:",
+		"base-uri 'none'",
+		"form-action 'none'",
+	].join("; ");
+	return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width, initial-scale=1"><base target="_blank"><style>${FRAME_STYLE}</style></head><body>${body}</body></html>`;
 }
 
 function EmailFrame({ srcDoc }: { srcDoc: string }) {
@@ -155,13 +166,17 @@ export default function HtmlEmailViewer({ html, text, className }: HtmlEmailView
 
 			{showingHtml ? (
 				<EmailFrame
-					srcDoc={buildSrcDoc(showImages ? (html as string) : stripRemoteResources(html as string))}
+					srcDoc={buildSrcDoc(
+						showImages ? (html as string) : stripRemoteResources(html as string),
+						showImages,
+					)}
 				/>
 			) : showingText ? (
 				<>
 					<EmailFrame
 						srcDoc={buildSrcDoc(
 							`<div class="plain">${textToHtml(showQuote || !quote ? plain : content)}</div>`,
+							false,
 						)}
 					/>
 					{quote && (

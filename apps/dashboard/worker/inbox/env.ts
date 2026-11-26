@@ -34,6 +34,8 @@ export interface Env {
 	SESSION_SECRET: string;
 	CF_API_TOKEN: string;
 	CF_ACCOUNT_ID: string;
+	// Optional. When set, first-run setup requires this value.
+	SETUP_TOKEN?: string;
 	VAPID_PUBLIC_KEY: string;
 	VAPID_PRIVATE_KEY: string;
 

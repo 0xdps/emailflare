@@ -83,6 +83,9 @@
 			"SESSION_SECRET": {
 				"description": "Signs dashboard sessions. Generate with `openssl rand -hex 32`."
 			},
+			"SETUP_TOKEN": {
+				"description": "Optional. If set, first-run setup requires it, so nobody else can claim the admin account before you. Generate with `openssl rand -hex 16`."
+			},
 			"CF_API_TOKEN": {
 				"description": "Cloudflare API token used to create sending domains and Email Routing rules. Needs Email Sending and Email Routing edit on this account."
 			},

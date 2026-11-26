@@ -14,6 +14,7 @@ import {
 	deliverScheduledSend,
 } from "./inbox/index.ts";
 import type { Env, ScheduledSendMessage, SequenceQueueMessage } from "./inbox/env.ts";
+import { withSecurityHeaders } from "./inbox/lib/security-headers.ts";
 
 export { NotificationsHub } from "./inbox/do/NotificationsHub.ts";
 
@@ -39,18 +40,22 @@ async function setupRedirect(request: Request, env: Env): Promise<Response | nul
 	return Response.redirect(new URL(target, url), 302);
 }
 
+async function route(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+	const { pathname } = new URL(request.url);
+	if (pathname === "/favicon.ico") {
+		return fetch(new URL("/favicon.svg", request.url), request);
+	}
+	if (isApiRequest(request)) {
+		return api.fetch(request, env, ctx);
+	}
+	const redirect = await setupRedirect(request, env);
+	if (redirect) return redirect;
+	return vinextHandler.fetch(request, env, ctx);
+}
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		const { pathname } = new URL(request.url);
-		if (pathname === "/favicon.ico") {
-			return fetch(new URL("/favicon.svg", request.url), request);
-		}
-		if (isApiRequest(request)) {
-			return api.fetch(request, env, ctx);
-		}
-		const redirect = await setupRedirect(request, env);
-		if (redirect) return redirect;
-		return vinextHandler.fetch(request, env, ctx);
+		return withSecurityHeaders(request, await route(request, env, ctx));
 	},
 
 	async email(message: ForwardableEmailMessage, env: Env, ctx: ExecutionContext): Promise<void> {
