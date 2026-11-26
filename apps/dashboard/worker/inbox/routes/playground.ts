@@ -19,7 +19,7 @@ const playgroundSendSchema = z.object({
 	subject: z.string().optional(),
 	templateId: z.string().optional(),
 	templateSlug: z.string().optional(),
-	variables: z.record(z.unknown()).optional(),
+	variables: z.record(z.string(), z.unknown()).optional(),
 	themeId: z.string().optional(),
 	mode: z.enum(["test", "live"]).default("test"),
 	apiKey: z.string().optional(),

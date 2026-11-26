@@ -142,7 +142,7 @@ export const sendSchema = z
 		text: z.string().optional(),
 		templateId: z.string().optional(),
 		templateSlug: z.string().optional(),
-		variables: z.record(z.unknown()).optional(),
+		variables: z.record(z.string(), z.unknown()).optional(),
 		themeId: z.string().optional(),
 		// List management / unsubscribe
 		listId: z.string().optional(),

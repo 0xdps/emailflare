@@ -9,7 +9,7 @@ import { requireAdmin, requireInbox } from "./auth";
 const enrollSchema = z.object({
 	personId: z.string(),
 	fromAddress: z.string().email(),
-	variables: z.record(z.string()).optional(),
+	variables: z.record(z.string(), z.string()).optional(),
 });
 
 export async function createSequenceAction(data: { name: string; steps: any[] }) {

@@ -73,7 +73,7 @@ app.delete("/:id", async (c) => {
 const enrollSchema = z.object({
 	personId: z.string(),
 	fromAddress: z.string().email(),
-	variables: z.record(z.string()).optional(),
+	variables: z.record(z.string(), z.string()).optional(),
 });
 
 // POST /api/inbox/sequences/:id/enroll

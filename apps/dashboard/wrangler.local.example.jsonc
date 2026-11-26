@@ -17,35 +17,35 @@
 			"binding": "DB",
 			"database_name": "emailflare",
 			"database_id": "00000000-0000-0000-0000-000000000000",
-			"migrations_dir": "migrations"
-		}
+			"migrations_dir": "migrations",
+		},
 	],
 	"kv_namespaces": [
 		{
 			"binding": "RATE_LIMIT_KV",
-			"id": "00000000000000000000000000000000"
-		}
+			"id": "00000000000000000000000000000000",
+		},
 	],
 	"r2_buckets": [
 		{
 			"binding": "ATTACHMENTS",
-			"bucket_name": "emailflare-attachments"
-		}
+			"bucket_name": "emailflare-attachments",
+		},
 	],
 	"queues": {
 		"producers": [
 			{
 				"binding": "EMAIL_QUEUE",
-				"queue": "emailflare-sequences"
-			}
+				"queue": "emailflare-sequences",
+			},
 		],
 		"consumers": [
 			{
 				"queue": "emailflare-sequences",
 				"max_batch_size": 10,
-				"max_batch_timeout": 30
-			}
-		]
+				"max_batch_timeout": 30,
+			},
+		],
 	},
 
 	// Plain vars. .dev.vars overrides these during local dev.
@@ -53,6 +53,6 @@
 		// Origin used in invite and unsubscribe links. No trailing slash.
 		"PUBLIC_URL": "http://localhost:5173",
 		// Email Routing catch-all target. Must be a Worker in this account.
-		"INBOX_WORKER_NAME": "emailflare"
-	}
+		"INBOX_WORKER_NAME": "emailflare",
+	},
 }
