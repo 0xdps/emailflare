@@ -64,3 +64,73 @@ export function formatBytes(bytes: number): string {
 	if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
 	return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
+
+const ENTITIES: Record<string, string> = {
+	amp: "&",
+	lt: "<",
+	gt: ">",
+	quot: '"',
+	apos: "'",
+	nbsp: " ",
+	zwnj: "",
+	hellip: "…",
+	ndash: "–",
+	mdash: "—",
+};
+
+/** Best-effort plain text from an HTML body, for previews and the Plain view of HTML-only mail. */
+export function htmlToText(html: string | null | undefined): string {
+	if (!html) return "";
+	return html
+		.replace(/<(head|style|script|title)\b[\s\S]*?<\/\1>/gi, "")
+		.replace(/<!--[\s\S]*?-->/g, "")
+		.replace(/<(br|\/p|\/div|\/tr|\/li|\/h[1-6]|\/table)\b[^>]*>/gi, "\n")
+		.replace(/<[^>]+>/g, "")
+		.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, entity: string) => {
+			if (entity[0] === "#") {
+				const code =
+					entity[1].toLowerCase() === "x" ? parseInt(entity.slice(2), 16) : parseInt(entity.slice(1), 10);
+				return Number.isFinite(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : "";
+			}
+			return ENTITIES[entity.toLowerCase()] ?? match;
+		})
+		.replace(/[ \t\u00a0]+/g, " ")
+		.replace(/ ?\n ?/g, "\n")
+		.replace(/\n{3,}/g, "\n\n")
+		.trim();
+}
+
+/** Escaped HTML for a plain-text body with links made clickable. Whitespace is preserved by the caller's CSS. */
+export function textToHtml(text: string): string {
+	const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	return escaped.replace(/\bhttps?:\/\/[^\s<]+/g, (url) => {
+		const trailing = url.match(/[.,;:!?)\]]+$/)?.[0] ?? "";
+		const href = trailing ? url.slice(0, -trailing.length) : url;
+		return `<a href="${href.replace(/"/g, "&quot;")}" rel="noopener noreferrer">${href}</a>${trailing}`;
+	});
+}
+
+/** Splits a plain-text reply into the new message and the quoted history below it. */
+export function stripQuotedReply(body: string | null | undefined): { content: string; quote: string | null } {
+	if (!body) return { content: "", quote: null };
+
+	const match = body.match(/^On\s.+?wrote:\s*$/m);
+	if (match && match.index !== undefined && match.index > 0) {
+		return { content: body.slice(0, match.index).trim(), quote: body.slice(match.index).trim() };
+	}
+
+	const lines = body.split("\n");
+	const firstQuote = lines.findIndex((l) => /^>\s/.test(l));
+	if (firstQuote > 0) {
+		return {
+			content: lines.slice(0, firstQuote).join("\n").trim(),
+			quote: lines.slice(firstQuote).join("\n").trim(),
+		};
+	}
+	return { content: body.trim(), quote: null };
+}
+
+/** One-line preview that falls back to the HTML body when a message has no plain-text part. */
+export function messagePreview(message: { body_text?: string | null; body_html?: string | null }, max = 140): string {
+	return previewText(message.body_text?.trim() ? message.body_text : htmlToText(message.body_html), max);
+}

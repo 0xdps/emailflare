@@ -25,7 +25,9 @@ import {
 	DialogTitle,
 	DialogFooter,
 } from "@/components/ui/dialog";
-import { avatarTone, initialsOf } from "@/lib/inbox/format";
+import { avatarTone, initialsOf, messagePreview } from "@/lib/inbox/format";
+import AttachmentList from "@/components/modules/inbox/AttachmentList";
+import HtmlEmailViewer from "@/components/modules/inbox/HtmlEmailViewer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,28 +54,6 @@ function relativeTime(dateStr: string) {
 	const days = Math.floor(hrs / 24);
 	if (days < 7) return `${days}d`;
 	return new Date(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
-/**
- * Strip the quoted reply portion from an email body.
- * Detects common "On ... wrote:" headers and removes everything from that
- * point onward, including the `> ` quoted lines that follow.
- */
-function stripQuotedReply(body: string | null | undefined): string {
-	if (!body) return "";
-	// Match "On <date>, <name> <email> wrote:" style headers
-	const replyHeader = /^On\s.+?wrote:\s*$/m;
-	const match = body.match(replyHeader);
-	if (match && match.index !== undefined) {
-		return body.slice(0, match.index).trim();
-	}
-	// Also strip lines that are entirely quoted (start with >)
-	const lines = body.split("\n");
-	const firstQuote = lines.findIndex((l) => /^>\s/.test(l));
-	if (firstQuote > 0) {
-		return lines.slice(0, firstQuote).join("\n").trim();
-	}
-	return body.trim();
 }
 
 // ── Contact row ───────────────────────────────────────────────────────────────
@@ -143,8 +123,7 @@ function EmailCard({
 	const isSent = item.direction === "outbound";
 	const date = new Date(item.timestamp);
 	const subject = item.subject;
-	const body = stripQuotedReply(item.body_text);
-	const preview = body?.replace(/\s+/g, " ").trim().slice(0, 120);
+	const preview = messagePreview(item, 120);
 
 	return (
 		<div
@@ -220,12 +199,9 @@ function EmailCard({
 			</div>
 
 			{open && (
-				<div className="border-t border-border px-4 pt-1 pb-4">
-					{body ? (
-						<p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">{body}</p>
-					) : (
-						<p className="text-sm text-muted-foreground italic">No plain-text content</p>
-					)}
+				<div className="space-y-3 border-t border-border px-4 pt-3 pb-4">
+					<HtmlEmailViewer html={item.body_html} text={item.body_text} />
+					<AttachmentList attachments={item.attachments} />
 				</div>
 			)}
 		</div>

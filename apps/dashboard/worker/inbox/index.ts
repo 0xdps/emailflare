@@ -38,6 +38,7 @@ import totpRouter from "./routes/totp.ts";
 // ── Inbox
 import peopleRouter from "./routes/inbox/people.ts";
 import threadsRouter from "./routes/inbox/threads.ts";
+import attachmentsRouter from "./routes/inbox/attachments.ts";
 import composeRouter from "./routes/inbox/compose.ts";
 import inboxesRouter from "./routes/inbox/inboxes.ts";
 import sequencesRouter from "./routes/inbox/sequences.ts";
@@ -125,6 +126,7 @@ sessionApp.route("/test-emails", guarded(requireTester, testEmailsRouter));
 // 4. Inbox routes (requireInbox)
 sessionApp.route("/inbox/people", guarded(requireInbox, peopleRouter));
 sessionApp.route("/inbox/threads", guarded(requireInbox, threadsRouter));
+sessionApp.route("/inbox/attachments", guarded(requireInbox, attachmentsRouter));
 sessionApp.route("/inbox/compose", guarded(requireInbox, composeRouter));
 sessionApp.route("/inbox/inboxes", guarded(requireInbox, inboxesRouter));
 sessionApp.route("/inbox/sequences", guarded(requireInbox, sequencesRouter));

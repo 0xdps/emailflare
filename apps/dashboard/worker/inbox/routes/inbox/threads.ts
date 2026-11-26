@@ -17,6 +17,7 @@ import {
 	type ThreadListRow,
 } from "@/lib/core";
 import type { HonoEnv } from "../../env.ts";
+import { attachAttachments, hydrateLargeBodies } from "../../lib/messages.ts";
 
 const app = new Hono<HonoEnv>();
 
@@ -228,30 +229,10 @@ app.get("/:id", async (c) => {
 		return c.json({ error: "Thread not found" }, 404);
 	}
 
-	// Populate attachments for messages in this thread
-	const emailIds = messages.map((m: any) => m.id);
-	if (emailIds.length > 0) {
-		const placeholders = emailIds.map(() => "?").join(",");
-		const attRows = await c.env.DB.prepare(
-			`SELECT id, email_id, filename, content_type, size FROM attachments WHERE email_id IN (${placeholders})`,
-		)
-			.bind(...emailIds)
-			.all();
-		const attMap = new Map<string, any[]>();
-		for (const att of (attRows.results ?? []) as any[]) {
-			const list = attMap.get(att.email_id) ?? [];
-			list.push({
-				id: att.id,
-				filename: att.filename,
-				content_type: att.content_type,
-				size: att.size,
-			});
-			attMap.set(att.email_id, list);
-		}
-		for (const m of messages as any[]) {
-			m.attachments = attMap.get(m.id) ?? [];
-		}
-	}
+	await Promise.all([
+		attachAttachments(c.env.DB, messages as any[]),
+		hydrateLargeBodies(c.env.ATTACHMENTS, messages as any[]),
+	]);
 
 	// Resolve counterparty details
 	const personId = messages.find((m: any) => m.person_id)?.person_id;
