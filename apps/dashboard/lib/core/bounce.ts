@@ -11,43 +11,37 @@ export interface BounceMessageView {
 
 export type BounceClass = "hard" | "soft" | "spam_rejection";
 
-const BOUNCE_SUBJECTS = [
-	"delivery status notification",
-	"mail delivery failed",
-	"mail delivery failure",
-	"undelivered mail",
-	"returned mail",
-	"mail system error",
-	"delivery failure",
-	"delivery notification",
-];
+// Mail is only treated as a bounce or complaint when its structure or sender says so. Subject lines
+// and substrings of the sender are attacker-controlled and match plenty of ordinary mail
+// ("Delivery notification", bounce@newsletter.example), which would drop it from the inbox.
+const DSN_SENDERS = ["mailer-daemon", "mail-daemon", "postmaster"];
+const COMPLAINT_SENDERS = ["complaints", "abuse", "fbl"];
 
-const BOUNCE_FROM = ["mailer-daemon", "mail-daemon", "postmaster", "bounce"];
+function contentType(email: BounceMessageView): string {
+	return (email.headers ?? []).find((h) => h.key.toLowerCase() === "content-type")?.value.toLowerCase() ?? "";
+}
 
-const COMPLAINT_SUBJECTS = ["spam complaint", "abuse report", "feedback report", "complaint report"];
-const COMPLAINT_FROM = ["complaints@", "abuse@", "fbl@"];
+function senderLocalPart(email: BounceMessageView): string {
+	return (email.from?.address ?? "").toLowerCase().split("@")[0] ?? "";
+}
 
 export function isBounce(email: BounceMessageView): boolean {
-	const sub = (email.subject ?? "").toLowerCase();
-	const from = (email.from?.address ?? "").toLowerCase();
-	return BOUNCE_SUBJECTS.some((p) => sub.includes(p)) || BOUNCE_FROM.some((p) => from.includes(p));
+	return contentType(email).includes("report-type=delivery-status") || DSN_SENDERS.includes(senderLocalPart(email));
 }
 
 export function isComplaint(email: BounceMessageView): boolean {
-	const sub = (email.subject ?? "").toLowerCase();
-	const from = (email.from?.address ?? "").toLowerCase();
-	const ct = (email.headers ?? []).find((h) => h.key.toLowerCase() === "content-type")?.value ?? "";
-	if (ct.toLowerCase().includes("feedback-report")) return true;
-	return COMPLAINT_SUBJECTS.some((p) => sub.includes(p)) || COMPLAINT_FROM.some((p) => from.includes(p));
+	return contentType(email).includes("feedback-report") || COMPLAINT_SENDERS.includes(senderLocalPart(email));
 }
 
 /** Extract the bounced or complained-about address from DSN/ARF body text. */
-export function extractRecipient(content: string): string | null {
+export function extractRecipient(content: string, opts: { structuredOnly?: boolean } = {}): string | null {
 	const finalRcpt = content.match(/Final-Recipient\s*:\s*rfc822\s*;\s*([^\s\r\n<>]+)/i);
 	if (finalRcpt) return finalRcpt[1].trim().toLowerCase();
 
 	const origRcpt = content.match(/Original-Rcpt-To\s*:\s*([^\s\r\n<>]+)/i);
 	if (origRcpt) return origRcpt[1].trim().toLowerCase();
+
+	if (opts.structuredOnly) return null;
 
 	const angle = content.match(/<([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})>/);
 	if (angle) return angle[1].toLowerCase();

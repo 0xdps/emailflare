@@ -134,6 +134,12 @@ sessionApp.route("/inbox/templates", guarded(requireInbox, inboxTemplatesRouter)
 
 // WebSocket notification endpoint (per-user DO)
 sessionApp.get("/notifications/ws", async (c) => {
+	// Browsers always send Origin on WebSocket handshakes. Refuse pages from other sites so they
+	// cannot open a socket with the user's cookie.
+	const origin = c.req.header("Origin");
+	if (origin && origin !== new URL(c.req.url).origin && origin !== c.env.PUBLIC_URL?.replace(/\/$/, "")) {
+		return c.json({ error: "Forbidden" }, 403);
+	}
 	const userId = c.get("userId");
 	const id = c.env.NOTIFICATIONS.idFromName(userId);
 	const stub = c.env.NOTIFICATIONS.get(id);

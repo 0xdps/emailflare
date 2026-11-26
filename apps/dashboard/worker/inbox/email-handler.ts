@@ -13,6 +13,8 @@ import {
 	generateId,
 	isBounce,
 	isComplaint,
+	parseAuthenticationResults,
+	senderAuthentication,
 	parseThreadToken,
 	stripThreadToken,
 	threadMessageId,
@@ -26,22 +28,39 @@ const log = createLogger("emailflare-email");
 const LARGE_BODY_THRESHOLD = 512 * 1024; // 512 KB
 const SOFT_BOUNCE_THRESHOLD = 3;
 
+// Logs are retained by Workers Observability, so keep addresses out of them.
+function maskAddress(address: string): string {
+	const [local = "", domain = ""] = address.split("@");
+	return `${local.slice(0, 1)}***@${domain}`;
+}
+
 export async function handleIncomingEmail(message: ForwardableEmailMessage, env: Env): Promise<void> {
 	const raw = await new Response(message.raw).arrayBuffer();
 	const email = await PostalMime.parse(raw);
 	const db = new D1Db(env.DB);
 	const now = new Date().toISOString();
-	const content = [email.text ?? "", email.html ?? ""].join("\n");
+	// DSN and ARF reports keep their machine-readable fields in separate MIME parts.
+	const reportParts = (email.attachments ?? [])
+		.filter((att) => /^message\/(delivery-status|feedback-report)/i.test(att.mimeType ?? ""))
+		.map((att) => (typeof att.content === "string" ? att.content : new TextDecoder().decode(att.content)));
+	const content = [email.text ?? "", email.html ?? "", ...reportParts].join("\n");
 
-	// Bounces and complaints never become inbox threads.
-	if (isBounce(email)) {
-		await processBounce(content, db, now);
-		return;
+	const authHeaders = (email.headers ?? [])
+		.filter((h) => h.key.toLowerCase() === "authentication-results")
+		.map((h) => h.value);
+	const auth = parseAuthenticationResults(authHeaders);
+	if (!auth && authHeaders.length > 0) {
+		// Seeing which server ids show up tells us whether Cloudflare's header is being recognised.
+		log.warn("authentication-results present but not from a trusted server", {
+			authserv: authHeaders.map((h) => h.split(";")[0].trim().slice(0, 80)),
+		});
 	}
-	if (isComplaint(email)) {
-		await processComplaint(content, db, now);
-		return;
-	}
+	const sender = senderAuthentication(auth);
+
+	// Bounces and complaints that check out are recorded and never become threads. Anything we
+	// cannot verify stays in the inbox so a person can look at it.
+	if (isBounce(email) && (await processBounce(content, db, now, sender))) return;
+	if (isComplaint(email) && (await processComplaint(content, db, now, sender))) return;
 
 	const fromAddress = message.from.toLowerCase();
 	const toAddress = message.to.toLowerCase();
@@ -100,7 +119,7 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
 		inboxAddress,
 	});
 
-	await env.DB.prepare(
+	const inserted = await env.DB.prepare(
 		`INSERT INTO inbox_emails
        (id, person_id, thread_id, inbox_address, subject, body_html, body_text, body_r2_key,
         message_id, in_reply_to, "references", spf, dkim, dmarc, is_read, received_at)
@@ -119,12 +138,20 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
 			messageId,
 			inReplyTo,
 			references,
-			message.headers.get("Authentication-Results-SPF") ?? null,
-			message.headers.get("Authentication-Results-DKIM") ?? null,
-			message.headers.get("Authentication-Results-DMARC") ?? null,
+			auth?.spf ?? null,
+			auth?.dkim ?? null,
+			auth?.dmarc ?? null,
 			now,
 		)
 		.run();
+
+	// A repeated Message-ID is a duplicate delivery (or a collision). Nothing was stored, so there
+	// is nothing to attach to or notify about, and the body object written above is unreferenced.
+	if (!inserted.meta.changes) {
+		if (bodyR2Key) await env.ATTACHMENTS.delete(bodyR2Key);
+		log.warn("Duplicate Message-ID, message skipped");
+		return;
+	}
 
 	await env.DB.prepare(
 		"UPDATE thread_state SET is_archived = 0, updated_at = ? WHERE thread_id = ? AND is_archived = 1",
@@ -188,11 +215,23 @@ export async function handleIncomingEmail(message: ForwardableEmailMessage, env:
 	}
 }
 
-async function processBounce(content: string, db: D1Db, now: string): Promise<void> {
-	const recipient = extractRecipient(content);
+/** Returns true when the message was a verified bounce for mail we sent; false leaves it for the inbox. */
+async function processBounce(
+	content: string,
+	db: D1Db,
+	now: string,
+	sender: "pass" | "fail" | "unknown",
+): Promise<boolean> {
+	// Free-text addresses are only believed when the sender passed authentication.
+	const recipient =
+		extractRecipient(content, { structuredOnly: true }) ?? (sender === "pass" ? extractRecipient(content) : null);
 	if (!recipient) {
-		log.warn("Could not extract recipient from bounce, skipping");
-		return;
+		log.warn("Could not extract recipient from bounce, keeping it in the inbox");
+		return false;
+	}
+	if (sender === "fail") {
+		log.warn("Bounce failed sender authentication, keeping it in the inbox");
+		return false;
 	}
 
 	const bounceType = classifyBounce(content);
@@ -205,23 +244,26 @@ async function processBounce(content: string, db: D1Db, now: string): Promise<vo
 		[recipient, cutoff],
 	);
 	const logRow = logRes.rows[0] ?? null;
-
-	if (logRow) {
-		await db.run(`UPDATE email_logs SET status = 'bounced', error = ?, bounced_at = ? WHERE id = ?`, [
-			reason,
-			now,
-			logRow.id,
-		]);
+	// A bounce for an address we did not mail recently cannot be ours, whoever it claims to be from.
+	if (!logRow) {
+		log.warn("Bounce for a recipient we did not email recently, keeping it in the inbox");
+		return false;
 	}
+
+	await db.run(`UPDATE email_logs SET status = 'bounced', error = ?, bounced_at = ? WHERE id = ?`, [
+		reason,
+		now,
+		logRow.id,
+	]);
 
 	if (bounceType === "hard" || bounceType === "spam_rejection") {
 		await db.run(
 			`INSERT OR IGNORE INTO suppressions (id, email, reason, domain_id, email_log_id, created_at)
        VALUES (?, ?, 'hard_bounce', ?, ?, ?)`,
-			[generateId(), recipient, logRow?.domain_id ?? null, logRow?.id ?? null, now],
+			[generateId(), recipient, logRow.domain_id ?? null, logRow.id ?? null, now],
 		);
-		log.info(`Bounce suppressed: ${recipient} — ${reason}`);
-		return;
+		log.info(`Bounce suppressed: ${maskAddress(recipient)} — ${reason}`);
+		return true;
 	}
 
 	const bounceCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -235,19 +277,30 @@ async function processBounce(content: string, db: D1Db, now: string): Promise<vo
 		await db.run(
 			`INSERT OR IGNORE INTO suppressions (id, email, reason, domain_id, email_log_id, created_at)
        VALUES (?, ?, 'soft_bounce', ?, ?, ?)`,
-			[generateId(), recipient, logRow?.domain_id ?? null, logRow?.id ?? null, now],
+			[generateId(), recipient, logRow.domain_id ?? null, logRow.id ?? null, now],
 		);
-		log.info(`Soft bounce suppressed after ${cnt} bounces: ${recipient}`);
-		return;
+		log.info(`Soft bounce suppressed after ${cnt} bounces: ${maskAddress(recipient)}`);
+		return true;
 	}
-	log.info(`Soft bounce logged (${cnt}/${SOFT_BOUNCE_THRESHOLD}): ${recipient} — ${reason}`);
+	log.info(`Soft bounce logged (${cnt}/${SOFT_BOUNCE_THRESHOLD}): ${maskAddress(recipient)} — ${reason}`);
+	return true;
 }
 
-async function processComplaint(content: string, db: D1Db, now: string): Promise<void> {
-	const recipient = extractRecipient(content);
+async function processComplaint(
+	content: string,
+	db: D1Db,
+	now: string,
+	sender: "pass" | "fail" | "unknown",
+): Promise<boolean> {
+	const recipient =
+		extractRecipient(content, { structuredOnly: true }) ?? (sender === "pass" ? extractRecipient(content) : null);
 	if (!recipient) {
-		log.warn("Could not extract recipient from complaint, skipping");
-		return;
+		log.warn("Could not extract recipient from complaint, keeping it in the inbox");
+		return false;
+	}
+	if (sender === "fail") {
+		log.warn("Complaint failed sender authentication, keeping it in the inbox");
+		return false;
 	}
 
 	const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -258,15 +311,18 @@ async function processComplaint(content: string, db: D1Db, now: string): Promise
 		[recipient, cutoff],
 	);
 	const logRow = logRes.rows[0] ?? null;
-
-	if (logRow) {
-		await db.run(`UPDATE email_logs SET status = 'complained', bounced_at = ? WHERE id = ?`, [now, logRow.id]);
+	if (!logRow) {
+		log.warn("Complaint for a recipient we did not email recently, keeping it in the inbox");
+		return false;
 	}
+
+	await db.run(`UPDATE email_logs SET status = 'complained', bounced_at = ? WHERE id = ?`, [now, logRow.id]);
 
 	await db.run(
 		`INSERT OR IGNORE INTO suppressions (id, email, reason, domain_id, email_log_id, created_at)
      VALUES (?, ?, 'complaint', ?, ?, ?)`,
-		[generateId(), recipient, logRow?.domain_id ?? null, logRow?.id ?? null, now],
+		[generateId(), recipient, logRow.domain_id ?? null, logRow.id ?? null, now],
 	);
-	log.info(`Complaint suppressed: ${recipient}`);
+	log.info(`Complaint suppressed: ${maskAddress(recipient)}`);
+	return true;
 }

@@ -1,5 +1,6 @@
 export * from "./email.ts";
 export * from "./bounce.ts";
+export * from "./auth-results.ts";
 export * from "./cloudflare.ts";
 export * from "./logger.ts";
 export * from "./inbox.ts";
