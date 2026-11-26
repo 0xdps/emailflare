@@ -15,6 +15,7 @@ import {
 } from "./inbox/index.ts";
 import type { Env, ScheduledSendMessage, SequenceQueueMessage } from "./inbox/env.ts";
 import { withSecurityHeaders } from "./inbox/lib/security-headers.ts";
+import { monitorDomains } from "./inbox/services/domain-monitor.ts";
 
 export { NotificationsHub } from "./inbox/do/NotificationsHub.ts";
 
@@ -64,6 +65,7 @@ export default {
 
 	async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
 		ctx.waitUntil(processDueSequenceSteps(env));
+		ctx.waitUntil(monitorDomains(env).catch(() => 0));
 	},
 
 	async queue(batch: MessageBatch, env: Env): Promise<void> {

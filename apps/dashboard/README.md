@@ -36,6 +36,7 @@ The Worker entrypoint in `worker/index.ts` dispatches requests and events based 
 - **Signed Tracking Links:** Click-tracking links carry an HMAC of the destination, so `/v1/t/c/*` cannot be used as an open redirect. Unsigned links show a confirmation page instead of redirecting.
 - **Bounce Verification:** A message is only treated as a bounce or complaint when it is a real DSN/ARF, passes Cloudflare's SPF/DKIM/DMARC verdict (when available) and refers to a recipient we mailed in the last 7 days. Everything else stays in the inbox.
 - **Response Headers:** Every response carries `X-Frame-Options`, `frame-ancestors`, `nosniff`, a referrer policy and HSTS.
+- **Domain Monitoring:** Every 30 minutes the cron checks each domain against Cloudflare. A domain whose sending or receiving breaks for two checks in a row is written to the audit log and sent to webhooks as `domain.degraded`, and `domain.recovered` follows when it is healthy again. A failed Cloudflare lookup never counts as a failure, and receiving only counts for domains that have mailboxes.
 - **Inbound HTML Sandboxing:** Emails are rendered inside an isolated, script-less sandboxed iframe with its own Content-Security-Policy, so remote images, stylesheets and fonts cannot load (and a message cannot report that it was opened) until the reader chooses "Load images".
 
 ---

@@ -82,6 +82,10 @@ export default function EnableDomainDialog({
 	const [results, setResults] = useState<Partial<Record<DomainStep, StepResult>>>({});
 	const [running, setRunning] = useState<DomainStep | null>(null);
 	const finished = useRef(false);
+	// Keep the last target while the dialog animates closed, so the title does not go blank.
+	const lastTarget = useRef<EnableTarget | null>(null);
+	if (target) lastTarget.current = target;
+	const shownZone = (target ?? lastTarget.current)?.zoneName;
 
 	// Reset whenever the dialog opens for a (new) target.
 	useEffect(() => {
@@ -170,8 +174,7 @@ export default function EnableDomainDialog({
 			<DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-xl">
 				<DialogHeader>
 					<DialogTitle>
-						{phase === "review" ? "Enable" : phase === "running" ? "Setting up" : "Done:"}{" "}
-						{target?.zoneName}
+						{phase === "review" ? "Enable" : phase === "running" ? "Setting up" : "Done:"} {shownZone}
 					</DialogTitle>
 					<DialogDescription>
 						{phase === "review"

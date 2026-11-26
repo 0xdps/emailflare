@@ -110,3 +110,69 @@ export function checkRecord(
 	if (found.length > 0) return { ...expected, status: "wrong", actual: found[0].content };
 	return { ...expected, status: "missing" };
 }
+
+// ── Needs attention and drift monitoring ──────────────────────────────────────
+
+/**
+ * What is wrong with a domain right now. Receiving only counts when the domain has mailboxes: a
+ * sending-only domain that was set up without receiving is working as intended.
+ */
+export function issuesOf(health: Pick<DomainHealth, "sending" | "receiving" | "mailboxes">): string[] {
+	const issues: string[] = [];
+	if (health.sending === "pending") issues.push("Sending is not confirmed by Cloudflare");
+	if (health.mailboxes > 0 && health.receiving === "off")
+		issues.push("Receiving is off, so its mailboxes get no mail");
+	if (health.mailboxes > 0 && health.receiving === "elsewhere") issues.push("Incoming mail is routed somewhere else");
+	return issues;
+}
+
+/** True when Cloudflare could not tell us enough to call the domain healthy or not. */
+function isUnknown(health: Pick<DomainHealth, "sending" | "receiving">): boolean {
+	return health.sending === "unknown" || health.receiving === "unknown";
+}
+
+export interface MonitorState {
+	/** Consecutive checks in which the domain had an issue. */
+	bad: number;
+	alerted: boolean;
+}
+
+export interface MonitorEvent {
+	type: "degraded" | "recovered";
+	domainId: string;
+	issues: string[];
+}
+
+/** An issue must persist this many checks before anyone is told, so DNS propagation does not page anyone. */
+export const ALERT_AFTER_CHECKS = 2;
+
+/**
+ * Compares the latest health with what was seen before and says who to tell. A check where
+ * Cloudflare could not answer changes nothing, so an outage on their side is never reported as
+ * every domain breaking.
+ */
+export function evaluateHealthChange(
+	previous: Record<string, MonitorState>,
+	health: DomainHealth[],
+): { state: Record<string, MonitorState>; events: MonitorEvent[] } {
+	const state: Record<string, MonitorState> = {};
+	const events: MonitorEvent[] = [];
+
+	for (const h of health) {
+		const before = previous[h.id] ?? { bad: 0, alerted: false };
+		const issues = issuesOf(h);
+
+		if (issues.length === 0 && isUnknown(h)) {
+			state[h.id] = before;
+		} else if (issues.length === 0) {
+			if (before.alerted) events.push({ type: "recovered", domainId: h.id, issues: [] });
+			state[h.id] = { bad: 0, alerted: false };
+		} else {
+			const bad = before.bad + 1;
+			const alert = !before.alerted && bad >= ALERT_AFTER_CHECKS;
+			if (alert) events.push({ type: "degraded", domainId: h.id, issues });
+			state[h.id] = { bad, alerted: before.alerted || alert };
+		}
+	}
+	return { state, events };
+}
