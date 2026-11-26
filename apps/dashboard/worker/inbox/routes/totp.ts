@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { generateId } from "@/lib/core";
 import { getSession } from "../middleware/auth.ts";
-import { generateBackupCodes, generateTotpSecret, hashBackupCode, totpUri, verifyTotp } from "../lib/totp.ts";
+import { generateBackupCodes, generateTotpSecret, protectBackupCode, totpUri, verifyTotp } from "../lib/totp.ts";
 import { writeAudit } from "../lib/audit.ts";
 import type { HonoEnv } from "../env.ts";
 
@@ -35,7 +35,7 @@ app.post("/enable", zValidator("json", z.object({ code: z.string().min(6).max(8)
 	if (!(await verifyTotp(secret, code))) return c.json({ error: "That code did not match." }, 400);
 	const codes = generateBackupCodes();
 	const now = new Date().toISOString();
-	const hashes = await Promise.all(codes.map((code) => hashBackupCode(code)));
+	const hashes = await Promise.all(codes.map((code) => protectBackupCode(code)));
 	await c.env.DB.batch([
 		c.env.DB.prepare("UPDATE users SET totp_secret = ?, totp_enabled = 1 WHERE id = ?").bind(
 			secret,

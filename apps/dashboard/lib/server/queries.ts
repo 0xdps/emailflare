@@ -4,6 +4,7 @@ import { getServerSession } from "@/app/actions/auth";
 import { makeDb, D1Db } from "@/worker/inbox/db";
 import { LAYOUTS } from "@/worker/inbox/emails";
 import {
+	emailBelongsToDomain,
 	dailySendLimit,
 	enrich,
 	mapThreadRow,
@@ -696,4 +697,51 @@ export async function getSuppressionsList(
 		limit,
 		pages: Math.ceil(total / limit),
 	};
+}
+
+export interface DomainDetailData {
+	domain: Awaited<ReturnType<typeof getDomainsList>>[number];
+	mailboxes: Array<{
+		id: string;
+		email: string;
+		display_name: string;
+		routing: { configured: boolean; error?: string };
+	}>;
+	/** Other registered domains in the same zone; routing is shared with them. */
+	zoneSiblings: number;
+	lastInboundAt: string | null;
+}
+
+export async function getDomainDetail(id: string): Promise<DomainDetailData | null> {
+	const workerEnv = env as unknown as Env;
+	if (!workerEnv?.DB) return null;
+	const { domains } = makeDb(workerEnv.DB);
+	const domain = await domains.findOne({ where: { id } });
+	if (!domain) return null;
+
+	const all = await workerEnv.DB.prepare("SELECT * FROM inboxes ORDER BY email ASC").all<Record<string, unknown>>();
+	const mailboxes = (all.results ?? [])
+		.filter((row) => emailBelongsToDomain(String(row.email), domain.name))
+		.map((row) => {
+			const inbox = toInbox(row) as {
+				id: string;
+				email: string;
+				display_name: string;
+				routing: { configured: boolean; error?: string };
+			};
+			return { id: inbox.id, email: inbox.email, display_name: inbox.display_name, routing: inbox.routing };
+		});
+
+	const siblings = await workerEnv.DB.prepare("SELECT COUNT(*) AS n FROM domains WHERE cf_zone_id = ? AND id <> ?")
+		.bind(domain.cf_zone_id, id)
+		.first<{ n: number }>();
+	const last = mailboxes.length
+		? await workerEnv.DB.prepare(
+				`SELECT MAX(received_at) AS at FROM inbox_emails WHERE inbox_address IN (${mailboxes.map(() => "?").join(",")})`,
+			)
+				.bind(...mailboxes.map((m) => m.email))
+				.first<{ at: string | null }>()
+		: null;
+
+	return { domain, mailboxes, zoneSiblings: siblings?.n ?? 0, lastInboundAt: last?.at ?? null };
 }

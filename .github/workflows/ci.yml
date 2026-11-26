@@ -1,0 +1,71 @@
+name: CI
+
+# Runs on every pull request and on pushes to the long-lived branches. Deployment stays
+# a separate, manual workflow (deploy-workers.yml).
+
+on:
+    pull_request:
+    push:
+        branches: [trunk, staging]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    check:
+        name: Format, types, tests, build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: pnpm
+                  cache-dependency-path: pnpm-lock.yaml
+
+            - name: Install workspace dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Formatting
+              run: pnpm format:check
+
+            - name: Design-system tokens
+              run: pnpm lint:ui
+
+            - name: Type check
+              run: pnpm typecheck
+
+            - name: Tests
+              run: pnpm test
+
+            # The build merges wrangler.jsonc with a per-install override. The example
+            # file is enough here: the build never touches the placeholder resource IDs.
+            - name: Build dashboard
+              run: |
+                  cp apps/dashboard/wrangler.local.example.jsonc apps/dashboard/wrangler.local.jsonc
+                  pnpm build
+
+    audit:
+        name: Dependency audit
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+
+            # Shipped dependencies only. Dev tooling is reported by Dependabot instead.
+            - name: Audit production dependencies
+              run: pnpm audit --prod --audit-level=high

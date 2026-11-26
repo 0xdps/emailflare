@@ -27,3 +27,8 @@ PUBLIC_URL=http://localhost:5173
 # Omit to use the Worker name from wrangler.local.jsonc.
 # Local mail is not delivered here. This only matters when enabling a real zone.
 INBOX_WORKER_NAME=emailflare
+
+# Optional. When set, first-run setup asks for this value, so nobody can claim the
+# admin account on a fresh public deployment before you do.
+# Generate with: openssl rand -hex 16
+SETUP_TOKEN=

@@ -25,7 +25,6 @@
 		"lucide-react": "^0.503.0",
 		"react": "^19.3.1",
 		"react-dom": "^19.3.1",
-		"shadcn": "^4.19.0",
 		"shiki": "^4.6.0",
 		"tailwind-merge": "^3.6.0",
 		"tailwindcss": "^4.3.5",
@@ -34,6 +33,7 @@
 	"devDependencies": {
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19.2.5",
+		"shadcn": "^4.19.0",
 		"typescript": "^5.9.3"
 	}
 }

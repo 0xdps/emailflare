@@ -12,7 +12,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { PageHeader, PageShell } from "@/components/app/PageHeader";
 
-const EVENTS = ["email.sent", "email.failed", "email.opened", "email.clicked", "email.bounced"];
+const EVENTS = [
+	"email.sent",
+	"email.failed",
+	"email.opened",
+	"email.clicked",
+	"email.bounced",
+	"domain.degraded",
+	"domain.recovered",
+];
 
 interface Webhook {
 	id: string;

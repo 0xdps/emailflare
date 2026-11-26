@@ -9,3 +9,13 @@ allowBuilds:
     msgpackr-extract: true
     sharp: true
     workerd: true
+
+# Pin transitive packages to patched releases (pnpm audit). Remove an entry once the
+# packages that depend on it ship the fix themselves.
+overrides:
+    "follow-redirects@>=1.16.0 <1.16.2": ">=1.16.2"
+    "fast-uri@>=3.0.0 <3.1.7": ">=3.1.7"
+    "source-map-js@>=1.0.0 <1.2.2": ">=1.2.2"
+    "devalue@<=5.9.2": ">=5.9.3"
+    "undici@>=8.0.0 <8.12.2": ">=8.12.2"
+    "vite@>=8.2.0 <=8.2.3": ">=8.2.4"

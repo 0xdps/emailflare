@@ -31,7 +31,13 @@ The Worker entrypoint in `worker/index.ts` dispatches requests and events based 
 
 - **Zero-Layout-Shift Navigation:** Client-side navigation uses a cached in-memory and `sessionStorage` session context with a singleton WebSocket, preventing loading skeleton flashes and badge reconnect churn when switching between tabs.
 - **Server-Side Authorization:** Every page layout enforces session and RBAC guards on the server before data hydration, ensuring unauthorized members never receive sensitive payload data in initial responses.
-- **Inbound HTML Sandboxing:** Emails are rendered inside an isolated `sandbox=""` iframe without `allow-same-origin`, preventing scripts in received emails from accessing application cookies, local storage, or session state. Remote images and tracking pixels are blocked until explicitly authorized by the reader.
+- **Session & 2FA Hardening:** Sessions can be revoked (password change or reset, "Sign out everywhere") through a per-user cut-off in KV. Sign-in is limited per IP and per account (5 failures in 15 minutes locks the account), a TOTP code works once, and backup codes are stored salted.
+- **First-run Setup Token:** Set the optional `SETUP_TOKEN` secret and `/setup` asks for it, so nobody can claim the admin account on a fresh public deployment.
+- **Signed Tracking Links:** Click-tracking links carry an HMAC of the destination, so `/v1/t/c/*` cannot be used as an open redirect. Unsigned links show a confirmation page instead of redirecting.
+- **Bounce Verification:** A message is only treated as a bounce or complaint when it is a real DSN/ARF, passes Cloudflare's SPF/DKIM/DMARC verdict (when available) and refers to a recipient we mailed in the last 7 days. Everything else stays in the inbox.
+- **Response Headers:** Every response carries `X-Frame-Options`, `frame-ancestors`, `nosniff`, a referrer policy and HSTS.
+- **Domain Monitoring:** Every 30 minutes the cron checks each domain against Cloudflare. A domain whose sending or receiving breaks for two checks in a row is written to the audit log and sent to webhooks as `domain.degraded`, and `domain.recovered` follows when it is healthy again. A failed Cloudflare lookup never counts as a failure, and receiving only counts for domains that have mailboxes.
+- **Inbound HTML Sandboxing:** Emails are rendered inside an isolated, script-less sandboxed iframe with its own Content-Security-Policy, so remote images, stylesheets and fonts cannot load (and a message cannot report that it was opened) until the reader chooses "Load images".
 
 ---
 

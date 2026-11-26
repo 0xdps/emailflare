@@ -9,9 +9,9 @@ interface NotificationPayload {
 	[key: string]: unknown;
 }
 
+// Sockets are accepted through the hibernation API, so the runtime may evict this object from
+// memory between messages. Connected clients live in ctx.getWebSockets(), never in a field.
 export class NotificationsHub extends DurableObject {
-	private sockets = new Set<WebSocket>();
-
 	// Called by email-handler.ts when a new email arrives
 	async fetch(request: Request): Promise<Response> {
 		const url = new URL(request.url);
@@ -21,8 +21,6 @@ export class NotificationsHub extends DurableObject {
 			const pair = new WebSocketPair();
 			const [client, server] = Object.values(pair);
 			this.ctx.acceptWebSocket(server);
-			this.sockets.add(server);
-			server.addEventListener("close", () => this.sockets.delete(server));
 			return new Response(null, { status: 101, webSocket: client });
 		}
 
@@ -30,11 +28,11 @@ export class NotificationsHub extends DurableObject {
 		if (url.pathname === "/notify" && request.method === "POST") {
 			const payload = await request.json<NotificationPayload>();
 			const msg = JSON.stringify(payload);
-			for (const ws of this.sockets) {
+			for (const ws of this.ctx.getWebSockets()) {
 				try {
 					ws.send(msg);
 				} catch {
-					this.sockets.delete(ws);
+					// The socket is already closing; the runtime drops it.
 				}
 			}
 			return new Response("ok");
@@ -49,10 +47,10 @@ export class NotificationsHub extends DurableObject {
 	}
 
 	webSocketClose(ws: WebSocket): void {
-		this.sockets.delete(ws);
+		ws.close();
 	}
 
 	webSocketError(ws: WebSocket): void {
-		this.sockets.delete(ws);
+		ws.close();
 	}
 }

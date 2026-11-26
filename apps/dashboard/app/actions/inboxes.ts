@@ -2,29 +2,9 @@
 
 import { env } from "cloudflare:workers";
 import { generateId, inboxSchema } from "@/lib/core";
-import { enableEmailRouting, setCatchAllToWorker, getZoneByHostname } from "@/worker/inbox/services/cloudflare";
+import { configureInboxRouting } from "@/worker/inbox/services/domains";
 import { requireAdmin } from "./auth";
-import { inboxWorkerName, type Env } from "@/worker/inbox/env";
-
-async function configureRouting(
-	email: string,
-	cfApiToken: string,
-	workerName: string,
-): Promise<{ configured: boolean; error?: string }> {
-	try {
-		const domain = email.split("@")[1];
-		const zone = await getZoneByHostname(domain, cfApiToken);
-		if (!zone) return { configured: false, error: `No active Cloudflare zone found for "${domain}"` };
-		await enableEmailRouting(zone.id, cfApiToken);
-		await setCatchAllToWorker(zone.id, workerName, cfApiToken);
-		return { configured: true };
-	} catch (err) {
-		return {
-			configured: false,
-			error: err instanceof Error ? err.message : "Email Routing configuration failed",
-		};
-	}
-}
+import type { Env } from "@/worker/inbox/env";
 
 export async function createInboxAction(input: { email: string; display_name: string; mode: "thread" | "individual" }) {
 	await requireAdmin();
@@ -36,7 +16,7 @@ export async function createInboxAction(input: { email: string; display_name: st
 		.first();
 	if (existing) throw new Error("Inbox already exists");
 
-	const routing = await configureRouting(body.email, workerEnv.CF_API_TOKEN, inboxWorkerName(workerEnv));
+	const routing = await configureInboxRouting(workerEnv, body.email);
 	const id = generateId();
 
 	await workerEnv.DB.prepare(
@@ -63,7 +43,7 @@ export async function retryInboxRoutingAction(id: string) {
 	const row = await workerEnv.DB.prepare("SELECT id, email FROM inboxes WHERE id = ? LIMIT 1").bind(id).first();
 	if (!row) throw new Error("Inbox not found");
 
-	const routing = await configureRouting(row.email as string, workerEnv.CF_API_TOKEN, inboxWorkerName(workerEnv));
+	const routing = await configureInboxRouting(workerEnv, row.email as string);
 
 	await workerEnv.DB.prepare("UPDATE inboxes SET routing_configured = ?, routing_error = ? WHERE id = ?")
 		.bind(routing.configured ? 1 : 0, routing.error ?? null, id)

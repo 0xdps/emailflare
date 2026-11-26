@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { ShieldCheck, QrCode, Key, Copy, Check, Download, Smartphone, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, QrCode, Key, Copy, Check, Download, Smartphone, CheckCircle2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -36,11 +36,23 @@ export default function SecurityPage() {
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [changingPassword, setChangingPassword] = useState(false);
+	const [signingOut, setSigningOut] = useState(false);
 	const [passwordError, setPasswordError] = useState("");
 	const [passwordSuccess, setPasswordSuccess] = useState("");
 	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 	const [showNewPassword, setShowNewPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+	async function handleSignOutEverywhere() {
+		setSigningOut(true);
+		try {
+			await api.post("/api/auth/logout-all");
+			window.location.href = "/login";
+		} catch {
+			toast.error("Could not sign out of all devices. Please try again.");
+			setSigningOut(false);
+		}
+	}
 
 	async function handleChangePassword(e: React.FormEvent) {
 		e.preventDefault();
@@ -278,6 +290,27 @@ export default function SecurityPage() {
 							{changingPassword ? <Spinner /> : "Update password"}
 						</Button>
 					</form>
+				</CardContent>
+			</Card>
+
+			{/* Sessions */}
+			<Card>
+				<CardContent className="flex flex-wrap items-center justify-between gap-4">
+					<div className="flex items-start gap-3.5">
+						<div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-muted text-primary-muted-foreground">
+							<LogOut className="size-5" />
+						</div>
+						<div className="space-y-1">
+							<h2 className="text-sm font-semibold text-foreground">Sign out everywhere</h2>
+							<p className="text-xs leading-relaxed text-muted-foreground">
+								End every session on every device, including this one. Changing your password does the
+								same for all other devices.
+							</p>
+						</div>
+					</div>
+					<Button variant="outline" onClick={handleSignOutEverywhere} disabled={signingOut}>
+						{signingOut ? <Spinner /> : "Sign out of all devices"}
+					</Button>
 				</CardContent>
 			</Card>
 

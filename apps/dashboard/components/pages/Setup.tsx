@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { setup } from "@/lib/api";
+import React, { useEffect, useState } from "react";
+import { getSetupStatus, setup } from "@/lib/api";
 import { AuthHeading, AuthLayout } from "@/components/app/auth/AuthLayout";
 import { FormError, PasswordField, SubmitButton, TextField } from "@/components/app/auth/fields";
 
@@ -13,6 +13,14 @@ export default function Setup() {
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [showPw, setShowPw] = useState(false);
+	const [requiresToken, setRequiresToken] = useState(false);
+	const [setupToken, setSetupToken] = useState("");
+
+	useEffect(() => {
+		getSetupStatus()
+			.then((status) => setRequiresToken(!!status.requiresToken))
+			.catch(() => undefined);
+	}, []);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -27,14 +35,20 @@ export default function Setup() {
 		}
 		setLoading(true);
 		try {
-			await setup(name.trim(), email.trim(), password);
+			await setup(name.trim(), email.trim(), password, setupToken.trim());
 			window.location.href = "/setup/ready";
 		} catch (err: unknown) {
 			const msg =
 				err && typeof err === "object" && "response" in err
 					? (err as { response?: { data?: { error?: string } } }).response?.data?.error
 					: undefined;
-			setError(msg === "already_initialized" ? "Inbox is already set up." : "Setup failed. Please try again.");
+			setError(
+				msg === "already_initialized"
+					? "Inbox is already set up."
+					: msg === "invalid_setup_token"
+						? "That setup token is not correct."
+						: "Setup failed. Please try again.",
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -92,12 +106,26 @@ export default function Setup() {
 					autoComplete="new-password"
 				/>
 
+				{requiresToken && (
+					<TextField
+						id="setup-token"
+						label="Setup token"
+						value={setupToken}
+						onChange={(e) => setSetupToken(e.target.value)}
+						required
+						placeholder="The SETUP_TOKEN secret of this Worker"
+						autoComplete="off"
+					/>
+				)}
+
 				<FormError>{error}</FormError>
 
 				<SubmitButton
 					loading={loading}
 					loadingLabel="Creating account…"
-					disabled={!name.trim() || !email.trim() || !password || !confirm}
+					disabled={
+						!name.trim() || !email.trim() || !password || !confirm || (requiresToken && !setupToken.trim())
+					}
 				>
 					Create admin account
 				</SubmitButton>

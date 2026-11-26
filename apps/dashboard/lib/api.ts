@@ -27,13 +27,13 @@ export default api;
 
 // ── Auth / Setup ──────────────────────────────────────────────────────────────
 
-export async function getSetupStatus(): Promise<{ initialized: boolean }> {
+export async function getSetupStatus(): Promise<{ initialized: boolean; requiresToken?: boolean }> {
 	const { data } = await api.get("/api/setup/status");
 	return data;
 }
 
-export async function setup(name: string, email: string, password: string): Promise<void> {
-	await api.post("/api/setup", { name, email, password });
+export async function setup(name: string, email: string, password: string, setupToken?: string): Promise<void> {
+	await api.post("/api/setup", { name, email, password, setupToken: setupToken || undefined });
 }
 
 export async function login(email: string, password: string, otp?: string): Promise<void> {

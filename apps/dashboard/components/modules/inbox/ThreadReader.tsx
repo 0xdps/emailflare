@@ -86,8 +86,18 @@ export default function ThreadReader({
 
 	useEffect(() => setReplying(false), [summary.id]);
 
+	// Open at the start of the newest message. Scrolling to the very bottom would land mid-message
+	// once HTML bodies finish sizing.
 	useEffect(() => {
-		requestAnimationFrame(() => scroller.current?.scrollTo({ top: scroller.current.scrollHeight }));
+		const frame = requestAnimationFrame(() => {
+			const box = scroller.current;
+			const cards = box?.querySelectorAll("article");
+			const latest = cards?.[cards.length - 1];
+			if (!box || !latest) return;
+			const offset = latest.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+			box.scrollTo({ top: Math.max(0, offset - 12) });
+		});
+		return () => cancelAnimationFrame(frame);
 	}, [summary.id, messages.length]);
 
 	return (

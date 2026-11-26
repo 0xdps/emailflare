@@ -12,34 +12,11 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { generateId, inboxSchema } from "@/lib/core";
-import { enableEmailRouting, setCatchAllToWorker, getZoneByHostname } from "../../services/cloudflare.ts";
+import { configureInboxRouting } from "../../services/domains.ts";
 import { requireAdmin } from "../../middleware/auth.ts";
-import { inboxWorkerName, type HonoEnv } from "../../env.ts";
+import type { HonoEnv } from "../../env.ts";
 
 const app = new Hono<HonoEnv>();
-
-// Configure Cloudflare Email Routing so the zone's catch-all rule delivers
-// inbound mail to the inbox worker. Returns { configured, error? } — never
-// throws so callers can persist/surface the outcome.
-async function configureRouting(
-	email: string,
-	cfApiToken: string,
-	workerName: string,
-): Promise<{ configured: boolean; error?: string }> {
-	try {
-		const domain = email.split("@")[1];
-		const zone = await getZoneByHostname(domain, cfApiToken);
-		if (!zone) return { configured: false, error: `No active Cloudflare zone found for "${domain}"` };
-		await enableEmailRouting(zone.id, cfApiToken);
-		await setCatchAllToWorker(zone.id, workerName, cfApiToken);
-		return { configured: true };
-	} catch (err) {
-		return {
-			configured: false,
-			error: err instanceof Error ? err.message : "Email Routing configuration failed",
-		};
-	}
-}
 
 // Map a persisted row → API shape (adds the `routing` object).
 function toInbox(row: any) {
@@ -83,7 +60,7 @@ app.post("/", requireAdmin, zValidator("json", inboxSchema), async (c) => {
 	// Configure Email Routing (catch-all → this Worker). If the token can't
 	// configure routing we still create the inbox, but persist the failure so
 	// the UI can offer a "Setup routing" retry.
-	const routing = await configureRouting(body.email, c.env.CF_API_TOKEN, inboxWorkerName(c.env));
+	const routing = await configureInboxRouting(c.env, body.email);
 
 	const id = generateId();
 	await c.env.DB.prepare(
@@ -110,7 +87,7 @@ app.post("/:id/routing", requireAdmin, async (c) => {
 		.first();
 	if (!row) return c.json({ error: "Inbox not found" }, 404);
 
-	const routing = await configureRouting(row.email as string, c.env.CF_API_TOKEN, inboxWorkerName(c.env));
+	const routing = await configureInboxRouting(c.env, row.email as string);
 
 	await c.env.DB.prepare("UPDATE inboxes SET routing_configured = ?, routing_error = ? WHERE id = ?")
 		.bind(routing.configured ? 1 : 0, routing.error ?? null, c.req.param("id"))

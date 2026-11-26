@@ -7,6 +7,7 @@
 import { Hono } from "hono";
 import { generateId, parsePagination } from "@/lib/core";
 import type { HonoEnv } from "../../env.ts";
+import { attachAttachments, hydrateLargeBodies } from "../../lib/messages.ts";
 
 const app = new Hono<HonoEnv>();
 
@@ -279,6 +280,11 @@ app.get("/:id/thread", async (c) => {
 			return c.json({ error: "Person not found" }, 404);
 		}
 	}
+
+	await Promise.all([
+		attachAttachments(c.env.DB, messages as any[]),
+		hydrateLargeBodies(c.env.ATTACHMENTS, messages as any[]),
+	]);
 
 	return c.json({
 		person,

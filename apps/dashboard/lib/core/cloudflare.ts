@@ -230,6 +230,11 @@ export async function listSendingSubdomains(zoneId: string, cfApiToken: string):
 	return cfFetch<CFSubdomain[]>(`/zones/${zoneId}/email/sending/subdomains`, cfApiToken);
 }
 
+/** Disables sending on a subdomain and removes the DNS records Cloudflare created for it. */
+export async function deleteSendingSubdomain(zoneId: string, subdomainId: string, cfApiToken: string): Promise<void> {
+	await cfFetch(`/zones/${zoneId}/email/sending/subdomains/${subdomainId}`, cfApiToken, { method: "DELETE" });
+}
+
 // ── DNS Records ───────────────────────────────────────────────────────────────
 
 export interface CFDnsRecord {
@@ -301,6 +306,25 @@ export async function upsertDnsRecords(
 	return { written, failed };
 }
 
+export interface CFZoneDnsRecord {
+	type: string;
+	name: string;
+	content: string;
+	priority?: number;
+}
+
+/** Read-only lookup of records already in the zone, optionally narrowed by type and exact name. */
+export async function listDnsRecords(
+	zoneId: string,
+	cfApiToken: string,
+	query: { type?: string; name?: string } = {},
+): Promise<CFZoneDnsRecord[]> {
+	const params = new URLSearchParams({ per_page: "100" });
+	if (query.type) params.set("type", query.type);
+	if (query.name) params.set("name", query.name);
+	return cfFetch<CFZoneDnsRecord[]>(`/zones/${zoneId}/dns_records?${params}`, cfApiToken);
+}
+
 // ── Email Routing (inbound) ──────────────────────────────────────────────────
 
 export interface CFEmailRoutingCatchAll {
@@ -345,6 +369,19 @@ export async function setCatchAllToWorker(
 			name: ruleName,
 			matchers: [{ type: "all" }],
 			actions: [{ type: "worker", value: [workerName] }],
+		}),
+	});
+}
+
+/** Stops the zone's catch-all from delivering anywhere. Used when a domain leaves EmailFlare. */
+export async function disableCatchAll(zoneId: string, cfApiToken: string): Promise<void> {
+	await cfFetch(`/zones/${zoneId}/email/routing/rules/catch_all`, cfApiToken, {
+		method: "PUT",
+		body: JSON.stringify({
+			enabled: false,
+			name: "Catch-all (disabled by EmailFlare)",
+			matchers: [{ type: "all" }],
+			actions: [{ type: "drop" }],
 		}),
 	});
 }

@@ -1,76 +1,18 @@
 import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { env } from "cloudflare:workers";
 import type { Env } from "@/worker/inbox/env";
-import type { SessionPayload, UserType, AccessType } from "@/worker/inbox/middleware/auth";
+import { SESSION_COOKIE, verifySession } from "@/worker/inbox/lib/session";
+import type { SessionPayload, AccessType } from "@/worker/inbox/lib/session";
 
-export const SESSION_COOKIE = "ef_inbox_session";
-
-function secretKey(secret: string): Uint8Array {
-	return new TextEncoder().encode(secret);
-}
-
-function parseAccessTypes(raw?: string | null): AccessType[] {
-	if (!raw) return [];
-	try {
-		const parsed = JSON.parse(raw);
-		if (Array.isArray(parsed)) {
-			return parsed.filter((t): t is AccessType => t === "inbox" || t === "api" || t === "tester");
-		}
-	} catch {
-		// ignore
-	}
-	return [];
-}
+export { SESSION_COOKIE };
 
 /**
- * Reads and verifies the current session from cookies in a Server Action or RSC,
- * re-querying the database to get fresh permissions on every request.
+ * Reads and verifies the current session from cookies in a Server Action or RSC.
+ * Shares its implementation with the API, including revocation.
  */
 export async function getServerSession(): Promise<SessionPayload | null> {
 	const cookieStore = await cookies();
-	const token = cookieStore.get(SESSION_COOKIE)?.value;
-	if (!token) return null;
-
-	const workerEnv = env as unknown as Env;
-	if (!workerEnv?.SESSION_SECRET || !workerEnv?.DB) return null;
-
-	try {
-		const { payload } = await jwtVerify(token, secretKey(workerEnv.SESSION_SECRET));
-		const userId = payload["userId"];
-		if (typeof userId !== "string" || !userId) {
-			return null;
-		}
-
-		// Re-read fresh user record from DB
-		const user = await workerEnv.DB.prepare(
-			"SELECT id, name, email, user_type, access_types FROM users WHERE id = ? LIMIT 1",
-		)
-			.bind(userId)
-			.first<{
-				id: string;
-				name: string;
-				email: string;
-				user_type: "admin" | "member";
-				access_types: string;
-			}>();
-
-		if (!user) return null;
-
-		const userType: UserType = user.user_type === "admin" ? "admin" : "member";
-		const accessTypes: AccessType[] =
-			userType === "admin" ? ["inbox", "api", "tester"] : parseAccessTypes(user.access_types);
-
-		return {
-			userId: user.id,
-			userType,
-			accessTypes,
-			name: user.name,
-			email: user.email,
-		};
-	} catch {
-		return null;
-	}
+	return verifySession(cookieStore.get(SESSION_COOKIE)?.value, env as unknown as Env);
 }
 
 /**

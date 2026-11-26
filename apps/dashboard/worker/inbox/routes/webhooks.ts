@@ -5,7 +5,15 @@ import { generateId } from "@/lib/core";
 import { writeAudit } from "../lib/audit.ts";
 import type { HonoEnv } from "../env.ts";
 
-const EVENTS = ["email.sent", "email.failed", "email.opened", "email.clicked", "email.bounced"] as const;
+const EVENTS = [
+	"email.sent",
+	"email.failed",
+	"email.opened",
+	"email.clicked",
+	"email.bounced",
+	"domain.degraded",
+	"domain.recovered",
+] as const;
 
 const app = new Hono<HonoEnv>();
 

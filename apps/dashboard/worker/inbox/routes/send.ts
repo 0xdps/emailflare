@@ -85,7 +85,7 @@ app.post("/", zValidator("json", sendSchema), async (c) => {
 				)
 					.bind(generateId(), token, new Date().toISOString())
 					.run();
-				return { ...msg, html: instrumentTracking(msg.html, origin, token) };
+				return { ...msg, html: await instrumentTracking(msg.html, origin, token, c.env.SESSION_SECRET) };
 			},
 		},
 		{

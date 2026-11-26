@@ -38,6 +38,7 @@ import totpRouter from "./routes/totp.ts";
 // ── Inbox
 import peopleRouter from "./routes/inbox/people.ts";
 import threadsRouter from "./routes/inbox/threads.ts";
+import attachmentsRouter from "./routes/inbox/attachments.ts";
 import composeRouter from "./routes/inbox/compose.ts";
 import inboxesRouter from "./routes/inbox/inboxes.ts";
 import sequencesRouter from "./routes/inbox/sequences.ts";
@@ -125,6 +126,7 @@ sessionApp.route("/test-emails", guarded(requireTester, testEmailsRouter));
 // 4. Inbox routes (requireInbox)
 sessionApp.route("/inbox/people", guarded(requireInbox, peopleRouter));
 sessionApp.route("/inbox/threads", guarded(requireInbox, threadsRouter));
+sessionApp.route("/inbox/attachments", guarded(requireInbox, attachmentsRouter));
 sessionApp.route("/inbox/compose", guarded(requireInbox, composeRouter));
 sessionApp.route("/inbox/inboxes", guarded(requireInbox, inboxesRouter));
 sessionApp.route("/inbox/sequences", guarded(requireInbox, sequencesRouter));
@@ -132,6 +134,12 @@ sessionApp.route("/inbox/templates", guarded(requireInbox, inboxTemplatesRouter)
 
 // WebSocket notification endpoint (per-user DO)
 sessionApp.get("/notifications/ws", async (c) => {
+	// Browsers always send Origin on WebSocket handshakes. Refuse pages from other sites so they
+	// cannot open a socket with the user's cookie.
+	const origin = c.req.header("Origin");
+	if (origin && origin !== new URL(c.req.url).origin && origin !== c.env.PUBLIC_URL?.replace(/\/$/, "")) {
+		return c.json({ error: "Forbidden" }, 403);
+	}
 	const userId = c.get("userId");
 	const id = c.env.NOTIFICATIONS.idFromName(userId);
 	const stub = c.env.NOTIFICATIONS.get(id);
